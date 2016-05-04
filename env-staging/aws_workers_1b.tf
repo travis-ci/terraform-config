@@ -28,19 +28,3 @@ resource "aws_security_group" "workers_1b" {
         security_groups = ["${aws_security_group.bastion_1b.id}"]
     }
 }
-
-resource "aws_launch_configuration" "workers" {
-    name = "${var.env_name}-workers-config"
-    image_id = "${var.aws_worker_ami}"
-    instance_type = "c3.2xlarge"
-}
-
-resource "aws_autoscaling_group" "workers" {
-    name = "${var.env_name}-workers"
-    min_size = 1
-    max_size = 5
-    desired_capacity = 1
-    force_delete = true
-    vpc_zone_identifier = ["${aws_subnet.workers_1b.id}"]
-    launch_configuration = "${aws_launch_configuration.workers.name}"
-}
