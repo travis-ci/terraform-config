@@ -16,6 +16,11 @@ resource "aws_route_table" "workers_1b" {
     }
 }
 
+resource "aws_route_table_association" "workers_1b" {
+    subnet_id = "${aws_subnet.workers_1b.id}"
+    route_table_id = "${aws_route_table.workers_1b.id}"
+}
+
 resource "aws_security_group" "workers_1b" {
     name = "${var.env_name}-workers-nat-1b"
     description = "NAT Security Group for Workers VPC"

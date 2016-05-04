@@ -13,12 +13,23 @@ resource "aws_route_table" "public_1b" {
 
     route {
         cidr_block = "0.0.0.0/0"
-        instance_id = "${aws_instance.nat_1b.id}"
+        gateway_id = "${aws_internet_gateway.gw.id}"
     }
+}
+
+resource "aws_route_table_association" "public_1b" {
+    subnet_id = "${aws_subnet.public_1b.id}"
+    route_table_id = "${aws_route_table.public_1b.id}"
 }
 
 resource "aws_eip" "nat_1b" {
     instance = "${aws_instance.nat_1b.id}"
+    vpc = true
+    depends_on = ["aws_route_table.workers_1b"]
+}
+
+resource "aws_eip" "bastion_1b" {
+    instance = "${aws_instance.bastion_1b.id}"
     vpc = true
     depends_on = ["aws_route_table.public_1b"]
 }
