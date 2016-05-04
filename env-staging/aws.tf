@@ -3,7 +3,7 @@ provider "aws" {}
 resource "aws_vpc" "main" {
     cidr_block = "10.2.0.0/16"
     tags = {
-        Name = "workers-staging"
+        Name = "${var.env_name}-main"
     }
 }
 

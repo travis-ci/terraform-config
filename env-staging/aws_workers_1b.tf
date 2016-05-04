@@ -3,7 +3,7 @@ resource "aws_subnet" "workers_1b" {
     cidr_block = "10.2.2.0/24"
     availability_zone = "us-east-1b"
     tags = {
-        Name = "workers-1b"
+        Name = "${var.env_name}-workers-1b"
     }
 }
 
@@ -17,7 +17,7 @@ resource "aws_route_table" "workers_1b" {
 }
 
 resource "aws_security_group" "workers_1b" {
-    name = "workers-nat-1b"
+    name = "${var.env_name}-workers-nat-1b"
     description = "NAT Security Group for Workers VPC"
     vpc_id = "${aws_vpc.main.id}"
 
@@ -30,13 +30,13 @@ resource "aws_security_group" "workers_1b" {
 }
 
 resource "aws_launch_configuration" "workers" {
-    name = "workers-config"
-    image_id = "SECRET" # todo
+    name = "${var.env_name}-workers-config"
+    image_id = "${var.aws_worker_ami}"
     instance_type = "c3.2xlarge"
 }
 
 resource "aws_autoscaling_group" "workers" {
-    name = "workers"
+    name = "${var.env_name}-workers"
     min_size = 1
     max_size = 5
     desired_capacity = 1
