@@ -86,7 +86,7 @@ resource "aws_instance" "nat_1b" {
 resource "aws_instance" "bastion_1b" {
     ami = "${var.aws_bastion_ami}"
     instance_type = "t2.micro"
-    security_groups = ["${aws_security_group.bastion_1b.id}"]
+    vpc_security_group_ids = ["${aws_security_group.bastion_1b.id}"]
     subnet_id = "${aws_subnet.public_1b.id}"
     tags = {
         Name = "${var.env_name}-bastion-1b"
