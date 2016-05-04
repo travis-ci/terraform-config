@@ -1,29 +1,29 @@
-resource "aws_route_table" "workers_com" {
+resource "aws_route_table" "workers_org" {
     vpc_id = "${aws_vpc.workers.id}"
 
     route {
         cidr_block = "0.0.0.0/0"
-        instance_id = "${aws_instance.nat_com.id}"
+        instance_id = "${aws_instance.nat_org_1e.id}"
     }
 }
 
-resource "aws_subnet" "workers_com" {
+resource "aws_subnet" "workers_org_1e" {
     vpc_id = "${aws_vpc.workers.id}"
     cidr_block = "10.2.1.0/24"
     availability_zone = "us-east-1e"
     tags = {
-        Name = "workers-com"
+        Name = "workers-org"
     }
 }
 
-resource "aws_eip" "nat_com" {
-    instance = "${aws_instance.nat_com.id}"
+resource "aws_eip" "nat_org_1e" {
+    instance = "${aws_instance.nat_org_1e.id}"
     vpc = true
-    depends_on = ["aws_route_table.workers_com"]
+    depends_on = ["aws_route_table.workers_org"]
 }
 
-resource "aws_security_group" "nat_com" {
-    name = "workers-nat-com"
+resource "aws_security_group" "nat_org_1e" {
+    name = "workers-nat-org"
     description = "NAT Security Group for Workers VPC"
     vpc_id = "${aws_vpc.workers.id}"
 
@@ -32,8 +32,8 @@ resource "aws_security_group" "nat_com" {
         to_port = 65535
         protocol = "tcp"
         cidr_blocks = [
-            "${aws_subnet.workers_com.cidr_block}",
-            "${aws_subnet.workers_org.cidr_block}",
+            "${aws_subnet.workers_com_1e.cidr_block}",
+            "${aws_subnet.workers_org_1e.cidr_block}",
         ]
     }
 
@@ -42,8 +42,8 @@ resource "aws_security_group" "nat_com" {
         to_port = 65535
         protocol = "udp"
         cidr_blocks = [
-            "${aws_subnet.workers_com.cidr_block}",
-            "${aws_subnet.workers_org.cidr_block}",
+            "${aws_subnet.workers_com_1e.cidr_block}",
+            "${aws_subnet.workers_org_1e.cidr_block}",
         ]
     }
 
@@ -55,15 +55,15 @@ resource "aws_security_group" "nat_com" {
 #    }
 }
 
-resource "aws_instance" "nat_com" {
+resource "aws_instance" "nat_org_1e" {
     ami = "SECRET" # todo
     instance_type = "c3.8xlarge"
-    vpc_security_group_ids = ["${aws_security_group.nat_com.id}"]
-    subnet_id = "${aws_subnet.workers_com.id}"
+    vpc_security_group_ids = ["${aws_security_group.nat_org_1e.id}"]
+    subnet_id = "${aws_subnet.workers_org_1e.id}"
     key_name = "travis-shared-key"
     tags = {
-        Name = "workers-nat-com-1e"
-        site = "com"
+        Name = "workers-nat-org-1e"
+        site = "org"
     }
     source_dest_check = false
 }
