@@ -69,6 +69,13 @@ resource "aws_security_group" "bastion_1b" {
         protocol = "tcp"
         cidr_blocks = ["0.0.0.0/0"]
     }
+
+    egress {
+        from_port = 0
+        to_port = 65535
+        protocol = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
 }
 
 resource "aws_instance" "nat_1b" {
@@ -91,5 +98,5 @@ resource "aws_instance" "bastion_1b" {
     tags = {
         Name = "${var.env_name}-bastion-1b"
     }
-    user_data = "#cloud-config\nhostname: bastion-aws-us-east-1\nfqdn: bastion-aws-us-east-1.travisci.net\nmanage_etc_hosts: true"
+    user_data = "#cloud-config\nhostname: ${var.env_name}-bastion-1b\nfqdn: ${var.env_name}-bastion-1b.travisci.net\nmanage_etc_hosts: true"
 }
