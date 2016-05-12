@@ -1,6 +1,6 @@
 resource "aws_subnet" "workers" {
     vpc_id = "${var.aws_vpc_id}"
-    cidr_block = "10.2.2.0/24"
+    cidr_block = "${var.aws_workers_subnet}"
     availability_zone = "us-east-${var.aws_az}"
     tags = {
         Name = "${var.env_name}-workers-${var.aws_az}"

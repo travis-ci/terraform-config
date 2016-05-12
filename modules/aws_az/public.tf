@@ -1,6 +1,6 @@
 resource "aws_subnet" "public" {
     vpc_id = "${var.aws_vpc_id}"
-    cidr_block = "10.2.1.0/24"
+    cidr_block = "${var.aws_public_subnet}"
     availability_zone = "us-east-${var.aws_az}"
     map_public_ip_on_launch = true
     tags = {
@@ -59,7 +59,7 @@ resource "aws_security_group" "nat" {
 }
 
 resource "aws_security_group" "bastion" {
-    name = "${var.env_name}-bastion"
+    name = "${var.env_name}-bastion-${var.aws_az}"
     description = "Security Group for bastion server for Workers VPC"
     vpc_id = "${var.aws_vpc_id}"
 
