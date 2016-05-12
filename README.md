@@ -17,5 +17,6 @@ This repository will contain all of our terraform configs as a monolithic repo.
 
     ./init.sh
 
+    terraform get
     terraform plan
     terraform apply
