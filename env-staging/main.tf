@@ -91,6 +91,7 @@ resource "aws_cloudwatch_metric_alarm" "workers_remove_capacity" {
     period = "120"
     statistic = "Maximum"
     threshold = "8"
+    alarm_actions = ["${aws_autoscaling_policy.workers_remove_capacity.arn}"]
 }
 
 resource "aws_autoscaling_policy" "workers_add_capacity" {
@@ -110,4 +111,5 @@ resource "aws_cloudwatch_metric_alarm" "workers_add_capacity" {
     period = "120"
     statistic = "Maximum"
     threshold = "4"
+    alarm_actions = ["${aws_autoscaling_policy.workers_add_capacity.arn}"]
 }
