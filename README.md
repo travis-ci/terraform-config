@@ -24,7 +24,7 @@ We use terraform to manage our main cloud environments as well as some other ser
 
 ## Usage
 
-    cd env-staging
+    cd aws-staging
 
     cp .example.env .env
     cat .env
