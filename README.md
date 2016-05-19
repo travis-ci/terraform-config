@@ -11,8 +11,11 @@ This repository will contain all of our terraform configs as a monolithic repo.
     # edit .env
     source .env
 
-    ./init.sh
+    # setup terraform remote and module config
+    make config
 
-    terraform get
-    terraform plan
-    terraform apply
+    # terraform plan
+    make preview
+
+    # terraform apply
+    make
