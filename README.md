@@ -35,7 +35,7 @@ We use terraform to manage our main cloud environments as well as some other ser
     make config
 
     # terraform plan
-    make preview
+    make plan
 
     # terraform apply
     make

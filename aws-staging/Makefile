@@ -1,9 +1,9 @@
-.PHONY: all
-all:
+.PHONY: apply
+apply:
 	terraform apply
 
-.PHONY: preview
-preview:
+.PHONY: plan
+plan:
 	terraform plan
 
 .PHONY: config
