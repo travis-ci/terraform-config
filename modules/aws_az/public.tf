@@ -41,20 +41,19 @@ resource "aws_security_group" "nat" {
 
     ingress {
         from_port = 0
-        to_port = 65535
-        protocol = "tcp"
+        to_port = 0
+        protocol = "-1"
         cidr_blocks = [
             "${aws_subnet.public.cidr_block}",
+            "${aws_subnet.workers.cidr_block}",
         ]
     }
 
-    ingress {
+    egress {
         from_port = 0
-        to_port = 65535
-        protocol = "udp"
-        cidr_blocks = [
-            "${aws_subnet.public.cidr_block}",
-        ]
+        to_port = 0
+        protocol = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
     }
 }
 
@@ -72,8 +71,8 @@ resource "aws_security_group" "bastion" {
 
     egress {
         from_port = 0
-        to_port = 65535
-        protocol = "tcp"
+        to_port = 0
+        protocol = "-1"
         cidr_blocks = ["0.0.0.0/0"]
     }
 }
