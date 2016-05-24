@@ -34,7 +34,7 @@ resource "aws_launch_configuration" "workers" {
     instance_type = "c3.2xlarge"
     security_groups = [
         "${module.aws_az_1b.workers_security_group_id}",
-        "${module.aws_az_1e.workers_security_group_id}"
+        "${module.aws_az_1e.workers_security_group_id}",
     ]
     user_data = "#include https://x:${var.pudding_token}@pudding-staging.herokuapp.com/init-scripts/${var.pudding_script_id}"
     enable_monitoring = false
@@ -48,7 +48,7 @@ resource "aws_autoscaling_group" "workers" {
     name = "${var.env_name}-workers"
     vpc_zone_identifier = [
         "${module.aws_az_1b.workers_subnet_id}",
-        "${module.aws_az_1e.workers_subnet_id}"
+        "${module.aws_az_1e.workers_subnet_id}",
     ]
     max_size = 5
     min_size = 1
