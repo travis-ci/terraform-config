@@ -1,12 +1,16 @@
 .PHONY: apply
-apply:
+apply: ensure-configured
 	terraform get
 	terraform apply
 
 .PHONY: plan
-plan:
+plan: ensure-configured
 	terraform get
 	terraform plan
+
+.PHONY: ensure-configured
+ensure-configured:
+	test -n ${AWS_REGION}
 
 .PHONY: config
 config:
