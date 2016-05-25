@@ -10,7 +10,6 @@ module "aws_az_1b" {
     aws_gateway_id = "${aws_internet_gateway.gw.id}"
 
     aws_bastion_ami = "${var.aws_bastion_ami}"
-    aws_worker_ami = "${var.aws_worker_ami}"
     aws_nat_ami = "${var.aws_nat_ami}"
 }
 
@@ -26,6 +25,29 @@ module "aws_az_1e" {
     aws_gateway_id = "${aws_internet_gateway.gw.id}"
 
     aws_bastion_ami = "${var.aws_bastion_ami}"
-    aws_worker_ami = "${var.aws_worker_ami}"
     aws_nat_ami = "${var.aws_nat_ami}"
+}
+
+module "aws_asg_org" {
+    source = "../modules/aws_asg"
+
+    env_name = "${var.env_name}"
+    site = "org"
+    aws_security_groups = "${module.aws_az_1b.workers_org_security_group_id},${module.aws_az_1e.workers_org_security_group_id}"
+    aws_workers_subnets = "${module.aws_az_1b.workers_org_subnet_id},${module.aws_az_1e.workers_org_subnet_id}"
+
+    aws_worker_ami = "${var.aws_worker_ami}"
+    pudding_uri = "${var.pudding_uri}"
+}
+
+module "aws_asg_com" {
+    source = "../modules/aws_asg"
+
+    env_name = "${var.env_name}"
+    site = "com"
+    aws_security_groups = "${module.aws_az_1b.workers_com_security_group_id},${module.aws_az_1e.workers_com_security_group_id}"
+    aws_workers_subnets = "${module.aws_az_1b.workers_com_subnet_id},${module.aws_az_1e.workers_com_subnet_id}"
+
+    aws_worker_ami = "${var.aws_worker_ami}"
+    pudding_uri = "${var.pudding_uri}"
 }
