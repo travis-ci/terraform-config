@@ -1,9 +1,11 @@
 .PHONY: apply
 apply:
+	terraform get
 	terraform apply
 
 .PHONY: plan
 plan:
+	terraform get
 	terraform plan
 
 .PHONY: config
