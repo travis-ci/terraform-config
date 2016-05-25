@@ -25,12 +25,6 @@ resource "aws_route_table_association" "public" {
 resource "aws_eip" "nat" {
     instance = "${aws_instance.nat.id}"
     vpc = true
-    depends_on = ["aws_route_table.workers"]
-}
-
-resource "aws_eip" "bastion" {
-    instance = "${aws_instance.bastion.id}"
-    vpc = true
     depends_on = ["aws_route_table.public"]
 }
 
@@ -45,28 +39,9 @@ resource "aws_security_group" "nat" {
         protocol = "-1"
         cidr_blocks = [
             "${aws_subnet.public.cidr_block}",
-            "${aws_subnet.workers.cidr_block}",
+            "${aws_subnet.workers_org.cidr_block}",
+            "${aws_subnet.workers_com.cidr_block}",
         ]
-    }
-
-    egress {
-        from_port = 0
-        to_port = 0
-        protocol = "-1"
-        cidr_blocks = ["0.0.0.0/0"]
-    }
-}
-
-resource "aws_security_group" "bastion" {
-    name = "${var.env_name}-bastion-${var.aws_az}"
-    description = "Security Group for bastion server for Workers VPC"
-    vpc_id = "${var.aws_vpc_id}"
-
-    ingress {
-        from_port = 22
-        to_port = 22
-        protocol = "tcp"
-        cidr_blocks = ["0.0.0.0/0"]
     }
 
     egress {
@@ -87,15 +62,4 @@ resource "aws_instance" "nat" {
         Name = "${var.env_name}-nat-${var.aws_az}"
     }
     source_dest_check = false
-}
-
-resource "aws_instance" "bastion" {
-    ami = "${var.aws_bastion_ami}"
-    instance_type = "t2.micro"
-    vpc_security_group_ids = ["${aws_security_group.bastion.id}"]
-    subnet_id = "${aws_subnet.public.id}"
-    tags = {
-        Name = "${var.env_name}-bastion-${var.aws_az}"
-    }
-    user_data = "#cloud-config\nhostname: ${var.env_name}-bastion-${var.aws_az}\nfqdn: ${var.env_name}-bastion-${var.aws_az}.travisci.net\nmanage_etc_hosts: true"
 }
