@@ -54,7 +54,7 @@ resource "aws_security_group" "nat" {
 
 resource "aws_instance" "nat" {
     ami = "${var.aws_nat_ami}"
-    instance_type = "c3.8xlarge"
+    instance_type = "${var.aws_nat_instance_type}"
     vpc_security_group_ids = ["${aws_security_group.nat.id}"]
     subnet_id = "${aws_subnet.public.id}"
     key_name = "travis-shared-key"

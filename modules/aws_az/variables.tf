@@ -8,3 +8,4 @@ variable "aws_workers_com_subnet" {}
 
 variable "aws_bastion_ami" {}
 variable "aws_nat_ami" {}
+variable "aws_nat_instance_type" {}
