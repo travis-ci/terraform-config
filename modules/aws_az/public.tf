@@ -4,7 +4,7 @@ resource "aws_subnet" "public" {
     availability_zone = "us-east-${var.aws_az}"
     map_public_ip_on_launch = true
     tags = {
-        Name = "${var.env_name}-public-${var.aws_az}"
+        Name = "${var.env}-public-${var.aws_az}"
     }
 }
 
@@ -29,7 +29,7 @@ resource "aws_eip" "nat" {
 }
 
 resource "aws_security_group" "nat" {
-    name = "${var.env_name}-public-nat-${var.aws_az}"
+    name = "${var.env}-public-nat-${var.aws_az}"
     description = "NAT Security Group for Public VPC"
     vpc_id = "${var.aws_vpc_id}"
 
@@ -59,7 +59,7 @@ resource "aws_instance" "nat" {
     subnet_id = "${aws_subnet.public.id}"
     key_name = "travis-shared-key"
     tags = {
-        Name = "${var.env_name}-nat-${var.aws_az}"
+        Name = "${var.env}-nat-${var.aws_az}"
     }
     source_dest_check = false
 }

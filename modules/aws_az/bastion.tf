@@ -5,7 +5,7 @@ resource "aws_eip" "bastion" {
 }
 
 resource "aws_security_group" "bastion" {
-    name = "${var.env_name}-bastion-${var.aws_az}"
+    name = "${var.env}-bastion-${var.aws_az}"
     description = "Security Group for bastion server for Workers VPC"
     vpc_id = "${var.aws_vpc_id}"
 
@@ -30,7 +30,7 @@ resource "aws_instance" "bastion" {
     vpc_security_group_ids = ["${aws_security_group.bastion.id}"]
     subnet_id = "${aws_subnet.public.id}"
     tags = {
-        Name = "${var.env_name}-bastion-${var.aws_az}"
+        Name = "${var.env}-bastion-${var.aws_az}"
     }
-    user_data = "#cloud-config\nhostname: ${var.env_name}-bastion-${var.aws_az}\nfqdn: ${var.env_name}-bastion-${var.aws_az}.travisci.net\nmanage_etc_hosts: true"
+    user_data = "#cloud-config\nhostname: ${var.env}-bastion-${var.aws_az}\nfqdn: ${var.env}-bastion-${var.aws_az}.travisci.net\nmanage_etc_hosts: true"
 }

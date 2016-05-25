@@ -1,4 +1,4 @@
-variable "env_name" {}
+variable "env" {}
 variable "aws_az" {}
 variable "aws_vpc_id" {}
 variable "aws_gateway_id" {}

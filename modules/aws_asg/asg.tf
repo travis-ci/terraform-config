@@ -1,5 +1,5 @@
 resource "aws_launch_configuration" "workers" {
-    name_prefix = "${var.env_name}-workers-${var.site}-"
+    name_prefix = "${var.env}-workers-${var.site}-"
     image_id = "${var.aws_worker_ami}"
     instance_type = "c3.2xlarge"
 
@@ -14,7 +14,7 @@ resource "aws_launch_configuration" "workers" {
 }
 
 resource "aws_autoscaling_group" "workers" {
-    name = "${var.env_name}-workers-${var.site}"
+    name = "${var.env}-workers-${var.site}"
 
     vpc_zone_identifier = ["${split(",", var.aws_workers_subnets)}"]
 
@@ -27,12 +27,12 @@ resource "aws_autoscaling_group" "workers" {
 
     tag {
         key = "Name"
-        value = "${var.env_name}-worker-${var.site}-docker"
+        value = "${var.env}-worker-${var.site}-docker"
         propagate_at_launch = true
     }
     tag {
         key = "env"
-        value = "${var.env_name}"
+        value = "${var.env}"
         propagate_at_launch = true
     }
     tag {
@@ -53,7 +53,7 @@ resource "aws_autoscaling_group" "workers" {
 }
 
 resource "aws_autoscaling_policy" "workers_remove_capacity" {
-    name = "${var.env_name}-workers-${var.site}-remove-capacity"
+    name = "${var.env}-workers-${var.site}-remove-capacity"
     scaling_adjustment = -1
     adjustment_type = "ChangeInCapacity"
     cooldown = 3600
@@ -61,7 +61,7 @@ resource "aws_autoscaling_policy" "workers_remove_capacity" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "workers_remove_capacity" {
-    alarm_name = "${var.env_name}-workers-${var.site}-remove-capacity"
+    alarm_name = "${var.env}-workers-${var.site}-remove-capacity"
     comparison_operator = "GreaterThanOrEqualToThreshold"
     evaluation_periods = "2"
     metric_name = "v1.travis.rabbitmq.consumers.staging.builds.docker.headroom"
@@ -73,7 +73,7 @@ resource "aws_cloudwatch_metric_alarm" "workers_remove_capacity" {
 }
 
 resource "aws_autoscaling_policy" "workers_add_capacity" {
-    name = "${var.env_name}-workers-${var.site}-add-capacity"
+    name = "${var.env}-workers-${var.site}-add-capacity"
     scaling_adjustment = 1
     adjustment_type = "ChangeInCapacity"
     cooldown = 300
@@ -81,7 +81,7 @@ resource "aws_autoscaling_policy" "workers_add_capacity" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "workers_add_capacity" {
-    alarm_name = "${var.env_name}-workers-${var.site}-add-capacity"
+    alarm_name = "${var.env}-workers-${var.site}-add-capacity"
     comparison_operator = "LessThanThreshold"
     evaluation_periods = "2"
     metric_name = "v1.travis.rabbitmq.consumers.staging.builds.docker.headroom"

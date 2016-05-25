@@ -1,4 +1,4 @@
-variable "env_name" {}
+variable "env" {}
 variable "site" {}
 variable "aws_security_groups" {}
 variable "aws_workers_subnets" {}
