@@ -32,5 +32,10 @@ resource "aws_instance" "bastion" {
     tags = {
         Name = "${var.env}-bastion-${var.aws_az}"
     }
-    user_data = "#cloud-config\nhostname: ${var.env}-bastion-${var.aws_az}\nfqdn: ${var.env}-bastion-${var.aws_az}.travisci.net\nmanage_etc_hosts: true"
+    user_data = <<EOF
+#cloud-config
+hostname: ${var.env}-bastion-${var.aws_az}
+fqdn: ${var.env}-bastion-${var.aws_az}.travisci.net
+manage_etc_hosts: true
+EOF
 }
