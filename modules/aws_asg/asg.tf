@@ -20,7 +20,6 @@ resource "aws_autoscaling_group" "workers" {
 
     max_size = 5
     min_size = 1
-    desired_capacity = 1
     health_check_grace_period = 0
     health_check_type = "EC2"
     launch_configuration = "${aws_launch_configuration.workers.name}"
