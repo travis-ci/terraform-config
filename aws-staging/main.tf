@@ -39,7 +39,7 @@ module "aws_asg_org" {
     aws_workers_subnets = "${module.aws_az_1b.workers_org_subnet_id},${module.aws_az_1e.workers_org_subnet_id}"
 
     aws_worker_ami = "${var.aws_worker_ami}"
-    pudding_uri = "${var.pudding_uri}"
+    pudding_uri = "${var.pudding_uri_org}"
 }
 
 module "aws_asg_com" {
@@ -51,5 +51,5 @@ module "aws_asg_com" {
     aws_workers_subnets = "${module.aws_az_1b.workers_com_subnet_id},${module.aws_az_1e.workers_com_subnet_id}"
 
     aws_worker_ami = "${var.aws_worker_ami}"
-    pudding_uri = "${var.pudding_uri}"
+    pudding_uri = "${var.pudding_uri_com}"
 }
