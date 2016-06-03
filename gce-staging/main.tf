@@ -96,6 +96,9 @@ module "gce_worker_b" {
 
     gce_machine_type = "g1-small"
     gce_worker_image = "${var.gce_worker_image}"
+
+    cloud_init_org = "${template_file.cloud_init_org.rendered}"
+    cloud_init_com = "${template_file.cloud_init_com.rendered}"
 }
 
 module "gce_worker_c" {
@@ -108,4 +111,7 @@ module "gce_worker_c" {
 
     gce_machine_type = "g1-small"
     gce_worker_image = "${var.gce_worker_image}"
+
+    cloud_init_org = "${template_file.cloud_init_org.rendered}"
+    cloud_init_com = "${template_file.cloud_init_com.rendered}"
 }

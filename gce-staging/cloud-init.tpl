@@ -4,7 +4,7 @@ set -o errexit
 
 main() {
   __install_ssh_keys
-  __write_gce_json /var/tmp/gce.json
+  __write_gce_json
   __write_travis_worker_configs
   __setup_papertrail_rsyslog
   __fix_perms
@@ -18,29 +18,29 @@ __restart_worker() {
 }
 
 __write_gce_json() {
-  cat > "${1}" <<EOF
-___GCE_JSON___
+  cat > /var/tmp/gce.json <<EOF
+${var.account_json}
 EOF
 }
 
 __write_travis_worker_configs() {
   cat > /etc/default/travis-worker <<EOF
-___ENV___
+${var.worker_config}
 EOF
 }
 
 __setup_papertrail_rsyslog() {
   source /etc/default/travis-worker
-  local pt_port="${TRAVIS_WORKER_PAPERTRAIL_REMOTE_PORT}"
+  local pt_port="$TRAVIS_WORKER_PAPERTRAIL_REMOTE_PORT"
 
-  if [[ ! "${pt_port}" ]] ; then
+  if [[ ! "$pt_port" ]] ; then
     return
   fi
 
   local match='logs.papertrailapp.com:'
-  local repl="\*\.\* @logs.papertrailapp.com:${pt_port}"
+  local repl="\*\.\* @logs.papertrailapp.com:$pt_port"
 
-  sed -i "/${match}/s/.*/${repl}/" '/etc/rsyslog.d/65-papertrail.conf'
+  sed -i "/$match/s/.*/$repl/" '/etc/rsyslog.d/65-papertrail.conf'
 
   restart rsyslog || start rsyslog
 }
@@ -54,13 +54,13 @@ __write_chef_node_json() {
   mkdir -p /etc/chef
 
   cat > /etc/chef/node.json <<EOF
-___NODE_JSON___
+${var.chef_json}
 EOF
 }
 
 __install_ssh_keys() {
   cat >> /home/travis/.ssh/authorized_keys <<EOF
-__SSH_KEYS__
+${var.ssh_keys}
 EOF
 }
 

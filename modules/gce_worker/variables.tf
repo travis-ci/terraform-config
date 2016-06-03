@@ -7,3 +7,5 @@ variable "gce_machine_type" {
   default = "n1-standard-1"
 }
 variable "gce_worker_image" {}
+variable "cloud_init_org" {}
+variable "cloud_init_com" {}

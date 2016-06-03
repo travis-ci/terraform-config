@@ -1,2 +1,4 @@
 .terraform
 .env
+aws-staging/config
+gce-staging/config

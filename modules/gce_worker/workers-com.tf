@@ -15,5 +15,5 @@ resource "google_compute_instance" "worker_com" {
     subnetwork = "workerscom"
   }
 
-  metadata_startup_script = "${file(format("cloud-init/travis-worker-gce-com-%s", var.env))}"
+  metadata_startup_script = "${var.cloud_init_com}"
 }

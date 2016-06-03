@@ -9,18 +9,18 @@ export INSTANCE_IPV4="$(curl -s 'http://169.254.169.254/latest/meta-data/local-i
 
 cd /tmp
 
-export INSTANCE_HOST_NAME="worker-linux-__QUEUE__-${INSTANCE_ID#i-}.__ENV__.travis-ci.__SITE__"
+export INSTANCE_HOST_NAME="worker-linux-${var.queue}-$${INSTANCE_ID#i-}.${var.env}.travis-ci.${var.site}"
 
 cat >> /home/moustache/.ssh/authorized_keys <<EOF
-__SSH_KEYS__
+${var.ssh_keys}
 EOF
 
 cat > docker_rsa <<EOF
-__DOCKER_RSA__
+${var.docker_rsa}
 EOF
 
 cat > travis-worker.yml <<EOF
-__WORKER_YML__
+${var.worker_yml}
 EOF
 
 cat > papertrail.conf <<EOF
@@ -29,7 +29,7 @@ cat > papertrail.conf <<EOF
 \$ActionSendStreamDriverMode 1
 \$ActionSendStreamDriverAuthMode x509/name
 
-*.* @@__PAPERTRAIL_SITE__
+*.* @@${var.papertrail_site}
 EOF
 
 cat > watch-files.conf <<EOF
@@ -46,7 +46,7 @@ EOF
 echo "$INSTANCE_HOST_NAME" > /etc/hostname || true
 hostname -F /etc/hostname || true
 
-echo "$INSTANCE_IPV4 $INSTANCE_HOST_NAME ${INSTANCE_HOST%.*}" >> /etc/hosts
+echo "$INSTANCE_IPV4 $INSTANCE_HOST_NAME $${INSTANCE_HOST%.*}" >> /etc/hosts
 
 sed -i -e "s/^Hostname.*$/Hostname \"$INSTANCE_HOST_NAME\"/" /etc/collectd/collectd.conf
 service collectd restart
@@ -55,7 +55,7 @@ travis-docker-volume-setup
 
 DOCKER_DATA_SPACE_TOTAL="$(lvs -o lv_size --noheadings /dev/direct-lvm/data --units M | xargs echo | sed 's/M//')"
 EXPECTED_DOCKER_IMAGE_USAGE_MB="30000"
-DOCKER_STORAGE_OPT_DM_BASESIZE="$(echo "($DOCKER_DATA_SPACE_TOTAL - $EXPECTED_DOCKER_IMAGE_USAGE_MB) / __DOCKER_COUNT__" | bc)MB"
+DOCKER_STORAGE_OPT_DM_BASESIZE="$(echo "($DOCKER_DATA_SPACE_TOTAL - $EXPECTED_DOCKER_IMAGE_USAGE_MB) / ${var.docker_count}" | bc)MB"
 echo "DOCKER_STORAGE_OPT_DM_BASESIZE=$DOCKER_STORAGE_OPT_DM_BASESIZE" > /etc/default/docker.cloud-init
 
 mkdir /home/deploy/.ssh

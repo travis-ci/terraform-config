@@ -5,7 +5,7 @@ resource "aws_launch_configuration" "workers" {
 
     security_groups = ["${split(",", var.aws_security_groups)}"]
 
-    user_data = "#include ${var.pudding_uri}"
+    user_data = "${var.cloud_init}"
     enable_monitoring = false
 
     lifecycle {

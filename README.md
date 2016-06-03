@@ -31,6 +31,9 @@ We use terraform to manage our main cloud environments as well as some other ser
     # edit .env
     source .env
 
+    # setup config files used to generate cloud-init
+    make prepare-cloud-init
+
     # setup terraform remote and module config
     make config
 
