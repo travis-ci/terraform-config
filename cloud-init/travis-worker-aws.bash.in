@@ -11,6 +11,10 @@ cd /tmp
 
 export INSTANCE_HOST_NAME="worker-linux-__QUEUE__-${INSTANCE_ID#i-}.__ENV__.travis-ci.__SITE__"
 
+cat >> /home/moustache/.ssh/authorized_keys <<EOF
+__SSH_KEYS__
+EOF
+
 cat > docker_rsa <<EOF
 __DOCKER_RSA__
 EOF
@@ -74,8 +78,3 @@ rm -rf /var/lib/cloud/instances/*
 if ! iptables -t nat -C PREROUTING -p tcp -d 169.254.169.254 --dport 80 -j DNAT --to-destination 192.0.2.1; then
   iptables -t nat -I PREROUTING -p tcp -d 169.254.169.254 --dport 80 -j DNAT --to-destination 192.0.2.1
 fi
-
-# Update some SSH keys
-cat >> /home/moustache/.ssh/authorized_keys <<EOF
-__SSH_KEYS__
-EOF
