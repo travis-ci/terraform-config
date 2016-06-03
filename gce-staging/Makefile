@@ -24,14 +24,12 @@ config:
 
 .PHONY: prepare-cloud-init
 prepare-cloud-init:
-	mkdir -p config
+	rm -r config
+	cp -r $$TRAVIS_KEYCHAIN_DIR/travis-keychain/terraform/gce config
+	cp $$TRAVIS_KEYCHAIN_DIR/travis-keychain/terraform/authorized_keys config
 
 	trvs generate-config -p travis_worker -f env gce-workers staging | sed 's/^/export /' > config/worker-env-org
 	trvs generate-config --pro -p travis_worker -f env gce-workers staging | sed 's/^/export /' > config/worker-env-com
 
-	cat $$TRAVIS_KEYCHAIN_DIR/travis-keychain/gce-accounts/gce-workers-staging.json > config/gce-account.json
-
 	trvs generate-config -p travis_worker -f json gce-workers staging | ruby generate-chef-config.rb > config/chef-org.json
 	trvs generate-config --pro -p travis_worker -f json gce-workers staging | ruby generate-chef-config.rb > config/chef-com.json
-
-	cp $$TRAVIS_KEYCHAIN_DIR/travis-keychain/aws-workers/ssh-keys.pub config/authorized_keys
