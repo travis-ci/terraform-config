@@ -60,7 +60,7 @@ EOF
 
 __install_ssh_keys() {
   cat >> /home/travis/.ssh/authorized_keys <<EOF
-SECRET
+__SSH_KEYS__
 EOF
 }
 

@@ -22,10 +22,13 @@ out = {
 }
 chef_node_json = JSON.pretty_generate(out)
 
+ssh_keys = File.read(ENV['TRAVIS_KEYCHAIN_DIR'] + '/travis-keychain/aws-workers/ssh-keys.pub')
+
 # render
 template = File.read('cloud-init/travis-worker-gce.bash.in')
 template.sub!('___GCE_JSON___', gce_json)
 template.sub!('___ENV___', worker_configs)
 template.sub!('___NODE_JSON___', chef_node_json)
+template.sub!('__SSH_KEYS__', ssh_keys)
 
 puts template
