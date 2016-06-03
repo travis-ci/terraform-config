@@ -32,6 +32,7 @@ We use terraform to manage our main cloud environments as well as some other ser
     source .env
 
     # setup config files used to generate cloud-init
+    # from travis-keychain (using trvs)
     make prepare-cloud-init
 
     # setup terraform remote and module config
