@@ -19,13 +19,13 @@ __restart_worker() {
 
 __write_gce_json() {
   cat > /var/tmp/gce.json <<EOF
-${var.account_json}
+${account_json}
 EOF
 }
 
 __write_travis_worker_configs() {
   cat > /etc/default/travis-worker <<EOF
-${var.worker_config}
+${worker_config}
 EOF
 }
 
@@ -54,13 +54,13 @@ __write_chef_node_json() {
   mkdir -p /etc/chef
 
   cat > /etc/chef/node.json <<EOF
-${var.chef_json}
+${chef_json}
 EOF
 }
 
 __install_ssh_keys() {
   cat >> /home/travis/.ssh/authorized_keys <<EOF
-${var.ssh_keys}
+${ssh_keys}
 EOF
 }
 
