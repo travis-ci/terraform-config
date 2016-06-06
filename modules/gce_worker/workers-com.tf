@@ -4,6 +4,7 @@ resource "google_compute_instance" "worker_com" {
   machine_type = "${var.gce_machine_type}"
   zone = "${var.gce_zone}"
   tags = ["worker", "${var.env}", "com"]
+  project = "${var.gce_project}"
 
   disk {
     auto_delete = true
@@ -12,7 +13,7 @@ resource "google_compute_instance" "worker_com" {
   }
 
   network_interface {
-    subnetwork = "workerscom"
+    subnetwork = "${var.subnetwork_com}"
   }
 
   metadata_startup_script = "${var.cloud_init_com}"
