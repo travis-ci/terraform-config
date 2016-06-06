@@ -67,7 +67,7 @@ resource "aws_cloudwatch_metric_alarm" "workers_remove_capacity" {
     namespace = "Travis/${var.site}-staging"
     period = "120"
     statistic = "Maximum"
-    threshold = "8"
+    threshold = "2"
     alarm_actions = ["${aws_autoscaling_policy.workers_remove_capacity.arn}"]
 }
 
@@ -87,6 +87,6 @@ resource "aws_cloudwatch_metric_alarm" "workers_add_capacity" {
     namespace = "Travis/${var.site}-staging"
     period = "120"
     statistic = "Maximum"
-    threshold = "4"
+    threshold = "2"
     alarm_actions = ["${aws_autoscaling_policy.workers_add_capacity.arn}"]
 }
