@@ -1,4 +1,5 @@
 variable "env" {}
+variable "index" {}
 variable "instance_count" {}
 variable "gce_project" {}
 variable "gce_zone" {}

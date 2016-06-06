@@ -1,4 +1,5 @@
 variable "env" {}
+variable "index" {}
 variable "gce_project" {}
 
 variable "gce_bastion_image" {}

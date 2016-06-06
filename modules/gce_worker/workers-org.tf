@@ -1,6 +1,6 @@
 resource "google_compute_instance" "worker_org" {
   count = "${var.instance_count}"
-  name = "${var.env}-worker-org-${var.gce_zone_suffix}-${count.index + 1}"
+  name = "${var.env}-${var.index}-worker-org-${var.gce_zone_suffix}-${count.index + 1}"
   machine_type = "${var.gce_machine_type}"
   zone = "${var.gce_zone}"
   tags = ["worker", "${var.env}", "org"]

@@ -2,6 +2,7 @@ module "gce_worker_b" {
     source = "../gce_worker"
 
     env = "${var.env}"
+    index = "${var.index}"
     instance_count = "1"
 
     gce_project = "${var.gce_project}"
@@ -22,6 +23,7 @@ module "gce_worker_c" {
     source = "../gce_worker"
 
     env = "${var.env}"
+    index = "${var.index}"
     instance_count = "1"
 
     gce_project = "${var.gce_project}"

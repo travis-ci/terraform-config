@@ -1,8 +1,3 @@
-resource "google_compute_network" "dummy" {
-  name = "dummy"
-  project = "${var.gce_project}"
-}
-
 resource "google_compute_network" "main" {
   name = "main"
   project = "${var.gce_project}"

@@ -1,5 +1,5 @@
 resource "google_compute_instance" "bastion-b" {
-  name = "${var.env}-bastion-b"
+  name = "${var.env}-${var.index}-bastion-b"
   machine_type = "g1-small"
   zone = "us-central1-b"
   tags = ["bastion", "${var.env}"]
