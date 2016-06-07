@@ -11,9 +11,11 @@ cd /tmp
 
 export INSTANCE_HOST_NAME="worker-linux-${queue}-$${INSTANCE_ID#i-}.${env}.travis-ci.${site}"
 
-cat >> /home/moustache/.ssh/authorized_keys <<EOF
+if [ -d /home/moustache ]; then
+  cat >> /home/moustache/.ssh/authorized_keys <<EOF
 ${ssh_keys}
 EOF
+fi
 
 cat > docker_rsa <<EOF
 ${docker_rsa}
