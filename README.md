@@ -21,6 +21,7 @@ We use terraform to manage our main cloud environments as well as some other ser
 ## Requirements
 
 * [terraform](https://www.terraform.io/)
+* [terraform provider/google google patch](https://github.com/hashicorp/terraform/pull/7029)
 
 ## Usage
 
