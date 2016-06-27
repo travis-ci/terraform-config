@@ -27,7 +27,7 @@ resource "google_compute_route" "nat-b" {
   next_hop_instance = "${google_compute_instance.nat-b.name}"
   next_hop_instance_zone = "us-central1-b"
   priority    = 800
-  tags = ["worker"]
+  tags = ["worker", "testing"]
 
   project = "${var.gce_project}"
 }
