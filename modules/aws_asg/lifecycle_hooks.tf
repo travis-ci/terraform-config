@@ -1,5 +1,5 @@
 resource "aws_sns_topic" "workers" {
-  name = "${var.env}-workers"
+  name = "${var.env}-workers-${var.site}"
 }
 
 resource "aws_sns_topic_subscription" "workers_pudding" {
@@ -10,7 +10,7 @@ resource "aws_sns_topic_subscription" "workers_pudding" {
 }
 
 resource "aws_iam_role" "workers_sns" {
-    name = "${var.env}-workers-sns-4"
+    name = "${var.env}-workers-${var.site}-sns"
     assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -18,7 +18,7 @@ resource "aws_iam_role" "workers_sns" {
     {
       "Action": "sts:AssumeRole",
       "Principal": {
-        "Service": "ec2.amazonaws.com"
+        "Service": "autoscaling.amazonaws.com"
       },
       "Effect": "Allow",
       "Sid": ""
@@ -28,9 +28,8 @@ resource "aws_iam_role" "workers_sns" {
 EOF
 }
 
-/*
 resource "aws_iam_role_policy" "workers_sns" {
-    name = "${var.env}-workers-sns"
+    name = "${var.env}-workers-${var.site}-sns"
     role = "${aws_iam_role.workers_sns.id}"
     policy = <<EOF
 {
@@ -49,11 +48,9 @@ resource "aws_iam_role_policy" "workers_sns" {
 }
 EOF
 }
-*/
 
-/*
 resource "aws_autoscaling_lifecycle_hook" "workers_launching" {
-    name = "${var.env}-workers-launching"
+    name = "${var.env}-workers-${var.site}-launching"
     autoscaling_group_name = "${aws_autoscaling_group.workers.name}"
     default_result = "CONTINUE"
     heartbeat_timeout = 900
@@ -63,7 +60,7 @@ resource "aws_autoscaling_lifecycle_hook" "workers_launching" {
 }
 
 resource "aws_autoscaling_lifecycle_hook" "workers_terminating" {
-    name = "${var.env}-workers-terminating"
+    name = "${var.env}-workers-${var.site}-terminating"
     autoscaling_group_name = "${aws_autoscaling_group.workers.name}"
     default_result = "CONTINUE"
     heartbeat_timeout = 900
@@ -71,4 +68,3 @@ resource "aws_autoscaling_lifecycle_hook" "workers_terminating" {
     notification_target_arn = "${aws_sns_topic.workers.arn}"
     role_arn = "${aws_iam_role.workers_sns.arn}"
 }
-*/
