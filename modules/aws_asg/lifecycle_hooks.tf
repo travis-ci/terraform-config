@@ -49,6 +49,7 @@ resource "aws_iam_role_policy" "workers_sns" {
 EOF
 }
 
+/*
 resource "aws_autoscaling_lifecycle_hook" "workers_launching" {
     name = "${var.env}-workers-${var.site}-launching"
     autoscaling_group_name = "${aws_autoscaling_group.workers.name}"
@@ -68,3 +69,4 @@ resource "aws_autoscaling_lifecycle_hook" "workers_terminating" {
     notification_target_arn = "${aws_sns_topic.workers.arn}"
     role_arn = "${aws_iam_role.workers_sns.arn}"
 }
+*/
