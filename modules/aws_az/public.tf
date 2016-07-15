@@ -40,7 +40,6 @@ resource "aws_security_group" "nat" {
         cidr_blocks = [
             "${aws_subnet.public.cidr_block}",
             "${aws_subnet.workers_org.cidr_block}",
-            "${aws_subnet.workers_com.cidr_block}",
         ]
     }
 

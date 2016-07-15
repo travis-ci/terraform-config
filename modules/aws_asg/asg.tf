@@ -8,6 +8,8 @@ resource "aws_launch_configuration" "workers" {
     user_data = "${var.cloud_init}"
     enable_monitoring = false
 
+    key_name = "${var.bastion_key_name}"
+
     lifecycle {
         create_before_destroy = true
     }
@@ -18,8 +20,10 @@ resource "aws_autoscaling_group" "workers" {
 
     vpc_zone_identifier = ["${split(",", var.aws_workers_subnets)}"]
 
+    desired_capacity = 3
+
     max_size = 5
-    min_size = 1
+    min_size = 0
     health_check_grace_period = 0
     health_check_type = "EC2"
     launch_configuration = "${aws_launch_configuration.workers.name}"
@@ -50,44 +54,4 @@ resource "aws_autoscaling_group" "workers" {
         value = "${var.site}"
         propagate_at_launch = true
     }
-}
-
-resource "aws_autoscaling_policy" "workers_remove_capacity" {
-    name = "${var.env}-workers-${var.site}-remove-capacity"
-    scaling_adjustment = -1
-    adjustment_type = "ChangeInCapacity"
-    cooldown = 300
-    autoscaling_group_name = "${aws_autoscaling_group.workers.name}"
-}
-
-resource "aws_cloudwatch_metric_alarm" "workers_remove_capacity" {
-    alarm_name = "${var.env}-workers-${var.site}-remove-capacity"
-    comparison_operator = "GreaterThanOrEqualToThreshold"
-    evaluation_periods = "2"
-    metric_name = "v1.travis.rabbitmq.consumers.staging.builds.docker.headroom"
-    namespace = "Travis/${var.site}-staging"
-    period = "120"
-    statistic = "Maximum"
-    threshold = "2"
-    alarm_actions = ["${aws_autoscaling_policy.workers_remove_capacity.arn}"]
-}
-
-resource "aws_autoscaling_policy" "workers_add_capacity" {
-    name = "${var.env}-workers-${var.site}-add-capacity"
-    scaling_adjustment = 1
-    adjustment_type = "ChangeInCapacity"
-    cooldown = 300
-    autoscaling_group_name = "${aws_autoscaling_group.workers.name}"
-}
-
-resource "aws_cloudwatch_metric_alarm" "workers_add_capacity" {
-    alarm_name = "${var.env}-workers-${var.site}-add-capacity"
-    comparison_operator = "LessThanThreshold"
-    evaluation_periods = "2"
-    metric_name = "v1.travis.rabbitmq.consumers.staging.builds.docker.headroom"
-    namespace = "Travis/${var.site}-staging"
-    period = "120"
-    statistic = "Maximum"
-    threshold = "2"
-    alarm_actions = ["${aws_autoscaling_policy.workers_add_capacity.arn}"]
 }
