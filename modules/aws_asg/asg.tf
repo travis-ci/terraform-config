@@ -23,6 +23,7 @@ resource "aws_autoscaling_group" "workers" {
     health_check_grace_period = 0
     health_check_type = "EC2"
     launch_configuration = "${aws_launch_configuration.workers.name}"
+    cooldown = 0
 
     tag {
         key = "Name"
@@ -55,7 +56,7 @@ resource "aws_autoscaling_policy" "workers_remove_capacity" {
     name = "${var.env}-workers-${var.site}-remove-capacity"
     scaling_adjustment = -1
     adjustment_type = "ChangeInCapacity"
-    cooldown = 3600
+    cooldown = 300
     autoscaling_group_name = "${aws_autoscaling_group.workers.name}"
 }
 
