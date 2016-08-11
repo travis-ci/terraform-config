@@ -24,7 +24,7 @@ config:
 
 .PHONY: prepare-cloud-init
 prepare-cloud-init:
-	rm -r config
+	$(RM) -r config
 	cp -r $$TRAVIS_KEYCHAIN_DIR/travis-keychain/terraform/aws config
 	cp $$TRAVIS_KEYCHAIN_DIR/travis-keychain/terraform/authorized_keys config
 
