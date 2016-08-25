@@ -9,7 +9,7 @@ env:
   global:
   - PATH="${HOME}/bin:${PATH}"
   - TMPDIR="${TMPDIR:-/tmp}"
-install:
+before_install:
 - if ! terraform version ; then
     pushd "${TMPDIR}" ;
     curl -sSL
