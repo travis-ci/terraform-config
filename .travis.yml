@@ -1,0 +1,24 @@
+language: ruby
+rvm: 2.3.1
+dist: trusty
+sudo: required
+cache:
+  directories:
+  - "${HOME}/bin"
+env:
+  global:
+  - PATH="${HOME}/bin:${PATH}"
+  - TMPDIR="${TMPDIR:-/tmp}"
+before_install:
+- if ! terraform version ; then
+    pushd "${TMPDIR}" ;
+    curl -sSL
+      -o terraform.zip
+      "https://releases.hashicorp.com/terraform/0.7.2/terraform_0.7.2_linux_amd64.zip" ;
+    unzip terraform.zip ;
+    mv -v terraform "${HOME}/bin/terraform" ;
+    chmod +x "${HOME}/bin/terraform" ;
+    popd ;
+    terraform version ;
+  fi
+script: bundle exec ./runtests --env .example.env
