@@ -1,16 +1,22 @@
+.PHONY: hello
+hello:
+	@echo "Hello there, human.  Would you like to:"
+	@echo "  make plan  - plan your demise"
+	@echo "  make apply - dance with the devil in the pale moonlight"
+
 .PHONY: apply
 apply: ensure-configured
 	terraform get
-	terraform apply
+	terraform apply $(PWD)/.terraform.plan
 
 .PHONY: plan
 plan: ensure-configured
 	terraform get
-	terraform plan
+	terraform plan -module-depth=-1 -out=$(PWD)/.terraform.plan
 
 .PHONY: ensure-configured
 ensure-configured:
-	test -n ${AWS_REGION}
+	test -n "${AWS_REGION}"
 
 .PHONY: config
 config:
