@@ -1,0 +1,9 @@
+inherit_from: .rubocop_todo.yml
+
+Style/Documentation:
+  Enabled: false
+
+Style/FileName:
+  Exclude:
+    - 'aws-staging/generate-papertrail-site.rb'
+    - 'gce-staging/generate-chef-config.rb'
