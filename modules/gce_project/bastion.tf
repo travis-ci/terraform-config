@@ -17,4 +17,6 @@ resource "google_compute_instance" "bastion-b" {
       # Ephemeral IP
     }
   }
+
+  metadata_startup_script = "${var.bastion_cloud_init}"
 }
