@@ -1,4 +1,4 @@
-resource "template_file" "worker_cloud_init_org" {
+data "template_file" "worker_cloud_init_org" {
   template = "${file("${path.module}/worker-cloud-init.tpl")}"
 
   vars {
@@ -8,7 +8,7 @@ resource "template_file" "worker_cloud_init_org" {
   }
 }
 
-resource "template_file" "worker_cloud_init_com" {
+data "template_file" "worker_cloud_init_com" {
   template = "${file("${path.module}/worker-cloud-init.tpl")}"
 
   vars {
@@ -18,7 +18,7 @@ resource "template_file" "worker_cloud_init_com" {
   }
 }
 
-resource "template_file" "bastion_cloud_init" {
+data "template_file" "bastion_cloud_init" {
   template = "${file("${path.module}/bastion-cloud-init.tpl")}"
 
   vars {
