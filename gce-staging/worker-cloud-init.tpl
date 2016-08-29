@@ -3,7 +3,6 @@
 set -o errexit
 
 main() {
-  __install_ssh_keys
   __write_gce_json
   __write_travis_worker_configs
   __setup_papertrail_rsyslog
@@ -55,12 +54,6 @@ __write_chef_node_json() {
 
   cat > /etc/chef/node.json <<EOF
 ${chef_json}
-EOF
-}
-
-__install_ssh_keys() {
-  cat >> /home/travis/.ssh/authorized_keys <<EOF
-${ssh_keys}
 EOF
 }
 

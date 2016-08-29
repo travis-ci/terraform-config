@@ -24,22 +24,21 @@ We use terraform to manage our main cloud environments as well as some other ser
 
 ## Usage
 
-    cd aws-staging
+``` bash
+# e.g.:
+cd gce-staging
 
-    cp .example.env .env
-    cat .env
-    # edit .env
-    source .env
+cp .example.env .env
+cat .env
+# edit .env
+source .env
 
-    # setup config files used to generate cloud-init
-    # from travis-keychain (using trvs)
-    make prepare-cloud-init
+# setup terraform remote and module config
+make config
 
-    # setup terraform remote and module config
-    make config
+# terraform plan
+make plan
 
-    # terraform plan
-    make plan
-
-    # terraform apply
-    make
+# terraform apply
+make apply
+```

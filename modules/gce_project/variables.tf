@@ -6,5 +6,7 @@ variable "gce_bastion_image" {}
 variable "gce_nat_image" {}
 variable "gce_worker_image" {}
 
-variable "cloud_init_org" {}
-variable "cloud_init_com" {}
+variable "gce_worker_cloud_init_org" {}
+variable "gce_worker_cloud_init_com" {}
+
+variable "bastion_cloud_init" {}
