@@ -1,5 +1,5 @@
-.terraform
+.terraform/
 .env
-aws-staging/config
-gce-staging/config
-.terraform.plan
+aws-staging/config/
+gce-staging/config/
+*.tfplan

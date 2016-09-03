@@ -1,3 +1,12 @@
+CONFIG_FILES := \
+	config/worker-env-com \
+	config/worker-env-org \
+	config/chef-org.json \
+	config/chef-com.json
+
+TFPLAN := $(PWD)/aws-staging.tfplan
+TOP := $(shell git rev-parse --show-toplevel)
+
 .PHONY: hello
 hello:
 	@echo "Hello there, human.  Would you like to:"
@@ -7,16 +16,12 @@ hello:
 .PHONY: apply
 apply: ensure-configured
 	terraform get
-	terraform apply $(PWD)/.terraform.plan
+	terraform apply $(TFPLAN)
 
 .PHONY: plan
-plan: ensure-configured
+plan: $(CONFIG_FILES)
 	terraform get
-	terraform plan -module-depth=-1 -out=$(PWD)/.terraform.plan
-
-.PHONY: ensure-configured
-ensure-configured:
-	test -n "${AWS_REGION}"
+	terraform plan -module-depth=-1 -out=$(TFPLAN)
 
 .PHONY: config
 config:
@@ -28,11 +33,17 @@ config:
 	    -backend-config=encrypt=true
 	terraform get
 
-.PHONY: prepare-cloud-init
-prepare-cloud-init:
+.PHONY: clean
+clean:
 	$(RM) -r config
-	cp -r $$TRAVIS_KEYCHAIN_DIR/travis-keychain/terraform/aws config
-	cp $$TRAVIS_KEYCHAIN_DIR/travis-keychain/terraform/authorized_keys config
 
-	cat config/aws-workers-org-staging.yml | ruby generate-papertrail-site.rb > config/papertrail-site-org
-	cat config/aws-workers-com-staging.yml | ruby generate-papertrail-site.rb > config/papertrail-site-com
+$(CONFIG_FILES):
+	mkdir -p config
+	trvs generate-config -p travis_worker -f env aws-workers staging \
+		| sed 's/^/export /' >config/worker-env-org
+	trvs generate-config --pro -p travis_worker -f env aws-workers staging \
+		| sed 's/^/export /' >config/worker-env-com
+	trvs generate-config -p travis_worker -f json aws-workers staging \
+		| $(TOP)/bin/generate-chef-config >config/chef-org.json
+	trvs generate-config --pro -p travis_worker -f json aws-workers staging \
+		| $(TOP)/bin/generate-chef-config >config/chef-com.json
