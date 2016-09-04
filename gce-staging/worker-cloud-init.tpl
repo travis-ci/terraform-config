@@ -4,7 +4,8 @@ set -o errexit
 
 main() {
   __write_gce_json
-  __write_travis_worker_configs
+  __write_docker_config
+  __write_travis_worker_config
   __setup_papertrail_rsyslog
   __fix_perms
   __restart_worker
@@ -22,7 +23,13 @@ ${account_json}
 EOF
 }
 
-__write_travis_worker_configs() {
+__write_docker_config() {
+  cat > /etc/default/docker-cloud-init <<EOF
+TRAVIS_WORKER_DISABLE_DIRECT_LVM=1
+EOF
+}
+
+__write_travis_worker_config() {
   cat > /etc/default/travis-worker <<EOF
 ${worker_config}
 EOF
