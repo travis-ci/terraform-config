@@ -2,7 +2,9 @@
 
 This repository will contain all of our terraform configs as a monolithic repo.
 
-This is what allows us to manage our cloud environments from a central place, and change them over time. It should be possible to bring up (or re-create) a complete environment with the push of a button.
+This is what allows us to manage our cloud environments from a central place,
+and change them over time. It should be possible to bring up (or re-create) a
+complete environment with the push of a button.
 
 ## Status
 
@@ -10,9 +12,12 @@ Prototype (not yet in production)
 
 ## Infrastructure
 
-Terraform manages pretty much everything that is not running on Heroku. We build images using Packer and then spin up instances in our cloud environments based on those images.
+Terraform manages pretty much everything that is not running on Heroku. We build
+images using Packer and then spin up instances in our cloud environments based
+on those images.
 
-We use terraform to manage our main cloud environments as well as some other services:
+We use terraform to manage our main cloud environments as well as some other
+services:
 
 * Amazon Web Services
 * Google Cloud Platform
@@ -21,24 +26,27 @@ We use terraform to manage our main cloud environments as well as some other ser
 ## Requirements
 
 * [terraform](https://www.terraform.io/) 0.7.0+
+* `trvs`, a Travis CI tool shrouded in mystery, along with access to secret
+  secrets for making secret stuff
 
 ## Usage
 
 ``` bash
-# e.g.:
-cd gce-staging
-
 cp .example.env .env
-cat .env
-# edit .env
+
+# edit, then source .env
 source .env
 
-# setup terraform remote and module config
-make config
+# or, if using autoenv:
+cd .
 
-# terraform plan
+# move into a given infrastructure directory, e.g.:
+cd ./gce-staging
+
+# terraform plan, which will automatically configure terraform from remote and
+# generate config files via `trvs`
 make plan
 
-# terraform apply
+# if it looks OK, terraform apply
 make apply
 ```
