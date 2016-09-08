@@ -6,6 +6,10 @@ CONFIG_FILES := \
 	config/chef-com.json \
 	config/gce-workers-staging.json
 
+TFVARS := $(PWD)/terraform.tfvars
+TFPLAN := $(PWD)/gce-staging.tfplan
+TOP := $(shell git rev-parse --show-toplevel)
+
 .PHONY: hello
 hello:
 	@echo "Hello there, human.  Would you like to:"
@@ -13,17 +17,17 @@ hello:
 	@echo "  make apply - dance with the devil in the pale moonlight"
 
 .PHONY: apply
-apply: $(CONFIG_FILES)
+apply: $(CONFIG_FILES) $(TFVARS)
 	terraform get
-	terraform apply $(PWD)/.terraform.plan
+	terraform apply $(TFPLAN)
 
 .PHONY: plan
-plan: $(CONFIG_FILES)
+plan: $(CONFIG_FILES) $(TFVARS)
 	terraform get
-	terraform plan -module-depth=-1 -out=$(PWD)/.terraform.plan
+	terraform plan -module-depth=-1 -out=$(TFPLAN)
 
 .PHONY: config
-config:
+config: $(CONFIG_FILES) $(TFVARS)
 	terraform remote config \
 	    -backend=s3 \
 	    -backend-config=bucket=travis-terraform-state \
@@ -34,12 +38,20 @@ config:
 
 .PHONY: clean
 clean:
-	$(RM) -r config
+	$(RM) -r config $(TFVARS)
 
 $(CONFIG_FILES):
 	cp -r $$TRAVIS_KEYCHAIN_DIR/travis-keychain/terraform/gce config
-	trvs generate-config -p travis_worker -f env gce-workers staging1 | sed 's/^/export /' >config/worker-env-org
-	trvs generate-config --pro -p travis_worker -f env gce-workers staging1 | sed 's/^/export /' >config/worker-env-com
-	trvs generate-config --pro -p gce_bastion -f env gce-bastion staging | sed 's/^/export /' >config/bastion-env
-	trvs generate-config -p travis_worker -f json gce-workers staging1 | ruby generate-chef-config.rb >config/chef-org.json
-	trvs generate-config --pro -p travis_worker -f json gce-workers staging1 | ruby generate-chef-config.rb >config/chef-com.json
+	trvs generate-config -p travis_worker -f env gce-workers staging1 \
+		| sed 's/^/export /' >config/worker-env-org
+	trvs generate-config --pro -p travis_worker -f env gce-workers staging1 \
+		| sed 's/^/export /' >config/worker-env-com
+	trvs generate-config --pro -p gce_bastion -f env gce-bastion staging \
+		| sed 's/^/export /' >config/bastion-env
+	trvs generate-config -p travis_worker -f json gce-workers staging1 \
+		| $(TOP)/bin/generate-chef-config >config/chef-org.json
+	trvs generate-config --pro -p travis_worker -f json gce-workers staging1 \
+		| $(TOP)/bin/generate-chef-config >config/chef-com.json
+
+$(TFVARS):
+	trvs generate-config -f json terraform-config gce_staging >$@
