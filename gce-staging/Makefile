@@ -7,7 +7,9 @@ CONFIG_FILES := \
 	config/gce-workers-staging.json
 
 TFVARS := $(PWD)/terraform.tfvars
+TFSTATE := $(PWD)/.terraform/terraform.tfstate
 TFPLAN := $(PWD)/gce-staging.tfplan
+TFCONF := $(PWD)/.terraform/configured
 TOP := $(shell git rev-parse --show-toplevel)
 
 .PHONY: hello
@@ -17,28 +19,32 @@ hello:
 	@echo "  make apply - dance with the devil in the pale moonlight"
 
 .PHONY: apply
-apply: $(CONFIG_FILES) $(TFVARS)
-	terraform get
+apply: $(CONFIG_FILES) $(TFVARS) $(TFSTATE)
 	terraform apply $(TFPLAN)
 
 .PHONY: plan
-plan: $(CONFIG_FILES) $(TFVARS)
-	terraform get
+plan: $(CONFIG_FILES) $(TFVARS) $(TFSTATE)
 	terraform plan -module-depth=-1 -out=$(TFPLAN)
 
-.PHONY: config
-config: $(CONFIG_FILES) $(TFVARS)
+$(TFCONF): $(CONFIG_FILES) $(TFVARS)
 	terraform remote config \
 	    -backend=s3 \
 	    -backend-config=bucket=travis-terraform-state \
 	    -backend-config=key=terraform-config/gce-staging.tfstate \
 	    -backend-config=region=us-east-1 \
 	    -backend-config=encrypt=true
+	touch $@
+
+$(TFSTATE): $(TFCONF)
 	terraform get
 
 .PHONY: clean
 clean:
-	$(RM) -r config $(TFVARS)
+	$(RM) -r config $(TFVARS) $(TFCONF)
+
+.PHONY: distclean
+distclean: clean
+	$(RM) -r .terraform/
 
 $(CONFIG_FILES):
 	cp -r $$TRAVIS_KEYCHAIN_DIR/travis-keychain/terraform/gce config
