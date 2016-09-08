@@ -47,7 +47,8 @@ distclean: clean
 	$(RM) -r .terraform/
 
 $(CONFIG_FILES):
-	cp -r $$TRAVIS_KEYCHAIN_DIR/travis-keychain/terraform/gce config
+	mkdir -p config
+	cp -v $$TRAVIS_KEYCHAIN_DIR/travis-keychain/gce/*.json config/
 	trvs generate-config -p travis_worker -f env gce-workers staging1 \
 		| sed 's/^/export /' >config/worker-env-org
 	trvs generate-config --pro -p travis_worker -f env gce-workers staging1 \
