@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# vim:filetype=sh
 
 set -o errexit
 
@@ -8,6 +9,7 @@ main() {
   __fix_perms
   __restart_worker
   __write_chef_node_json
+  __set_hostname || true
 }
 
 __restart_worker() {
@@ -48,6 +50,21 @@ __write_chef_node_json() {
   cat > /etc/chef/node.json <<EOF
 ${chef_json}
 EOF
+}
+
+__set_hostname() {
+  local instance_id
+  local instance_ipv4
+
+  instance_id="$(curl -s 'http://169.254.169.254/latest/meta-data/instance-id')"
+  instance_ipv4="$(curl -s 'http://169.254.169.254/latest/meta-data/local-ipv4')"
+
+  local instance_hostname="worker-docker-$${instance_id#i-}.${env}.travis-ci.${site}"
+
+  echo "$${instance_hostname}" | tee /etc/hostname
+  hostname -F /etc/hostname
+  echo "$${instance_ipv4} $${instance_hostname} $${instance%.*}" \
+    | tee -a /etc/hosts
 }
 
 main "$@"
