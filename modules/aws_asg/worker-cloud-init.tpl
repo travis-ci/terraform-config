@@ -5,6 +5,7 @@ set -o errexit
 
 main() {
   __write_travis_worker_configs
+  source /etc/default/travis-worker
   __setup_papertrail_rsyslog "$${TRAVIS_WORKER_PAPERTRAIL_REMOTE_PORT}"
   __fix_perms
   __restart_worker
@@ -24,7 +25,6 @@ EOF
 }
 
 __setup_papertrail_rsyslog() {
-  source /etc/default/travis-worker
   local pt_port="$1"
 
   if [[ ! "$pt_port" ]] ; then
