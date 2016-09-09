@@ -1,13 +1,21 @@
+data "template_file" "bastion_cloud_init" {
+  template = "${file("${path.module}/bastion-cloud-init.tpl")}"
+
+  vars {
+    bastion_config = "${var.bastion_config}"
+  }
+}
+
 resource "google_compute_instance" "bastion-b" {
   name = "${var.env}-${var.index}-bastion-b"
   machine_type = "g1-small"
   zone = "us-central1-b"
   tags = ["bastion", "${var.env}"]
-  project = "${var.gce_project}"
+  project = "${var.project}"
 
   disk {
     auto_delete = true
-    image = "${var.gce_bastion_image}"
+    image = "${var.bastion_image}"
     type = "pd-ssd"
   }
 
@@ -18,5 +26,5 @@ resource "google_compute_instance" "bastion-b" {
     }
   }
 
-  metadata_startup_script = "${var.bastion_cloud_init}"
+  metadata_startup_script = "${data.template_file.bastion_cloud_init.rendered}"
 }
