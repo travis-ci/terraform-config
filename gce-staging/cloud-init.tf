@@ -25,3 +25,11 @@ data "template_file" "bastion_cloud_init" {
     bastion_config = "${file("${path.module}/config/bastion-env")}"
   }
 }
+
+data "template_file" "vault_consul_cloud_init" {
+  template = "${file("${path.module}/vault-consul-init.tpl")}"
+
+  vars {
+    vault_consul_config = "${file("${path.module}/config/vault-consul-env")}"
+  }
+}
