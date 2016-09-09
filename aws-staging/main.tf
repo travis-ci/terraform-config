@@ -12,6 +12,8 @@ module "aws_az_1b" {
   aws_bastion_ami = "${var.aws_bastion_ami}"
   aws_nat_ami = "${var.aws_nat_ami}"
   aws_nat_instance_type = "c3.large" # c3.8xlarge
+
+  aws_bastion_cloud_init = "${data.template_file.bastion_cloud_init.rendered}"
 }
 
 module "aws_az_1e" {
@@ -28,6 +30,8 @@ module "aws_az_1e" {
   aws_bastion_ami = "${var.aws_bastion_ami}"
   aws_nat_ami = "${var.aws_nat_ami}"
   aws_nat_instance_type = "c3.large" # c3.8xlarge
+
+  aws_bastion_cloud_init = "${data.template_file.bastion_cloud_init.rendered}"
 }
 
 module "aws_asg_org" {

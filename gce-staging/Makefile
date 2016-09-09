@@ -1,10 +1,10 @@
 CONFIG_FILES := \
-	config/worker-env-com \
-	config/worker-env-org \
 	config/bastion-env \
-	config/chef-org.json \
 	config/chef-com.json \
-	config/gce-workers-staging.json
+	config/chef-org.json \
+	config/gce-workers-staging.json \
+	config/worker-env-com \
+	config/worker-env-org
 
 TFVARS := $(PWD)/terraform.tfvars
 TFSTATE := $(PWD)/.terraform/terraform.tfstate
