@@ -3,6 +3,10 @@ resource "google_compute_network" "main" {
   project = "${var.project}"
 }
 
+output "gce_network" {
+  value = "${google_compute_network.main.name}"
+}
+
 resource "google_compute_subnetwork" "public" {
   name = "public"
   ip_cidr_range = "10.10.1.0/24"
@@ -10,6 +14,10 @@ resource "google_compute_subnetwork" "public" {
   region = "us-central1"
 
   project = "${var.project}"
+}
+
+output "gce_subnetwork_public" {
+  value = "${google_compute_subnetwork.public.name}"
 }
 
 resource "google_compute_subnetwork" "workers_org" {

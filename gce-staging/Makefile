@@ -1,6 +1,7 @@
 CONFIG_FILES := \
 	config/bastion-env \
 	config/gce-workers-staging.json \
+	config/vault-consul-env \
 	config/worker-chef-com.json \
 	config/worker-chef-org.json \
 	config/worker-env-com \
@@ -55,6 +56,8 @@ $(CONFIG_FILES):
 		| sed 's/^/export /' >config/worker-env-com
 	trvs generate-config --pro -p gce_bastion -f env gce-bastion staging \
 		| sed 's/^/export /' >config/bastion-env
+	trvs generate-config -p gce_vault_consul -f env gce-vault-consul staging \
+		>config/vault-consul-env
 	trvs generate-config -p travis_worker -f json gce-workers staging1 \
 		| $(TOP)/bin/generate-chef-config >config/worker-chef-org.json
 	trvs generate-config --pro -p travis_worker -f json gce-workers staging1 \
