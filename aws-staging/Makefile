@@ -1,7 +1,7 @@
 CONFIG_FILES := \
 	config/bastion-env \
-	config/chef-com.json \
-	config/chef-org.json \
+	config/worker-chef-com.json \
+	config/worker-chef-org.json \
 	config/worker-env-com \
 	config/worker-env-org
 
@@ -54,9 +54,9 @@ $(CONFIG_FILES):
 	trvs generate-config --pro -p aws_bastion -f env aws-bastion staging \
 		| sed 's/^/export /' >config/bastion-env
 	trvs generate-config -p travis_worker -f json aws-workers staging \
-		| $(TOP)/bin/generate-chef-config >config/chef-org.json
+		| $(TOP)/bin/generate-chef-config >config/worker-chef-org.json
 	trvs generate-config --pro -p travis_worker -f json aws-workers staging \
-		| $(TOP)/bin/generate-chef-config >config/chef-com.json
+		| $(TOP)/bin/generate-chef-config >config/worker-chef-com.json
 
 $(TFVARS):
 	trvs generate-config -f json terraform-config aws_staging >$@

@@ -1,59 +1,57 @@
 module "aws_az_1b" {
   source = "../modules/aws_az"
 
+  az = "1b"
+  bastion_ami = "${var.aws_bastion_ami}"
+  bastion_config = "${file("${path.module}/config/bastion-env")}"
   env = "${var.env}"
-  aws_az = "1b"
-  aws_public_subnet = "10.2.1.0/24"
-  aws_workers_org_subnet = "10.2.2.0/24"
-  aws_workers_com_subnet = "10.2.3.0/24"
-  aws_vpc_id = "${aws_vpc.main.id}"
-  aws_gateway_id = "${aws_internet_gateway.gw.id}"
-
-  aws_bastion_ami = "${var.aws_bastion_ami}"
-  aws_nat_ami = "${var.aws_nat_ami}"
-  aws_nat_instance_type = "c3.large" # c3.8xlarge
-
-  aws_bastion_cloud_init = "${data.template_file.bastion_cloud_init.rendered}"
+  gateway_id = "${aws_internet_gateway.gw.id}"
+  nat_ami = "${var.aws_nat_ami}"
+  nat_instance_type = "c3.large" # c3.8xlarge
+  public_subnet = "10.2.1.0/24"
+  vpc_id = "${aws_vpc.main.id}"
+  workers_com_subnet = "10.2.3.0/24"
+  workers_org_subnet = "10.2.2.0/24"
 }
 
 module "aws_az_1e" {
   source = "../modules/aws_az"
 
+  az = "1e"
+  bastion_ami = "${var.aws_bastion_ami}"
+  bastion_config = "${file("${path.module}/config/bastion-env")}"
   env = "${var.env}"
-  aws_az = "1e"
-  aws_public_subnet = "10.2.4.0/24"
-  aws_workers_org_subnet = "10.2.5.0/24"
-  aws_workers_com_subnet = "10.2.6.0/24"
-  aws_vpc_id = "${aws_vpc.main.id}"
-  aws_gateway_id = "${aws_internet_gateway.gw.id}"
-
-  aws_bastion_ami = "${var.aws_bastion_ami}"
-  aws_nat_ami = "${var.aws_nat_ami}"
-  aws_nat_instance_type = "c3.large" # c3.8xlarge
-
-  aws_bastion_cloud_init = "${data.template_file.bastion_cloud_init.rendered}"
+  gateway_id = "${aws_internet_gateway.gw.id}"
+  nat_ami = "${var.aws_nat_ami}"
+  nat_instance_type = "c3.large" # c3.8xlarge
+  public_subnet = "10.2.4.0/24"
+  vpc_id = "${aws_vpc.main.id}"
+  workers_com_subnet = "10.2.6.0/24"
+  workers_org_subnet = "10.2.5.0/24"
 }
 
 module "aws_asg_org" {
   source = "../modules/aws_asg"
 
   env = "${var.env}"
+  security_groups = "${module.aws_az_1b.workers_org_security_group_id},${module.aws_az_1e.workers_org_security_group_id}"
   site = "org"
-  aws_security_groups = "${module.aws_az_1b.workers_org_security_group_id},${module.aws_az_1e.workers_org_security_group_id}"
-  aws_workers_subnets = "${module.aws_az_1b.workers_org_subnet_id},${module.aws_az_1e.workers_org_subnet_id}"
-
-  aws_worker_ami = "${var.aws_worker_ami}"
-  cloud_init = "${data.template_file.worker_cloud_init_org.rendered}"
+  sns_subscription_endpoint = "https://pudding-staging.herokuapp.com/sns-messages"
+  worker_ami = "${var.aws_worker_ami}"
+  worker_chef_json = "${file("${path.module}/config/worker-chef-org.json")}"
+  worker_config = "${file("${path.module}/config/worker-env-org")}"
+  workers_subnets = "${module.aws_az_1b.workers_org_subnet_id},${module.aws_az_1e.workers_org_subnet_id}"
 }
 
 module "aws_asg_com" {
   source = "../modules/aws_asg"
 
   env = "${var.env}"
+  security_groups = "${module.aws_az_1b.workers_com_security_group_id},${module.aws_az_1e.workers_com_security_group_id}"
   site = "com"
-  aws_security_groups = "${module.aws_az_1b.workers_com_security_group_id},${module.aws_az_1e.workers_com_security_group_id}"
-  aws_workers_subnets = "${module.aws_az_1b.workers_com_subnet_id},${module.aws_az_1e.workers_com_subnet_id}"
-
-  aws_worker_ami = "${var.aws_worker_ami}"
-  cloud_init = "${data.template_file.worker_cloud_init_com.rendered}"
+  sns_subscription_endpoint = "https://pudding-staging.herokuapp.com/sns-messages"
+  worker_ami = "${var.aws_worker_ami}"
+  worker_chef_json = "${file("${path.module}/config/worker-chef-com.json")}"
+  worker_config = "${file("${path.module}/config/worker-env-com")}"
+  workers_subnets = "${module.aws_az_1b.workers_com_subnet_id},${module.aws_az_1e.workers_com_subnet_id}"
 }

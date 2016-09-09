@@ -5,7 +5,8 @@ set -o errexit
 
 main() {
   __write_travis_worker_configs
-  __setup_papertrail_rsyslog
+  source /etc/default/travis-worker
+  __setup_papertrail_rsyslog "$${TRAVIS_WORKER_PAPERTRAIL_REMOTE_PORT}"
   __fix_perms
   __restart_worker
   __write_chef_node_json
@@ -24,8 +25,7 @@ EOF
 }
 
 __setup_papertrail_rsyslog() {
-  source /etc/default/travis-worker
-  local pt_port="$TRAVIS_WORKER_PAPERTRAIL_REMOTE_PORT"
+  local pt_port="$1"
 
   if [[ ! "$pt_port" ]] ; then
     return
@@ -60,11 +60,11 @@ __set_hostname() {
   instance_ipv4="$(curl -s 'http://169.254.169.254/latest/meta-data/local-ipv4')"
 
   local instance_hostname="worker-docker-$${instance_id#i-}.${env}.travis-ci.${site}"
+  local hosts_line="$${instance_ipv4} $${instance_hostname} $${instance%.*}"
 
   echo "$${instance_hostname}" | tee /etc/hostname
   hostname -F /etc/hostname
-  echo "$${instance_ipv4} $${instance_hostname} $${instance%.*}" \
-    | tee -a /etc/hosts
+  echo "$${hosts_line}" | tee -a /etc/hosts
 }
 
 main "$@"
