@@ -1,6 +1,11 @@
 variable "env" {}
+variable "security_groups" {}
 variable "site" {}
-variable "aws_security_groups" {}
-variable "aws_workers_subnets" {}
-variable "aws_worker_ami" {}
-variable "cloud_init" {}
+variable "sns_subscription_endpoint" {}
+variable "sns_subscription_protocol" { default = "https" }
+variable "worker_ami" {}
+variable "worker_asg_max_size" { default = 5 }
+variable "worker_asg_min_size" { default = 1 }
+variable "worker_chef_json" {}
+variable "worker_config" {}
+variable "workers_subnets" {}
