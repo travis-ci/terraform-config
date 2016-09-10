@@ -1,14 +1,24 @@
+data "template_file" "worker_cloud_init_com" {
+  template = "${file("${path.module}/worker-cloud-init.tpl")}"
+
+  vars {
+    account_json = "${var.account_json_com}"
+    worker_config = "${var.config_com}"
+    chef_json = "${var.chef_json_com}"
+  }
+}
+
 resource "google_compute_instance" "worker_com" {
   count = "${var.instance_count}"
-  name = "${var.env}-${var.index}-worker-com-${var.gce_zone_suffix}-${count.index + 1}"
-  machine_type = "${var.gce_machine_type}"
-  zone = "${var.gce_zone}"
+  name = "${var.env}-${var.index}-worker-com-${var.zone_suffix}-${count.index + 1}"
+  machine_type = "${var.machine_type}"
+  zone = "${var.zone}"
   tags = ["worker", "${var.env}", "com"]
-  project = "${var.gce_project}"
+  project = "${var.project}"
 
   disk {
     auto_delete = true
-    image = "${var.gce_worker_image}"
+    image = "${var.worker_image}"
     type = "pd-ssd"
   }
 
@@ -16,5 +26,5 @@ resource "google_compute_instance" "worker_com" {
     subnetwork = "${var.subnetwork_com}"
   }
 
-  metadata_startup_script = "${var.cloud_init_com}"
+  metadata_startup_script = "${data.template_file.worker_cloud_init_com.rendered}"
 }

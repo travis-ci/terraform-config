@@ -1,9 +1,9 @@
 CONFIG_FILES := \
 	config/bastion-env \
-	config/chef-com.json \
-	config/chef-org.json \
 	config/gce-workers-staging.json \
 	config/vault-consul-env \
+	config/worker-chef-com.json \
+	config/worker-chef-org.json \
 	config/worker-env-com \
 	config/worker-env-org
 
@@ -59,9 +59,9 @@ $(CONFIG_FILES):
 	trvs generate-config -p gce_vault_consul -f env gce-vault-consul staging \
 		>config/vault-consul-env
 	trvs generate-config -p travis_worker -f json gce-workers staging1 \
-		| $(TOP)/bin/generate-chef-config >config/chef-org.json
+		| $(TOP)/bin/generate-chef-config >config/worker-chef-org.json
 	trvs generate-config --pro -p travis_worker -f json gce-workers staging1 \
-		| $(TOP)/bin/generate-chef-config >config/chef-com.json
+		| $(TOP)/bin/generate-chef-config >config/worker-chef-com.json
 
 $(TFVARS):
 	trvs generate-config -f json terraform-config gce_staging >$@

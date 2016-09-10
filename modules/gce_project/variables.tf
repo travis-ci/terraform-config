@@ -1,12 +1,13 @@
+variable "bastion_config" {}
+variable "bastion_image" {}
 variable "env" {}
 variable "index" {}
-variable "gce_project" {}
-
-variable "gce_bastion_image" {}
-variable "gce_nat_image" {}
-variable "gce_worker_image" {}
-
-variable "gce_worker_cloud_init_org" {}
-variable "gce_worker_cloud_init_com" {}
-
-variable "bastion_cloud_init" {}
+variable "nat_image" {}
+variable "project" {}
+variable "worker_account_json_com" {}
+variable "worker_account_json_org" {}
+variable "worker_chef_json_com" {}
+variable "worker_chef_json_org" {}
+variable "worker_config_com" {}
+variable "worker_config_org" {}
+variable "worker_image" {}

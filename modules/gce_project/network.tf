@@ -1,6 +1,6 @@
 resource "google_compute_network" "main" {
   name = "main"
-  project = "${var.gce_project}"
+  project = "${var.project}"
 }
 
 output "gce_network" {
@@ -13,7 +13,7 @@ resource "google_compute_subnetwork" "public" {
   network = "${google_compute_network.main.self_link}"
   region = "us-central1"
 
-  project = "${var.gce_project}"
+  project = "${var.project}"
 }
 
 output "gce_subnetwork_public" {
@@ -26,7 +26,7 @@ resource "google_compute_subnetwork" "workers_org" {
   network = "${google_compute_network.main.self_link}"
   region = "us-central1"
 
-  project = "${var.gce_project}"
+  project = "${var.project}"
 }
 
 resource "google_compute_subnetwork" "workers_com" {
@@ -35,14 +35,15 @@ resource "google_compute_subnetwork" "workers_com" {
   network = "${google_compute_network.main.self_link}"
   region = "us-central1"
 
-  project = "${var.gce_project}"
+  project = "${var.project}"
 }
 
 resource "google_compute_firewall" "allow_icmp" {
   name    = "allow-icmp"
   network = "${google_compute_network.main.name}"
+  source_ranges = ["0.0.0.0/0"]
 
-  project = "${var.gce_project}"
+  project = "${var.project}"
 
   allow {
     protocol = "icmp"
@@ -52,8 +53,9 @@ resource "google_compute_firewall" "allow_icmp" {
 resource "google_compute_firewall" "allow_ssh" {
   name = "allow-ssh"
   network = "${google_compute_network.main.name}"
+  source_ranges = ["0.0.0.0/0"]
 
-  project = "${var.gce_project}"
+  project = "${var.project}"
 
   allow {
     protocol = "tcp"
@@ -66,7 +68,7 @@ resource "google_compute_firewall" "allow_internal" {
   network = "${google_compute_network.main.name}"
   source_ranges = ["10.10.0.0/16"]
 
-  project = "${var.gce_project}"
+  project = "${var.project}"
 
   allow {
     protocol = "icmp"

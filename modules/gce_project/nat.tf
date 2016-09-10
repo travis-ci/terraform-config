@@ -4,11 +4,11 @@ resource "google_compute_instance" "nat-b" {
   zone = "us-central1-b"
   tags = ["nat", "${var.env}"]
   can_ip_forward = true
-  project = "${var.gce_project}"
+  project = "${var.project}"
 
   disk {
     auto_delete = true
-    image = "${var.gce_nat_image}"
+    image = "${var.nat_image}"
     type = "pd-ssd"
   }
 
@@ -29,5 +29,5 @@ resource "google_compute_route" "nat-b" {
   priority    = 800
   tags = ["worker", "testing"]
 
-  project = "${var.gce_project}"
+  project = "${var.project}"
 }

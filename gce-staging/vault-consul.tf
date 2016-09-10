@@ -5,7 +5,7 @@ module "vault_consul" {
   index = "1"
 
   gce_zone = "us-central1-b"
-  gce_zone_suffix = "b" 
+  gce_zone_suffix = "b"
   gce_project = "travis-staging-1"
   gce_network = "${module.gce_project_1.gce_network}"
   gce_subnetwork = "${module.gce_project_1.gce_subnetwork_public}"
