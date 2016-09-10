@@ -41,6 +41,7 @@ resource "google_compute_subnetwork" "workers_com" {
 resource "google_compute_firewall" "allow_icmp" {
   name    = "allow-icmp"
   network = "${google_compute_network.main.name}"
+  source_ranges = ["0.0.0.0/0"]
 
   project = "${var.project}"
 
@@ -52,6 +53,7 @@ resource "google_compute_firewall" "allow_icmp" {
 resource "google_compute_firewall" "allow_ssh" {
   name = "allow-ssh"
   network = "${google_compute_network.main.name}"
+  source_ranges = ["0.0.0.0/0"]
 
   project = "${var.project}"
 
