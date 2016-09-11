@@ -6,7 +6,7 @@ module "gce_project_1" {
   env = "${var.env}"
   gcloud_cleanup_account_json = "${file("${path.module}/config/gce-cleanup-staging-1.json")}"
   gcloud_cleanup_job_board_url = "${var.job_board_url}"
-  gcloud_cleanup_loop_sleep = "2m30s"
+  gcloud_cleanup_loop_sleep = "2m"
   gcloud_cleanup_scale = "worker=1:Hobby"
   gcloud_zone = "${var.gce_gcloud_zone}"
   heroku_org = "${var.gce_heroku_org}"

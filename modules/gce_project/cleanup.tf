@@ -15,7 +15,6 @@ resource "heroku_app" "gcloud_cleanup" {
     GCLOUD_LOG_HTTP = "no-log-http"
     GCLOUD_PROJECT = "${var.project}"
     GCLOUD_ZONE = "${var.gcloud_zone}"
-    GO_BINARY_URL = "https://s3.amazonaws.com/travis-ci-gcloud-cleanup-artifacts/travis-ci/gcloud-cleanup/$SOURCE_VERSION/build.tar.gz"
     GO_IMPORT_PATH = "github.com/travis-ci/gcloud-cleanup"
   }
 }
@@ -23,19 +22,11 @@ resource "heroku_app" "gcloud_cleanup" {
 resource "null_resource" "gcloud_cleanup" {
   triggers {
     heroku_id = "${heroku_app.gcloud_cleanup.id}"
-    config_signature = "${sha256(join(",", heroku_app.gcloud_cleanup.config_vars))}"
+    config_signature = "${sha256(join(",", values(heroku_app.gcloud_cleanup.config_vars.0)))}"
     ps_scale = "${var.gcloud_cleanup_scale}"
   }
 
   provisioner "local-exec" {
-    command = <<EOF
-bash -c "
-set -o errexit
-set -o pipefail
-${path.module}/../../bin/heroku-wait ${heroku_app.gcloud_cleanup.id}
-${path.module}/../../bin/heroku-deploy travis-ci/gcloud-cleanup ${heroku_app.gcloud_cleanup.id}
-heroku ps:scale ${var.gcloud_cleanup_scale} -a ${heroku_app.gcloud_cleanup.id}
-"
-EOF
+    command = "exec ${path.module}/../../bin/heroku-wait-deploy-scale travis-ci/gcloud-cleanup ${heroku_app.gcloud_cleanup.id} ${var.gcloud_cleanup_scale}"
   }
 }

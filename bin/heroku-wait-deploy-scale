@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+
+set -o errexit
+set -o pipefail
+
+main() {
+  if [[ $# -ne 3 ]]; then
+    echo "Usage: $(basename "${0}") <repo-slug> <heroku-app> <ps-scale>" >&2
+    exit 1
+  fi
+
+  local repo_slug="${1}"
+  local heroku_app="${2}"
+  local ps_scale="${3}"
+
+  __heroku_wait "${heroku_app}"
+  __heroku_deploy "${repo_slug}" "${heroku_app}"
+  __heroku_scale "${heroku_app}" "${ps_scale}"
+}
+
+__heroku_wait() {
+  local heroku_app="${1}"
+  local timeout="${2:-120}"
+  local c=0
+
+  while ! curl \
+    -f -s -n "https://api.heroku.com/apps/${heroku_app}" \
+    -H "Accept: application/vnd.heroku+json; version=3" \
+    -H "Authorization: Bearer ${HEROKU_API_KEY}"; do
+    let c+=10
+    if [[ $c -gt ${timeout} ]]; then
+      exit 1
+    fi
+    sleep 10
+  done
+}
+
+__heroku_deploy() {
+  local repo_slug="${1}"
+  local heroku_app="${2}"
+  local tmp_dir
+  tmp_dir="$(mktemp -d)"
+  trap 'rm -rf '"${tmp_dir}" EXIT QUIT INT TERM
+
+  printf "\nDeploying %s to %s\n" "${repo_slug}" "${heroku_app}"
+  __make_deploy_request "${repo_slug}" "${heroku_app}" | tee "${tmp_dir}/deploy.json"
+
+  local output_stream_url
+  output_stream_url="$(jq -r .output_stream_url <"${tmp_dir}/deploy.json")"
+
+  printf "\nStreaming deploy output\n"
+  curl -f "${output_stream_url}"
+}
+
+__make_deploy_request() {
+  local repo_slug="${1}"
+  local heroku_app="${2}"
+
+  curl -s -X POST "https://api.heroku.com/apps/${heroku_app}/builds" \
+    -d "{
+      \"source_blob\": {
+        \"url\": \"https://github.com/${repo_slug}/archive/master.tar.gz\",
+        \"version\": \"master\"
+      }
+    }" \
+    -H "Authorization: Bearer ${HEROKU_API_KEY}" \
+    -H "Accept: application/vnd.heroku+json; version=3" \
+    -H "Content-Type: application/json"
+}
+
+__heroku_scale() {
+  local heroku_app="${1}"
+  local ps_scale="${2}"
+  local formation_type="${ps_scale%%=*}"
+  local formation_scale="${ps_scale##*=}"
+  local formation_scale_qty="${formation_scale%%:*}"
+  local formation_scale_size="${formation_scale##*:}"
+
+  curl -s \
+    -X PATCH \
+    "https://api.heroku.com/apps/${heroku_app}/formation/${formation_type}" \
+    -d "{
+      \"quantity\": ${formation_scale_qty},
+      \"size\": \"${formation_scale_size}\"
+    }" \
+    -H "Authorization: Bearer ${HEROKU_API_KEY}" \
+    -H "Content-Type: application/json" \
+    -H "Accept: application/vnd.heroku+json; version=3"
+}
+
+main "${@}"
