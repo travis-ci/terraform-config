@@ -23,6 +23,8 @@ resource "heroku_app" "gcloud_cleanup" {
 resource "null_resource" "gcloud_cleanup" {
   triggers {
     heroku_id = "${heroku_app.gcloud_cleanup.id}"
+    config_signature = "${sha256(join(",", heroku_app.gcloud_cleanup.config_vars))}"
+    ps_scale = "${var.gcloud_cleanup_scale}"
   }
 
   provisioner "local-exec" {
@@ -32,7 +34,7 @@ set -o errexit
 set -o pipefail
 ${path.module}/../../bin/heroku-wait ${heroku_app.gcloud_cleanup.id}
 ${path.module}/../../bin/heroku-deploy travis-ci/gcloud-cleanup ${heroku_app.gcloud_cleanup.id}
-heroku ps:scale worker=1:Standard-1X -a ${heroku_app.gcloud_cleanup.id}
+heroku ps:scale ${var.gcloud_cleanup_scale} -a ${heroku_app.gcloud_cleanup.id}
 "
 EOF
   }
