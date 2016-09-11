@@ -1,7 +1,5 @@
 CONFIG_FILES := \
 	config/bastion-env \
-	config/worker-chef-com.json \
-	config/worker-chef-org.json \
 	config/worker-env-com \
 	config/worker-env-org
 
@@ -9,7 +7,6 @@ TFVARS := $(PWD)/terraform.tfvars
 TFSTATE := $(PWD)/.terraform/terraform.tfstate
 TFPLAN := $(PWD)/aws-staging.tfplan
 TFCONF := $(PWD)/.terraform/configured
-TOP := $(shell git rev-parse --show-toplevel)
 
 .PHONY: hello
 hello:
@@ -53,10 +50,6 @@ $(CONFIG_FILES):
 		| sed 's/^/export /' >config/worker-env-com
 	trvs generate-config --pro -p aws_bastion -f env aws-bastion staging \
 		| sed 's/^/export /' >config/bastion-env
-	trvs generate-config -p travis_worker -f json aws-workers staging \
-		| $(TOP)/bin/generate-chef-config >config/worker-chef-org.json
-	trvs generate-config --pro -p travis_worker -f json aws-workers staging \
-		| $(TOP)/bin/generate-chef-config >config/worker-chef-com.json
 
 $(TFVARS):
 	trvs generate-config -f json terraform-config aws_staging >$@
