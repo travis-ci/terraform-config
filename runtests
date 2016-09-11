@@ -28,6 +28,12 @@ for f in $(git ls-files '*Makefile'); do
   echo "✓"
 done
 
+echo 'Running shellcheck'
+git grep -l '^#!/usr/bin/env bash' | grep -v '.tpl$' | xargs shellcheck
+
+echo 'Running shfmt'
+git grep -l '^#!/usr/bin/env bash' | grep -v '.tpl$' | xargs shfmt -i 2 -w
+
 for d in $(git ls-files '*.tf' | xargs -n1 dirname | sort | uniq); do
   echo -en "${d} "
   terraform validate "${d}"

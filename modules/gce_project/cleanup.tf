@@ -19,3 +19,21 @@ resource "heroku_app" "gcloud_cleanup" {
     GO_IMPORT_PATH = "github.com/travis-ci/gcloud-cleanup"
   }
 }
+
+resource "null_resource" "gcloud_cleanup" {
+  triggers {
+    heroku_id = "${heroku_app.gcloud_cleanup.id}"
+  }
+
+  provisioner "local-exec" {
+    command = <<EOF
+bash -c "
+set -o errexit
+set -o pipefail
+${path.module}/../../bin/heroku-wait ${heroku_app.gcloud_cleanup.id}
+${path.module}/../../bin/heroku-deploy travis-ci/gcloud-cleanup ${heroku_app.gcloud_cleanup.id}
+heroku ps:scale worker=1:Standard-1X -a ${heroku_app.gcloud_cleanup.id}
+"
+EOF
+  }
+}
