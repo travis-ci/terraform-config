@@ -1,7 +1,5 @@
 variable "account_json_com" {}
 variable "account_json_org" {}
-variable "chef_json_com" {}
-variable "chef_json_org" {}
 variable "config_com" {}
 variable "config_org" {}
 variable "env" {}

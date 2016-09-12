@@ -9,7 +9,6 @@ main() {
   __setup_papertrail_rsyslog "$${TRAVIS_WORKER_PAPERTRAIL_REMOTE_PORT}"
   __fix_perms
   __restart_worker
-  __write_chef_node_json
   __set_hostname || true
 }
 
@@ -42,14 +41,6 @@ __setup_papertrail_rsyslog() {
 __fix_perms() {
   chown -R travis:travis /etc/default/travis-worker* /var/tmp/*
   chmod 0640 /etc/default/travis-worker* /var/tmp/gce*
-}
-
-__write_chef_node_json() {
-  mkdir -p /etc/chef
-
-  cat > /etc/chef/node.json <<EOF
-${chef_json}
-EOF
 }
 
 __set_hostname() {

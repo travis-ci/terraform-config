@@ -3,8 +3,6 @@ module "gce_worker_b" {
 
   account_json_com = "${var.worker_account_json_com}"
   account_json_org = "${var.worker_account_json_org}"
-  chef_json_com = "${var.worker_chef_json_com}"
-  chef_json_org = "${var.worker_chef_json_org}"
   config_com = "${var.worker_config_com}"
   config_org = "${var.worker_config_org}"
   env = "${var.env}"
@@ -24,8 +22,6 @@ module "gce_worker_c" {
 
   account_json_com = "${var.worker_account_json_com}"
   account_json_org = "${var.worker_account_json_org}"
-  chef_json_com = "${var.worker_chef_json_com}"
-  chef_json_org = "${var.worker_chef_json_org}"
   config_com = "${var.worker_config_com}"
   config_org = "${var.worker_config_org}"
   env = "${var.env}"

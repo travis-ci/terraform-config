@@ -5,11 +5,15 @@ sudo: required
 cache:
   directories:
   - "${HOME}/bin"
+  - "${HOME}/gopath/bin"
 env:
   global:
-  - PATH="${HOME}/bin:${PATH}"
+  - PATH="${HOME}/bin:${HOME}/gopath/bin:${PATH}"
+  - GOPATH="${HOME}/gopath"
+  - SHELLCHECK_URL="https://s3.amazonaws.com/travis-blue-public/binaries/ubuntu/14.04/x86_64/shellcheck-0.4.4.tar.bz2"
   - TMPDIR="${TMPDIR:-/tmp}"
 before_install:
+- mkdir -p "${HOME}/gopath/bin"
 - if ! terraform version ; then
     pushd "${TMPDIR}" ;
     curl -sSL
@@ -21,4 +25,14 @@ before_install:
     popd ;
     terraform version ;
   fi
-script: bundle exec ./runtests --env .example.env
+- if ! shellcheck --version ; then
+    curl -sSL "${SHELLCHECK_URL}" | tar -C "${HOME}/bin" -xjf - ;
+  fi
+- if ! command -v shfmt ; then
+    eval "$(gimme 1.6.3)" ;
+    go get -x github.com/mvdan/sh/cmd/shfmt ;
+  fi
+script:
+- bundle exec ./runtests --env .example.env
+- git diff --exit-code
+- git diff --cached --exit-code

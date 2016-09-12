@@ -38,7 +38,6 @@ module "aws_asg_org" {
   site = "org"
   sns_subscription_endpoint = "https://pudding-staging.herokuapp.com/sns-messages"
   worker_ami = "${var.aws_worker_ami}"
-  worker_chef_json = "${file("${path.module}/config/worker-chef-org.json")}"
   worker_config = "${file("${path.module}/config/worker-env-org")}"
   workers_subnets = "${module.aws_az_1b.workers_org_subnet_id},${module.aws_az_1e.workers_org_subnet_id}"
 }
@@ -51,7 +50,6 @@ module "aws_asg_com" {
   site = "com"
   sns_subscription_endpoint = "https://pudding-staging.herokuapp.com/sns-messages"
   worker_ami = "${var.aws_worker_ami}"
-  worker_chef_json = "${file("${path.module}/config/worker-chef-com.json")}"
   worker_config = "${file("${path.module}/config/worker-env-com")}"
   workers_subnets = "${module.aws_az_1b.workers_com_subnet_id},${module.aws_az_1e.workers_com_subnet_id}"
 }

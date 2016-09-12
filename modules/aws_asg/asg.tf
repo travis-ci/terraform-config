@@ -2,7 +2,6 @@ data "template_file" "worker_cloud_init" {
   template = "${file("${path.module}/worker-cloud-init.tpl")}"
 
   vars {
-    chef_json = "${var.worker_chef_json}"
     env = "${var.env}"
     site = "${var.site}"
     worker_config = "${var.worker_config}"
