@@ -15,8 +15,6 @@ module "gce_project_1" {
   project = "travis-staging-1"
   worker_account_json_com = "${file("${path.module}/config/gce-workers-staging.json")}"
   worker_account_json_org = "${file("${path.module}/config/gce-workers-staging.json")}"
-  worker_chef_json_com = "${file("${path.module}/config/worker-chef-com.json")}"
-  worker_chef_json_org = "${file("${path.module}/config/worker-chef-org.json")}"
   worker_config_com = "${file("${path.module}/config/worker-env-com")}"
   worker_config_org = "${file("${path.module}/config/worker-env-org")}"
   worker_image = "${var.gce_worker_image}"

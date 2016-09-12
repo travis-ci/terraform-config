@@ -24,9 +24,10 @@ resource "null_resource" "gcloud_cleanup" {
     heroku_id = "${heroku_app.gcloud_cleanup.id}"
     config_signature = "${sha256(join(",", values(heroku_app.gcloud_cleanup.config_vars.0)))}"
     ps_scale = "${var.gcloud_cleanup_scale}"
+    version = "${var.gcloud_cleanup_version}"
   }
 
   provisioner "local-exec" {
-    command = "exec ${path.module}/../../bin/heroku-wait-deploy-scale travis-ci/gcloud-cleanup ${heroku_app.gcloud_cleanup.id} ${var.gcloud_cleanup_scale}"
+    command = "exec ${path.module}/../../bin/heroku-wait-deploy-scale travis-ci/gcloud-cleanup ${heroku_app.gcloud_cleanup.id} ${var.gcloud_cleanup_scale} ${var.gcloud_cleanup_version}"
   }
 }

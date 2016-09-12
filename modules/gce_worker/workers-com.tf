@@ -4,7 +4,6 @@ data "template_file" "worker_cloud_init_com" {
   vars {
     account_json = "${var.account_json_com}"
     worker_config = "${var.config_com}"
-    chef_json = "${var.chef_json_com}"
   }
 }
 
