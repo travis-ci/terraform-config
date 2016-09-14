@@ -4,12 +4,13 @@ data "template_file" "worker_cloud_init" {
   vars {
     env = "${var.env}"
     site = "${var.site}"
+    index = "${var.index}"
     worker_config = "${var.worker_config}"
   }
 }
 
 resource "aws_launch_configuration" "workers" {
-  name_prefix = "${var.env}-workers-${var.site}-"
+  name_prefix = "${var.env}-workers-${var.site}-${var.index}-"
   image_id = "${var.worker_ami}"
   instance_type = "c3.2xlarge"
 
@@ -24,9 +25,9 @@ resource "aws_launch_configuration" "workers" {
 }
 
 resource "aws_autoscaling_group" "workers" {
-  name = "${var.env}-workers-${var.site}"
+  name = "${var.env}-workers-${var.site}-${var.index}"
 
-  vpc_zone_identifier = ["${split(",", var.workers_subnets)}"]
+  vpc_zone_identifier = ["${split(",", var.worker_subnets)}"]
 
   max_size = "${var.worker_asg_max_size}"
   min_size = "${var.worker_asg_min_size}"
@@ -37,7 +38,7 @@ resource "aws_autoscaling_group" "workers" {
 
   tag {
     key = "Name"
-    value = "${var.env}-worker-${var.site}-docker"
+    value = "${var.env}-worker-${var.site}-${var.index}-docker"
     propagate_at_launch = true
   }
   tag {
@@ -60,44 +61,49 @@ resource "aws_autoscaling_group" "workers" {
     value = "${var.site}"
     propagate_at_launch = true
   }
+  tag {
+    key = "index"
+    value = "${var.index}"
+    propagate_at_launch = true
+  }
 }
 
 resource "aws_autoscaling_policy" "workers_remove_capacity" {
-  name = "${var.env}-workers-${var.site}-remove-capacity"
-  scaling_adjustment = -1
+  name = "${var.env}-workers-${var.site}-${var.index}-remove-capacity"
+  scaling_adjustment = "${var.worker_asg_scale_in_qty}"
   adjustment_type = "ChangeInCapacity"
-  cooldown = 300
+  cooldown = "${var.worker_asg_scale_in_cooldown}"
   autoscaling_group_name = "${aws_autoscaling_group.workers.name}"
 }
 
 resource "aws_cloudwatch_metric_alarm" "workers_remove_capacity" {
-  alarm_name = "${var.env}-workers-${var.site}-remove-capacity"
+  alarm_name = "${var.env}-workers-${var.site}-${var.index}-remove-capacity"
   comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods = "2"
+  evaluation_periods = 2
   metric_name = "v1.travis.rabbitmq.consumers.${var.env}.builds.docker.headroom"
-  namespace = "Travis/${var.site}-${var.env}"
-  period = "120"
+  namespace = "${var.worker_asg_namespace}"
+  period = 60
   statistic = "Maximum"
-  threshold = "2"
+  threshold = "${var.worker_asg_scale_in_threshold}"
   alarm_actions = ["${aws_autoscaling_policy.workers_remove_capacity.arn}"]
 }
 
 resource "aws_autoscaling_policy" "workers_add_capacity" {
-  name = "${var.env}-workers-${var.site}-add-capacity"
-  scaling_adjustment = 1
+  name = "${var.env}-workers-${var.site}-${var.index}-add-capacity"
+  scaling_adjustment = "${var.worker_asg_scale_out_qty}"
   adjustment_type = "ChangeInCapacity"
-  cooldown = 300
+  cooldown = "${var.worker_asg_scale_out_cooldown}"
   autoscaling_group_name = "${aws_autoscaling_group.workers.name}"
 }
 
 resource "aws_cloudwatch_metric_alarm" "workers_add_capacity" {
-  alarm_name = "${var.env}-workers-${var.site}-add-capacity"
+  alarm_name = "${var.env}-workers-${var.site}-${var.index}-add-capacity"
   comparison_operator = "LessThanThreshold"
-  evaluation_periods = "2"
+  evaluation_periods = 2
   metric_name = "v1.travis.rabbitmq.consumers.${var.env}.builds.docker.headroom"
-  namespace = "Travis/${var.site}-${var.env}"
-  period = "120"
+  namespace = "${var.worker_asg_namespace}"
+  period = 60
   statistic = "Maximum"
-  threshold = "2"
+  threshold = "${var.worker_asg_scale_out_threshold}"
   alarm_actions = ["${aws_autoscaling_policy.workers_add_capacity.arn}"]
 }

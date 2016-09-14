@@ -50,7 +50,7 @@ __set_hostname() {
   instance_id="$(curl -s 'http://169.254.169.254/latest/meta-data/instance-id')"
   instance_ipv4="$(curl -s 'http://169.254.169.254/latest/meta-data/local-ipv4')"
 
-  local instance_hostname="worker-docker-$${instance_id#i-}.${env}.travis-ci.${site}"
+  local instance_hostname="worker-docker-$${instance_id#i-}-${index}.${env}.travis-ci.${site}"
   local hosts_line="$${instance_ipv4} $${instance_hostname} $${instance%.*}"
 
   echo "$${instance_hostname}" | tee /etc/hostname
