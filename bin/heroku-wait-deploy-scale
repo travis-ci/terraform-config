@@ -5,7 +5,7 @@ set -o pipefail
 
 main() {
   local halp='^(-h|--help|help)$'
-  for arg in "${@}" ; do
+  for arg in "${@}"; do
     if [[ "${arg}" =~ $halp ]]; then
       __usage
       exit 0
