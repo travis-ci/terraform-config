@@ -21,3 +21,14 @@ variable "worker_asg_scale_out_qty" { default = 1 }
 variable "worker_asg_scale_out_threshold" { default = "48.0" }
 variable "worker_config" {}
 variable "worker_subnets" {}
+variable "worker_docker_image_android" {}
+variable "worker_docker_image_default" {}
+variable "worker_docker_image_erlang" {}
+variable "worker_docker_image_go" {}
+variable "worker_docker_image_haskell" {}
+variable "worker_docker_image_jvm" {}
+variable "worker_docker_image_node_js" {}
+variable "worker_docker_image_perl" {}
+variable "worker_docker_image_php" {}
+variable "worker_docker_image_python" {}
+variable "worker_docker_image_ruby" {}

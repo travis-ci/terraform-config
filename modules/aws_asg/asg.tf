@@ -2,12 +2,23 @@ data "template_file" "worker_cloud_init" {
   template = "${file("${path.module}/worker-cloud-init.tpl")}"
 
   vars {
-    env = "${var.env}"
-    site = "${var.site}"
-    index = "${var.index}"
     cyclist_auth_token = "${element(split(",", var.cyclist_auth_tokens), var.index - 1)}"
     cyclist_url = "${replace(heroku_app.cyclist.web_url, "/\\/$/", "")}"
+    env = "${var.env}"
+    index = "${var.index}"
+    site = "${var.site}"
     worker_config = "${var.worker_config}"
+    worker_docker_image_android = "${var.worker_docker_image_android}"
+    worker_docker_image_default = "${var.worker_docker_image_default}"
+    worker_docker_image_erlang = "${var.worker_docker_image_erlang}"
+    worker_docker_image_go = "${var.worker_docker_image_go}"
+    worker_docker_image_haskell = "${var.worker_docker_image_haskell}"
+    worker_docker_image_jvm = "${var.worker_docker_image_jvm}"
+    worker_docker_image_node_js = "${var.worker_docker_image_node_js}"
+    worker_docker_image_perl = "${var.worker_docker_image_perl}"
+    worker_docker_image_php = "${var.worker_docker_image_php}"
+    worker_docker_image_python = "${var.worker_docker_image_python}"
+    worker_docker_image_ruby = "${var.worker_docker_image_ruby}"
   }
 }
 
