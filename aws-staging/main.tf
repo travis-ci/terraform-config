@@ -33,8 +33,11 @@ module "aws_az_1e" {
 module "aws_asg_org" {
   source = "../modules/aws_asg"
 
+  cyclist_auth_tokens = "${var.cyclist_auth_tokens}"
+  cyclist_debug = "true"
+  cyclist_redis_plan = "hobby-dev"
   cyclist_scale = "web=1:Hobby"
-  cyclist_version = "meat-heroku-star-port"
+  cyclist_version = "meat-logging"
   env = "${var.env}"
   heroku_org = "${var.aws_heroku_org}"
   index = "1"
@@ -51,8 +54,11 @@ module "aws_asg_org" {
 module "aws_asg_com" {
   source = "../modules/aws_asg"
 
+  cyclist_auth_tokens = "${var.cyclist_auth_tokens}"
+  cyclist_debug = "true"
+  cyclist_redis_plan = "hobby-dev"
   cyclist_scale = "web=1:Hobby"
-  cyclist_version = "meat-heroku-star-port"
+  cyclist_version = "meat-logging"
   env = "${var.env}"
   heroku_org = "${var.aws_heroku_org}"
   index = "1"

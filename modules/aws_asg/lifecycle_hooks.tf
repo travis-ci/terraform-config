@@ -6,7 +6,7 @@ resource "aws_sns_topic_subscription" "workers_cyclist" {
   topic_arn = "${aws_sns_topic.workers.arn}"
   protocol = "https"
   endpoint_auto_confirms = true
-  endpoint = "${heroku_app.cyclist.web_url}sns"
+  endpoint = "${replace(heroku_app.cyclist.web_url, "/\\/$/", "")}/sns"
 }
 
 resource "aws_iam_user" "cyclist" {

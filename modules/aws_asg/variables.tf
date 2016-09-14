@@ -1,4 +1,7 @@
+variable "cyclist_auth_tokens" {}
 variable "cyclist_aws_region" { default = "us-east-1" }
+variable "cyclist_debug" { default = "false" }
+variable "cyclist_redis_plan" { default = "premium-0" }
 variable "cyclist_scale" { default = "web=1:Standard-1X" }
 variable "cyclist_version" { default = "master" }
 variable "env" {}

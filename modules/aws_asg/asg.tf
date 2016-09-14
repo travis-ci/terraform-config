@@ -5,6 +5,8 @@ data "template_file" "worker_cloud_init" {
     env = "${var.env}"
     site = "${var.site}"
     index = "${var.index}"
+    cyclist_auth_token = "${element(split(",", var.cyclist_auth_tokens), var.index - 1)}"
+    cyclist_url = "${replace(heroku_app.cyclist.web_url, "/\\/$/", "")}"
     worker_config = "${var.worker_config}"
   }
 }

@@ -10,8 +10,15 @@ resource "heroku_app" "cyclist" {
     AWS_REGION = "${var.cyclist_aws_region}"
     AWS_SECRET_KEY = "${aws_iam_access_key.cyclist.secret}"
     BUILDPACK_URL = "https://github.com/travis-ci/heroku-buildpack-makey-go"
+    CYCLIST_AUTH_TOKENS = "${var.cyclist_auth_tokens}"
+    CYCLIST_DEBUG = "${var.cyclist_debug}"
     GO_IMPORT_PATH = "github.com/travis-ci/cyclist"
   }
+}
+
+resource "heroku_addon" "cyclist_redis" {
+  app = "${heroku_app.cyclist.name}"
+  plan = "heroku-redis:${var.cyclist_redis_plan}"
 }
 
 resource "null_resource" "cyclist" {
