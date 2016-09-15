@@ -35,7 +35,7 @@ module "aws_asg_org" {
 
   cyclist_auth_tokens = "${var.cyclist_auth_tokens}"
   cyclist_debug = "true"
-  cyclist_redis_plan = "hobby-dev"
+  cyclist_redis_plan = "premium-0"
   cyclist_scale = "web=1:Hobby"
   env = "${var.env}"
   heroku_org = "${var.aws_heroku_org}"
@@ -66,7 +66,7 @@ module "aws_asg_com" {
 
   cyclist_auth_tokens = "${var.cyclist_auth_tokens}"
   cyclist_debug = "true"
-  cyclist_redis_plan = "hobby-dev"
+  cyclist_redis_plan = "premium-0"
   cyclist_scale = "web=1:Hobby"
   env = "${var.env}"
   heroku_org = "${var.aws_heroku_org}"
