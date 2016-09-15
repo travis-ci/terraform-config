@@ -41,7 +41,7 @@ source .env
 cd .
 
 # move into a given infrastructure directory, e.g.:
-cd ./gce-staging
+cd ./gce-staging-1
 
 # terraform plan, which will automatically configure terraform from remote and
 # generate config files via `trvs`

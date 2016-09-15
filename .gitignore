@@ -1,6 +1,6 @@
 .terraform/
 .env
-aws-staging/config/
-gce-staging/config/
+aws-staging-1/config/
+gce-staging-1/config/
 terraform.tfvars
 *.tfplan
