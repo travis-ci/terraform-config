@@ -4,11 +4,13 @@ set -o errexit
 set -o pipefail
 
 main() {
-  local halp='-h|--help|help'
-  if [[ "${*}" =~ $halp ]]; then
-    __usage
-    exit 0
-  fi
+  local halp='^(-h|--help|help)$'
+  for arg in "${@}"; do
+    if [[ "${arg}" =~ $halp ]]; then
+      __usage
+      exit 0
+    fi
+  done
 
   if [[ $# -lt 3 ]]; then
     __usage

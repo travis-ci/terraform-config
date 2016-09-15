@@ -21,8 +21,8 @@ resource "heroku_app" "gcloud_cleanup" {
 
 resource "null_resource" "gcloud_cleanup" {
   triggers {
-    heroku_id = "${heroku_app.gcloud_cleanup.id}"
     config_signature = "${sha256(join(",", values(heroku_app.gcloud_cleanup.config_vars.0)))}"
+    heroku_id = "${heroku_app.gcloud_cleanup.id}"
     ps_scale = "${var.gcloud_cleanup_scale}"
     version = "${var.gcloud_cleanup_version}"
   }
