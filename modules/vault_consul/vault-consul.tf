@@ -9,7 +9,7 @@ resource "google_compute_instance" "vault_consul" {
   disk {
     auto_delete = true
     image = "${var.vault_consul_image}"
-    type = "pd-ssd"
+    # type = "pd-ssd"
   }
 
   network_interface {
