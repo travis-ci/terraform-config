@@ -9,7 +9,6 @@ module "aws_az_1b" {
   nat_ami = "${var.aws_nat_ami}"
   nat_instance_type = "c3.large" # NOTE: production is c3.8xlarge
   public_subnet = "10.2.1.0/24"
-  syslog_address = "${var.syslog_address}"
   vpc_id = "${aws_vpc.main.id}"
   workers_com_subnet = "10.2.3.0/24"
   workers_org_subnet = "10.2.2.0/24"
@@ -26,7 +25,6 @@ module "aws_az_1e" {
   nat_ami = "${var.aws_nat_ami}"
   nat_instance_type = "c3.large" # NOTE: production is c3.8xlarge
   public_subnet = "10.2.4.0/24"
-  syslog_address = "${var.syslog_address}"
   vpc_id = "${aws_vpc.main.id}"
   workers_com_subnet = "10.2.6.0/24"
   workers_org_subnet = "10.2.5.0/24"
@@ -43,6 +41,7 @@ module "aws_asg_org" {
   index = "1"
   security_groups = "${module.aws_az_1b.workers_org_security_group_id},${module.aws_az_1e.workers_org_security_group_id}"
   site = "org"
+  syslog_address = "${var.syslog_address}"
   worker_ami = "${var.aws_worker_ami}"
   worker_asg_namespace = "Travis/org-staging"
   worker_asg_scale_in_threshold = "16"
@@ -73,6 +72,7 @@ module "aws_asg_com" {
   index = "1"
   security_groups = "${module.aws_az_1b.workers_com_security_group_id},${module.aws_az_1e.workers_com_security_group_id}"
   site = "com"
+  syslog_address = "${var.syslog_address}"
   worker_ami = "${var.aws_worker_ami}"
   worker_asg_namespace = "Travis/com-staging"
   worker_asg_scale_in_threshold = "16"

@@ -63,7 +63,7 @@ resource "aws_autoscaling_group" "workers" {
   }
   tag {
     key = "queue"
-    value = "docker"
+    value = "ec2"
     propagate_at_launch = true
   }
   tag {
