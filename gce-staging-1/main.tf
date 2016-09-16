@@ -1,3 +1,7 @@
+provider "google" {
+  project = "travis-staging-1"
+}
+
 module "gce_project_1" {
   source = "../modules/gce_project"
 
