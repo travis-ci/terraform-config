@@ -18,7 +18,7 @@ resource "heroku_app" "cyclist" {
 
 resource "heroku_drain" "cyclist_drain" {
   app = "${heroku_app.cyclist.name}"
-  url = "syslog://${var.syslog_address}"
+  url = "syslog+tls://${var.syslog_address}"
 }
 
 resource "heroku_addon" "cyclist_redis" {
