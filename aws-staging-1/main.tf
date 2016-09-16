@@ -9,6 +9,7 @@ module "aws_az_1b" {
   nat_ami = "${var.aws_nat_ami}"
   nat_instance_type = "c3.large" # NOTE: production is c3.8xlarge
   public_subnet = "10.2.1.0/24"
+  syslog_address = "${var.syslog_address}"
   vpc_id = "${aws_vpc.main.id}"
   workers_com_subnet = "10.2.3.0/24"
   workers_org_subnet = "10.2.2.0/24"
@@ -25,6 +26,7 @@ module "aws_az_1e" {
   nat_ami = "${var.aws_nat_ami}"
   nat_instance_type = "c3.large" # NOTE: production is c3.8xlarge
   public_subnet = "10.2.4.0/24"
+  syslog_address = "${var.syslog_address}"
   vpc_id = "${aws_vpc.main.id}"
   workers_com_subnet = "10.2.6.0/24"
   workers_org_subnet = "10.2.5.0/24"

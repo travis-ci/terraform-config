@@ -7,6 +7,8 @@ data "template_file" "worker_cloud_init" {
     env = "${var.env}"
     index = "${var.index}"
     site = "${var.site}"
+    syslog_address = "${var.syslog_address}"
+    syslog_host = "${element(split(":", var.syslog_address), 0)}"
     worker_config = "${var.worker_config}"
     worker_docker_image_android = "${var.worker_docker_image_android}"
     worker_docker_image_default = "${var.worker_docker_image_default}"

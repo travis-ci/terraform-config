@@ -18,28 +18,33 @@ __restart_worker() {
 }
 
 __write_gce_json() {
-  cat > /var/tmp/gce.json <<EOF
+  # declared for shellcheck
+  local account_json
+  cat >/var/tmp/gce.json <<EOF
 ${account_json}
 EOF
 }
 
 __write_docker_config() {
-  cat > /etc/default/docker-cloud-init <<EOF
+  cat >/etc/default/docker-cloud-init <<EOF
 TRAVIS_WORKER_DISABLE_DIRECT_LVM=1
 EOF
 }
 
 __write_travis_worker_config() {
-  cat > /etc/default/travis-worker <<EOF
+  # declared for shellcheck
+  local worker_config
+  cat >/etc/default/travis-worker <<EOF
 ${worker_config}
 EOF
 }
 
 __setup_papertrail_rsyslog() {
+  # shellcheck source=/dev/null
   source /etc/default/travis-worker
   local pt_port="$TRAVIS_WORKER_PAPERTRAIL_REMOTE_PORT"
 
-  if [[ ! "$pt_port" ]] ; then
+  if [[ ! "$pt_port" ]]; then
     return
   fi
 

@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
+# vim:filetype=sh
 
 set -o errexit
 
 main() {
+  # declared for shellcheck
+  local vault_consul_config
   ${vault_consul_config}
   export GCE_VAULT_CONSUL_CONSUL_ENCRYPTION_KEY GCE_VAULT_CONSUL_CONSUL_BOOTSTRAP_EXPECT GCE_VAULT_CONSUL_VAULT_TLS_CERT GCE_VAULT_CONSUL_VAULT_TLS_KEY
   __write_consul_config
@@ -12,9 +15,9 @@ main() {
 }
 
 __write_consul_config() {
-    mkdir /opt/consul
-    chown -R consul:consul /opt/consul
-    cat >/etc/consul.d/config.json <<EOF
+  mkdir /opt/consul
+  chown -R consul:consul /opt/consul
+  cat >/etc/consul.d/config.json <<EOF
 {
     "datacenter": "gce-us-central1",
     "data_dir": "/opt/consul",
@@ -26,17 +29,17 @@ EOF
 }
 
 __restart_consul() {
-    systemctl restart consul.service
+  systemctl restart consul.service
 }
 
 __write_vault_config() {
-    cat >/etc/vault.crt <<EOF
+  cat >/etc/vault.crt <<EOF
 $GCE_VAULT_CONSUL_VAULT_TLS_CERT
 EOF
-    cat >/etc/vault.key <<EOF
+  cat >/etc/vault.key <<EOF
 $GCE_VAULT_CONSUL_VAULT_TLS_KEY
 EOF
-    cat >/etc/vault.hcl <<EOF
+  cat >/etc/vault.hcl <<EOF
 backend "consul" {
     address = "127.0.0.1:8500"
 }
@@ -50,7 +53,7 @@ EOF
 }
 
 __restart_vault() {
-    systemctl restart vault.service
+  systemctl restart vault.service
 }
 
 main "$@"

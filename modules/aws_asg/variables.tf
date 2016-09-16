@@ -9,6 +9,7 @@ variable "heroku_org" {}
 variable "index" {}
 variable "security_groups" {}
 variable "site" {}
+variable "syslog_address" {}
 variable "worker_ami" {}
 variable "worker_asg_max_size" { default = 5 }
 variable "worker_asg_min_size" { default = 1 }
