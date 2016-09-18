@@ -35,6 +35,7 @@ export TRAVIS_WORKER_HEARTBEAT_URL=${cyclist_url}/heartbeats/$${instance_id}
 export TRAVIS_WORKER_PRESTART_HOOK=/var/tmp/travis-run.d/travis-worker-prestart-hook
 export TRAVIS_WORKER_START_HOOK=/var/tmp/travis-run.d/travis-worker-start-hook
 export TRAVIS_WORKER_STOP_HOOK=/var/tmp/travis-run.d/travis-worker-stop-hook
+export TRAVIS_WORKER_SELF_IMAGE=quay.io/travisci/worker:v2.4.0-18-ga583128
 EOF
 }
 
@@ -58,8 +59,9 @@ __write_travis_worker_hooks() {
 
   mkdir -p /var/tmp/travis-run.d
   cat >/var/tmp/travis-run.d/travis-worker-start-hook <<EOF
-#!/usr/bin/env bash
+#!/bin/bash
 exec curl \\
+  -f \\
   -s \\
   -X POST \\
   -H 'Authorization: token ${cyclist_auth_token}' \\
@@ -67,8 +69,9 @@ exec curl \\
 EOF
   chmod +x /var/tmp/travis-run.d/travis-worker-start-hook
   cat >/var/tmp/travis-run.d/travis-worker-stop-hook <<EOF
-#!/usr/bin/env bash
+#!/bin/bash
 exec curl \\
+  -f \\
   -s \\
   -X POST \\
   -H 'Authorization: token ${cyclist_auth_token}' \\
@@ -76,7 +79,7 @@ exec curl \\
 EOF
   chmod +x /var/tmp/travis-run.d/travis-worker-stop-hook
   cat >/var/tmp/travis-run.d/travis-worker-prestart-hook <<EOF
-#!/usr/bin/env bash
+#!/bin/bash
 set -o errexit
 
 main() {
@@ -84,7 +87,7 @@ main() {
 
   local i=0
   while ! docker version ; do
-    if [ $${i} -gt 600 ]; then
+    if [[ \$i -gt 600 ]]; then
       exit 86
     fi
     sleep 10
