@@ -4,6 +4,8 @@
 set -o errexit
 
 main() {
+  # declared for shellcheck
+  local bastion_config
   ${bastion_config}
   __setup_papertrail_rsyslog "$AWS_BASTION_PAPERTRAIL_REMOTE_PORT"
   __write_duo_configs \
@@ -16,7 +18,7 @@ main() {
 __setup_papertrail_rsyslog() {
   local pt_port="$1"
 
-  if [[ ! "$pt_port" ]] ; then
+  if [[ ! "$pt_port" ]]; then
     return
   fi
 
@@ -30,7 +32,7 @@ __setup_papertrail_rsyslog() {
 
 __write_duo_configs() {
   for conf in /etc/duo/login_duo.conf /etc/duo/pam_duo.conf; do
-  cat >"$conf" <<EOF
+    cat >"$conf" <<EOF
 # Written by cloud-init $(date -u) :heart:
 [duo]
 ikey = $1
@@ -42,18 +44,22 @@ EOF
 }
 
 __set_hostname() {
+  # declared for shellcheck
+  local env
+
   local instance_id
   local instance_ipv4
 
+  # shellcheck disable=SC2034
   instance_id="$(curl -s 'http://169.254.169.254/latest/meta-data/instance-id')"
   instance_ipv4="$(curl -s 'http://169.254.169.254/latest/meta-data/local-ipv4')"
 
   local instance_hostname="bastion-$${instance_id#i-}.${env}.travis-ci.com"
-  local hosts_line="$${instance_ipv4} $${instance_hostname} $${instance%.*}"
+  local hosts_line="$instance_ipv4 $instance_hostname $${instance%.*}"
 
-  echo "$${instance_hostname}" | tee /etc/hostname
+  echo "$instance_hostname" | tee /etc/hostname
   hostname -F /etc/hostname
-  echo "$${hosts_line}" | tee -a /etc/hosts
+  echo "$hosts_line" | tee -a /etc/hosts
 }
 
 main "$@"

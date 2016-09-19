@@ -9,10 +9,7 @@ main() {
 
   __write_travis_worker_configs "$${instance_id}"
   __write_travis_worker_hooks "$${instance_id}"
-
-  source /etc/default/travis-worker
-
-  __setup_papertrail_rsyslog "$${TRAVIS_WORKER_PAPERTRAIL_REMOTE_PORT}"
+  __setup_papertrail_rsyslog
   __fix_perms
   __restart_worker
   __set_hostname "$${instance_id}" || true
@@ -24,43 +21,65 @@ __restart_worker() {
 }
 
 __write_travis_worker_configs() {
+  # declared for shellcheck
+  local worker_config
+  local cyclist_url
+
   local instance_id="$${1}"
 
-  cat > /etc/default/travis-worker <<EOF
+  cat >/etc/default/travis-worker <<EOF
 ${worker_config}
 EOF
-  cat > /etc/default/travis-worker-cloud-init <<EOF
+  cat >/etc/default/travis-worker-cloud-init <<EOF
 export TRAVIS_WORKER_HEARTBEAT_URL=${cyclist_url}/heartbeats/$${instance_id}
 export TRAVIS_WORKER_PRESTART_HOOK=/var/tmp/travis-run.d/travis-worker-prestart-hook
 export TRAVIS_WORKER_START_HOOK=/var/tmp/travis-run.d/travis-worker-start-hook
 export TRAVIS_WORKER_STOP_HOOK=/var/tmp/travis-run.d/travis-worker-stop-hook
+export TRAVIS_WORKER_SELF_IMAGE=quay.io/travisci/worker:v2.4.0-18-ga583128
 EOF
 }
 
 __write_travis_worker_hooks() {
+  # declared for shellcheck
+  local cyclist_auth_token
+  local cyclist_url
+  local worker_docker_image_android
+  local worker_docker_image_default
+  local worker_docker_image_erlang
+  local worker_docker_image_go
+  local worker_docker_image_haskell
+  local worker_docker_image_jvm
+  local worker_docker_image_node_js
+  local worker_docker_image_perl
+  local worker_docker_image_php
+  local worker_docker_image_python
+  local worker_docker_image_ruby
+
   local instance_id="$${1}"
 
   mkdir -p /var/tmp/travis-run.d
-  cat > /var/tmp/travis-run.d/travis-worker-start-hook <<EOF
-#!/usr/bin/env bash
+  cat >/var/tmp/travis-run.d/travis-worker-start-hook <<EOF
+#!/bin/bash
 exec curl \\
+  -f \\
   -s \\
   -X POST \\
   -H 'Authorization: token ${cyclist_auth_token}' \\
   "${cyclist_url}/launches/$${instance_id}"
 EOF
   chmod +x /var/tmp/travis-run.d/travis-worker-start-hook
-  cat > /var/tmp/travis-run.d/travis-worker-stop-hook <<EOF
-#!/usr/bin/env bash
+  cat >/var/tmp/travis-run.d/travis-worker-stop-hook <<EOF
+#!/bin/bash
 exec curl \\
+  -f \\
   -s \\
   -X POST \\
   -H 'Authorization: token ${cyclist_auth_token}' \\
   "${cyclist_url}/terminations/$${instance_id}"
 EOF
   chmod +x /var/tmp/travis-run.d/travis-worker-stop-hook
-  cat > /var/tmp/travis-run.d/travis-worker-prestart-hook <<EOF
-#!/usr/bin/env bash
+  cat >/var/tmp/travis-run.d/travis-worker-prestart-hook <<EOF
+#!/bin/bash
 set -o errexit
 
 main() {
@@ -68,7 +87,7 @@ main() {
 
   local i=0
   while ! docker version ; do
-    if [ $${i} -gt 600 ]; then
+    if [[ \$i -gt 600 ]]; then
       exit 86
     fi
     sleep 10
@@ -114,14 +133,20 @@ EOF
 }
 
 __setup_papertrail_rsyslog() {
-  local pt_port="$1"
+  # declared for shellcheck
+  local syslog_address
+  local syslog_host
 
-  if [[ ! "$pt_port" ]] ; then
+  if [[ ! "${syslog_address}" ]]; then
     return
   fi
 
-  local match='logs.papertrailapp.com:'
-  local repl="\*\.\* @logs.papertrailapp.com:$pt_port"
+  if [ ! -f '/etc/rsyslog.d/65-papertrail.conf' ]; then
+    return
+  fi
+
+  local match="${syslog_host}:"
+  local repl="\*\.\* @${syslog_address}"
 
   sed -i "/$match/s/.*/$repl/" '/etc/rsyslog.d/65-papertrail.conf'
 
@@ -135,17 +160,22 @@ __fix_perms() {
 }
 
 __set_hostname() {
+  # declared for shellcheck
+  local index
+  local env
+  local site
+
+  # shellcheck disable=SC2034
   local instance_id="$${1}"
   local instance_ipv4
-
   instance_ipv4="$(curl -s 'http://169.254.169.254/latest/meta-data/local-ipv4')"
 
-  local instance_hostname="worker-docker-$${instance_id#i-}-${index}.${env}.travis-ci.${site}"
-  local hosts_line="$${instance_ipv4} $${instance_hostname} $${instance%.*}"
+  local instance_hostname="worker-ec2-$${instance_id#i-}-${index}.${env}.travis-ci.${site}"
+  local hosts_line="$instance_ipv4 $instance_hostname $${instance%.*}"
 
-  echo "$${instance_hostname}" | tee /etc/hostname
+  echo "$instance_hostname" | tee /etc/hostname
   hostname -F /etc/hostname
-  echo "$${hosts_line}" | tee -a /etc/hosts
+  echo "$hosts_line" | tee -a /etc/hosts
 }
 
 main "$@"

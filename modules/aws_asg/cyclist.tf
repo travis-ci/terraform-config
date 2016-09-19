@@ -16,6 +16,11 @@ resource "heroku_app" "cyclist" {
   }
 }
 
+resource "heroku_drain" "cyclist_drain" {
+  app = "${heroku_app.cyclist.name}"
+  url = "syslog+tls://${var.syslog_address}"
+}
+
 resource "heroku_addon" "cyclist_redis" {
   app = "${heroku_app.cyclist.name}"
   plan = "heroku-redis:${var.cyclist_redis_plan}"

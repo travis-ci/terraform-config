@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
+# vim:filetype=sh
 
 set -o errexit
 
 main() {
+  # declared for shellcheck
+  local bastion_config
   ${bastion_config}
   __setup_papertrail_rsyslog "$GCE_BASTION_PAPERTRAIL_REMOTE_PORT"
   __write_duo_configs \
@@ -14,7 +17,7 @@ main() {
 __setup_papertrail_rsyslog() {
   local pt_port="$1"
 
-  if [[ ! "$pt_port" ]] ; then
+  if [[ ! "$pt_port" ]]; then
     return
   fi
 
@@ -28,7 +31,7 @@ __setup_papertrail_rsyslog() {
 
 __write_duo_configs() {
   for conf in /etc/duo/login_duo.conf /etc/duo/pam_duo.conf; do
-  cat >"$conf" <<EOF
+    cat >"$conf" <<EOF
 # Written by cloud-init $(date -u) :heart:
 [duo]
 ikey = $1

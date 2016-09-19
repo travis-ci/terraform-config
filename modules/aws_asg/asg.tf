@@ -7,6 +7,8 @@ data "template_file" "worker_cloud_init" {
     env = "${var.env}"
     index = "${var.index}"
     site = "${var.site}"
+    syslog_address = "${var.syslog_address}"
+    syslog_host = "${element(split(":", var.syslog_address), 0)}"
     worker_config = "${var.worker_config}"
     worker_docker_image_android = "${var.worker_docker_image_android}"
     worker_docker_image_default = "${var.worker_docker_image_default}"
@@ -51,7 +53,7 @@ resource "aws_autoscaling_group" "workers" {
 
   tag {
     key = "Name"
-    value = "${var.env}-worker-${var.site}-${var.index}-docker"
+    value = "${var.env}-worker-${var.site}-${var.index}-ec2"
     propagate_at_launch = true
   }
   tag {
@@ -61,7 +63,7 @@ resource "aws_autoscaling_group" "workers" {
   }
   tag {
     key = "queue"
-    value = "docker"
+    value = "ec2"
     propagate_at_launch = true
   }
   tag {
@@ -93,7 +95,7 @@ resource "aws_cloudwatch_metric_alarm" "workers_remove_capacity" {
   alarm_name = "${var.env}-workers-${var.site}-${var.index}-remove-capacity"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods = 2
-  metric_name = "v1.travis.rabbitmq.consumers.${var.env}.builds.docker.headroom"
+  metric_name = "v1.travis.rabbitmq.consumers.${var.env}.builds.ec2.headroom"
   namespace = "${var.worker_asg_namespace}"
   period = 60
   statistic = "Maximum"
@@ -113,7 +115,7 @@ resource "aws_cloudwatch_metric_alarm" "workers_add_capacity" {
   alarm_name = "${var.env}-workers-${var.site}-${var.index}-add-capacity"
   comparison_operator = "LessThanThreshold"
   evaluation_periods = 2
-  metric_name = "v1.travis.rabbitmq.consumers.${var.env}.builds.docker.headroom"
+  metric_name = "v1.travis.rabbitmq.consumers.${var.env}.builds.ec2.headroom"
   namespace = "${var.worker_asg_namespace}"
   period = 60
   statistic = "Maximum"
