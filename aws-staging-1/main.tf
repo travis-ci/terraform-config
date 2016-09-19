@@ -44,7 +44,7 @@ module "aws_asg_org" {
   site = "org"
   syslog_address = "${var.syslog_address}"
   worker_ami = "${var.aws_worker_ami}"
-  worker_asg_max_size = "10"
+  worker_asg_max_size = "1"
   worker_asg_min_size = "0"
   worker_asg_namespace = "Travis/org-staging"
   worker_asg_scale_in_threshold = "16"

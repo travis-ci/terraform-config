@@ -95,7 +95,7 @@ resource "aws_cloudwatch_metric_alarm" "workers_remove_capacity" {
   alarm_name = "${var.env}-workers-${var.site}-${var.index}-remove-capacity"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods = 2
-  metric_name = "v1.travis.rabbitmq.consumers.${var.env}.builds.docker.headroom"
+  metric_name = "v1.travis.rabbitmq.consumers.${var.env}.builds.ec2.headroom"
   namespace = "${var.worker_asg_namespace}"
   period = 60
   statistic = "Maximum"
@@ -115,7 +115,7 @@ resource "aws_cloudwatch_metric_alarm" "workers_add_capacity" {
   alarm_name = "${var.env}-workers-${var.site}-${var.index}-add-capacity"
   comparison_operator = "LessThanThreshold"
   evaluation_periods = 2
-  metric_name = "v1.travis.rabbitmq.consumers.${var.env}.builds.docker.headroom"
+  metric_name = "v1.travis.rabbitmq.consumers.${var.env}.builds.ec2.headroom"
   namespace = "${var.worker_asg_namespace}"
   period = 60
   statistic = "Maximum"
