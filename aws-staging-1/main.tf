@@ -36,7 +36,6 @@ module "aws_asg_org" {
   cyclist_auth_tokens = "${var.cyclist_auth_tokens}"
   cyclist_debug = "true"
   cyclist_scale = "web=1:Hobby"
-  cyclist_version = "meat-lifecycle-tracking"
   env = "${var.env}"
   heroku_org = "${var.aws_heroku_org}"
   index = "1"
