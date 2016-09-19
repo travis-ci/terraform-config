@@ -53,7 +53,7 @@ resource "aws_autoscaling_group" "workers" {
 
   tag {
     key = "Name"
-    value = "${var.env}-worker-${var.site}-${var.index}-docker"
+    value = "${var.env}-worker-${var.site}-${var.index}-ec2"
     propagate_at_launch = true
   }
   tag {
