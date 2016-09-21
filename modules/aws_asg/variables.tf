@@ -21,7 +21,6 @@ variable "worker_asg_scale_out_cooldown" { default = 300 }
 variable "worker_asg_scale_out_qty" { default = 1 }
 variable "worker_asg_scale_out_threshold" { default = "48.0" }
 variable "worker_config" {}
-variable "worker_subnets" {}
 variable "worker_docker_image_android" {}
 variable "worker_docker_image_default" {}
 variable "worker_docker_image_erlang" {}
@@ -33,3 +32,5 @@ variable "worker_docker_image_perl" {}
 variable "worker_docker_image_php" {}
 variable "worker_docker_image_python" {}
 variable "worker_docker_image_ruby" {}
+variable "worker_docker_self_image" { default = "quay.io/travisci/worker:v2.4.0" }
+variable "worker_subnets" {}

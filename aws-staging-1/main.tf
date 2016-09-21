@@ -44,7 +44,7 @@ module "aws_asg_org" {
   syslog_address = "${var.syslog_address}"
   worker_ami = "${var.aws_worker_ami}"
   worker_asg_max_size = "1"
-  worker_asg_min_size = "0"
+  worker_asg_min_size = "1"
   worker_asg_namespace = "Travis/org-staging"
   worker_asg_scale_in_threshold = "16"
   worker_asg_scale_out_threshold = "8"
@@ -60,6 +60,7 @@ module "aws_asg_org" {
   worker_docker_image_php = "${var.worker_docker_image_php}"
   worker_docker_image_python = "${var.worker_docker_image_python}"
   worker_docker_image_ruby = "${var.worker_docker_image_ruby}"
+  worker_docker_self_image = "quay.io/travisci/worker:v2.4.0-21-g26f8d21"
   worker_subnets = "${module.aws_az_1b.workers_org_subnet_id},${module.aws_az_1e.workers_org_subnet_id}"
 }
 
