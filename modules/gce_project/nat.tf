@@ -9,7 +9,7 @@ resource "google_compute_instance" "nat-b" {
   disk {
     auto_delete = true
     image = "${var.nat_image}"
-    type = "pd-ssd"
+    # type = "pd-ssd"
   }
 
   network_interface {
