@@ -182,6 +182,7 @@ __set_hostname() {
   local index
   local env
   local site
+  local queue
 
   # shellcheck disable=SC2034
   local instance_id="$${1}"
