@@ -4,3 +4,4 @@ aws-*/config/
 gce-*/config/
 terraform.tfvars
 *.tfplan
+graph.png

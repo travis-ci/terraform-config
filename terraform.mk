@@ -40,5 +40,9 @@ clean:
 distclean: clean
 	$(RM) -r .terraform/
 
+.PHONY: graph
+graph:
+	terraform graph -draw-cycles | dot -Tpng > graph.png
+
 $(TFVARS):
 	trvs generate-config -f json terraform-config $(subst -,_,$(ENV_NAME)) >$@
