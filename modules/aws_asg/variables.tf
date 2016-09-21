@@ -33,4 +33,5 @@ variable "worker_docker_image_php" {}
 variable "worker_docker_image_python" {}
 variable "worker_docker_image_ruby" {}
 variable "worker_docker_self_image" { default = "quay.io/travisci/worker:v2.4.0" }
+variable "worker_queue" {}
 variable "worker_subnets" {}

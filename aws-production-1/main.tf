@@ -42,11 +42,16 @@ module "aws_asg_org" {
   site = "org"
   syslog_address = "${var.syslog_address}"
   worker_ami = "${var.aws_worker_ami}"
-  worker_asg_max_size = "1" # TODO: remove limit for real deployment
-  worker_asg_min_size = "1" # TODO: remove limit for real deployment
+  # NOTE: builds.docker value for org production
+  # worker_asg_max_size = "75"
+  worker_asg_max_size = "3"
+  worker_asg_min_size = "1"
   worker_asg_namespace = "Travis/org"
-  worker_asg_scale_in_threshold = "16" # TODO: remove limit for real deployment
-  worker_asg_scale_out_threshold = "8" # TODO: remove limit for real deployment
+  # NOTE: builds.docker values for org production
+  # worker_asg_scale_in_threshold = "64"
+  # worker_asg_scale_out_threshold = "48"
+  worker_asg_scale_in_threshold = "16"
+  worker_asg_scale_out_threshold = "8"
   worker_config = "${file("${path.module}/config/worker-env-org")}"
   worker_docker_image_android = "${var.worker_docker_image_android}"
   worker_docker_image_default = "${var.worker_docker_image_default}"
@@ -60,6 +65,7 @@ module "aws_asg_org" {
   worker_docker_image_python = "${var.worker_docker_image_python}"
   worker_docker_image_ruby = "${var.worker_docker_image_ruby}"
   worker_docker_self_image = "quay.io/travisci/worker:v2.4.0-23-g396d039"
+  worker_queue = "ec2"
   worker_subnets = "${module.aws_az_1b.workers_org_subnet_id},${module.aws_az_1e.workers_org_subnet_id}"
 }
 
@@ -75,11 +81,16 @@ module "aws_asg_com" {
   site = "com"
   syslog_address = "${var.syslog_address}"
   worker_ami = "${var.aws_worker_ami}"
-  worker_asg_max_size = "1" # TODO: remove limit for real deployment
-  worker_asg_min_size = "1" # TODO: remove limit for real deployment
+  # NOTE: builds.docker value for com production
+  # worker_asg_max_size = "100"
+  worker_asg_max_size = "3"
+  worker_asg_min_size = "1"
   worker_asg_namespace = "Travis/com"
-  worker_asg_scale_in_threshold = "16" # TODO: remove limit for real deployment
-  worker_asg_scale_out_threshold = "8" # TODO: remove limit for real deployment
+  # NOTE: builds.docker values for com production
+  # worker_asg_scale_in_threshold = "100"
+  # worker_asg_scale_out_threshold = "60"
+  worker_asg_scale_in_threshold = "16"
+  worker_asg_scale_out_threshold = "8"
   worker_config = "${file("${path.module}/config/worker-env-com")}"
   worker_docker_image_android = "${var.worker_docker_image_android}"
   worker_docker_image_default = "${var.worker_docker_image_default}"
@@ -93,5 +104,6 @@ module "aws_asg_com" {
   worker_docker_image_python = "${var.worker_docker_image_python}"
   worker_docker_image_ruby = "${var.worker_docker_image_ruby}"
   worker_docker_self_image = "quay.io/travisci/worker:v2.4.0-23-g396d039"
+  worker_queue = "ec2"
   worker_subnets = "${module.aws_az_1b.workers_com_subnet_id},${module.aws_az_1e.workers_com_subnet_id}"
 }
