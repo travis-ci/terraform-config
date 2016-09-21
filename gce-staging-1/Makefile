@@ -58,4 +58,4 @@ $(CONFIG_FILES):
 		>config/vault-consul-env
 
 $(TFVARS):
-	trvs generate-config -f json terraform-config gce_staging >$@
+	trvs generate-config -f json terraform-config gce_staging_1 >$@

@@ -52,4 +52,4 @@ $(CONFIG_FILES):
 		| sed 's/^/export /' >config/bastion-env
 
 $(TFVARS):
-	trvs generate-config -f json terraform-config aws_staging >$@
+	trvs generate-config -f json terraform-config aws_staging_1 >$@
