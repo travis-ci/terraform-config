@@ -3,6 +3,7 @@ variable "bastion_ami" {}
 variable "bastion_config" {}
 variable "env" {}
 variable "gateway_id" {}
+variable "index" {}
 variable "nat_ami" {}
 variable "nat_instance_type" {}
 variable "public_subnet" {}

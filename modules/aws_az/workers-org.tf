@@ -3,7 +3,7 @@ resource "aws_subnet" "workers_org" {
   cidr_block = "${var.workers_org_subnet}"
   availability_zone = "us-east-${var.az}"
   tags = {
-    Name = "${var.env}-workers-org-${var.az}"
+    Name = "${var.env}-${var.index}-workers-org-${var.az}"
   }
 }
 
@@ -22,7 +22,7 @@ resource "aws_route_table_association" "workers_org" {
 }
 
 resource "aws_security_group" "workers_org" {
-  name = "${var.env}-workers-org-nat-${var.az}"
+  name = "${var.env}-${var.index}-workers-org-nat-${var.az}"
   description = "NAT Security Group for Workers VPC"
   vpc_id = "${var.vpc_id}"
 

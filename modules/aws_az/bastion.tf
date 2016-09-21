@@ -5,7 +5,7 @@ resource "aws_eip" "bastion" {
 }
 
 resource "aws_security_group" "bastion" {
-  name = "${var.env}-bastion-${var.az}"
+  name = "${var.env}-${var.index}-bastion-${var.az}"
   description = "Security Group for bastion server for Workers VPC"
   vpc_id = "${var.vpc_id}"
 
@@ -30,6 +30,7 @@ data "template_file" "bastion_cloud_init" {
   vars {
     bastion_config = "${var.bastion_config}"
     env = "${var.env}"
+    index = "${var.index}"
   }
 }
 
@@ -39,7 +40,7 @@ resource "aws_instance" "bastion" {
   vpc_security_group_ids = ["${aws_security_group.bastion.id}"]
   subnet_id = "${aws_subnet.public.id}"
   tags = {
-    Name = "${var.env}-bastion-${var.az}"
+    Name = "${var.env}-${var.index}-bastion-${var.az}"
   }
   user_data = "${data.template_file.bastion_cloud_init.rendered}"
 }
