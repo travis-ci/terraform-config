@@ -24,7 +24,7 @@ done
 
 for f in $(git ls-files '*Makefile'); do
   echo -en "${f} "
-  make -f "${f}" -p >/dev/null
+  make -C "$(dirname "${f}")" -p >/dev/null
   echo "✓"
 done
 
