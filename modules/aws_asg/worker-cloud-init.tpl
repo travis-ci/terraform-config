@@ -22,8 +22,9 @@ __restart_worker() {
 
 __write_travis_worker_configs() {
   # declared for shellcheck
-  local worker_config
   local cyclist_url
+  local worker_config
+  local worker_docker_self_image
 
   local instance_id="$${1}"
 
