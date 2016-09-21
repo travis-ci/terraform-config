@@ -23,7 +23,7 @@ module "aws_az_1e" {
   env = "${var.env}"
   gateway_id = "${aws_internet_gateway.gw.id}"
   nat_ami = "${var.aws_nat_ami}"
-  nat_instance_type = "c3.large" # NOTE: production is c3.8xlarge
+  nat_instance_type = "c3.8xlarge"
   public_subnet = "10.2.4.0/24"
   vpc_id = "${aws_vpc.main.id}"
   workers_com_subnet = "10.2.6.0/24"
@@ -34,21 +34,19 @@ module "aws_asg_org" {
   source = "../modules/aws_asg"
 
   cyclist_auth_tokens = "${var.cyclist_auth_tokens}"
-  cyclist_debug = "true"
-  cyclist_scale = "web=1:Hobby"
   cyclist_version = "v0.1.0"
   env = "${var.env}"
   heroku_org = "${var.aws_heroku_org}"
-  index = "1"
+  index = "${var.index}"
   security_groups = "${module.aws_az_1b.workers_org_security_group_id},${module.aws_az_1e.workers_org_security_group_id}"
   site = "org"
   syslog_address = "${var.syslog_address}"
   worker_ami = "${var.aws_worker_ami}"
-  worker_asg_max_size = "1"
-  worker_asg_min_size = "1"
-  worker_asg_namespace = "Travis/org-staging"
-  worker_asg_scale_in_threshold = "16"
-  worker_asg_scale_out_threshold = "8"
+  worker_asg_max_size = "1" # TODO: remove limit for real deployment
+  worker_asg_min_size = "1" # TODO: remove limit for real deployment
+  worker_asg_namespace = "Travis/org"
+  worker_asg_scale_in_threshold = "16" # TODO: remove limit for real deployment
+  worker_asg_scale_out_threshold = "8" # TODO: remove limit for real deployment
   worker_config = "${file("${path.module}/config/worker-env-org")}"
   worker_docker_image_android = "${var.worker_docker_image_android}"
   worker_docker_image_default = "${var.worker_docker_image_default}"
@@ -69,21 +67,19 @@ module "aws_asg_com" {
   source = "../modules/aws_asg"
 
   cyclist_auth_tokens = "${var.cyclist_auth_tokens}"
-  cyclist_debug = "true"
-  cyclist_scale = "web=1:Hobby"
   cyclist_version = "v0.1.0"
   env = "${var.env}"
   heroku_org = "${var.aws_heroku_org}"
-  index = "1"
+  index = "${var.index}"
   security_groups = "${module.aws_az_1b.workers_com_security_group_id},${module.aws_az_1e.workers_com_security_group_id}"
   site = "com"
   syslog_address = "${var.syslog_address}"
   worker_ami = "${var.aws_worker_ami}"
-  worker_asg_max_size = "1"
-  worker_asg_min_size = "1"
-  worker_asg_namespace = "Travis/com-staging"
-  worker_asg_scale_in_threshold = "16"
-  worker_asg_scale_out_threshold = "8"
+  worker_asg_max_size = "1" # TODO: remove limit for real deployment
+  worker_asg_min_size = "1" # TODO: remove limit for real deployment
+  worker_asg_namespace = "Travis/com"
+  worker_asg_scale_in_threshold = "16" # TODO: remove limit for real deployment
+  worker_asg_scale_out_threshold = "8" # TODO: remove limit for real deployment
   worker_config = "${file("${path.module}/config/worker-env-com")}"
   worker_docker_image_android = "${var.worker_docker_image_android}"
   worker_docker_image_default = "${var.worker_docker_image_default}"

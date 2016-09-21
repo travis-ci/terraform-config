@@ -14,7 +14,7 @@ module "gce_project_1" {
   gcloud_cleanup_scale = "worker=1:Hobby"
   gcloud_zone = "${var.gce_gcloud_zone}"
   heroku_org = "${var.gce_heroku_org}"
-  index = "1"
+  index = "${var.index}"
   nat_image = "${var.gce_nat_image}"
   project = "travis-staging-1"
   worker_account_json_com = "${file("${path.module}/config/gce-workers-staging.json")}"
