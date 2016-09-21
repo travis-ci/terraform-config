@@ -21,6 +21,7 @@ data "template_file" "worker_cloud_init" {
     worker_docker_image_php = "${var.worker_docker_image_php}"
     worker_docker_image_python = "${var.worker_docker_image_python}"
     worker_docker_image_ruby = "${var.worker_docker_image_ruby}"
+    worker_docker_self_image = "${var.worker_docker_self_image}"
   }
 }
 

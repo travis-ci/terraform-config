@@ -22,8 +22,9 @@ __restart_worker() {
 
 __write_travis_worker_configs() {
   # declared for shellcheck
-  local worker_config
   local cyclist_url
+  local worker_config
+  local worker_docker_self_image
 
   local instance_id="$${1}"
 
@@ -32,10 +33,11 @@ ${worker_config}
 EOF
   cat >/etc/default/travis-worker-cloud-init <<EOF
 export TRAVIS_WORKER_HEARTBEAT_URL=${cyclist_url}/heartbeats/$${instance_id}
+export TRAVIS_WORKER_HEARTBEAT_URL_AUTH_TOKEN=file:///var/tmp/travis-run.d/instance-token
 export TRAVIS_WORKER_PRESTART_HOOK=/var/tmp/travis-run.d/travis-worker-prestart-hook
 export TRAVIS_WORKER_START_HOOK=/var/tmp/travis-run.d/travis-worker-start-hook
 export TRAVIS_WORKER_STOP_HOOK=/var/tmp/travis-run.d/travis-worker-stop-hook
-export TRAVIS_WORKER_SELF_IMAGE=quay.io/travisci/worker:v2.4.0-18-ga583128
+export TRAVIS_WORKER_SELF_IMAGE=${worker_docker_self_image}
 EOF
 }
 
@@ -60,21 +62,27 @@ __write_travis_worker_hooks() {
   mkdir -p /var/tmp/travis-run.d
   cat >/var/tmp/travis-run.d/travis-worker-start-hook <<EOF
 #!/bin/bash
+[[ -f /var/tmp/travis-run.d/instance-token ]] || {
+  echo "Missing instance token" >&2
+  exit 1
+}
 exec curl \\
   -f \\
-  -s \\
   -X POST \\
-  -H 'Authorization: token ${cyclist_auth_token}' \\
+  -H "Authorization: token \$(cat /var/tmp/travis-run.d/instance-token)" \\
   "${cyclist_url}/launches/$${instance_id}"
 EOF
   chmod +x /var/tmp/travis-run.d/travis-worker-start-hook
   cat >/var/tmp/travis-run.d/travis-worker-stop-hook <<EOF
 #!/bin/bash
+[[ -f /var/tmp/travis-run.d/instance-token ]] || {
+  echo "Missing instance token" >&2
+  exit 1
+}
 exec curl \\
   -f \\
-  -s \\
   -X POST \\
-  -H 'Authorization: token ${cyclist_auth_token}' \\
+  -H "Authorization: token \$(cat /var/tmp/travis-run.d/instance-token)" \\
   "${cyclist_url}/terminations/$${instance_id}"
 EOF
   chmod +x /var/tmp/travis-run.d/travis-worker-stop-hook
@@ -83,6 +91,16 @@ EOF
 set -o errexit
 
 main() {
+  if [[ ! -f /var/tmp/travis-run.d/instance-token ]]; then
+    curl \\
+      -f \\
+      -s \\
+      -o /var/tmp/travis-run.d/instance-token \\
+      -H 'Accept: text/plain' \\
+      -H 'Authorization: token ${cyclist_auth_token}' \\
+      "${cyclist_url}/tokens/$${instance_id}"
+  fi
+
   set -o xtrace
 
   local i=0
