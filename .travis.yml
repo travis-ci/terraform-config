@@ -33,6 +33,6 @@ before_install:
     go get -x github.com/mvdan/sh/cmd/shfmt ;
   fi
 script:
-- bundle exec ./runtests --env .example.env
+- ./runtests --env .example.env
 - git diff --exit-code
 - git diff --cached --exit-code
