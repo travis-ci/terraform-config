@@ -2,7 +2,7 @@ data "template_file" "worker_cloud_init" {
   template = "${file("${path.module}/worker-cloud-init.tpl")}"
 
   vars {
-    cyclist_auth_token = "${element(split(",", var.cyclist_auth_tokens), var.index - 1)}"
+    cyclist_auth_token = "${element(split(",", var.cyclist_auth_tokens), var.index)}"
     cyclist_url = "${replace(heroku_app.cyclist.web_url, "/\\/$/", "")}"
     env = "${var.env}"
     index = "${var.index}"
