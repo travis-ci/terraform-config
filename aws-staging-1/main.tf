@@ -36,6 +36,7 @@ module "aws_asg_org" {
   cyclist_auth_tokens = "${var.cyclist_auth_tokens}"
   cyclist_debug = "true"
   cyclist_scale = "web=1:Hobby"
+  cyclist_version = "v0.1.0"
   env = "${var.env}"
   heroku_org = "${var.aws_heroku_org}"
   index = "1"
@@ -60,7 +61,7 @@ module "aws_asg_org" {
   worker_docker_image_php = "${var.worker_docker_image_php}"
   worker_docker_image_python = "${var.worker_docker_image_python}"
   worker_docker_image_ruby = "${var.worker_docker_image_ruby}"
-  worker_docker_self_image = "quay.io/travisci/worker:v2.4.0-21-g26f8d21"
+  worker_docker_self_image = "quay.io/travisci/worker:v2.4.0-23-g396d039"
   worker_subnets = "${module.aws_az_1b.workers_org_subnet_id},${module.aws_az_1e.workers_org_subnet_id}"
 }
 
@@ -70,6 +71,7 @@ module "aws_asg_com" {
   cyclist_auth_tokens = "${var.cyclist_auth_tokens}"
   cyclist_debug = "true"
   cyclist_scale = "web=1:Hobby"
+  cyclist_version = "v0.1.0"
   env = "${var.env}"
   heroku_org = "${var.aws_heroku_org}"
   index = "1"
@@ -77,6 +79,8 @@ module "aws_asg_com" {
   site = "com"
   syslog_address = "${var.syslog_address}"
   worker_ami = "${var.aws_worker_ami}"
+  worker_asg_max_size = "1"
+  worker_asg_min_size = "1"
   worker_asg_namespace = "Travis/com-staging"
   worker_asg_scale_in_threshold = "16"
   worker_asg_scale_out_threshold = "8"
@@ -92,5 +96,6 @@ module "aws_asg_com" {
   worker_docker_image_php = "${var.worker_docker_image_php}"
   worker_docker_image_python = "${var.worker_docker_image_python}"
   worker_docker_image_ruby = "${var.worker_docker_image_ruby}"
+  worker_docker_self_image = "quay.io/travisci/worker:v2.4.0-23-g396d039"
   worker_subnets = "${module.aws_az_1b.workers_com_subnet_id},${module.aws_az_1e.workers_com_subnet_id}"
 }
