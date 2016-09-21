@@ -29,7 +29,7 @@ data "template_file" "worker_cloud_init" {
 resource "aws_launch_configuration" "workers" {
   name_prefix = "${var.env}-workers-${var.site}-${var.index}-"
   image_id = "${var.worker_ami}"
-  instance_type = "c3.2xlarge"
+  instance_type = "${var.worker_instance_type}"
 
   security_groups = ["${split(",", var.security_groups)}"]
 

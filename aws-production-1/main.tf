@@ -65,6 +65,7 @@ module "aws_asg_org" {
   worker_docker_image_python = "${var.worker_docker_image_python}"
   worker_docker_image_ruby = "${var.worker_docker_image_ruby}"
   worker_docker_self_image = "quay.io/travisci/worker:v2.4.0-23-g396d039"
+  worker_instance_type = "c3.8xlarge"
   worker_queue = "ec2"
   worker_subnets = "${module.aws_az_1b.workers_org_subnet_id},${module.aws_az_1e.workers_org_subnet_id}"
 }
@@ -104,6 +105,7 @@ module "aws_asg_com" {
   worker_docker_image_python = "${var.worker_docker_image_python}"
   worker_docker_image_ruby = "${var.worker_docker_image_ruby}"
   worker_docker_self_image = "quay.io/travisci/worker:v2.4.0-23-g396d039"
+  worker_instance_type = "c3.8xlarge"
   worker_queue = "ec2"
   worker_subnets = "${module.aws_az_1b.workers_com_subnet_id},${module.aws_az_1e.workers_com_subnet_id}"
 }
