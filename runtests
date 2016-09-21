@@ -6,11 +6,6 @@ set -o pipefail
 if [[ $# -gt 1 && $1 = --env ]]; then
   echo "Running isolated with env ${2}"
   exec env -i HOME="${HOME}" PATH="${PATH}" \
-    BUNDLE_GEMFILE="${BUNDLE_GEMFILE}" \
-    BUNDLE_BIN_PATH="${BUNDLE_BIN_PATH}" \
-    BUNDLE_ORIG_PATH="${BUNDLE_ORIG_PATH}" \
-    RUBYLIB="${RUBYLIB}" \
-    RUBYOPT="${RUBYOPT}" \
     TERM="${TERM}" \
     LANG="${LANG}" \
     bash -c "source '${2}' && bash ${BASH_SOURCE[0]}"
@@ -39,5 +34,3 @@ for d in $(git ls-files '*.tf' | xargs -n1 dirname | sort | uniq); do
   terraform validate "${d}"
   echo "✓"
 done
-
-rubocop
