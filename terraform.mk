@@ -1,23 +1,28 @@
 ENV_NAME := $(notdir $(shell cd $(PWD) && pwd))
 ENV_SHORT := $(word 2,$(subst -, ,$(ENV_NAME)))
+INFRA ?= $(word 1,$(subst -, ,$(ENV_NAME)))
 TFVARS := $(PWD)/terraform.tfvars
 TFSTATE := $(PWD)/.terraform/terraform.tfstate
 TFPLAN := $(PWD)/$(ENV_NAME).tfplan
 TFCONF := $(PWD)/.terraform/configured
 
 .PHONY: hello
-hello:
-	@echo "Hello there, human.  This is env=$(ENV_NAME) (short=$(ENV_SHORT))"
+hello: announce
+	@echo "Hello there, human."
 	@echo "Would you like to:"
 	@echo "  make plan  - plan your demise"
 	@echo "  make apply - dance with the devil in the pale moonlight"
 
+.PHONY: announce
+announce:
+	@echo "👋 🎉  This is env=$(ENV_NAME) (short=$(ENV_SHORT) infra=$(INFRA))"
+
 .PHONY: apply
-apply: .config $(TFVARS) $(TFSTATE)
+apply: announce .config $(TFVARS) $(TFSTATE)
 	terraform apply $(TFPLAN)
 
 .PHONY: plan
-plan: .config $(TFVARS) $(TFSTATE)
+plan: announce .config $(TFVARS) $(TFSTATE)
 	terraform plan -module-depth=-1 -out=$(TFPLAN)
 
 $(TFCONF): .config $(TFVARS)
@@ -33,7 +38,7 @@ $(TFSTATE): $(TFCONF)
 	terraform get
 
 .PHONY: clean
-clean:
+clean: announce
 	$(RM) -r config $(TFVARS) $(TFCONF)
 
 .PHONY: distclean

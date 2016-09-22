@@ -13,9 +13,9 @@ CONFIG_FILES := \
 
 $(CONFIG_FILES):
 	mkdir -p config
-	trvs generate-config -p travis_worker -f env aws-workers $(ENV_SHORT) \
+	trvs generate-config -p travis_worker -f env $(INFRA)-workers $(ENV_SHORT) \
 		| sed 's/^/export /' >config/worker-env-org
-	trvs generate-config --pro -p travis_worker -f env aws-workers $(ENV_SHORT) \
+	trvs generate-config --pro -p travis_worker -f env $(INFRA)-workers $(ENV_SHORT) \
 		| sed 's/^/export /' >config/worker-env-com
-	trvs generate-config --pro -p aws_bastion -f env aws-bastion $(ENV_SHORT) \
+	trvs generate-config --pro -p aws_bastion -f env $(INFRA)-bastion $(ENV_SHORT) \
 		| sed 's/^/export /' >config/bastion-env
