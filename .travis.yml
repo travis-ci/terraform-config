@@ -11,6 +11,7 @@ env:
   - PATH="${HOME}/bin:${HOME}/gopath/bin:${PATH}"
   - GOPATH="${HOME}/gopath"
   - SHELLCHECK_URL="https://s3.amazonaws.com/travis-blue-public/binaries/ubuntu/14.04/x86_64/shellcheck-0.4.4.tar.bz2"
+  - SHFMT_URL="https://github.com/mvdan/sh/releases/download/v0.1.0/shfmt_v0.1.0_linux_amd64"
   - TMPDIR="${TMPDIR:-/tmp}"
 before_install:
 - mkdir -p "${HOME}/gopath/bin"
@@ -29,8 +30,8 @@ before_install:
     curl -sSL "${SHELLCHECK_URL}" | tar -C "${HOME}/bin" -xjf - ;
   fi
 - if ! command -v shfmt ; then
-    eval "$(gimme 1.6.3)" ;
-    go get -x github.com/mvdan/sh/cmd/shfmt ;
+    curl -sSL "${SHFMT_URL}" -o "${HOME}/bin/shfmt" ;
+    chmod +x "${HOME}/bin/shfmt" ;
   fi
 script:
 - ./runtests --env .example.env
