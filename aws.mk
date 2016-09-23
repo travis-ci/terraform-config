@@ -4,7 +4,6 @@ include $(shell git rev-parse --show-toplevel)/terraform.mk
 default: hello
 
 CONFIG_FILES := \
-	config/bastion-env \
 	config/worker-env-com \
 	config/worker-env-org
 
@@ -17,5 +16,3 @@ $(CONFIG_FILES):
 		| sed 's/^/export /' >config/worker-env-org
 	trvs generate-config --pro -p travis_worker -f env $(INFRA)-workers $(ENV_SHORT) \
 		| sed 's/^/export /' >config/worker-env-com
-	trvs generate-config --pro -p aws_bastion -f env $(INFRA)-bastion $(ENV_SHORT) \
-		| sed 's/^/export /' >config/bastion-env

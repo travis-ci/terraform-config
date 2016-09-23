@@ -12,7 +12,7 @@ resource "aws_route_table" "workers_org" {
 
   route {
     cidr_block = "0.0.0.0/0"
-    instance_id = "${aws_instance.nat.id}"
+    instance_id = "${var.nat_id}"
   }
 }
 
@@ -30,7 +30,7 @@ resource "aws_security_group" "workers_org" {
     from_port = 22
     to_port = 22
     protocol = "tcp"
-    security_groups = ["${aws_security_group.bastion.id}"]
+    security_groups = ["${var.bastion_security_group_id}"]
   }
 
   egress {

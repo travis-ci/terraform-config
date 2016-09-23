@@ -1,12 +1,10 @@
 variable "az" {}
-variable "bastion_ami" {}
-variable "bastion_config" {}
+variable "bastion_security_group_id" {}
 variable "env" {}
 variable "gateway_id" {}
 variable "index" {}
-variable "nat_ami" {}
-variable "nat_instance_type" {}
+variable "nat_id" {}
 variable "public_subnet" {}
 variable "vpc_id" {}
-variable "workers_org_subnet" {}
 variable "workers_com_subnet" {}
+variable "workers_org_subnet" {}

@@ -1,3 +1,11 @@
+resource "aws_route53_zone" "az" {
+  name = "aws-us-east-${var.az}.travisci.net"
+
+  tags {
+    AvailabilityZone = "${var.az}"
+  }
+}
+
 resource "aws_subnet" "public" {
   vpc_id = "${var.vpc_id}"
   cidr_block = "${var.public_subnet}"
@@ -39,8 +47,8 @@ resource "aws_security_group" "nat" {
     protocol = "-1"
     cidr_blocks = [
       "${aws_subnet.public.cidr_block}",
-      "${aws_subnet.workers_org.cidr_block}",
-      "${aws_subnet.workers_com.cidr_block}",
+      "${var.workers_org_subnet}",
+      "${var.workers_com_subnet}",
     ]
   }
 

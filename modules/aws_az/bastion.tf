@@ -6,7 +6,7 @@ resource "aws_eip" "bastion" {
 
 resource "aws_security_group" "bastion" {
   name = "${var.env}-${var.index}-bastion-${var.az}"
-  description = "Security Group for bastion server for Workers VPC"
+  description = "Security Group for bastion server for VPC"
   vpc_id = "${var.vpc_id}"
 
   ingress {
@@ -43,4 +43,12 @@ resource "aws_instance" "bastion" {
     Name = "${var.env}-${var.index}-bastion-${var.az}"
   }
   user_data = "${data.template_file.bastion_cloud_init.rendered}"
+}
+
+resource "aws_route53_record" "bastion" {
+  zone_id = "${aws_route53_zone.az.zone_id}"
+  name = "bastion.aws-us-east-${var.az}.travisci.net"
+  type = "A"
+  ttl = "300"
+  records = ["${aws_eip.bastion.public_ip}"]
 }
