@@ -15,13 +15,8 @@ module "aws_az_1b" {
   az = "1b"
   bastion_security_group_id = "${data.terraform_remote_state.vpc.bastion_security_group_id_1b}"
   env = "${var.env}"
-  gateway_id = "${data.terraform_remote_state.vpc.gateway_id}"
   index = "${var.index}"
-  nat_id = "${data.terraform_remote_state.vpc.nat_id_1b}"
-  public_subnet = "${data.terraform_remote_state.vpc.public_subnet_1b}"
   vpc_id = "${data.terraform_remote_state.vpc.vpc_id}"
-  workers_com_subnet = "${data.terraform_remote_state.vpc.workers_com_subnet_1b}"
-  workers_org_subnet = "${data.terraform_remote_state.vpc.workers_org_subnet_1b}"
 }
 
 module "aws_az_1e" {
@@ -30,13 +25,8 @@ module "aws_az_1e" {
   az = "1e"
   bastion_security_group_id = "${data.terraform_remote_state.vpc.bastion_security_group_id_1e}"
   env = "${var.env}"
-  gateway_id = "${data.terraform_remote_state.vpc.gateway_id}"
   index = "${var.index}"
-  nat_id = "${data.terraform_remote_state.vpc.nat_id_1e}"
-  public_subnet = "${data.terraform_remote_state.vpc.public_subnet_1e}"
   vpc_id = "${data.terraform_remote_state.vpc.vpc_id}"
-  workers_com_subnet = "${data.terraform_remote_state.vpc.workers_com_subnet_1e}"
-  workers_org_subnet = "${data.terraform_remote_state.vpc.workers_org_subnet_1e}"
 }
 
 module "aws_asg_org" {
@@ -72,7 +62,7 @@ module "aws_asg_org" {
   worker_docker_image_ruby = "quay.io/travisci/ci-garnet:packer-1473395986"
   worker_docker_self_image = "quay.io/travisci/worker:v2.4.0-23-g396d039"
   worker_queue = "ec2"
-  worker_subnets = "${module.aws_az_1b.workers_org_subnet_id},${module.aws_az_1e.workers_org_subnet_id}"
+  worker_subnets = "${data.terraform_remote_state.vpc.workers_org_subnet_1b_id},${data.terraform_remote_state.vpc.workers_org_subnet_1e_id}"
 }
 
 module "aws_asg_com" {
@@ -108,5 +98,5 @@ module "aws_asg_com" {
   worker_docker_image_ruby = "quay.io/travisci/ci-garnet:packer-1473395986"
   worker_docker_self_image = "quay.io/travisci/worker:v2.4.0-23-g396d039"
   worker_queue = "ec2"
-  worker_subnets = "${module.aws_az_1b.workers_com_subnet_id},${module.aws_az_1e.workers_com_subnet_id}"
+  worker_subnets = "${data.terraform_remote_state.vpc.workers_com_subnet_1b_id},${data.terraform_remote_state.vpc.workers_com_subnet_1e_id}"
 }

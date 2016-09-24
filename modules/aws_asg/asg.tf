@@ -51,7 +51,7 @@ resource "aws_autoscaling_group" "workers" {
   health_check_grace_period = 0
   health_check_type = "EC2"
   launch_configuration = "${aws_launch_configuration.workers.name}"
-  default_cooldown = 0
+  default_cooldown = 300
   termination_policies = [
     "OldestLaunchConfiguration",
     "OldestInstance",
