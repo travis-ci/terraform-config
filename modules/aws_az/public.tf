@@ -20,6 +20,26 @@ resource "aws_route_table" "public" {
   vpc_id = "${var.vpc_id}"
 
   route {
+    cidr_block = "204.236.218.9/32"
+    instance_id = "${aws_instance.nat_quay.id}"
+  }
+
+  route {
+    cidr_block = "184.73.231.61/32"
+    instance_id = "${aws_instance.nat_quay.id}"
+  }
+
+  route {
+    cidr_block = "54.243.33.104/32"
+    instance_id = "${aws_instance.nat_quay.id}"
+  }
+
+  route {
+    cidr_block = "54.243.165.120/32"
+    instance_id = "${aws_instance.nat_quay.id}"
+  }
+
+  route {
     cidr_block = "0.0.0.0/0"
     gateway_id = "${var.gateway_id}"
   }
@@ -28,46 +48,4 @@ resource "aws_route_table" "public" {
 resource "aws_route_table_association" "public" {
   subnet_id = "${aws_subnet.public.id}"
   route_table_id = "${aws_route_table.public.id}"
-}
-
-resource "aws_eip" "nat" {
-  instance = "${aws_instance.nat.id}"
-  vpc = true
-  depends_on = ["aws_route_table.public"]
-}
-
-resource "aws_security_group" "nat" {
-  name = "${var.env}-${var.index}-public-nat-${var.az}"
-  description = "NAT Security Group for Public VPC"
-  vpc_id = "${var.vpc_id}"
-
-  ingress {
-    from_port = 0
-    to_port = 0
-    protocol = "-1"
-    cidr_blocks = [
-      "${aws_subnet.public.cidr_block}",
-      "${var.workers_org_subnet}",
-      "${var.workers_com_subnet}",
-    ]
-  }
-
-  egress {
-    from_port = 0
-    to_port = 0
-    protocol = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-
-resource "aws_instance" "nat" {
-  ami = "${var.nat_ami}"
-  instance_type = "${var.nat_instance_type}"
-  vpc_security_group_ids = ["${aws_security_group.nat.id}"]
-  subnet_id = "${aws_subnet.public.id}"
-  key_name = "travis-shared-key"
-  tags = {
-    Name = "${var.env}-${var.index}-nat-${var.az}"
-  }
-  source_dest_check = false
 }

@@ -6,6 +6,7 @@ variable "gateway_id" {}
 variable "index" {}
 variable "nat_ami" {}
 variable "nat_instance_type" {}
+variable "nat_quay_instance_type" {}
 variable "public_subnet" {}
 variable "vpc_id" {}
 variable "workers_org_subnet" {}

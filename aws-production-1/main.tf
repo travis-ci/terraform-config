@@ -43,7 +43,7 @@ module "aws_asg_org" {
   worker_ami = "ami-c6710cd1"
   # NOTE: builds.docker value for org production
   # worker_asg_max_size = "75"
-  worker_asg_max_size = "3"
+  worker_asg_max_size = "5"
   worker_asg_min_size = "1"
   worker_asg_namespace = "Travis/org"
   # NOTE: builds.docker values for org production
