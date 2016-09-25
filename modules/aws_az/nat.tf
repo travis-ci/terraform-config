@@ -43,7 +43,7 @@ resource "aws_instance" "nat" {
 resource "aws_instance" "nat_quay" {
   ami = "${var.nat_ami}"
   instance_type = "${var.nat_quay_instance_type}"
-  security_groups = ["${aws_security_group.nat.id}"]
+  vpc_security_group_ids = ["${aws_security_group.nat.id}"]
   subnet_id = "${aws_subnet.public.id}"
   source_dest_check = false
 

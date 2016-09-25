@@ -20,22 +20,22 @@ resource "aws_route_table" "public" {
   vpc_id = "${var.vpc_id}"
 
   route {
-    cidr_block = "204.236.218.9/32"
+    cidr_block = "107.22.236.225/32"
     instance_id = "${aws_instance.nat_quay.id}"
   }
 
   route {
-    cidr_block = "184.73.231.61/32"
+    cidr_block = "174.129.233.65/32"
     instance_id = "${aws_instance.nat_quay.id}"
   }
 
   route {
-    cidr_block = "54.243.33.104/32"
+    cidr_block = "184.73.225.107/32"
     instance_id = "${aws_instance.nat_quay.id}"
   }
 
   route {
-    cidr_block = "54.243.165.120/32"
+    cidr_block = "184.73.236.204/32"
     instance_id = "${aws_instance.nat_quay.id}"
   }
 
