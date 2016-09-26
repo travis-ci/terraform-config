@@ -7,17 +7,10 @@ variable "index" {}
 variable "nat_ami" {}
 variable "nat_instance_type" {}
 variable "public_subnet" {}
+variable "travisci_net_external_zone_id" {}
 variable "vpc_id" {}
-variable "workers_org_subnet" {}
 variable "workers_com_subnet" {}
-
-resource "aws_route53_zone" "az" {
-  name = "aws-us-east-${var.az}.travisci.net"
-
-  tags {
-    AvailabilityZone = "${var.az}"
-  }
-}
+variable "workers_org_subnet" {}
 
 resource "aws_subnet" "public" {
   vpc_id = "${var.vpc_id}"
@@ -112,7 +105,7 @@ resource "aws_eip" "bastion" {
 }
 
 resource "aws_route53_record" "bastion" {
-  zone_id = "${aws_route53_zone.az.zone_id}"
+  zone_id = "${var.travisci_net_external_zone_id}"
   name = "bastion-${var.env}-${var.index}.aws-us-east-${var.az}.travisci.net"
   type = "A"
   ttl = "300"

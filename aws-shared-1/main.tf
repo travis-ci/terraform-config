@@ -4,6 +4,7 @@ variable "index" { default = "1" }
 variable "nat_ami" { default = "ami-12c5b205" }
 variable "public_subnet_1b" { default = "10.10.1.0/24" }
 variable "public_subnet_1e" { default = "10.10.4.0/24" }
+variable "travisci_net_external_zone_id" {}
 variable "vpc_cidr" { default = "10.10.0.0/16" }
 variable "workers_com_subnet_1b" { default = "10.10.3.0/24" }
 variable "workers_com_subnet_1e" { default = "10.10.5.0/24" }
@@ -36,6 +37,7 @@ module "aws_az_1b" {
   nat_ami = "${var.nat_ami}"
   nat_instance_type = "c3.4xlarge"
   public_subnet = "${var.public_subnet_1b}"
+  travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
   vpc_id = "${aws_vpc.main.id}"
   workers_com_subnet = "${var.workers_com_subnet_1b}"
   workers_org_subnet = "${var.workers_org_subnet_1b}"
@@ -53,6 +55,7 @@ module "aws_az_1e" {
   nat_ami = "${var.nat_ami}"
   nat_instance_type = "c3.4xlarge"
   public_subnet = "${var.public_subnet_1e}"
+  travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
   vpc_id = "${aws_vpc.main.id}"
   workers_com_subnet = "${var.workers_com_subnet_1e}"
   workers_org_subnet = "${var.workers_org_subnet_1e}"
