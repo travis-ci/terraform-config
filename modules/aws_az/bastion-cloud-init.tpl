@@ -45,17 +45,14 @@ EOF
 
 __set_hostname() {
   # declared for shellcheck
-  local env
-  local index
+  local az
 
-  local instance_id
   local instance_ipv4
 
   # shellcheck disable=SC2034
-  instance_id="$(curl -s 'http://169.254.169.254/latest/meta-data/instance-id')"
   instance_ipv4="$(curl -s 'http://169.254.169.254/latest/meta-data/local-ipv4')"
 
-  local instance_hostname="bastion-$${instance_id#i-}.${env}-${index}.travis-ci.com"
+  local instance_hostname="bastion.aws-us-east-${az}.travisci.net"
   local hosts_line="$instance_ipv4 $instance_hostname $${instance%.*}"
 
   echo "$instance_hostname" | tee /etc/hostname

@@ -66,11 +66,6 @@ resource "aws_eip" "nat" {
   vpc = true
 }
 
-resource "aws_eip" "bastion" {
-  instance = "${aws_instance.bastion.id}"
-  vpc = true
-}
-
 resource "aws_security_group" "bastion" {
   name = "${var.env}-${var.index}-bastion-${var.az}"
   description = "Security Group for bastion server for VPC"
@@ -95,9 +90,8 @@ data "template_file" "bastion_cloud_init" {
   template = "${file("${path.module}/bastion-cloud-init.tpl")}"
 
   vars {
+    az = "${var.az}"
     bastion_config = "${var.bastion_config}"
-    env = "${var.env}"
-    index = "${var.index}"
   }
 }
 
@@ -110,6 +104,11 @@ resource "aws_instance" "bastion" {
     Name = "${var.env}-${var.index}-bastion-${var.az}"
   }
   user_data = "${data.template_file.bastion_cloud_init.rendered}"
+}
+
+resource "aws_eip" "bastion" {
+  instance = "${aws_instance.bastion.id}"
+  vpc = true
 }
 
 resource "aws_route53_record" "bastion" {
