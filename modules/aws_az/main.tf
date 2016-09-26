@@ -66,6 +66,7 @@ resource "aws_route_table_association" "public" {
 
 resource "aws_security_group" "nat" {
   name = "${var.env}-${var.index}-public-nat-${var.az}"
+  description = "NAT Security Group for Public VPC"
   vpc_id = "${var.vpc_id}"
 
   ingress {
@@ -121,6 +122,7 @@ resource "aws_eip" "bastion" {
 
 resource "aws_security_group" "bastion" {
   name = "${var.env}-${var.index}-bastion-${var.az}"
+  description = "Security Group for bastion server for VPC"
   vpc_id = "${var.vpc_id}"
 
   ingress {
