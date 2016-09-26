@@ -1,14 +1,14 @@
 variable "bastion_ami" { default = "ami-53d4a344" }
 variable "env" { default = "shared" }
-variable "index" { default = "1" }
+variable "index" { default = "2" }
 variable "nat_ami" { default = "ami-12c5b205" }
-variable "public_subnet_1b" { default = "10.10.1.0/24" }
-variable "public_subnet_1e" { default = "10.10.4.0/24" }
-variable "vpc_cidr" { default = "10.10.0.0/16" }
-variable "workers_com_subnet_1b" { default = "10.10.3.0/24" }
-variable "workers_com_subnet_1e" { default = "10.10.5.0/24" }
-variable "workers_org_subnet_1b" { default = "10.10.2.0/24" }
-variable "workers_org_subnet_1e" { default = "10.10.6.0/24" }
+variable "public_subnet_1b" { default = "10.12.1.0/24" }
+variable "public_subnet_1e" { default = "10.12.4.0/24" }
+variable "vpc_cidr" { default = "10.12.0.0/16" }
+variable "workers_com_subnet_1b" { default = "10.12.3.0/24" }
+variable "workers_com_subnet_1e" { default = "10.12.5.0/24" }
+variable "workers_org_subnet_1b" { default = "10.12.2.0/24" }
+variable "workers_org_subnet_1e" { default = "10.12.6.0/24" }
 
 provider "aws" {}
 
@@ -34,7 +34,7 @@ module "aws_az_1b" {
   gateway_id = "${aws_internet_gateway.gw.id}"
   index = "${var.index}"
   nat_ami = "${var.nat_ami}"
-  nat_instance_type = "c3.4xlarge"
+  nat_instance_type = "c3.8xlarge"
   public_subnet = "${var.public_subnet_1b}"
   vpc_id = "${aws_vpc.main.id}"
   workers_com_subnet = "${var.workers_com_subnet_1b}"
@@ -51,7 +51,7 @@ module "aws_az_1e" {
   gateway_id = "${aws_internet_gateway.gw.id}"
   index = "${var.index}"
   nat_ami = "${var.nat_ami}"
-  nat_instance_type = "c3.4xlarge"
+  nat_instance_type = "c3.8xlarge"
   public_subnet = "${var.public_subnet_1e}"
   vpc_id = "${aws_vpc.main.id}"
   workers_com_subnet = "${var.workers_com_subnet_1e}"
