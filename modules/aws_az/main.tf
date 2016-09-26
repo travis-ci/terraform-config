@@ -90,7 +90,7 @@ data "template_file" "bastion_cloud_init" {
   template = "${file("${path.module}/bastion-cloud-init.tpl")}"
 
   vars {
-    az = "${var.az}"
+    instance_hostname = "bastion-${var.env}-${var.index}.aws-us-east-${var.az}.travisci.net"
     bastion_config = "${var.bastion_config}"
   }
 }
@@ -113,7 +113,7 @@ resource "aws_eip" "bastion" {
 
 resource "aws_route53_record" "bastion" {
   zone_id = "${aws_route53_zone.az.zone_id}"
-  name = "bastion.aws-us-east-${var.az}.travisci.net"
+  name = "bastion-${var.env}-${var.index}.aws-us-east-${var.az}.travisci.net"
   type = "A"
   ttl = "300"
   records = ["${aws_eip.bastion.public_ip}"]
