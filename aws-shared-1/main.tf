@@ -21,6 +21,35 @@ resource "aws_vpc" "main" {
   }
 }
 
+resource "aws_route_table" "public" {
+  vpc_id = "${aws_vpc.main.id}"
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = "${aws_internet_gateway.gw.id}"
+  }
+}
+
+resource "aws_vpc_endpoint" "s3" {
+  vpc_id = "${aws_vpc.main.id}"
+  service_name = "com.amazonaws.us-east-1.s3"
+  route_table_ids = ["${aws_route_table.public.id}"]
+  policy = <<EOF
+{
+  "Version": "2008-10-17",
+  "Statement": [
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "*",
+      "Resource": "*"
+    }
+  ]
+}
+EOF
+}
+
 resource "aws_internet_gateway" "gw" {
   vpc_id = "${aws_vpc.main.id}"
 }
