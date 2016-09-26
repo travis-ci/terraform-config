@@ -3,6 +3,7 @@ variable "cyclist_auth_tokens" {}
 variable "env" { default = "staging" }
 variable "index" { default = "0" }
 variable "syslog_address" {}
+variable "worker_ami" { default = "ami-c6710cd1" }
 
 provider "aws" {}
 
@@ -48,7 +49,7 @@ module "aws_asg_org" {
   security_groups = "${module.aws_az_1b.workers_org_security_group_id},${module.aws_az_1e.workers_org_security_group_id}"
   site = "org"
   syslog_address = "${var.syslog_address}"
-  worker_ami = "ami-c6710cd1"
+  worker_ami = "${var.worker_ami}"
   worker_asg_max_size = "3"
   worker_asg_min_size = "1"
   worker_asg_namespace = "Travis/org-staging"
@@ -84,7 +85,7 @@ module "aws_asg_com" {
   security_groups = "${module.aws_az_1b.workers_com_security_group_id},${module.aws_az_1e.workers_com_security_group_id}"
   site = "com"
   syslog_address = "${var.syslog_address}"
-  worker_ami = "ami-c6710cd1"
+  worker_ami = "${var.worker_ami}"
   worker_asg_max_size = "1"
   worker_asg_min_size = "1"
   worker_asg_namespace = "Travis/com-staging"
