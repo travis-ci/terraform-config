@@ -6,7 +6,6 @@ variable "gateway_id" {}
 variable "index" {}
 variable "nat_ami" {}
 variable "nat_instance_type" {}
-variable "nat_quay_instance_type" {}
 variable "public_subnet" {}
 variable "vpc_id" {}
 variable "workers_org_subnet" {}
@@ -28,40 +27,6 @@ resource "aws_subnet" "public" {
   tags = {
     Name = "${var.env}-${var.index}-public-${var.az}"
   }
-}
-
-resource "aws_route_table" "public" {
-  vpc_id = "${var.vpc_id}"
-
-  route {
-    cidr_block = "107.22.236.225/32"
-    instance_id = "${aws_instance.nat_quay.id}"
-  }
-
-  route {
-    cidr_block = "174.129.233.65/32"
-    instance_id = "${aws_instance.nat_quay.id}"
-  }
-
-  route {
-    cidr_block = "184.73.225.107/32"
-    instance_id = "${aws_instance.nat_quay.id}"
-  }
-
-  route {
-    cidr_block = "184.73.236.204/32"
-    instance_id = "${aws_instance.nat_quay.id}"
-  }
-
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = "${var.gateway_id}"
-  }
-}
-
-resource "aws_route_table_association" "public" {
-  subnet_id = "${aws_subnet.public.id}"
-  route_table_id = "${aws_route_table.public.id}"
 }
 
 resource "aws_security_group" "nat" {
@@ -99,25 +64,11 @@ resource "aws_instance" "nat" {
 resource "aws_eip" "nat" {
   instance = "${aws_instance.nat.id}"
   vpc = true
-  depends_on = ["aws_route_table.public"]
-}
-
-resource "aws_instance" "nat_quay" {
-  ami = "${var.nat_ami}"
-  instance_type = "${var.nat_quay_instance_type}"
-  vpc_security_group_ids = ["${aws_security_group.nat.id}"]
-  subnet_id = "${aws_subnet.public.id}"
-  source_dest_check = false
-
-  tags = {
-    Name = "${var.env}-${var.index}-nat-quay-${var.az}"
-  }
 }
 
 resource "aws_eip" "bastion" {
   instance = "${aws_instance.bastion.id}"
   vpc = true
-  depends_on = ["aws_route_table.public"]
 }
 
 resource "aws_security_group" "bastion" {
@@ -176,7 +127,6 @@ module "workers_org" {
   cidr_block = "${var.workers_org_subnet}"
   env = "${var.env}"
   index = "${var.index}"
-  nat_quay_id = "${aws_instance.nat_quay.id}"
   nat_ami = "${var.nat_ami}"
   nat_instance_type = "${var.nat_instance_type}"
   site = "org"
@@ -190,7 +140,6 @@ module "workers_com" {
   cidr_block = "${var.workers_com_subnet}"
   env = "${var.env}"
   index = "${var.index}"
-  nat_quay_id = "${aws_instance.nat_quay.id}"
   nat_ami = "${var.nat_ami}"
   nat_instance_type = "${var.nat_instance_type}"
   site = "com"

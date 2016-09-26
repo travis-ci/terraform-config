@@ -2,7 +2,6 @@ variable "az" {}
 variable "cidr_block" {}
 variable "env" {}
 variable "index" {}
-variable "nat_quay_id" {}
 variable "nat_ami" {}
 variable "nat_instance_type" {}
 variable "site" {}
@@ -51,26 +50,6 @@ resource "aws_instance" "nat" {
 
 resource "aws_route_table" "rtb" {
   vpc_id = "${var.vpc_id}"
-
-  route {
-    cidr_block = "107.22.236.225/32"
-    instance_id = "${var.nat_quay_id}"
-  }
-
-  route {
-    cidr_block = "174.129.233.65/32"
-    instance_id = "${var.nat_quay_id}"
-  }
-
-  route {
-    cidr_block = "184.73.225.107/32"
-    instance_id = "${var.nat_quay_id}"
-  }
-
-  route {
-    cidr_block = "184.73.236.204/32"
-    instance_id = "${var.nat_quay_id}"
-  }
 
   route {
     cidr_block = "0.0.0.0/0"
