@@ -50,3 +50,7 @@ make plan
 # if it looks OK, terraform apply
 make apply
 ```
+
+## TODO
+
+- verify existence of VPC endpoint for optimized S3 downloads
