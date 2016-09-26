@@ -7,7 +7,6 @@ variable "index" {}
 variable "nat_ami" {}
 variable "nat_instance_type" {}
 variable "public_subnet" {}
-variable "public_route_table_id" {}
 variable "vpc_id" {}
 variable "workers_org_subnet" {}
 variable "workers_com_subnet" {}
@@ -28,11 +27,6 @@ resource "aws_subnet" "public" {
   tags = {
     Name = "${var.env}-${var.index}-public-${var.az}"
   }
-}
-
-resource "aws_route_table_association" "public" {
-  subnet_id = "${aws_subnet.public.id}"
-  route_table_id = "${var.public_route_table_id}"
 }
 
 resource "aws_security_group" "nat" {

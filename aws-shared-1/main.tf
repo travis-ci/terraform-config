@@ -20,44 +20,8 @@ resource "aws_vpc" "main" {
   }
 }
 
-resource "aws_main_route_table_association" "rtbassoc" {
-  vpc_id = "${aws_vpc.main.id}"
-  route_table_id = "${aws_route_table.public.id}"
-  depends_on = ["aws_route_table.public"]
-}
-
 resource "aws_internet_gateway" "gw" {
   vpc_id = "${aws_vpc.main.id}"
-}
-
-resource "aws_security_group" "nat_quay" {
-  name = "${var.env}-${var.index}-nat-quay"
-  vpc_id = "${aws_vpc.main.id}"
-
-  ingress {
-    from_port = 0
-    to_port = 0
-    protocol = "-1"
-    cidr_blocks = ["${var.vpc_cidr}"]
-  }
-
-  egress {
-    from_port = 0
-    to_port = 0
-    protocol = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-
-resource "aws_instance" "nat_quay" {
-  ami = "${var.nat_ami}"
-  instance_type = "c3.2xlarge"
-  source_dest_check = false
-  subnet_id = "${module.aws_az_1b.public_subnet_id}"
-  vpc_security_group_ids = ["${aws_security_group.nat_quay.id}"]
-  tags = {
-    Name = "${var.env}-${var.index}-nat-quay"
-  }
 }
 
 module "aws_az_1b" {
@@ -72,7 +36,6 @@ module "aws_az_1b" {
   nat_ami = "${var.nat_ami}"
   nat_instance_type = "c3.8xlarge"
   public_subnet = "${var.public_subnet_1b}"
-  public_route_table_id = "${aws_route_table.public.id}"
   vpc_id = "${aws_vpc.main.id}"
   workers_com_subnet = "${var.workers_com_subnet_1b}"
   workers_org_subnet = "${var.workers_org_subnet_1b}"
@@ -90,7 +53,6 @@ module "aws_az_1e" {
   nat_ami = "${var.nat_ami}"
   nat_instance_type = "c3.8xlarge"
   public_subnet = "${var.public_subnet_1e}"
-  public_route_table_id = "${aws_route_table.public.id}"
   vpc_id = "${aws_vpc.main.id}"
   workers_com_subnet = "${var.workers_com_subnet_1e}"
   workers_org_subnet = "${var.workers_org_subnet_1e}"
