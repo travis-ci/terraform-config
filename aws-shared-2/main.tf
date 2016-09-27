@@ -97,6 +97,28 @@ module "aws_az_1e" {
   workers_org_subnet_cidr = "${var.workers_org_subnet_1e_cidr}"
 }
 
+resource "aws_route53_record" "workers_org_nat" {
+  zone_id = "${var.travisci_net_external_zone_id}"
+  name = "workers-nat-org-${var.env}-${var.index}.aws-us-east-1.travisci.net"
+  type = "A"
+  ttl = "300"
+  records = [
+    "${module.aws_az_1b.workers_org_nat_eip}",
+    "${module.aws_az_1e.workers_org_nat_eip}",
+  ]
+}
+
+resource "aws_route53_record" "workers_com_nat" {
+  zone_id = "${var.travisci_net_external_zone_id}"
+  name = "workers-nat-com-${var.env}-${var.index}.aws-us-east-1.travisci.net"
+  type = "A"
+  ttl = "300"
+  records = [
+    "${module.aws_az_1b.workers_com_nat_eip}",
+    "${module.aws_az_1e.workers_com_nat_eip}",
+  ]
+}
+
 resource "null_resource" "outputs_signature" {
   triggers {
     bastion_security_group_1b_id = "${module.aws_az_1b.bastion_sg_id}"
