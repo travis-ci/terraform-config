@@ -5,6 +5,7 @@ variable "cyclist_redis_plan" { default = "premium-0" }
 variable "cyclist_scale" { default = "web=1:Standard-1X" }
 variable "cyclist_version" { default = "master" }
 variable "env" {}
+variable "env_short" {}
 variable "heroku_org" {}
 variable "index" {}
 variable "security_groups" {}
@@ -66,7 +67,7 @@ data "template_file" "worker_cloud_init" {
 }
 
 resource "aws_launch_configuration" "workers" {
-  name_prefix = "${var.env}-workers-${var.site}-${var.index}-"
+  name_prefix = "${var.env}-${var.index}-workers-${var.site}-"
   image_id = "${var.worker_ami}"
   instance_type = "${var.worker_instance_type}"
 
@@ -81,16 +82,14 @@ resource "aws_launch_configuration" "workers" {
 }
 
 resource "aws_autoscaling_group" "workers" {
-  name = "${var.env}-workers-${var.site}-${var.index}"
-
-  vpc_zone_identifier = ["${split(",", var.worker_subnets)}"]
-
-  max_size = "${var.worker_asg_max_size}"
-  min_size = "${var.worker_asg_min_size}"
+  name = "${var.env}-${var.index}-workers-${var.site}"
+  default_cooldown = 300
   health_check_grace_period = 0
   health_check_type = "EC2"
   launch_configuration = "${aws_launch_configuration.workers.name}"
-  default_cooldown = 300
+  max_size = "${var.worker_asg_max_size}"
+  min_size = "${var.worker_asg_min_size}"
+  vpc_zone_identifier = ["${split(",", var.worker_subnets)}"]
   termination_policies = [
     "OldestLaunchConfiguration",
     "OldestInstance",
@@ -99,7 +98,7 @@ resource "aws_autoscaling_group" "workers" {
 
   tag {
     key = "Name"
-    value = "${var.env}-worker-${var.site}-${var.index}-${var.worker_queue}"
+    value = "${var.env}-${var.index}-worker-${var.site}-${var.worker_queue}"
     propagate_at_launch = true
   }
   tag {
@@ -130,7 +129,7 @@ resource "aws_autoscaling_group" "workers" {
 }
 
 resource "aws_autoscaling_policy" "workers_remove_capacity" {
-  name = "${var.env}-workers-${var.site}-${var.index}-remove-capacity"
+  name = "${var.env}-${var.index}-workers-${var.site}-remove-capacity"
   scaling_adjustment = "${var.worker_asg_scale_in_qty}"
   adjustment_type = "ChangeInCapacity"
   cooldown = "${var.worker_asg_scale_in_cooldown}"
@@ -138,10 +137,10 @@ resource "aws_autoscaling_policy" "workers_remove_capacity" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "workers_remove_capacity" {
-  alarm_name = "${var.env}-workers-${var.site}-${var.index}-remove-capacity"
+  alarm_name = "${var.env}-${var.index}-workers-${var.site}-remove-capacity"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods = 2
-  metric_name = "v1.travis.rabbitmq.consumers.${var.env}.builds.${var.worker_queue}.headroom"
+  metric_name = "v1.travis.rabbitmq.consumers.${var.env_short}.builds.${var.worker_queue}.headroom"
   namespace = "${var.worker_asg_namespace}"
   period = 60
   statistic = "Maximum"
@@ -150,7 +149,7 @@ resource "aws_cloudwatch_metric_alarm" "workers_remove_capacity" {
 }
 
 resource "aws_autoscaling_policy" "workers_add_capacity" {
-  name = "${var.env}-workers-${var.site}-${var.index}-add-capacity"
+  name = "${var.env}-${var.index}-workers-${var.site}-add-capacity"
   scaling_adjustment = "${var.worker_asg_scale_out_qty}"
   adjustment_type = "ChangeInCapacity"
   cooldown = "${var.worker_asg_scale_out_cooldown}"
@@ -158,10 +157,10 @@ resource "aws_autoscaling_policy" "workers_add_capacity" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "workers_add_capacity" {
-  alarm_name = "${var.env}-workers-${var.site}-${var.index}-add-capacity"
+  alarm_name = "${var.env}-${var.index}-workers-${var.site}-add-capacity"
   comparison_operator = "LessThanThreshold"
   evaluation_periods = 2
-  metric_name = "v1.travis.rabbitmq.consumers.${var.env}.builds.${var.worker_queue}.headroom"
+  metric_name = "v1.travis.rabbitmq.consumers.${var.env_short}.builds.${var.worker_queue}.headroom"
   namespace = "${var.worker_asg_namespace}"
   period = 60
   statistic = "Maximum"
@@ -170,7 +169,7 @@ resource "aws_cloudwatch_metric_alarm" "workers_add_capacity" {
 }
 
 resource "aws_sns_topic" "workers" {
-  name = "${var.env}-workers-${var.site}-${var.index}"
+  name = "${var.env}-${var.index}-workers-${var.site}"
 }
 
 resource "aws_sns_topic_subscription" "workers_cyclist" {
@@ -181,15 +180,16 @@ resource "aws_sns_topic_subscription" "workers_cyclist" {
 }
 
 resource "aws_iam_user" "cyclist" {
-  name = "cyclist-${var.site}-${var.env}-${var.index}"
+  name = "cyclist-${var.env}-${var.index}-${var.site}"
 }
 
 resource "aws_iam_access_key" "cyclist" {
   user = "${aws_iam_user.cyclist.name}"
+  depends_on = ["aws_iam_user.cyclist"]
 }
 
 resource "aws_iam_user_policy" "cyclist_actions" {
-  name = "cyclist_actions_${var.site}_${var.env}_${var.index}"
+  name = "cyclist_actions_${var.env}_${var.index}_${var.site}"
   user = "${aws_iam_user.cyclist.name}"
   policy = <<EOF
 {
@@ -208,10 +208,11 @@ resource "aws_iam_user_policy" "cyclist_actions" {
   ]
 }
 EOF
+  depends_on = ["aws_iam_user.cyclist"]
 }
 
 resource "aws_iam_role" "workers_sns" {
-  name = "${var.env}-workers-${var.site}-${var.index}-sns"
+  name = "${var.env}-${var.index}-workers-${var.site}-sns"
   assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -229,7 +230,7 @@ EOF
 }
 
 resource "aws_iam_role_policy" "workers_sns" {
-  name = "${var.env}-workers-${var.site}-${var.index}-sns"
+  name = "${var.env}-${var.index}-workers-${var.site}-sns"
   role = "${aws_iam_role.workers_sns.id}"
   policy = <<EOF
 {
@@ -250,7 +251,7 @@ EOF
 }
 
 resource "aws_autoscaling_lifecycle_hook" "workers_launching" {
-  name = "${var.env}-workers-${var.site}-${var.index}-launching"
+  name = "${var.env}-${var.index}-workers-${var.site}-launching"
   autoscaling_group_name = "${aws_autoscaling_group.workers.name}"
   default_result = "CONTINUE"
   heartbeat_timeout = 900
@@ -260,7 +261,7 @@ resource "aws_autoscaling_lifecycle_hook" "workers_launching" {
 }
 
 resource "aws_autoscaling_lifecycle_hook" "workers_terminating" {
-  name = "${var.env}-workers-${var.site}-${var.index}-terminating"
+  name = "${var.env}-${var.index}-workers-${var.site}-terminating"
   autoscaling_group_name = "${aws_autoscaling_group.workers.name}"
   default_result = "CONTINUE"
   heartbeat_timeout = 900
@@ -270,7 +271,7 @@ resource "aws_autoscaling_lifecycle_hook" "workers_terminating" {
 }
 
 resource "heroku_app" "cyclist" {
-  name = "cyclist-${var.site}-${var.env}-${var.index}"
+  name = "cyclist-${var.env}-${var.index}-${var.site}"
   region = "us"
   organization {
     name = "${var.heroku_org}"
@@ -306,6 +307,12 @@ resource "null_resource" "cyclist" {
   }
 
   provisioner "local-exec" {
-    command = "exec ${path.module}/../../bin/heroku-wait-deploy-scale travis-ci/cyclist ${heroku_app.cyclist.id} ${var.cyclist_scale} ${var.cyclist_version}"
+    command = <<EOF
+exec ${path.module}/../../bin/heroku-wait-deploy-scale \
+  travis-ci/cyclist \
+  ${heroku_app.cyclist.id} \
+  ${var.cyclist_scale} \
+  ${var.cyclist_version}
+EOF
   }
 }

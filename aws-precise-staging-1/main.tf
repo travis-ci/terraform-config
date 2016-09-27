@@ -1,6 +1,7 @@
 variable "aws_heroku_org" {}
 variable "cyclist_auth_tokens" {}
 variable "env" { default = "precise-staging" }
+variable "env_short" { default = "staging" }
 variable "index" { default = "1" }
 variable "syslog_address" {}
 variable "worker_ami" { default = "ami-c6710cd1" }
@@ -20,7 +21,7 @@ module "aws_az_1b" {
   source = "../modules/aws_workers_az"
 
   az = "1b"
-  bastion_security_group_id = "${data.terraform_remote_state.vpc.bastion_security_group_id_1b}"
+  bastion_security_group_id = "${data.terraform_remote_state.vpc.bastion_security_group_1b_id}"
   env = "${var.env}"
   index = "${var.index}"
   vpc_id = "${data.terraform_remote_state.vpc.vpc_id}"
@@ -30,7 +31,7 @@ module "aws_az_1e" {
   source = "../modules/aws_workers_az"
 
   az = "1e"
-  bastion_security_group_id = "${data.terraform_remote_state.vpc.bastion_security_group_id_1e}"
+  bastion_security_group_id = "${data.terraform_remote_state.vpc.bastion_security_group_1e_id}"
   env = "${var.env}"
   index = "${var.index}"
   vpc_id = "${data.terraform_remote_state.vpc.vpc_id}"
@@ -44,6 +45,7 @@ module "aws_asg_org" {
   cyclist_scale = "web=1:Hobby"
   cyclist_version = "v0.1.0"
   env = "${var.env}"
+  env_short = "${var.env_short}"
   heroku_org = "${var.aws_heroku_org}"
   index = "${var.index}"
   security_groups = "${module.aws_az_1b.workers_org_security_group_id},${module.aws_az_1e.workers_org_security_group_id}"
@@ -51,7 +53,7 @@ module "aws_asg_org" {
   syslog_address = "${var.syslog_address}"
   worker_ami = "${var.worker_ami}"
   worker_asg_max_size = "3"
-  worker_asg_min_size = "1"
+  worker_asg_min_size = "0"
   worker_asg_namespace = "Travis/org-staging"
   worker_asg_scale_in_threshold = "16"
   worker_asg_scale_out_threshold = "8"
@@ -80,6 +82,7 @@ module "aws_asg_com" {
   cyclist_scale = "web=1:Hobby"
   cyclist_version = "v0.1.0"
   env = "${var.env}"
+  env_short = "${var.env_short}"
   heroku_org = "${var.aws_heroku_org}"
   index = "${var.index}"
   security_groups = "${module.aws_az_1b.workers_com_security_group_id},${module.aws_az_1e.workers_com_security_group_id}"
@@ -87,7 +90,7 @@ module "aws_asg_com" {
   syslog_address = "${var.syslog_address}"
   worker_ami = "${var.worker_ami}"
   worker_asg_max_size = "1"
-  worker_asg_min_size = "1"
+  worker_asg_min_size = "0"
   worker_asg_namespace = "Travis/com-staging"
   worker_asg_scale_in_threshold = "16"
   worker_asg_scale_out_threshold = "8"

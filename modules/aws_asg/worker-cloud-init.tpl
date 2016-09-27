@@ -189,7 +189,7 @@ __set_hostname() {
   local instance_ipv4
   instance_ipv4="$(curl -s 'http://169.254.169.254/latest/meta-data/local-ipv4')"
 
-  local instance_hostname="worker-${queue}-$${instance_id#i-}-${index}.${env}.travis-ci.${site}"
+  local instance_hostname="worker-${queue}-$${instance_id#i-}.${env}-${index}.travis-ci.${site}"
   local hosts_line="$instance_ipv4 $instance_hostname $${instance%.*}"
 
   echo "$instance_hostname" | tee /etc/hostname
