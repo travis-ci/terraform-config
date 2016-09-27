@@ -8,7 +8,7 @@ variable "site" {}
 variable "vpc_id" {}
 
 resource "aws_security_group" "nat" {
-  name = "${var.env}-${var.index}-${var.site}-workers-nat-${var.az}"
+  name = "${var.env}-${var.index}-workers-nat-${var.site}-${var.az}"
   vpc_id = "${var.vpc_id}"
 
   ingress {
@@ -32,7 +32,7 @@ resource "aws_subnet" "subnet" {
   availability_zone = "us-east-${var.az}"
   map_public_ip_on_launch = true
   tags = {
-    Name = "${var.env}-${var.index}-${var.site}-workers-${var.az}"
+    Name = "${var.env}-${var.index}-workers-${var.site}-${var.az}"
   }
 }
 
@@ -44,7 +44,7 @@ resource "aws_instance" "nat" {
   source_dest_check = false
 
   tags = {
-    Name = "${var.env}-${var.index}-${var.site}-workers-nat-${var.az}"
+    Name = "${var.env}-${var.index}-workers-nat-${var.site}-${var.az}"
   }
 }
 
@@ -54,6 +54,10 @@ resource "aws_route_table" "rtb" {
   route {
     cidr_block = "0.0.0.0/0"
     instance_id = "${aws_instance.nat.id}"
+  }
+
+  tags = {
+    Name = "${var.env}-${var.index}-workers-${var.site}-${var.az}"
   }
 }
 
@@ -70,4 +74,8 @@ resource "aws_eip" "nat" {
 
 output "subnet_id" {
   value = "${aws_subnet.subnet.id}"
+}
+
+output "nat_id" {
+  value = "${aws_instance.nat.id}"
 }

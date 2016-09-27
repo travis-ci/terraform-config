@@ -20,7 +20,7 @@ module "aws_az_1b" {
   source = "../modules/aws_workers_az"
 
   az = "1b"
-  bastion_security_group_id = "${data.terraform_remote_state.vpc.bastion_security_group_id_1b}"
+  bastion_security_group_id = "${data.terraform_remote_state.vpc.bastion_security_group_1b_id}"
   env = "${var.env}"
   index = "${var.index}"
   vpc_id = "${data.terraform_remote_state.vpc.vpc_id}"
@@ -30,7 +30,7 @@ module "aws_az_1e" {
   source = "../modules/aws_workers_az"
 
   az = "1e"
-  bastion_security_group_id = "${data.terraform_remote_state.vpc.bastion_security_group_id_1e}"
+  bastion_security_group_id = "${data.terraform_remote_state.vpc.bastion_security_group_1e_id}"
   env = "${var.env}"
   index = "${var.index}"
   vpc_id = "${data.terraform_remote_state.vpc.vpc_id}"
@@ -42,6 +42,7 @@ module "aws_asg_org" {
   cyclist_auth_tokens = "${var.cyclist_auth_tokens}"
   cyclist_version = "v0.1.0"
   env = "${var.env}"
+  env_short = "${var.env}"
   heroku_org = "${var.aws_heroku_org}"
   index = "${var.index}"
   security_groups = "${module.aws_az_1b.workers_org_security_group_id},${module.aws_az_1e.workers_org_security_group_id}"
@@ -51,7 +52,7 @@ module "aws_asg_org" {
   # NOTE: builds.docker value for org production
   # worker_asg_max_size = "75"
   worker_asg_max_size = "5"
-  worker_asg_min_size = "1"
+  worker_asg_min_size = "0"
   worker_asg_namespace = "Travis/org"
   # NOTE: builds.docker values for org production
   # worker_asg_scale_in_threshold = "64"
@@ -82,6 +83,7 @@ module "aws_asg_com" {
   cyclist_auth_tokens = "${var.cyclist_auth_tokens}"
   cyclist_version = "v0.1.0"
   env = "${var.env}"
+  env_short = "${var.env}"
   heroku_org = "${var.aws_heroku_org}"
   index = "${var.index}"
   security_groups = "${module.aws_az_1b.workers_com_security_group_id},${module.aws_az_1e.workers_com_security_group_id}"
@@ -91,7 +93,7 @@ module "aws_asg_com" {
   # NOTE: builds.docker value for com production
   # worker_asg_max_size = "100"
   worker_asg_max_size = "3"
-  worker_asg_min_size = "1"
+  worker_asg_min_size = "0"
   worker_asg_namespace = "Travis/com"
   # NOTE: builds.docker values for com production
   # worker_asg_scale_in_threshold = "100"

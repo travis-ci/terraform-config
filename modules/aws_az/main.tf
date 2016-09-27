@@ -7,15 +7,15 @@ variable "index" {}
 variable "nat_ami" {}
 variable "nat_instance_type" {}
 variable "public_route_table_id" {}
-variable "public_subnet" {}
+variable "public_subnet_cidr" {}
 variable "travisci_net_external_zone_id" {}
 variable "vpc_id" {}
-variable "workers_com_subnet" {}
-variable "workers_org_subnet" {}
+variable "workers_com_subnet_cidr" {}
+variable "workers_org_subnet_cidr" {}
 
 resource "aws_subnet" "public" {
   vpc_id = "${var.vpc_id}"
-  cidr_block = "${var.public_subnet}"
+  cidr_block = "${var.public_subnet_cidr}"
   availability_zone = "us-east-${var.az}"
   map_public_ip_on_launch = true
   tags = {
@@ -122,7 +122,7 @@ module "workers_org" {
   source = "./workers"
 
   az = "${var.az}"
-  cidr_block = "${var.workers_org_subnet}"
+  cidr_block = "${var.workers_org_subnet_cidr}"
   env = "${var.env}"
   index = "${var.index}"
   nat_ami = "${var.nat_ami}"
@@ -135,7 +135,7 @@ module "workers_com" {
   source = "./workers"
 
   az = "${var.az}"
-  cidr_block = "${var.workers_com_subnet}"
+  cidr_block = "${var.workers_com_subnet_cidr}"
   env = "${var.env}"
   index = "${var.index}"
   nat_ami = "${var.nat_ami}"
@@ -149,8 +149,7 @@ output "bastion_id" { value = "${aws_instance.bastion.id}" }
 output "bastion_sg_id" { value = "${aws_security_group.bastion.id}" }
 output "nat_eip" { value = "${aws_eip.nat.public_ip}" }
 output "nat_id" { value = "${aws_instance.nat.id}" }
-output "public_subnet" { value = "${aws_subnet.public.cidr_block}" }
-output "workers_com_subnet" { value = "${var.workers_com_subnet}" }
+output "workers_com_nat_id" { value = "${module.workers_com.nat_id}" }
 output "workers_com_subnet_id" { value = "${module.workers_com.subnet_id}" }
-output "workers_org_subnet" { value = "${var.workers_org_subnet}" }
+output "workers_org_nat_id" { value = "${module.workers_org.nat_id}" }
 output "workers_org_subnet_id" { value = "${module.workers_org.subnet_id}" }
