@@ -62,7 +62,7 @@ __set_hostname() {
 
   local hosts_line="$instance_ipv4 ${instance_hostname} $${instance%.*}"
 
-  echo "$instance_hostname" | tee /etc/hostname
+  echo "${instance_hostname}" | tee /etc/hostname
   hostname -F /etc/hostname
   echo "$hosts_line" | tee -a /etc/hosts
   __log set-hostname end "$LINENO"
