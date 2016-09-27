@@ -70,7 +70,7 @@ __set_hostname() {
 
 __log() {
   echo "time=$(date -u +%Y-%m-%dT%H:%M:%S) " \
-       "type=cloud-init step=$1 state=$2 line=$3"
+    "type=cloud-init step=$1 state=$2 line=$3"
 }
 
 main "$@"
