@@ -1,7 +1,7 @@
 variable "aws_heroku_org" {}
 variable "cyclist_auth_tokens" {}
-variable "env" { default = "staging" }
-variable "index" { default = "1" }
+variable "env" { default = "production" }
+variable "index" { default = "2" }
 variable "syslog_address" {}
 variable "worker_ami" { default = "ami-c6710cd1" }
 
@@ -11,7 +11,7 @@ data "terraform_remote_state" "vpc" {
   backend = "s3"
   config {
     bucket = "travis-terraform-state"
-    key = "terraform-config/aws-shared-1.tfstate"
+    key = "terraform-config/aws-shared-2.tfstate"
     region = "us-east-1"
   }
 }
@@ -40,8 +40,6 @@ module "aws_asg_org" {
   source = "../modules/aws_asg"
 
   cyclist_auth_tokens = "${var.cyclist_auth_tokens}"
-  cyclist_debug = "true"
-  cyclist_scale = "web=1:Hobby"
   cyclist_version = "v0.1.0"
   env = "${var.env}"
   env_short = "${var.env}"
@@ -51,9 +49,14 @@ module "aws_asg_org" {
   site = "org"
   syslog_address = "${var.syslog_address}"
   worker_ami = "${var.worker_ami}"
-  worker_asg_max_size = "3"
+  # NOTE: builds.docker value for org production
+  # worker_asg_max_size = "75"
+  worker_asg_max_size = "5"
   worker_asg_min_size = "0"
-  worker_asg_namespace = "Travis/org-staging"
+  worker_asg_namespace = "Travis/org"
+  # NOTE: builds.docker values for org production
+  # worker_asg_scale_in_threshold = "64"
+  # worker_asg_scale_out_threshold = "48"
   worker_asg_scale_in_threshold = "16"
   worker_asg_scale_out_threshold = "8"
   worker_config = "${file("${path.module}/config/worker-env-org")}"
@@ -69,6 +72,7 @@ module "aws_asg_org" {
   worker_docker_image_python = "quay.io/travisci/ci-garnet:packer-1473395986"
   worker_docker_image_ruby = "quay.io/travisci/ci-garnet:packer-1473395986"
   worker_docker_self_image = "quay.io/travisci/worker:v2.4.0-23-g396d039"
+  worker_instance_type = "c3.8xlarge"
   worker_queue = "ec2"
   worker_subnets = "${data.terraform_remote_state.vpc.workers_org_subnet_1b_id},${data.terraform_remote_state.vpc.workers_org_subnet_1e_id}"
 }
@@ -77,8 +81,6 @@ module "aws_asg_com" {
   source = "../modules/aws_asg"
 
   cyclist_auth_tokens = "${var.cyclist_auth_tokens}"
-  cyclist_debug = "true"
-  cyclist_scale = "web=1:Hobby"
   cyclist_version = "v0.1.0"
   env = "${var.env}"
   env_short = "${var.env}"
@@ -88,9 +90,14 @@ module "aws_asg_com" {
   site = "com"
   syslog_address = "${var.syslog_address}"
   worker_ami = "${var.worker_ami}"
-  worker_asg_max_size = "1"
+  # NOTE: builds.docker value for com production
+  # worker_asg_max_size = "100"
+  worker_asg_max_size = "3"
   worker_asg_min_size = "0"
-  worker_asg_namespace = "Travis/com-staging"
+  worker_asg_namespace = "Travis/com"
+  # NOTE: builds.docker values for com production
+  # worker_asg_scale_in_threshold = "100"
+  # worker_asg_scale_out_threshold = "60"
   worker_asg_scale_in_threshold = "16"
   worker_asg_scale_out_threshold = "8"
   worker_config = "${file("${path.module}/config/worker-env-com")}"
@@ -106,6 +113,7 @@ module "aws_asg_com" {
   worker_docker_image_python = "quay.io/travisci/ci-garnet:packer-1473395986"
   worker_docker_image_ruby = "quay.io/travisci/ci-garnet:packer-1473395986"
   worker_docker_self_image = "quay.io/travisci/worker:v2.4.0-23-g396d039"
+  worker_instance_type = "c3.8xlarge"
   worker_queue = "ec2"
   worker_subnets = "${data.terraform_remote_state.vpc.workers_com_subnet_1b_id},${data.terraform_remote_state.vpc.workers_com_subnet_1e_id}"
 }
