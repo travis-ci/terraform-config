@@ -144,12 +144,30 @@ module "workers_com" {
   vpc_id = "${var.vpc_id}"
 }
 
+resource "aws_route53_record" "workers_org_nat" {
+  zone_id = "${var.travisci_net_external_zone_id}"
+  name = "workers-nat-org-${var.env}-${var.index}.aws-us-east-${var.az}.travisci.net"
+  type = "A"
+  ttl = "300"
+  records = ["${module.workers_org.nat_eip}"]
+}
+
+resource "aws_route53_record" "workers_com_nat" {
+  zone_id = "${var.travisci_net_external_zone_id}"
+  name = "workers-nat-com-${var.env}-${var.index}.aws-us-east-${var.az}.travisci.net"
+  type = "A"
+  ttl = "300"
+  records = ["${module.workers_com.nat_eip}"]
+}
+
 output "bastion_eip" { value = "${aws_eip.bastion.public_ip}" }
 output "bastion_id" { value = "${aws_instance.bastion.id}" }
 output "bastion_sg_id" { value = "${aws_security_group.bastion.id}" }
 output "nat_eip" { value = "${aws_eip.nat.public_ip}" }
 output "nat_id" { value = "${aws_instance.nat.id}" }
+output "workers_com_nat_eip" { value = "${module.workers_com.nat_eip}" }
 output "workers_com_nat_id" { value = "${module.workers_com.nat_id}" }
 output "workers_com_subnet_id" { value = "${module.workers_com.subnet_id}" }
+output "workers_org_nat_eip" { value = "${module.workers_org.nat_eip}" }
 output "workers_org_nat_id" { value = "${module.workers_org.nat_id}" }
 output "workers_org_subnet_id" { value = "${module.workers_org.subnet_id}" }

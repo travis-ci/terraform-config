@@ -79,3 +79,7 @@ output "subnet_id" {
 output "nat_id" {
   value = "${aws_instance.nat.id}"
 }
+
+output "nat_eip" {
+  value = "${aws_eip.nat.public_ip}"
+}
