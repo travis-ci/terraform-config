@@ -2,8 +2,8 @@ variable "az" {}
 variable "bastion_ami" {}
 variable "bastion_config" {}
 variable "env" {}
-variable "index" {}
 variable "gateway_id" {}
+variable "index" {}
 variable "nat_ami" {}
 variable "nat_instance_type" {}
 variable "public_subnet_cidr" {}
@@ -144,9 +144,9 @@ output "bastion_sg_id" { value = "${aws_security_group.bastion.id}" }
 output "route_table_id" { value = "${aws_route_table.public.id}" }
 output "workers_com_nat_eip" { value = "${module.workers_com.nat_eip}" }
 output "workers_com_nat_id" { value = "${module.workers_com.nat_id}" }
-output "workers_com_subnet_id" { value = "${module.workers_com.subnet_id}" }
 output "workers_com_route_table_id" { value = "${module.workers_com.route_table_id}" }
+output "workers_com_subnet_id" { value = "${module.workers_com.subnet_id}" }
 output "workers_org_nat_eip" { value = "${module.workers_org.nat_eip}" }
 output "workers_org_nat_id" { value = "${module.workers_org.nat_id}" }
-output "workers_org_subnet_id" { value = "${module.workers_org.subnet_id}" }
 output "workers_org_route_table_id" { value = "${module.workers_org.route_table_id}" }
+output "workers_org_subnet_id" { value = "${module.workers_org.subnet_id}" }

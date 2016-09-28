@@ -19,7 +19,6 @@ data "terraform_remote_state" "vpc" {
 
 module "aws_az_1b" {
   source = "../modules/aws_workers_az"
-
   az = "1b"
   bastion_security_group_id = "${data.terraform_remote_state.vpc.bastion_security_group_1b_id}"
   env = "${var.env}"
@@ -29,7 +28,6 @@ module "aws_az_1b" {
 
 module "aws_az_1e" {
   source = "../modules/aws_workers_az"
-
   az = "1e"
   bastion_security_group_id = "${data.terraform_remote_state.vpc.bastion_security_group_1e_id}"
   env = "${var.env}"
@@ -39,7 +37,6 @@ module "aws_az_1e" {
 
 module "aws_asg_org" {
   source = "../modules/aws_asg"
-
   cyclist_auth_tokens = "${var.cyclist_auth_tokens}"
   cyclist_debug = "true"
   cyclist_scale = "web=1:Hobby"
@@ -76,7 +73,6 @@ module "aws_asg_org" {
 
 module "aws_asg_com" {
   source = "../modules/aws_asg"
-
   cyclist_auth_tokens = "${var.cyclist_auth_tokens}"
   cyclist_debug = "true"
   cyclist_scale = "web=1:Hobby"

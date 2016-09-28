@@ -75,7 +75,7 @@ resource "aws_eip" "nat" {
   depends_on = ["aws_route_table.rtb"]
 }
 
-output "subnet_id" { value = "${aws_subnet.subnet.id}" }
-output "nat_id" { value = "${aws_instance.nat.id}" }
 output "nat_eip" { value = "${aws_eip.nat.public_ip}" }
+output "nat_id" { value = "${aws_instance.nat.id}" }
 output "route_table_id" { value = "${aws_route_table.rtb.id}" }
+output "subnet_id" { value = "${aws_subnet.subnet.id}" }
