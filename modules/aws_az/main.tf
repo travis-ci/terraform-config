@@ -2,11 +2,10 @@ variable "az" {}
 variable "bastion_ami" {}
 variable "bastion_config" {}
 variable "env" {}
-variable "gateway_id" {}
 variable "index" {}
+variable "gateway_id" {}
 variable "nat_ami" {}
 variable "nat_instance_type" {}
-variable "public_route_table_id" {}
 variable "public_subnet_cidr" {}
 variable "travisci_net_external_zone_id" {}
 variable "vpc_cidr" {}
@@ -24,43 +23,20 @@ resource "aws_subnet" "public" {
   }
 }
 
+resource "aws_route_table" "public" {
+  vpc_id = "${var.vpc_id}"
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = "${var.gateway_id}"
+  }
+  tags = {
+    Name = "${var.env}-${var.index}-public-${var.az}"
+  }
+}
+
 resource "aws_route_table_association" "public" {
   subnet_id = "${aws_subnet.public.id}"
-  route_table_id = "${var.public_route_table_id}"
-}
-
-resource "aws_security_group" "nat" {
-  name = "${var.env}-${var.index}-public-nat-${var.az}"
-  description = "NAT Security Group for Public VPC"
-  vpc_id = "${var.vpc_id}"
-  ingress {
-    from_port = 0
-    to_port = 0
-    protocol = "-1"
-    cidr_blocks = ["${var.vpc_cidr}"]
-  }
-  egress {
-    from_port = 0
-    to_port = 0
-    protocol = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-
-resource "aws_instance" "nat" {
-  ami = "${var.nat_ami}"
-  instance_type = "${var.nat_instance_type}"
-  vpc_security_group_ids = ["${aws_security_group.nat.id}"]
-  subnet_id = "${aws_subnet.public.id}"
-  source_dest_check = false
-  tags = {
-    Name = "${var.env}-${var.index}-nat-${var.az}"
-  }
-}
-
-resource "aws_eip" "nat" {
-  instance = "${aws_instance.nat.id}"
-  vpc = true
+  route_table_id = "${aws_route_table.public.id}"
 }
 
 resource "aws_security_group" "bastion" {
@@ -79,6 +55,9 @@ resource "aws_security_group" "bastion" {
     protocol = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+  tags = {
+    Name = "${var.env}-${var.index}-bastion-${var.az}"
+  }
 }
 
 data "template_file" "bastion_cloud_init" {
@@ -92,8 +71,10 @@ data "template_file" "bastion_cloud_init" {
 resource "aws_instance" "bastion" {
   ami = "${var.bastion_ami}"
   instance_type = "t2.micro"
-  vpc_security_group_ids = ["${aws_security_group.bastion.id}"]
   subnet_id = "${aws_subnet.public.id}"
+  vpc_security_group_ids = [
+    "${aws_security_group.bastion.id}",
+  ]
   tags = {
     Name = "${var.env}-${var.index}-bastion-${var.az}"
   }
@@ -121,7 +102,9 @@ module "workers_org" {
   index = "${var.index}"
   nat_ami = "${var.nat_ami}"
   nat_instance_type = "${var.nat_instance_type}"
+  public_subnet_id = "${aws_subnet.public.id}"
   site = "org"
+  vpc_cidr = "${var.vpc_cidr}"
   vpc_id = "${var.vpc_id}"
 }
 
@@ -133,7 +116,9 @@ module "workers_com" {
   index = "${var.index}"
   nat_ami = "${var.nat_ami}"
   nat_instance_type = "${var.nat_instance_type}"
+  public_subnet_id = "${aws_subnet.public.id}"
   site = "com"
+  vpc_cidr = "${var.vpc_cidr}"
   vpc_id = "${var.vpc_id}"
 }
 
@@ -156,11 +141,12 @@ resource "aws_route53_record" "workers_com_nat" {
 output "bastion_eip" { value = "${aws_eip.bastion.public_ip}" }
 output "bastion_id" { value = "${aws_instance.bastion.id}" }
 output "bastion_sg_id" { value = "${aws_security_group.bastion.id}" }
-output "nat_eip" { value = "${aws_eip.nat.public_ip}" }
-output "nat_id" { value = "${aws_instance.nat.id}" }
+output "route_table_id" { value = "${aws_route_table.public.id}" }
 output "workers_com_nat_eip" { value = "${module.workers_com.nat_eip}" }
 output "workers_com_nat_id" { value = "${module.workers_com.nat_id}" }
 output "workers_com_subnet_id" { value = "${module.workers_com.subnet_id}" }
+output "workers_com_route_table_id" { value = "${module.workers_com.route_table_id}" }
 output "workers_org_nat_eip" { value = "${module.workers_org.nat_eip}" }
 output "workers_org_nat_id" { value = "${module.workers_org.nat_id}" }
 output "workers_org_subnet_id" { value = "${module.workers_org.subnet_id}" }
+output "workers_org_route_table_id" { value = "${module.workers_org.route_table_id}" }

@@ -34,23 +34,24 @@ resource "aws_vpc" "main" {
   }
 }
 
-resource "aws_route_table" "public" {
+resource "aws_internet_gateway" "gw" {
   vpc_id = "${aws_vpc.main.id}"
-
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = "${aws_internet_gateway.gw.id}"
-  }
-
   tags = {
-    Name = "${var.env}-${var.index}-public"
+    Name = "${var.env}-${var.index}-gw"
   }
 }
 
 resource "aws_vpc_endpoint" "s3" {
   vpc_id = "${aws_vpc.main.id}"
   service_name = "com.amazonaws.us-east-1.s3"
-  route_table_ids = ["${aws_route_table.public.id}"]
+  route_table_ids = [
+    "${module.aws_az_1b.route_table_id}",
+    "${module.aws_az_1b.workers_com_route_table_id}",
+    "${module.aws_az_1b.workers_org_route_table_id}",
+    "${module.aws_az_1e.route_table_id}",
+    "${module.aws_az_1e.workers_com_route_table_id}",
+    "${module.aws_az_1e.workers_org_route_table_id}",
+  ]
   policy = <<EOF
 {
   "Version": "2008-10-17",
@@ -67,13 +68,8 @@ resource "aws_vpc_endpoint" "s3" {
 EOF
 }
 
-resource "aws_internet_gateway" "gw" {
-  vpc_id = "${aws_vpc.main.id}"
-}
-
 module "aws_az_1b" {
   source = "../modules/aws_az"
-
   az = "1b"
   bastion_ami = "${var.bastion_ami}"
   bastion_config = "${file("${path.module}/config/bastion-env")}"
@@ -82,7 +78,6 @@ module "aws_az_1b" {
   index = "${var.index}"
   nat_ami = "${data.aws_ami.nat.id}"
   nat_instance_type = "c3.8xlarge"
-  public_route_table_id = "${aws_route_table.public.id}"
   public_subnet_cidr = "${var.public_subnet_1b_cidr}"
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
   vpc_cidr = "${var.vpc_cidr}"
@@ -93,7 +88,6 @@ module "aws_az_1b" {
 
 module "aws_az_1e" {
   source = "../modules/aws_az"
-
   az = "1e"
   bastion_ami = "${var.bastion_ami}"
   bastion_config = "${file("${path.module}/config/bastion-env")}"
@@ -102,7 +96,6 @@ module "aws_az_1e" {
   index = "${var.index}"
   nat_ami = "${data.aws_ami.nat.id}"
   nat_instance_type = "c3.8xlarge"
-  public_route_table_id = "${aws_route_table.public.id}"
   public_subnet_cidr = "${var.public_subnet_1e_cidr}"
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
   vpc_cidr = "${var.vpc_cidr}"
@@ -138,15 +131,17 @@ resource "null_resource" "outputs_signature" {
     bastion_security_group_1b_id = "${module.aws_az_1b.bastion_sg_id}"
     bastion_security_group_1e_id = "${module.aws_az_1e.bastion_sg_id}"
     gateway_id = "${aws_internet_gateway.gw.id}"
-    nat_id_1b = "${module.aws_az_1b.nat_id}"
-    nat_id_1e = "${module.aws_az_1e.nat_id}"
     public_subnet_1b_cidr = "${var.public_subnet_1b_cidr}"
     public_subnet_1e_cidr = "${var.public_subnet_1e_cidr}"
     vpc_id = "${aws_vpc.main.id}"
+    workers_com_nat_1b_id = "${module.aws_az_1b.workers_com_nat_id}"
+    workers_com_nat_1e_id = "${module.aws_az_1e.workers_com_nat_id}"
     workers_com_subnet_1b_cidr = "${var.workers_com_subnet_1b_cidr}"
     workers_com_subnet_1b_id = "${module.aws_az_1b.workers_com_subnet_id}"
     workers_com_subnet_1e_cidr = "${var.workers_com_subnet_1e_cidr}"
     workers_com_subnet_1e_id = "${module.aws_az_1e.workers_com_subnet_id}"
+    workers_org_nat_1b_id= "${module.aws_az_1b.workers_org_nat_id}"
+    workers_org_nat_1e_id= "${module.aws_az_1e.workers_org_nat_id}"
     workers_org_subnet_1b_cidr = "${var.workers_org_subnet_1b_cidr}"
     workers_org_subnet_1b_id = "${module.aws_az_1b.workers_org_subnet_id}"
     workers_org_subnet_1e_cidr = "${var.workers_org_subnet_1e_cidr}"
@@ -157,8 +152,6 @@ resource "null_resource" "outputs_signature" {
 output "bastion_security_group_1b_id" { value = "${module.aws_az_1b.bastion_sg_id}" }
 output "bastion_security_group_1e_id" { value = "${module.aws_az_1e.bastion_sg_id}" }
 output "gateway_id" { value = "${aws_internet_gateway.gw.id}" }
-output "nat_1b_id" { value = "${module.aws_az_1b.nat_id}" }
-output "nat_1e_id" { value = "${module.aws_az_1e.nat_id}" }
 output "public_subnet_1b_cidr" { value = "${var.public_subnet_1b_cidr}" }
 output "public_subnet_1e_cidr" { value = "${var.public_subnet_1e_cidr}" }
 output "vpc_id" { value = "${aws_vpc.main.id}" }

@@ -40,7 +40,6 @@ variable "worker_subnets" {}
 
 data "template_file" "worker_cloud_init" {
   template = "${file("${path.module}/worker-cloud-init.tpl")}"
-
   vars {
     cyclist_auth_token = "${element(split(",", var.cyclist_auth_tokens), var.index)}"
     cyclist_url = "${replace(heroku_app.cyclist.web_url, "/\\/$/", "")}"
@@ -70,12 +69,9 @@ resource "aws_launch_configuration" "workers" {
   name_prefix = "${var.env}-${var.index}-workers-${var.site}-"
   image_id = "${var.worker_ami}"
   instance_type = "${var.worker_instance_type}"
-
   security_groups = ["${split(",", var.security_groups)}"]
-
   user_data = "${data.template_file.worker_cloud_init.rendered}"
   enable_monitoring = false
-
   lifecycle {
     create_before_destroy = true
   }
@@ -95,7 +91,6 @@ resource "aws_autoscaling_group" "workers" {
     "OldestInstance",
     "Default"
   ]
-
   tag {
     key = "Name"
     value = "${var.env}-${var.index}-worker-${var.site}-${var.worker_queue}"
@@ -276,7 +271,6 @@ resource "heroku_app" "cyclist" {
   organization {
     name = "${var.heroku_org}"
   }
-
   config_vars {
     AWS_ACCESS_KEY = "${aws_iam_access_key.cyclist.id}"
     AWS_REGION = "${var.cyclist_aws_region}"
@@ -305,7 +299,6 @@ resource "null_resource" "cyclist" {
     ps_scale = "${var.cyclist_scale}"
     version = "${var.cyclist_version}"
   }
-
   provisioner "local-exec" {
     command = <<EOF
 exec ${path.module}/../../bin/heroku-wait-deploy-scale \
