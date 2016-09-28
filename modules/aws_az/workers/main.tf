@@ -4,7 +4,6 @@ variable "env" {}
 variable "index" {}
 variable "nat_ami" {}
 variable "nat_instance_type" {}
-# variable "public_subnet_id" {}
 variable "site" {}
 variable "vpc_id" {}
 
@@ -46,24 +45,11 @@ resource "aws_instance" "nat" {
   }
 }
 
-# resource "aws_network_interface" "nat" {
-#   subnet_id = "${aws_subnet.subnet.id}"
-#   security_groups = ["${aws_security_group.nat.id}"]
-#   attachment {
-#     instance = "${aws_instance.nat.id}"
-#     device_index = 1
-#   }
-#   tags = {
-#     Name = "${var.env}-${var.index}-workers-nat-private-${var.site}-${var.az}"
-#   }
-# }
-
 resource "aws_route_table" "rtb" {
   vpc_id = "${var.vpc_id}"
   route {
     cidr_block = "0.0.0.0/0"
     instance_id = "${aws_instance.nat.id}"
-    # network_interface_id = "${aws_network_interface.nat.id}"
   }
   tags = {
     Name = "${var.env}-${var.index}-workers-${var.site}-${var.az}"
@@ -77,7 +63,6 @@ resource "aws_route_table_association" "rtbassoc" {
 
 resource "aws_eip" "nat" {
   instance = "${aws_instance.nat.id}"
-  # network_interface = "${aws_instance.nat.network_interface_id}"
   vpc = true
   depends_on = ["aws_route_table.rtb"]
 }

@@ -58,18 +58,6 @@ resource "aws_instance" "nat" {
   }
 }
 
-# resource "aws_network_interface" "nat" {
-#   subnet_id = "${aws_subnet.public.id}"
-#   security_groups = ["${aws_security_group.nat.id}"]
-#   attachment {
-#     instance = "${aws_instance.nat.id}"
-#     device_index = 1
-#   }
-#   tags = {
-#     Name = "${var.env}-${var.index}-nat-private-${var.az}"
-#   }
-# }
-
 resource "aws_eip" "nat" {
   instance = "${aws_instance.nat.id}"
   vpc = true
@@ -133,7 +121,6 @@ module "workers_org" {
   index = "${var.index}"
   nat_ami = "${var.nat_ami}"
   nat_instance_type = "${var.nat_instance_type}"
-  # public_subnet_id = "${aws_subnet.public.id}"
   site = "org"
   vpc_id = "${var.vpc_id}"
 }
@@ -146,7 +133,6 @@ module "workers_com" {
   index = "${var.index}"
   nat_ami = "${var.nat_ami}"
   nat_instance_type = "${var.nat_instance_type}"
-  # public_subnet_id = "${aws_subnet.public.id}"
   site = "com"
   vpc_id = "${var.vpc_id}"
 }
