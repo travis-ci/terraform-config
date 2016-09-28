@@ -32,14 +32,12 @@ resource "aws_security_group" "nat" {
   name = "${var.env}-${var.index}-public-nat-${var.az}"
   description = "NAT Security Group for Public VPC"
   vpc_id = "${var.vpc_id}"
-
   ingress {
     from_port = 0
     to_port = 0
     protocol = "-1"
     cidr_blocks = ["${aws_subnet.public.cidr_block}"]
   }
-
   egress {
     from_port = 0
     to_port = 0
@@ -54,9 +52,20 @@ resource "aws_instance" "nat" {
   vpc_security_group_ids = ["${aws_security_group.nat.id}"]
   subnet_id = "${aws_subnet.public.id}"
   source_dest_check = false
-
   tags = {
     Name = "${var.env}-${var.index}-nat-${var.az}"
+  }
+}
+
+resource "aws_network_interface" "nat" {
+  subnet_id = "${aws_subnet.public.id}"
+  security_groups = ["${aws_security_group.nat.id}"]
+  attachment {
+    instance = "${aws_instance.nat.id}"
+    device_index = 1
+  }
+  tags = {
+    Name = "${var.env}-${var.index}-nat-private-${var.az}"
   }
 }
 
@@ -69,14 +78,12 @@ resource "aws_security_group" "bastion" {
   name = "${var.env}-${var.index}-bastion-${var.az}"
   description = "Security Group for bastion server for VPC"
   vpc_id = "${var.vpc_id}"
-
   ingress {
     from_port = 22
     to_port = 22
     protocol = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-
   egress {
     from_port = 0
     to_port = 0
@@ -87,7 +94,6 @@ resource "aws_security_group" "bastion" {
 
 data "template_file" "bastion_cloud_init" {
   template = "${file("${path.module}/bastion-cloud-init.tpl")}"
-
   vars {
     instance_hostname = "bastion-${var.env}-${var.index}.aws-us-east-${var.az}.travisci.net"
     bastion_config = "${var.bastion_config}"
@@ -120,26 +126,26 @@ resource "aws_route53_record" "bastion" {
 
 module "workers_org" {
   source = "./workers"
-
   az = "${var.az}"
   cidr_block = "${var.workers_org_subnet_cidr}"
   env = "${var.env}"
   index = "${var.index}"
   nat_ami = "${var.nat_ami}"
   nat_instance_type = "${var.nat_instance_type}"
+  public_subnet_id = "${aws_subnet.public.id}"
   site = "org"
   vpc_id = "${var.vpc_id}"
 }
 
 module "workers_com" {
   source = "./workers"
-
   az = "${var.az}"
   cidr_block = "${var.workers_com_subnet_cidr}"
   env = "${var.env}"
   index = "${var.index}"
   nat_ami = "${var.nat_ami}"
   nat_instance_type = "${var.nat_instance_type}"
+  public_subnet_id = "${aws_subnet.public.id}"
   site = "com"
   vpc_id = "${var.vpc_id}"
 }
