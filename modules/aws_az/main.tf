@@ -9,6 +9,7 @@ variable "nat_instance_type" {}
 variable "public_route_table_id" {}
 variable "public_subnet_cidr" {}
 variable "travisci_net_external_zone_id" {}
+variable "vpc_cidr" {}
 variable "vpc_id" {}
 variable "workers_com_subnet_cidr" {}
 variable "workers_org_subnet_cidr" {}
@@ -36,7 +37,7 @@ resource "aws_security_group" "nat" {
     from_port = 0
     to_port = 0
     protocol = "-1"
-    cidr_blocks = ["${aws_subnet.public.cidr_block}"]
+    cidr_blocks = ["${var.vpc_cidr}"]
   }
   egress {
     from_port = 0
@@ -57,17 +58,17 @@ resource "aws_instance" "nat" {
   }
 }
 
-resource "aws_network_interface" "nat" {
-  subnet_id = "${aws_subnet.public.id}"
-  security_groups = ["${aws_security_group.nat.id}"]
-  attachment {
-    instance = "${aws_instance.nat.id}"
-    device_index = 1
-  }
-  tags = {
-    Name = "${var.env}-${var.index}-nat-private-${var.az}"
-  }
-}
+# resource "aws_network_interface" "nat" {
+#   subnet_id = "${aws_subnet.public.id}"
+#   security_groups = ["${aws_security_group.nat.id}"]
+#   attachment {
+#     instance = "${aws_instance.nat.id}"
+#     device_index = 1
+#   }
+#   tags = {
+#     Name = "${var.env}-${var.index}-nat-private-${var.az}"
+#   }
+# }
 
 resource "aws_eip" "nat" {
   instance = "${aws_instance.nat.id}"
@@ -132,7 +133,7 @@ module "workers_org" {
   index = "${var.index}"
   nat_ami = "${var.nat_ami}"
   nat_instance_type = "${var.nat_instance_type}"
-  public_subnet_id = "${aws_subnet.public.id}"
+  # public_subnet_id = "${aws_subnet.public.id}"
   site = "org"
   vpc_id = "${var.vpc_id}"
 }
@@ -145,7 +146,7 @@ module "workers_com" {
   index = "${var.index}"
   nat_ami = "${var.nat_ami}"
   nat_instance_type = "${var.nat_instance_type}"
-  public_subnet_id = "${aws_subnet.public.id}"
+  # public_subnet_id = "${aws_subnet.public.id}"
   site = "com"
   vpc_id = "${var.vpc_id}"
 }

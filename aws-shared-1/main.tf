@@ -1,7 +1,6 @@
 variable "bastion_ami" { default = "ami-53d4a344" }
 variable "env" { default = "shared" }
 variable "index" { default = "1" }
-variable "nat_ami" { default = "ami-12c5b205" }
 variable "public_subnet_1b_cidr" { default = "10.10.1.0/24" }
 variable "public_subnet_1e_cidr" { default = "10.10.4.0/24" }
 variable "travisci_net_external_zone_id" {}
@@ -12,6 +11,19 @@ variable "workers_org_subnet_1b_cidr" { default = "10.10.2.0/24" }
 variable "workers_org_subnet_1e_cidr" { default = "10.10.6.0/24" }
 
 provider "aws" {}
+
+data "aws_ami" "nat" {
+  most_recent = true
+  filter {
+    name = "name"
+    values = ["amzn-ami-vpc-nat-*"]
+  }
+  filter {
+    name = "virtualization-type"
+    values = ["hvm"]
+  }
+  owners = ["137112412989"] # Amazon
+}
 
 resource "aws_vpc" "main" {
   cidr_block = "${var.vpc_cidr}"
@@ -68,11 +80,12 @@ module "aws_az_1b" {
   env = "${var.env}"
   gateway_id = "${aws_internet_gateway.gw.id}"
   index = "${var.index}"
-  nat_ami = "${var.nat_ami}"
+  nat_ami = "${data.aws_ami.nat.id}"
   nat_instance_type = "c3.4xlarge"
   public_route_table_id = "${aws_route_table.public.id}"
   public_subnet_cidr = "${var.public_subnet_1b_cidr}"
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
+  vpc_cidr = "${var.vpc_cidr}"
   vpc_id = "${aws_vpc.main.id}"
   workers_com_subnet_cidr = "${var.workers_com_subnet_1b_cidr}"
   workers_org_subnet_cidr = "${var.workers_org_subnet_1b_cidr}"
@@ -87,11 +100,12 @@ module "aws_az_1e" {
   env = "${var.env}"
   gateway_id = "${aws_internet_gateway.gw.id}"
   index = "${var.index}"
-  nat_ami = "${var.nat_ami}"
+  nat_ami = "${data.aws_ami.nat.id}"
   nat_instance_type = "c3.4xlarge"
   public_route_table_id = "${aws_route_table.public.id}"
   public_subnet_cidr = "${var.public_subnet_1e_cidr}"
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
+  vpc_cidr = "${var.vpc_cidr}"
   vpc_id = "${aws_vpc.main.id}"
   workers_com_subnet_cidr = "${var.workers_com_subnet_1e_cidr}"
   workers_org_subnet_cidr = "${var.workers_org_subnet_1e_cidr}"
