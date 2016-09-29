@@ -1,4 +1,4 @@
-variable "cyclist_auth_tokens" {}
+variable "cyclist_auth_token" {}
 variable "cyclist_aws_region" { default = "us-east-1" }
 variable "cyclist_debug" { default = "false" }
 variable "cyclist_redis_plan" { default = "premium-0" }
@@ -41,7 +41,7 @@ variable "worker_subnets" {}
 data "template_file" "worker_cloud_init" {
   template = "${file("${path.module}/worker-cloud-init.tpl")}"
   vars {
-    cyclist_auth_token = "${element(split(",", var.cyclist_auth_tokens), var.index)}"
+    cyclist_auth_token = "${var.cyclist_auth_token}"
     cyclist_url = "${replace(heroku_app.cyclist.web_url, "/\\/$/", "")}"
     env = "${var.env}"
     index = "${var.index}"
@@ -276,7 +276,7 @@ resource "heroku_app" "cyclist" {
     AWS_REGION = "${var.cyclist_aws_region}"
     AWS_SECRET_KEY = "${aws_iam_access_key.cyclist.secret}"
     BUILDPACK_URL = "https://github.com/travis-ci/heroku-buildpack-makey-go"
-    CYCLIST_AUTH_TOKENS = "${var.cyclist_auth_tokens}"
+    CYCLIST_AUTH_TOKENS = "${var.cyclist_auth_token}"
     CYCLIST_DEBUG = "${var.cyclist_debug}"
     GO_IMPORT_PATH = "github.com/travis-ci/cyclist"
   }
