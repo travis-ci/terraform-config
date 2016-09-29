@@ -2,7 +2,7 @@ variable "aws_heroku_org" {}
 variable "cyclist_auth_tokens" {}
 variable "env" { default = "precise-staging" }
 variable "env_short" { default = "staging" }
-variable "index" { default = "1" }
+variable "index" { default = 1 }
 variable "syslog_address" {}
 variable "worker_ami" { default = "ami-c6710cd1" }
 
@@ -49,11 +49,11 @@ module "aws_asg_org" {
   site = "org"
   syslog_address = "${var.syslog_address}"
   worker_ami = "${var.worker_ami}"
-  worker_asg_max_size = "3"
-  worker_asg_min_size = "0"
+  worker_asg_max_size = 3
+  worker_asg_min_size = 0
   worker_asg_namespace = "Travis/org-staging"
-  worker_asg_scale_in_threshold = "16"
-  worker_asg_scale_out_threshold = "8"
+  worker_asg_scale_in_threshold = 16
+  worker_asg_scale_out_threshold = 8
   worker_config = "${file("${path.module}/config/worker-env-org")}"
   worker_docker_image_android = "quay.io/travisci/ci-android:packer-1473395968"
   worker_docker_image_default = "quay.io/travisci/ci-ruby:packer-1473395984"
@@ -85,11 +85,11 @@ module "aws_asg_com" {
   site = "com"
   syslog_address = "${var.syslog_address}"
   worker_ami = "${var.worker_ami}"
-  worker_asg_max_size = "1"
-  worker_asg_min_size = "0"
+  worker_asg_max_size = 1
+  worker_asg_min_size = 0
   worker_asg_namespace = "Travis/com-staging"
-  worker_asg_scale_in_threshold = "16"
-  worker_asg_scale_out_threshold = "8"
+  worker_asg_scale_in_threshold = 16
+  worker_asg_scale_out_threshold = 8
   worker_config = "${file("${path.module}/config/worker-env-com")}"
   worker_docker_image_android = "quay.io/travisci/ci-android:packer-1473395968"
   worker_docker_image_default = "quay.io/travisci/ci-ruby:packer-1473395984"

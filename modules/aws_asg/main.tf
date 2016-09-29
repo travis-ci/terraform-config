@@ -17,10 +17,10 @@ variable "worker_asg_min_size" { default = 1 }
 variable "worker_asg_namespace" {}
 variable "worker_asg_scale_in_cooldown" { default = 300 }
 variable "worker_asg_scale_in_qty" { default = -1 }
-variable "worker_asg_scale_in_threshold" { default = "64.0" }
+variable "worker_asg_scale_in_threshold" { default = 64 }
 variable "worker_asg_scale_out_cooldown" { default = 300 }
 variable "worker_asg_scale_out_qty" { default = 1 }
-variable "worker_asg_scale_out_threshold" { default = "48.0" }
+variable "worker_asg_scale_out_threshold" { default = 48 }
 variable "worker_config" {}
 variable "worker_docker_image_android" {}
 variable "worker_docker_image_default" {}
@@ -135,7 +135,7 @@ resource "aws_cloudwatch_metric_alarm" "workers_remove_capacity" {
   alarm_name = "${var.env}-${var.index}-workers-${var.site}-remove-capacity"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods = 2
-  metric_name = "v1.travis.rabbitmq.consumers.${var.env_short}.builds.${var.worker_queue}.headroom"
+  metric_name = "v1.travis.rabbitmq.consumers.builds.${var.worker_queue}.headroom"
   namespace = "${var.worker_asg_namespace}"
   period = 60
   statistic = "Maximum"
@@ -155,7 +155,7 @@ resource "aws_cloudwatch_metric_alarm" "workers_add_capacity" {
   alarm_name = "${var.env}-${var.index}-workers-${var.site}-add-capacity"
   comparison_operator = "LessThanThreshold"
   evaluation_periods = 2
-  metric_name = "v1.travis.rabbitmq.consumers.${var.env_short}.builds.${var.worker_queue}.headroom"
+  metric_name = "v1.travis.rabbitmq.consumers.builds.${var.worker_queue}.headroom"
   namespace = "${var.worker_asg_namespace}"
   period = 60
   statistic = "Maximum"

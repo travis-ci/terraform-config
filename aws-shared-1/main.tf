@@ -1,6 +1,6 @@
 variable "bastion_ami" { default = "ami-53d4a344" }
 variable "env" { default = "shared" }
-variable "index" { default = "1" }
+variable "index" { default = 1 }
 variable "public_subnet_1b_cidr" { default = "10.10.1.0/24" }
 variable "public_subnet_1e_cidr" { default = "10.10.4.0/24" }
 variable "travisci_net_external_zone_id" {}
@@ -108,7 +108,7 @@ resource "aws_route53_record" "workers_org_nat" {
   zone_id = "${var.travisci_net_external_zone_id}"
   name = "workers-nat-org-${var.env}-${var.index}.aws-us-east-1.travisci.net"
   type = "A"
-  ttl = "300"
+  ttl = 300
   records = [
     "${module.aws_az_1b.workers_org_nat_eip}",
     "${module.aws_az_1e.workers_org_nat_eip}",
@@ -119,7 +119,7 @@ resource "aws_route53_record" "workers_com_nat" {
   zone_id = "${var.travisci_net_external_zone_id}"
   name = "workers-nat-com-${var.env}-${var.index}.aws-us-east-1.travisci.net"
   type = "A"
-  ttl = "300"
+  ttl = 300
   records = [
     "${module.aws_az_1b.workers_com_nat_eip}",
     "${module.aws_az_1e.workers_com_nat_eip}",

@@ -7,7 +7,7 @@ module "gce_worker_b" {
   config_org = "${var.worker_config_org}"
   env = "${var.env}"
   index = "${var.index}"
-  instance_count = "1"
+  instance_count = 1
   machine_type = "g1-small"
   project = "${var.project}"
   subnetwork_com = "${google_compute_subnetwork.workers_com.name}"
@@ -26,7 +26,7 @@ module "gce_worker_c" {
   config_org = "${var.worker_config_org}"
   env = "${var.env}"
   index = "${var.index}"
-  instance_count = "1"
+  instance_count = 1
   machine_type = "g1-small"
   project = "${var.project}"
   subnetwork_com = "${google_compute_subnetwork.workers_com.name}"
