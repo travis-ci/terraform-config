@@ -2,7 +2,7 @@ module "vault_consul" {
   source = "../modules/vault_consul"
 
   env = "${var.env}"
-  index = "1"
+  index = 1
 
   gce_zone = "us-central1-b"
   gce_zone_suffix = "b"

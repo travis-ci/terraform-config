@@ -1,5 +1,5 @@
 variable "env" { default = "staging" }
-variable "index" { default = "1" }
+variable "index" { default = 1 }
 variable "gce_bastion_image" {}
 variable "gce_nat_image" {}
 variable "gce_worker_image" {}

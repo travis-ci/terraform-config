@@ -30,7 +30,7 @@ resource "google_compute_firewall" "vault_firewall" {
 
   allow {
     protocol = "tcp"
-    ports = ["8200"]
+    ports = [8200]
   }
 
   target_tags = ["vault"]
