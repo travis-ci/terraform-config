@@ -56,7 +56,10 @@ module "aws_asg_com" {
   worker_asg_namespace = "Travis/com-staging"
   worker_asg_scale_in_threshold = 16
   worker_asg_scale_out_threshold = 8
-  worker_config = "${file("${path.module}/config/worker-env-com")}"
+  worker_config = <<EOF
+${file("${path.module}/config/worker-env-com")}
+${file("${path.module}/worker.env")}
+EOF
   worker_docker_image_android = "quay.io/travisci/ci-android:packer-1473395968"
   worker_docker_image_default = "quay.io/travisci/ci-ruby:packer-1473395984"
   worker_docker_image_erlang = "quay.io/travisci/ci-erlang:packer-1473395969"
@@ -92,7 +95,10 @@ module "aws_asg_org" {
   worker_asg_namespace = "Travis/org-staging"
   worker_asg_scale_in_threshold = 16
   worker_asg_scale_out_threshold = 8
-  worker_config = "${file("${path.module}/config/worker-env-org")}"
+  worker_config = <<EOF
+${file("${path.module}/config/worker-env-org")}
+${file("${path.module}/worker.env")}
+EOF
   worker_docker_image_android = "quay.io/travisci/ci-android:packer-1473395968"
   worker_docker_image_default = "quay.io/travisci/ci-ruby:packer-1473395984"
   worker_docker_image_erlang = "quay.io/travisci/ci-erlang:packer-1473395969"
