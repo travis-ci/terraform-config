@@ -2,7 +2,7 @@ SHELL := bash
 
 TOP := $(shell git rev-parse --show-toplevel)
 TRAVIS_BUILD_COM_HOST ?= build.travis-ci.com
-TRAVIS_BUILD_ORG_HOST ?= build.travis-ci.com
+TRAVIS_BUILD_ORG_HOST ?= build.travis-ci.org
 AMQP_URL_VARNAME ?= AMQP_URL
 
 include $(TOP)/terraform.mk
