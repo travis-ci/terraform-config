@@ -23,6 +23,9 @@ __restart_worker() {
 __write_travis_worker_configs() {
   # declared for shellcheck
   local cyclist_url
+  local worker_cache_access_key
+  local worker_cache_bucket
+  local worker_cache_secret_key
   local worker_config
   local worker_docker_self_image
 
