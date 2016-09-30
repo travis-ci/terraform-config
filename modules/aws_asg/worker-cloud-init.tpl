@@ -32,12 +32,15 @@ __write_travis_worker_configs() {
 ${worker_config}
 EOF
   cat >/etc/default/travis-worker-cloud-init <<EOF
+export TRAVIS_WORKER_BUILD_CACHE_S3_ACCESS_KEY_ID=${worker_cache_access_key}
+export TRAVIS_WORKER_BUILD_CACHE_S3_BUCKET=${worker_cache_bucket}
+export TRAVIS_WORKER_BUILD_CACHE_S3_SECRET_ACCESS_KEY=${worker_cache_secret_key}
 export TRAVIS_WORKER_HEARTBEAT_URL=${cyclist_url}/heartbeats/$${instance_id}
 export TRAVIS_WORKER_HEARTBEAT_URL_AUTH_TOKEN=file:///var/tmp/travis-run.d/instance-token
 export TRAVIS_WORKER_PRESTART_HOOK=/var/tmp/travis-run.d/travis-worker-prestart-hook
+export TRAVIS_WORKER_SELF_IMAGE=${worker_docker_self_image}
 export TRAVIS_WORKER_START_HOOK=/var/tmp/travis-run.d/travis-worker-start-hook
 export TRAVIS_WORKER_STOP_HOOK=/var/tmp/travis-run.d/travis-worker-stop-hook
-export TRAVIS_WORKER_SELF_IMAGE=${worker_docker_self_image}
 EOF
 }
 

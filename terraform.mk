@@ -1,5 +1,5 @@
 ENV_NAME := $(notdir $(shell cd $(PWD) && pwd))
-ENV_SHORT := $(word 2,$(subst -, ,$(ENV_NAME)))
+ENV_SHORT ?= $(word 2,$(subst -, ,$(ENV_NAME)))
 INFRA ?= $(word 1,$(subst -, ,$(ENV_NAME)))
 TFVARS := $(PWD)/terraform.tfvars
 TFSTATE := $(PWD)/.terraform/terraform.tfstate

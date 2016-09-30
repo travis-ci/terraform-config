@@ -1,0 +1,32 @@
+#!/usr/bin/env ruby
+require 'uri'
+
+def main(argv = ARGV)
+  url_varname = argv.fetch(0)
+  out_dir = argv.fetch(1)
+  suffix = argv.fetch(2).upcase
+
+  parsed = URI(ENV.fetch(url_varname))
+
+  %w(scheme user password host port path query).each do |part|
+    basename = "#{url_varname}_#{part.upcase}_#{suffix}"
+    File.open(File.join(out_dir, basename), 'w') do |f|
+      f.puts parsed.send(part).to_s + "\n"
+    end
+  end
+end
+
+module URI
+  class AMQP < Generic
+    DEFAULT_PORT = 5672
+  end
+
+  class AMQPS < Generic
+    DEFAULT_PORT = 5671
+  end
+
+  @@schemes['AMQP'] = AMQP
+  @@schemes['AMQPS'] = AMQPS
+end
+
+main if $PROGRAM_NAME == __FILE__

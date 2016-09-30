@@ -1,8 +1,14 @@
 variable "aws_heroku_org" {}
 variable "env" { default = "production" }
 variable "index" { default = 2 }
+variable "rabbitmq_password_com" {}
+variable "rabbitmq_password_org" {}
+variable "rabbitmq_username_com" {}
+variable "rabbitmq_username_org" {}
 variable "syslog_address" {}
 variable "worker_ami" { default = "ami-c6710cd1" }
+variable "worker_com_cache_bucket" {}
+variable "worker_org_cache_bucket" {}
 
 provider "aws" {}
 
@@ -36,6 +42,24 @@ module "aws_az_1e" {
   vpc_id = "${data.terraform_remote_state.vpc.vpc_id}"
 }
 
+module "rabbitmq_worker_config_com" {
+  source = "../modules/rabbitmq_user"
+  admin_password = "${var.rabbitmq_password_com}"
+  admin_username = "${var.rabbitmq_username_com}"
+  endpoint = "${trimspace(file("${path.module}/config/CLOUDAMQP_URL_HOST_COM"))}"
+  username = "travis-worker-ec2-${var.env}-${var.index}"
+  vhost = "${replace(trimspace("${file("${path.module}/config/CLOUDAMQP_URL_PATH_COM")}"), "/^//", "")}"
+}
+
+module "rabbitmq_worker_config_org" {
+  source = "../modules/rabbitmq_user"
+  admin_password = "${var.rabbitmq_password_org}"
+  admin_username = "${var.rabbitmq_username_org}"
+  endpoint = "${trimspace(file("${path.module}/config/CLOUDAMQP_URL_HOST_ORG"))}"
+  username = "travis-worker-ec2-${var.env}-${var.index}"
+  vhost = "${replace(trimspace("${file("${path.module}/config/CLOUDAMQP_URL_PATH_ORG")}"), "/^//", "")}"
+}
+
 module "aws_asg_com" {
   source = "../modules/aws_asg"
   cyclist_auth_token = "${random_id.cyclist_token_com.hex}"
@@ -59,9 +83,16 @@ module "aws_asg_com" {
   worker_asg_scale_in_threshold = 16
   worker_asg_scale_out_qty = 2
   worker_asg_scale_out_threshold = 8
+  worker_cache_bucket = "${var.worker_com_cache_bucket}"
   worker_config = <<EOF
-${file("${path.module}/config/worker-env-com")}
+### ${path.module}/config/worker-com-local.env
+${file("${path.module}/config/worker-com-local.env")}
+### ${path.module}/config/worker-com.env
+${file("${path.module}/config/worker-com.env")}
+### ${path.module}/worker.env
 ${file("${path.module}/worker.env")}
+
+export TRAVIS_WORKER_AMQP_URI=${module.rabbitmq_worker_config_com.uri}
 EOF
   worker_docker_image_android = "quay.io/travisci/ci-amethyst:packer-1473386113"
   worker_docker_image_default = "quay.io/travisci/ci-garnet:packer-1473395986"
@@ -103,9 +134,16 @@ module "aws_asg_org" {
   worker_asg_scale_in_threshold = 16
   worker_asg_scale_out_qty = 2
   worker_asg_scale_out_threshold = 8
+  worker_cache_bucket = "${var.worker_org_cache_bucket}"
   worker_config = <<EOF
-${file("${path.module}/config/worker-env-org")}
+### ${path.module}/config/worker-org-local.env
+${file("${path.module}/config/worker-org-local.env")}
+### ${path.module}/config/worker-org.env
+${file("${path.module}/config/worker-org.env")}
+### ${path.module}/worker.env
 ${file("${path.module}/worker.env")}
+
+export TRAVIS_WORKER_AMQP_URI=${module.rabbitmq_worker_config_org.uri}
 EOF
   worker_docker_image_android = "quay.io/travisci/ci-amethyst:packer-1473386113"
   worker_docker_image_default = "quay.io/travisci/ci-garnet:packer-1473395986"

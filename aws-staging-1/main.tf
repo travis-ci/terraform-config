@@ -3,6 +3,8 @@ variable "env" { default = "staging" }
 variable "index" { default = 1 }
 variable "syslog_address" {}
 variable "worker_ami" { default = "ami-c6710cd1" }
+variable "worker_org_cache_bucket" {}
+variable "worker_com_cache_bucket" {}
 
 provider "aws" {}
 
@@ -55,8 +57,13 @@ module "aws_asg_com" {
   worker_asg_namespace = "Travis/com-staging"
   worker_asg_scale_in_threshold = 16
   worker_asg_scale_out_threshold = 8
+  worker_cache_bucket = "${var.worker_com_cache_bucket}"
   worker_config = <<EOF
-${file("${path.module}/config/worker-env-com")}
+### ${path.module}/config/worker-com-local.env
+${file("${path.module}/config/worker-com-local.env")}
+### ${path.module}/config/worker-com.env
+${file("${path.module}/config/worker-com.env")}
+### ${path.module}/worker.env
 ${file("${path.module}/worker.env")}
 EOF
   worker_docker_image_android = "quay.io/travisci/ci-amethyst:packer-1473386113"
@@ -94,8 +101,13 @@ module "aws_asg_org" {
   worker_asg_namespace = "Travis/org-staging"
   worker_asg_scale_in_threshold = 16
   worker_asg_scale_out_threshold = 8
+  worker_cache_bucket = "${var.worker_org_cache_bucket}"
   worker_config = <<EOF
-${file("${path.module}/config/worker-env-org")}
+### ${path.module}/config/worker-org-local.env
+${file("${path.module}/config/worker-org-local.env")}
+### ${path.module}/config/worker-org.env
+${file("${path.module}/config/worker-org.env")}
+### ${path.module}/worker.env
 ${file("${path.module}/worker.env")}
 EOF
   worker_docker_image_android = "quay.io/travisci/ci-amethyst:packer-1473386113"
