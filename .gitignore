@@ -5,3 +5,4 @@ gce-*/config/
 terraform.tfvars
 *.tfplan
 graph.png
+local-development-0/local-development-0.tfstate
