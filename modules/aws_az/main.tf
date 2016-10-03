@@ -141,6 +141,7 @@ resource "aws_route53_record" "workers_com_nat" {
 output "bastion_eip" { value = "${aws_eip.bastion.public_ip}" }
 output "bastion_id" { value = "${aws_instance.bastion.id}" }
 output "bastion_sg_id" { value = "${aws_security_group.bastion.id}" }
+output "public_subnet_id" { value = "${aws_subnet.public.id}" }
 output "route_table_id" { value = "${aws_route_table.public.id}" }
 output "workers_com_nat_eip" { value = "${module.workers_com.nat_eip}" }
 output "workers_com_nat_id" { value = "${module.workers_com.nat_id}" }
