@@ -31,7 +31,7 @@ __write_docker_registry_info() {
     "${docker_registry_private_ip} ${docker_registry_hostname}"
   if ! grep -q registry-mirror /etc/default/docker; then
     # shellcheck disable=SC2034
-    echo "DOCKER_OPTS=\"$DOCKER_OPTS --registry-mirror=https://${docker_registry_hostname}\"" \
+    echo "DOCKER_OPTS=\"\$DOCKER_OPTS --registry-mirror=https://${docker_registry_hostname}\"" \
       | tee -a /etc/default/docker
   fi
   __log write-docker-registry-info end "$LINENO"
