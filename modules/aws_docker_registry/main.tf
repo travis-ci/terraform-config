@@ -1,9 +1,9 @@
 variable "ami" {}
-variable "az" {}
+variable "az" { default = "1b" }
 variable "env" {}
-variable "github_users" { default = "meatballhat" }
+variable "github_users" {}
 variable "index" {}
-variable "instance_type" { default = "c3.2xlarge" }
+variable "instance_type" { default = "m3.xlarge" }
 variable "letsencrypt_email" { default = "infrastructure+team-blue@travis-ci.org" }
 variable "public_subnet_cidr" {}
 variable "public_subnet_id" {}
@@ -30,12 +30,6 @@ resource "aws_security_group" "registry" {
   ingress {
     from_port = 443
     to_port = 443
-    protocol = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  ingress {
-    from_port = 22
-    to_port = 22
     protocol = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -78,6 +72,7 @@ resource "aws_route53_record" "registry" {
   type = "A"
   ttl = 300
   records = ["${aws_eip.registry.public_ip}"]
+  depends_on = ["aws_eip.registry"]
 }
 
 output "worker_auth" { value = "${random_id.worker_auth.hex}" }

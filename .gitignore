@@ -2,7 +2,7 @@
 .env
 aws-*/config/
 gce-*/config/
-terraform.tfvars
+*.tfvars
 *.tfplan
 graph.png
 local-development-0/local-development-0.tfstate

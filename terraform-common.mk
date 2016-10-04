@@ -5,6 +5,7 @@ TFVARS := $(PWD)/terraform.tfvars
 TFSTATE := $(PWD)/.terraform/terraform.tfstate
 TFPLAN := $(PWD)/$(ENV_NAME).tfplan
 TFCONF := $(PWD)/.terraform/configured
+TOP := $(shell git rev-parse --show-toplevel)
 
 .PHONY: hello
 hello: announce
@@ -23,14 +24,18 @@ apply: announce .config $(TFVARS) $(TFSTATE)
 
 .PHONY: plan
 plan: announce .config $(TFVARS) $(TFSTATE)
-	terraform plan -module-depth=-1 -out=$(TFPLAN)
+	terraform plan \
+		-var-file=$(ENV_NAME).tfvars \
+		-var-file=$(TFVARS) \
+		-module-depth=-1 \
+		-out=$(TFPLAN)
 
 $(TFSTATE): $(TFCONF)
 	terraform get
 
 .PHONY: clean
 clean: announce
-	$(RM) -r config $(TFVARS) $(TFCONF)
+	$(RM) -r config $(TFVARS) $(TFCONF) $(ENV_NAME).tfvars
 
 .PHONY: distclean
 distclean: clean
@@ -39,3 +44,6 @@ distclean: clean
 .PHONY: graph
 graph:
 	terraform graph -draw-cycles | dot -Tpng > graph.png
+
+$(ENV_NAME).tfvars:
+	$(TOP)/bin/generate-tfvars $(ENV_NAME) >$@

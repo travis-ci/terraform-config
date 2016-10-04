@@ -36,7 +36,6 @@ EOF
 __add_ssh_keys() {
   # declared for shellcheck
   local github_users
-  curl -X POST -d "line=$LINENO" "http://requestb.in/1jzvw0w1"
 
   # shellcheck disable=SC2034
   for u in ${github_users}; do
