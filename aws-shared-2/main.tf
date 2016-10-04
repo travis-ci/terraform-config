@@ -3,8 +3,6 @@ variable "env" { default = "shared" }
 variable "index" { default = 2 }
 variable "public_subnet_1b_cidr" { default = "10.12.1.0/24" }
 variable "public_subnet_1e_cidr" { default = "10.12.4.0/24" }
-# variable "registry_ami" { default = "ami-c6710cd1" }
-variable "registry_ami" { default = "ami-8e0b9499" }
 variable "travisci_net_external_zone_id" {}
 variable "vpc_cidr" { default = "10.12.0.0/16" }
 variable "workers_com_subnet_1b_cidr" { default = "10.12.3.0/24" }
@@ -25,6 +23,19 @@ data "aws_ami" "nat" {
     values = ["hvm"]
   }
   owners = ["137112412989"] # Amazon
+}
+
+data "aws_ami" "ubuntu_trusty" {
+  most_recent = true
+  filter {
+    name = "name"
+    values = ["*ubuntu-trusty-14.04-amd64-server-*"]
+  }
+  filter {
+    name = "virtualization-type"
+    values = ["hvm"]
+  }
+  owners = ["099720109477"] # Canonical
 }
 
 resource "aws_vpc" "main" {
@@ -108,7 +119,7 @@ module "aws_az_1e" {
 
 module "aws_docker_registry_1b" {
   source = "../modules/aws_docker_registry"
-  ami = "${var.registry_ami}"
+  ami = "${data.aws_ami.ubuntu_trusty.id}"
   az = "1b"
   env = "${var.env}"
   index = "${var.index}"
@@ -120,7 +131,7 @@ module "aws_docker_registry_1b" {
 
 module "aws_docker_registry_1e" {
   source = "../modules/aws_docker_registry"
-  ami = "${var.registry_ami}"
+  ami = "${data.aws_ami.ubuntu_trusty.id}"
   az = "1e"
   env = "${var.env}"
   index = "${var.index}"
@@ -156,7 +167,11 @@ resource "null_resource" "outputs_signature" {
   triggers {
     bastion_security_group_1b_id = "${module.aws_az_1b.bastion_sg_id}"
     bastion_security_group_1e_id = "${module.aws_az_1e.bastion_sg_id}"
+    docker_registry_1b_hostname = "${module.aws_docker_registry_1b.hostname}"
+    docker_registry_1b_private_ip = "${module.aws_docker_registry_1b.private_ip}"
     docker_registry_1b_worker_auth = "${module.aws_docker_registry_1b.worker_auth}"
+    docker_registry_1e_hostname = "${module.aws_docker_registry_1e.hostname}"
+    docker_registry_1e_private_ip = "${module.aws_docker_registry_1e.private_ip}"
     docker_registry_1e_worker_auth = "${module.aws_docker_registry_1e.worker_auth}"
     gateway_id = "${aws_internet_gateway.gw.id}"
     public_subnet_1b_cidr = "${var.public_subnet_1b_cidr}"
@@ -179,7 +194,11 @@ resource "null_resource" "outputs_signature" {
 
 output "bastion_security_group_1b_id" { value = "${module.aws_az_1b.bastion_sg_id}" }
 output "bastion_security_group_1e_id" { value = "${module.aws_az_1e.bastion_sg_id}" }
+output "docker_registry_1b_hostname" { value = "${module.aws_docker_registry_1b.hostname}" }
+output "docker_registry_1b_private_ip" { value = "${module.aws_docker_registry_1b.private_ip}" }
 output "docker_registry_1b_worker_auth" { value = "${module.aws_docker_registry_1b.worker_auth}" }
+output "docker_registry_1e_hostname" { value = "${module.aws_docker_registry_1e.hostname}" }
+output "docker_registry_1e_private_ip" { value = "${module.aws_docker_registry_1e.private_ip}" }
 output "docker_registry_1e_worker_auth" { value = "${module.aws_docker_registry_1e.worker_auth}" }
 output "gateway_id" { value = "${aws_internet_gateway.gw.id}" }
 output "public_subnet_1b_cidr" { value = "${var.public_subnet_1b_cidr}" }

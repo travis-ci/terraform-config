@@ -7,6 +7,7 @@ main() {
   local instance_id
   instance_id="$(curl -s 'http://169.254.169.254/latest/meta-data/instance-id')"
 
+  __write_docker_registry_info
   __write_travis_worker_configs "$${instance_id}"
   __write_travis_worker_hooks "$${instance_id}"
   __setup_papertrail_rsyslog
@@ -15,9 +16,60 @@ main() {
   __set_hostname "$${instance_id}" || true
 }
 
-__restart_worker() {
-  stop travis-worker || true
-  start travis-worker || true
+__write_docker_registry_info() {
+  local az
+  # shellcheck disable=SC2034
+  az="$(curl -s 'http://169.254.169.254/latest/meta-data/placement/availability-zone')"
+  "__write_docker_registry_$${az##*-}_host"
+  "__write_docker_registry_$${az##*-}_auth"
+}
+
+__write_docker_registry_1b_host() {
+  # declared for shellcheck
+  local docker_registry_1b_hostname
+  local docker_registry_1b_private_ip
+
+  __write_etc_hosts_record \
+    "${docker_registry_1b_private_ip} ${docker_registry_1b_hostname}"
+  echo "${docker_registry_1b_hostname}" \
+    | tee /var/tmp/travis-run.d/registry-hostname
+}
+
+__write_docker_registry_1e_host() {
+  # declared for shellcheck
+  local docker_registry_1e_hostname
+  local docker_registry_1e_private_ip
+
+  __write_etc_hosts_record \
+    "${docker_registry_1e_private_ip} ${docker_registry_1e_hostname}"
+  echo "${docker_registry_1e_hostname}" \
+    | tee /var/tmp/travis-run.d/registry-hostname
+}
+
+__write_docker_registry_1b_auth() {
+  # declared for shellcheck
+  local docker_registry_1b_worker_auth
+
+  echo "${docker_registry_1b_worker_auth}" \
+    | tee /var/tmp/travis-run.d/registry-auth
+}
+
+__write_docker_registry_1e_auth() {
+  # declared for shellcheck
+  local docker_registry_1e_worker_auth
+
+  echo "${docker_registry_1e_worker_auth}" \
+    | tee /var/tmp/travis-run.d/registry-auth
+}
+
+__write_etc_hosts_record() {
+  local hosts_line="$1"
+
+  if grep -qE "^$hosts_line\$" /etc/hosts; then
+    return
+  fi
+
+  echo "$hosts_line" | tee -a /etc/hosts
 }
 
 __write_travis_worker_configs() {
@@ -118,38 +170,49 @@ main() {
     let i+=10
   done
 
-  docker pull "${worker_docker_image_android}"
-  docker tag "${worker_docker_image_android}" travis:android
+  local docker_registry_hostname
+  docker_registry_hostname="\$(cat /var/tmp/travis-run.d/registry-hostname)"
 
-  docker pull "${worker_docker_image_default}"
-  docker tag "${worker_docker_image_default}" travis:default
+  docker login \\
+    -u travis-worker \\
+    -p <(cat /var/tmp/travis-run.d/registry-auth) \\
+    "\$docker_registry_hostname"
 
-  docker pull "${worker_docker_image_erlang}"
-  docker tag "${worker_docker_image_erlang}" travis:erlang
+  __docker_double_pull_tag "${worker_docker_image_android}" travis:android
+  __docker_double_pull_tag "${worker_docker_image_default}" travis:default
+  __docker_double_pull_tag "${worker_docker_image_erlang}" travis:erlang
+  __docker_double_pull_tag "${worker_docker_image_go}" travis:go
+  __docker_double_pull_tag "${worker_docker_image_haskell}" travis:haskell
+  __docker_double_pull_tag "${worker_docker_image_jvm}" travis:jvm
+  __docker_double_pull_tag "${worker_docker_image_node_js}" travis:node-js
+  __docker_double_pull_tag "${worker_docker_image_perl}" travis:perl
+  __docker_double_pull_tag "${worker_docker_image_php}" travis:php
+  __docker_double_pull_tag "${worker_docker_image_python}" travis:python
+  __docker_double_pull_tag "${worker_docker_image_ruby}" travis:ruby
 
-  docker pull "${worker_docker_image_go}"
-  docker tag "${worker_docker_image_go}" travis:go
+  docker logout "\$docker_registry_hostname"
+}
 
-  docker pull "${worker_docker_image_haskell}"
-  docker tag "${worker_docker_image_haskell}" travis:haskell
+__docker_double_pull_tag() {
+  local image="\$1"
+  local tag="\$2"
+  local local_registry_image_name
+  local_registry_image_name="\$(__local_registry_image_name "\$image")"
 
-  docker pull "${worker_docker_image_jvm}"
-  docker tag "${worker_docker_image_jvm}" travis:jvm
+  if docker pull "\$local_registry_image_name"; then
+    docker tag "\$local_registry_image_name" "\$tag"
+    return
+  fi
 
-  docker pull "${worker_docker_image_node_js}"
-  docker tag "${worker_docker_image_node_js}" travis:node-js
+  docker pull "\$image"
+  docker tag "\$image" "\$tag"
+  docker tag "\$image" "\$local_registry_image_name"
+}
 
-  docker pull "${worker_docker_image_perl}"
-  docker tag "${worker_docker_image_perl}" travis:perl
-
-  docker pull "${worker_docker_image_php}"
-  docker tag "${worker_docker_image_php}" travis:php
-
-  docker pull "${worker_docker_image_python}"
-  docker tag "${worker_docker_image_python}" travis:python
-
-  docker pull "${worker_docker_image_ruby}"
-  docker tag "${worker_docker_image_ruby}" travis:ruby
+__local_registry_image_name() {
+  local registry_hostname="\$1"
+  local image="\$2"
+  echo "\$registry_hostname/\$(basename "\$image")"
 }
 
 main "\$@"
@@ -183,6 +246,11 @@ __fix_perms() {
   chmod 0750 /var/tmp/travis-run.d/travis-worker*hook
 }
 
+__restart_worker() {
+  stop travis-worker || true
+  start travis-worker || true
+}
+
 __set_hostname() {
   # declared for shellcheck
   local index
@@ -200,7 +268,7 @@ __set_hostname() {
 
   echo "$instance_hostname" | tee /etc/hostname
   hostname -F /etc/hostname
-  echo "$hosts_line" | tee -a /etc/hosts
+  __write_etc_hosts_record "$hosts_line"
 }
 
 main "$@"

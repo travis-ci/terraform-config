@@ -3,8 +3,8 @@ variable "env" { default = "staging" }
 variable "index" { default = 1 }
 variable "syslog_address" {}
 variable "worker_ami" { default = "ami-c6710cd1" }
-variable "worker_org_cache_bucket" {}
 variable "worker_com_cache_bucket" {}
+variable "worker_org_cache_bucket" {}
 
 provider "aws" {}
 
@@ -44,6 +44,12 @@ module "aws_asg_com" {
   cyclist_debug = "true"
   cyclist_scale = "web=1:Hobby"
   cyclist_version = "v0.1.0"
+  docker_registry_1b_hostname = "${data.terraform_remote_state.vpc.docker_registry_1b_hostname}"
+  docker_registry_1b_private_ip = "${data.terraform_remote_state.vpc.docker_registry_1b_private_ip}"
+  docker_registry_1b_worker_auth = "${data.terraform_remote_state.vpc.docker_registry_1b_worker_auth}"
+  docker_registry_1e_hostname = "${data.terraform_remote_state.vpc.docker_registry_1e_hostname}"
+  docker_registry_1e_private_ip = "${data.terraform_remote_state.vpc.docker_registry_1e_private_ip}"
+  docker_registry_1e_worker_auth = "${data.terraform_remote_state.vpc.docker_registry_1e_worker_auth}"
   env = "${var.env}"
   env_short = "${var.env}"
   heroku_org = "${var.aws_heroku_org}"
@@ -88,6 +94,12 @@ module "aws_asg_org" {
   cyclist_debug = "true"
   cyclist_scale = "web=1:Hobby"
   cyclist_version = "v0.1.0"
+  docker_registry_1b_hostname = "${data.terraform_remote_state.vpc.docker_registry_1b_hostname}"
+  docker_registry_1b_private_ip = "${data.terraform_remote_state.vpc.docker_registry_1b_private_ip}"
+  docker_registry_1b_worker_auth = "${data.terraform_remote_state.vpc.docker_registry_1b_worker_auth}"
+  docker_registry_1e_hostname = "${data.terraform_remote_state.vpc.docker_registry_1e_hostname}"
+  docker_registry_1e_private_ip = "${data.terraform_remote_state.vpc.docker_registry_1e_private_ip}"
+  docker_registry_1e_worker_auth = "${data.terraform_remote_state.vpc.docker_registry_1e_worker_auth}"
   env = "${var.env}"
   env_short = "${var.env}"
   heroku_org = "${var.aws_heroku_org}"

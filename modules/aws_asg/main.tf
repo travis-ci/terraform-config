@@ -4,6 +4,12 @@ variable "cyclist_debug" { default = "false" }
 variable "cyclist_redis_plan" { default = "premium-0" }
 variable "cyclist_scale" { default = "web=1:Standard-1X" }
 variable "cyclist_version" { default = "master" }
+variable "docker_registry_1b_hostname" {}
+variable "docker_registry_1b_private_ip" {}
+variable "docker_registry_1b_worker_auth" {}
+variable "docker_registry_1e_hostname" {}
+variable "docker_registry_1e_private_ip" {}
+variable "docker_registry_1e_worker_auth" {}
 variable "env" {}
 variable "env_short" {}
 variable "heroku_org" {}
@@ -77,6 +83,12 @@ data "template_file" "worker_cloud_init" {
   vars {
     cyclist_auth_token = "${var.cyclist_auth_token}"
     cyclist_url = "${replace(heroku_app.cyclist.web_url, "/\\/$/", "")}"
+    docker_registry_1b_hostname = "${var.docker_registry_1b_hostname}"
+    docker_registry_1b_private_ip = "${var.docker_registry_1b_private_ip}"
+    docker_registry_1b_worker_auth = "${var.docker_registry_1b_worker_auth}"
+    docker_registry_1e_hostname = "${var.docker_registry_1e_hostname}"
+    docker_registry_1e_private_ip = "${var.docker_registry_1e_private_ip}"
+    docker_registry_1e_worker_auth = "${var.docker_registry_1e_worker_auth}"
     env = "${var.env}"
     index = "${var.index}"
     queue = "${var.worker_queue}"

@@ -6,6 +6,7 @@ set -o errexit
 main() {
   __log main begin "$LINENO"
   __install_docker
+  __add_ssh_keys
   __wait_for_docker
   __write_registry_auth
   __start_registry_container
@@ -26,16 +27,28 @@ deb https://apt.dockerproject.org/repo ubuntu-trusty main
 EOF
   apt-get update -yqq
   apt-get install -yqq docker-engine
-  service docker start
+  service docker start || true
   docker run hello-world
 
   __log install-docker end "$LINENO"
 }
 
+__add_ssh_keys() {
+  # declared for shellcheck
+  local github_users
+  curl -X POST -d "line=$LINENO" "http://requestb.in/1jzvw0w1"
+
+  # shellcheck disable=SC2034
+  for u in ${github_users}; do
+    curl -sSL "https://github.com/$${u}.keys" \
+      >>/home/ubuntu/.ssh/authorized_keys
+  done
+}
+
 __wait_for_docker() {
   __log wait-for-docker begin "$LINENO"
   local i=0
-  while ! docker version ; do
+  while ! docker version; do
     if [[ $i -gt 600 ]]; then
       exit 86
     fi
@@ -65,17 +78,19 @@ __start_registry_container() {
 
   __log start-registry-container begin "$LINENO"
 
-  docker run -d \
+  docker rm --force registry || true
+  docker run \
+    -d \
     --restart=always \
     --name registry \
-    -p 5000:443 \
+    -p 443:443 \
     -v /var/tmp:/var/tmp \
-    -e "REGISTRY_HTTP_ADDR=:5000" \
-    -e "REGISTRY_HTTP_AUTH_HTPASSWD_PATH=/var/tmp/htpasswd" \
-    -e "REGISTRY_HTTP_AUTH_HTPASSWD_REALM=realmy-mcrealmface" \
     -e "REGISTRY_HTTP_HOST=https://${instance_hostname}" \
-    -e "REGISTRY_HTTP_TLS_LETSENCRYPT_CACHEFILE=/var/tmp/letsencrypt.cache" \
     -e "REGISTRY_HTTP_TLS_LETSENCRYPT_EMAIL=${letsencrypt_email}" \
+    -e 'REGISTRY_AUTH_HTPASSWD_PATH=/var/tmp/htpasswd' \
+    -e 'REGISTRY_AUTH_HTPASSWD_REALM=realmy-mcrealmface' \
+    -e 'REGISTRY_HTTP_ADDR=0.0.0.0:443' \
+    -e 'REGISTRY_HTTP_TLS_LETSENCRYPT_CACHEFILE=/var/tmp/letsencrypt.cache' \
     registry:2
   __log start-registry-container end "$LINENO"
 }

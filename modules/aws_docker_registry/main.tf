@@ -1,6 +1,7 @@
 variable "ami" {}
 variable "az" {}
 variable "env" {}
+variable "github_users" { default = "meatballhat" }
 variable "index" {}
 variable "instance_type" { default = "c3.2xlarge" }
 variable "letsencrypt_email" { default = "infrastructure+team-blue@travis-ci.org" }
@@ -16,6 +17,7 @@ resource "random_id" "worker_auth" {
 data "template_file" "cloud_init" {
   template = "${file("${path.module}/cloud-init.tpl")}"
   vars {
+    github_users = "${var.github_users}"
     instance_hostname = "registry-${var.env}-${var.index}.aws-us-east-${var.az}.travisci.net"
     letsencrypt_email = "${var.letsencrypt_email}"
     worker_auth = "${random_id.worker_auth.hex}"
@@ -28,6 +30,12 @@ resource "aws_security_group" "registry" {
   ingress {
     from_port = 443
     to_port = 443
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    from_port = 22
+    to_port = 22
     protocol = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -73,3 +81,5 @@ resource "aws_route53_record" "registry" {
 }
 
 output "worker_auth" { value = "${random_id.worker_auth.hex}" }
+output "hostname" { value = "${aws_route53_record.registry.name}" }
+output "private_ip" { value = "${aws_instance.registry.private_ip}" }
