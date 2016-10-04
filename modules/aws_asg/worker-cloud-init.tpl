@@ -42,7 +42,7 @@ __restart_docker() {
   start docker || true
 
   local i=0
-  while ! docker version ; do
+  while ! docker version; do
     if [[ $i -gt 600 ]]; then
       return
     fi
