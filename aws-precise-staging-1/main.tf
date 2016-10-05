@@ -4,8 +4,8 @@ variable "env_short" { default = "staging" }
 variable "index" { default = 1 }
 variable "syslog_address" {}
 variable "worker_ami" { default = "ami-c6710cd1" }
-variable "worker_org_cache_bucket" {}
 variable "worker_com_cache_bucket" {}
+variable "worker_org_cache_bucket" {}
 
 provider "aws" {}
 

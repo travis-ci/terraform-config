@@ -46,7 +46,8 @@ module "rabbitmq_worker_config_com" {
   source = "../modules/rabbitmq_user"
   admin_password = "${var.rabbitmq_password_com}"
   admin_username = "${var.rabbitmq_username_com}"
-  endpoint = "${trimspace(file("${path.module}/config/CLOUDAMQP_URL_HOST_COM"))}"
+  endpoint = "https://${trimspace(file("${path.module}/config/CLOUDAMQP_URL_HOST_COM"))}"
+  scheme = "${trimspace(file("${path.module}/config/CLOUDAMQP_URL_SCHEME_COM"))}"
   username = "travis-worker-ec2-${var.env}-${var.index}"
   vhost = "${replace(trimspace("${file("${path.module}/config/CLOUDAMQP_URL_PATH_COM")}"), "/^//", "")}"
 }
@@ -55,7 +56,8 @@ module "rabbitmq_worker_config_org" {
   source = "../modules/rabbitmq_user"
   admin_password = "${var.rabbitmq_password_org}"
   admin_username = "${var.rabbitmq_username_org}"
-  endpoint = "${trimspace(file("${path.module}/config/CLOUDAMQP_URL_HOST_ORG"))}"
+  endpoint = "https://${trimspace(file("${path.module}/config/CLOUDAMQP_URL_HOST_ORG"))}"
+  scheme = "${trimspace(file("${path.module}/config/CLOUDAMQP_URL_SCHEME_ORG"))}"
   username = "travis-worker-ec2-${var.env}-${var.index}"
   vhost = "${replace(trimspace("${file("${path.module}/config/CLOUDAMQP_URL_PATH_ORG")}"), "/^//", "")}"
 }
