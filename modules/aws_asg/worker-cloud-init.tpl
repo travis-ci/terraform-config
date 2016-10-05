@@ -30,10 +30,10 @@ main() {
 #
 #   __log write-docker-registry-info begin "$LINENO"
 #   __write_etc_hosts_record \
-#     "${docker_registry_private_ip} ${docker_registry_hostname}"
+#     "$${docker_registry_private_ip} $${docker_registry_hostname}"
 #   if ! grep -q registry-mirror /etc/default/docker; then
 #     # shellcheck disable=SC2034
-#     echo "DOCKER_OPTS=\"\$DOCKER_OPTS --registry-mirror=https://${docker_registry_hostname}\"" \
+#     echo "DOCKER_OPTS=\"\$DOCKER_OPTS --registry-mirror=https://$${docker_registry_hostname}\"" \
 #       | tee -a /etc/default/docker
 #   fi
 #   __log write-docker-registry-info end "$LINENO"
@@ -60,8 +60,8 @@ main() {
 #
 #   docker login \
 #     -u travis-worker \
-#     -p "${docker_registry_worker_auth}" \
-#     "${docker_registry_hostname}"
+#     -p "$${docker_registry_worker_auth}" \
+#     "$${docker_registry_hostname}"
 # }
 
 __write_etc_hosts_record() {
