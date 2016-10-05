@@ -80,10 +80,6 @@ EOF
   worker_docker_self_image = "quay.io/travisci/worker:v2.4.0-23-g396d039"
   worker_queue = "ec2"
   worker_subnets = "${data.terraform_remote_state.vpc.workers_com_subnet_1b_id},${data.terraform_remote_state.vpc.workers_com_subnet_1e_id}"
-  # TODO: further investigation of docker registry mirror (See #40)
-  # docker_registry_hostname = "${data.terraform_remote_state.vpc.docker_registry_hostname}"
-  # docker_registry_private_ip = "${data.terraform_remote_state.vpc.docker_registry_private_ip}"
-  # docker_registry_worker_auth = "${data.terraform_remote_state.vpc.docker_registry_worker_auth}"
 }
 
 module "aws_asg_org" {
@@ -128,8 +124,4 @@ EOF
   worker_docker_self_image = "quay.io/travisci/worker:v2.4.0-23-g396d039"
   worker_queue = "ec2"
   worker_subnets = "${data.terraform_remote_state.vpc.workers_org_subnet_1b_id},${data.terraform_remote_state.vpc.workers_org_subnet_1e_id}"
-  # TODO: further investigation of docker registry mirror (See #40)
-  # docker_registry_hostname = "${data.terraform_remote_state.vpc.docker_registry_hostname}"
-  # docker_registry_private_ip = "${data.terraform_remote_state.vpc.docker_registry_private_ip}"
-  # docker_registry_worker_auth = "${data.terraform_remote_state.vpc.docker_registry_worker_auth}"
 }

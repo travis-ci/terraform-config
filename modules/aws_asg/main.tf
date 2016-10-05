@@ -38,10 +38,6 @@ variable "worker_docker_self_image" { default = "quay.io/travisci/worker:v2.4.0"
 variable "worker_instance_type" { default = "c3.2xlarge" }
 variable "worker_queue" {}
 variable "worker_subnets" {}
-# TODO: further investigation of docker registry mirror (See #40)
-# variable "docker_registry_hostname" {}
-# variable "docker_registry_private_ip" {}
-# variable "docker_registry_worker_auth" {}
 
 resource "aws_iam_user" "worker_cache" {
   name = "worker-cache-${var.env}-${var.index}-${var.site}"
@@ -103,10 +99,6 @@ data "template_file" "worker_cloud_init" {
     worker_docker_image_python = "${var.worker_docker_image_python}"
     worker_docker_image_ruby = "${var.worker_docker_image_ruby}"
     worker_docker_self_image = "${var.worker_docker_self_image}"
-    # TODO: further investigation of docker registry mirror (See #40)
-    # docker_registry_hostname = "${var.docker_registry_hostname}"
-    # docker_registry_private_ip = "${var.docker_registry_private_ip}"
-    # docker_registry_worker_auth = "${var.docker_registry_worker_auth}"
   }
 }
 

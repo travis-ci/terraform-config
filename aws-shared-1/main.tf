@@ -26,20 +26,6 @@ data "aws_ami" "nat" {
   owners = ["137112412989"] # Amazon
 }
 
-# TODO: further investigation of docker registry mirror (See #40)
-# data "aws_ami" "ubuntu_trusty" {
-#   most_recent = true
-#   filter {
-#     name = "name"
-#     values = ["*ubuntu-trusty-14.04-amd64-server-*"]
-#   }
-#   filter {
-#     name = "virtualization-type"
-#     values = ["hvm"]
-#   }
-#   owners = ["099720109477"] # Canonical
-# }
-
 resource "aws_vpc" "main" {
   cidr_block = "${var.vpc_cidr}"
   enable_dns_hostnames = true
@@ -119,19 +105,6 @@ module "aws_az_1e" {
   workers_org_subnet_cidr = "${var.workers_org_subnet_1e_cidr}"
 }
 
-# TODO: further investigation of docker registry mirror (See #40)
-# module "aws_docker_registry" {
-#   source = "../modules/aws_docker_registry"
-#   ami = "${data.aws_ami.ubuntu_trusty.id}"
-#   env = "${var.env}"
-#   github_users = "${var.github_users}"
-#   index = "${var.index}"
-#   public_subnet_cidr = "${var.public_subnet_1b_cidr}"
-#   public_subnet_id = "${module.aws_az_1b.public_subnet_id}"
-#   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
-#   vpc_id = "${aws_vpc.main.id}"
-# }
-
 resource "aws_route53_record" "workers_org_nat" {
   zone_id = "${var.travisci_net_external_zone_id}"
   name = "workers-nat-org-${var.env}-${var.index}.aws-us-east-1.travisci.net"
@@ -174,10 +147,6 @@ resource "null_resource" "outputs_signature" {
     workers_org_subnet_1b_id = "${module.aws_az_1b.workers_org_subnet_id}"
     workers_org_subnet_1e_cidr = "${var.workers_org_subnet_1e_cidr}"
     workers_org_subnet_1e_id = "${module.aws_az_1e.workers_org_subnet_id}"
-    # TODO: further investigation of docker registry mirror (See #40)
-    # docker_registry_hostname = "${module.aws_docker_registry.hostname}"
-    # docker_registry_private_ip = "${module.aws_docker_registry.private_ip}"
-    # docker_registry_worker_auth = "${module.aws_docker_registry.worker_auth}"
   }
 }
 
@@ -199,7 +168,3 @@ output "workers_org_subnet_1b_cidr" { value = "${var.workers_org_subnet_1b_cidr}
 output "workers_org_subnet_1b_id" { value = "${module.aws_az_1b.workers_org_subnet_id}" }
 output "workers_org_subnet_1e_cidr" { value = "${var.workers_org_subnet_1e_cidr}" }
 output "workers_org_subnet_1e_id" { value = "${module.aws_az_1e.workers_org_subnet_id}" }
-# TODO: further investigation of docker registry mirror (See #40)
-# output "docker_registry_hostname" { value = "${module.aws_docker_registry.hostname}" }
-# output "docker_registry_private_ip" { value = "${module.aws_docker_registry.private_ip}" }
-# output "docker_registry_worker_auth" { value = "${module.aws_docker_registry.worker_auth}" }
