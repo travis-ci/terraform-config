@@ -9,9 +9,10 @@ main() {
   instance_id="$(curl -s 'http://169.254.169.254/latest/meta-data/instance-id')"
 
   mkdir -p /var/tmp/travis-run.d
-  __write_docker_registry_info
-  __restart_docker
-  __docker_login_registry
+  # TODO: further investigation of docker registry mirror (See #40)
+  # __write_docker_registry_info
+  # __restart_docker
+  # __docker_login_registry
   __write_travis_worker_configs "$${instance_id}"
   __write_travis_worker_hooks "$${instance_id}"
   __setup_papertrail_rsyslog
@@ -21,46 +22,47 @@ main() {
   __log main end "$LINENO"
 }
 
-__write_docker_registry_info() {
-  # declared for shellcheck
-  local docker_registry_hostname
-  local docker_registry_private_ip
-
-  __log write-docker-registry-info begin "$LINENO"
-  __write_etc_hosts_record \
-    "${docker_registry_private_ip} ${docker_registry_hostname}"
-  if ! grep -q registry-mirror /etc/default/docker; then
-    # shellcheck disable=SC2034
-    echo "DOCKER_OPTS=\"\$DOCKER_OPTS --registry-mirror=https://${docker_registry_hostname}\"" \
-      | tee -a /etc/default/docker
-  fi
-  __log write-docker-registry-info end "$LINENO"
-}
-
-__restart_docker() {
-  stop docker || true
-  start docker || true
-
-  local i=0
-  while ! docker version; do
-    if [[ $i -gt 600 ]]; then
-      return
-    fi
-    sleep 10
-    let i+=10
-  done
-}
-
-__docker_login_registry() {
-  # declared for shellcheck
-  local docker_registry_hostname
-  local docker_registry_worker_auth
-
-  docker login \
-    -u travis-worker \
-    -p "${docker_registry_worker_auth}" \
-    "${docker_registry_hostname}"
-}
+# TODO: further investigation of docker registry mirror (See #40)
+# __write_docker_registry_info() {
+#   # declared for shellcheck
+#   local docker_registry_hostname
+#   local docker_registry_private_ip
+#
+#   __log write-docker-registry-info begin "$LINENO"
+#   __write_etc_hosts_record \
+#     "${docker_registry_private_ip} ${docker_registry_hostname}"
+#   if ! grep -q registry-mirror /etc/default/docker; then
+#     # shellcheck disable=SC2034
+#     echo "DOCKER_OPTS=\"\$DOCKER_OPTS --registry-mirror=https://${docker_registry_hostname}\"" \
+#       | tee -a /etc/default/docker
+#   fi
+#   __log write-docker-registry-info end "$LINENO"
+# }
+#
+# __restart_docker() {
+#   stop docker || true
+#   start docker || true
+#
+#   local i=0
+#   while ! docker version; do
+#     if [[ $i -gt 600 ]]; then
+#       return
+#     fi
+#     sleep 10
+#     let i+=10
+#   done
+# }
+#
+# __docker_login_registry() {
+#   # declared for shellcheck
+#   local docker_registry_hostname
+#   local docker_registry_worker_auth
+#
+#   docker login \
+#     -u travis-worker \
+#     -p "${docker_registry_worker_auth}" \
+#     "${docker_registry_hostname}"
+# }
 
 __write_etc_hosts_record() {
   __log write-etc-hosts-record begin "$LINENO"

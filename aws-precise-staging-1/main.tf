@@ -45,9 +45,6 @@ module "aws_asg_com" {
   cyclist_debug = "true"
   cyclist_scale = "web=1:Hobby"
   cyclist_version = "v0.1.0"
-  docker_registry_hostname = "${data.terraform_remote_state.vpc.docker_registry_hostname}"
-  docker_registry_private_ip = "${data.terraform_remote_state.vpc.docker_registry_private_ip}"
-  docker_registry_worker_auth = "${data.terraform_remote_state.vpc.docker_registry_worker_auth}"
   env = "${var.env}"
   env_short = "${var.env_short}"
   heroku_org = "${var.aws_heroku_org}"
@@ -84,6 +81,10 @@ EOF
   worker_docker_self_image = "quay.io/travisci/worker:v2.4.0-23-g396d039"
   worker_queue = "docker"
   worker_subnets = "${data.terraform_remote_state.vpc.workers_com_subnet_1b_id},${data.terraform_remote_state.vpc.workers_com_subnet_1e_id}"
+  # TODO: further investigation of docker registry mirror (See #40)
+  # docker_registry_hostname = "${data.terraform_remote_state.vpc.docker_registry_hostname}"
+  # docker_registry_private_ip = "${data.terraform_remote_state.vpc.docker_registry_private_ip}"
+  # docker_registry_worker_auth = "${data.terraform_remote_state.vpc.docker_registry_worker_auth}"
 }
 
 module "aws_asg_org" {
@@ -92,9 +93,6 @@ module "aws_asg_org" {
   cyclist_debug = "true"
   cyclist_scale = "web=1:Hobby"
   cyclist_version = "v0.1.0"
-  docker_registry_hostname = "${data.terraform_remote_state.vpc.docker_registry_hostname}"
-  docker_registry_private_ip = "${data.terraform_remote_state.vpc.docker_registry_private_ip}"
-  docker_registry_worker_auth = "${data.terraform_remote_state.vpc.docker_registry_worker_auth}"
   env = "${var.env}"
   env_short = "${var.env_short}"
   heroku_org = "${var.aws_heroku_org}"
@@ -131,4 +129,8 @@ EOF
   worker_docker_self_image = "quay.io/travisci/worker:v2.4.0-23-g396d039"
   worker_queue = "docker"
   worker_subnets = "${data.terraform_remote_state.vpc.workers_org_subnet_1b_id},${data.terraform_remote_state.vpc.workers_org_subnet_1e_id}"
+  # TODO: further investigation of docker registry mirror (See #40)
+  # docker_registry_hostname = "${data.terraform_remote_state.vpc.docker_registry_hostname}"
+  # docker_registry_private_ip = "${data.terraform_remote_state.vpc.docker_registry_private_ip}"
+  # docker_registry_worker_auth = "${data.terraform_remote_state.vpc.docker_registry_worker_auth}"
 }

@@ -4,9 +4,6 @@ variable "cyclist_debug" { default = "false" }
 variable "cyclist_redis_plan" { default = "premium-0" }
 variable "cyclist_scale" { default = "web=1:Standard-1X" }
 variable "cyclist_version" { default = "master" }
-variable "docker_registry_hostname" {}
-variable "docker_registry_private_ip" {}
-variable "docker_registry_worker_auth" {}
 variable "env" {}
 variable "env_short" {}
 variable "heroku_org" {}
@@ -41,6 +38,10 @@ variable "worker_docker_self_image" { default = "quay.io/travisci/worker:v2.4.0"
 variable "worker_instance_type" { default = "c3.2xlarge" }
 variable "worker_queue" {}
 variable "worker_subnets" {}
+# TODO: further investigation of docker registry mirror (See #40)
+# variable "docker_registry_hostname" {}
+# variable "docker_registry_private_ip" {}
+# variable "docker_registry_worker_auth" {}
 
 resource "aws_iam_user" "worker_cache" {
   name = "worker-cache-${var.env}-${var.index}-${var.site}"
@@ -80,9 +81,6 @@ data "template_file" "worker_cloud_init" {
   vars {
     cyclist_auth_token = "${var.cyclist_auth_token}"
     cyclist_url = "${replace(heroku_app.cyclist.web_url, "/\\/$/", "")}"
-    docker_registry_hostname = "${var.docker_registry_hostname}"
-    docker_registry_private_ip = "${var.docker_registry_private_ip}"
-    docker_registry_worker_auth = "${var.docker_registry_worker_auth}"
     env = "${var.env}"
     index = "${var.index}"
     queue = "${var.worker_queue}"
@@ -105,6 +103,10 @@ data "template_file" "worker_cloud_init" {
     worker_docker_image_python = "${var.worker_docker_image_python}"
     worker_docker_image_ruby = "${var.worker_docker_image_ruby}"
     worker_docker_self_image = "${var.worker_docker_self_image}"
+    # TODO: further investigation of docker registry mirror (See #40)
+    # docker_registry_hostname = "${var.docker_registry_hostname}"
+    # docker_registry_private_ip = "${var.docker_registry_private_ip}"
+    # docker_registry_worker_auth = "${var.docker_registry_worker_auth}"
   }
 }
 
