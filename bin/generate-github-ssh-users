@@ -2,8 +2,6 @@
 set -o errexit
 
 main() {
-  local env_name="$1"
-
   [[ "${GITHUB_TOKEN}" ]] || {
     echo "Missing \${GITHUB_TOKEN}" >&2
     exit 1
@@ -17,16 +15,12 @@ main() {
   : "${GITHUB_ORG:=travis-infrastructure}"
   : "${GITHUB_TEAM:=blue-ssh}"
 
-  echo "Generating tfvars for ${env_name}" >&2
-
-  echo "{
-    \"github_users\": \"$(
+  echo "github_users = \"$(
     __github_users "${GITHUB_USERNAME}:${GITHUB_TOKEN}" \
       "${GITHUB_ORG}" "${GITHUB_TEAM}" \
       | tr "\n" " " | sed 's/  *$//'
 
-  )\"
-  }" | jq .
+  )\""
 }
 
 __github_users() {
