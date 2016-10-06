@@ -29,6 +29,12 @@ git grep -l '^#!/usr/bin/env bash' | xargs shellcheck
 echo 'Running shfmt'
 git grep -l '^#!/usr/bin/env bash' | xargs shfmt -i 2 -w
 
+echo 'Running bats'
+for f in $(git ls-files '*.bats'); do
+  echo "${f}"
+  bats -t "${f}"
+done
+
 for d in $(git ls-files '*.tf' | xargs -n1 dirname | sort | uniq); do
   echo -en "${d} "
   terraform validate "${d}"
