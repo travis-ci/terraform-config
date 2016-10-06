@@ -1,5 +1,6 @@
 variable "bastion_ami" { default = "ami-53d4a344" }
 variable "env" { default = "shared" }
+variable "github_users" {}
 variable "index" { default = 1 }
 variable "public_subnet_1b_cidr" { default = "10.10.1.0/24" }
 variable "public_subnet_1e_cidr" { default = "10.10.4.0/24" }

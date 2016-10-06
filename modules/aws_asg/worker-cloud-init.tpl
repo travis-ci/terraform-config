@@ -4,25 +4,39 @@
 set -o errexit
 
 main() {
+  __log main begin "$LINENO"
   local instance_id
   instance_id="$(curl -s 'http://169.254.169.254/latest/meta-data/instance-id')"
 
+  mkdir -p /var/tmp/travis-run.d
   __write_travis_worker_configs "$${instance_id}"
   __write_travis_worker_hooks "$${instance_id}"
   __setup_papertrail_rsyslog
   __fix_perms
   __restart_worker
   __set_hostname "$${instance_id}" || true
+  __log main end "$LINENO"
 }
 
-__restart_worker() {
-  stop travis-worker || true
-  start travis-worker || true
+__write_etc_hosts_record() {
+  __log write-etc-hosts-record begin "$LINENO"
+  local hosts_line="$1"
+
+  if grep -qE "^$hosts_line\$" /etc/hosts; then
+    return
+  fi
+
+  echo "$hosts_line" | tee -a /etc/hosts
+  __log write-etc-hosts-record end "$LINENO"
 }
 
 __write_travis_worker_configs() {
+  __log write-travis-worker-configs begin "$LINENO"
   # declared for shellcheck
   local cyclist_url
+  local worker_cache_access_key
+  local worker_cache_bucket
+  local worker_cache_secret_key
   local worker_config
   local worker_docker_self_image
 
@@ -32,16 +46,21 @@ __write_travis_worker_configs() {
 ${worker_config}
 EOF
   cat >/etc/default/travis-worker-cloud-init <<EOF
+export TRAVIS_WORKER_BUILD_CACHE_S3_ACCESS_KEY_ID=${worker_cache_access_key}
+export TRAVIS_WORKER_BUILD_CACHE_S3_BUCKET=${worker_cache_bucket}
+export TRAVIS_WORKER_BUILD_CACHE_S3_SECRET_ACCESS_KEY=${worker_cache_secret_key}
 export TRAVIS_WORKER_HEARTBEAT_URL=${cyclist_url}/heartbeats/$${instance_id}
 export TRAVIS_WORKER_HEARTBEAT_URL_AUTH_TOKEN=file:///var/tmp/travis-run.d/instance-token
 export TRAVIS_WORKER_PRESTART_HOOK=/var/tmp/travis-run.d/travis-worker-prestart-hook
+export TRAVIS_WORKER_SELF_IMAGE=${worker_docker_self_image}
 export TRAVIS_WORKER_START_HOOK=/var/tmp/travis-run.d/travis-worker-start-hook
 export TRAVIS_WORKER_STOP_HOOK=/var/tmp/travis-run.d/travis-worker-stop-hook
-export TRAVIS_WORKER_SELF_IMAGE=${worker_docker_self_image}
 EOF
+  __log write-travis-worker-configs end "$LINENO"
 }
 
 __write_travis_worker_hooks() {
+  __log write-travis-worker-hooks begin "$LINENO"
   # declared for shellcheck
   local cyclist_auth_token
   local cyclist_url
@@ -59,7 +78,6 @@ __write_travis_worker_hooks() {
 
   local instance_id="$${1}"
 
-  mkdir -p /var/tmp/travis-run.d
   cat >/var/tmp/travis-run.d/travis-worker-start-hook <<EOF
 #!/bin/bash
 [[ -f /var/tmp/travis-run.d/instance-token ]] || {
@@ -112,45 +130,34 @@ main() {
     let i+=10
   done
 
-  docker pull "${worker_docker_image_android}"
-  docker tag "${worker_docker_image_android}" travis:android
+  __docker_pull_tag "${worker_docker_image_android}" travis:android
+  __docker_pull_tag "${worker_docker_image_default}" travis:default
+  __docker_pull_tag "${worker_docker_image_erlang}" travis:erlang
+  __docker_pull_tag "${worker_docker_image_go}" travis:go
+  __docker_pull_tag "${worker_docker_image_haskell}" travis:haskell
+  __docker_pull_tag "${worker_docker_image_jvm}" travis:jvm
+  __docker_pull_tag "${worker_docker_image_node_js}" travis:node-js
+  __docker_pull_tag "${worker_docker_image_perl}" travis:perl
+  __docker_pull_tag "${worker_docker_image_php}" travis:php
+  __docker_pull_tag "${worker_docker_image_python}" travis:python
+  __docker_pull_tag "${worker_docker_image_ruby}" travis:ruby
+}
 
-  docker pull "${worker_docker_image_default}"
-  docker tag "${worker_docker_image_default}" travis:default
+__docker_pull_tag() {
+  local image="\$1"
+  local tag="\$2"
 
-  docker pull "${worker_docker_image_erlang}"
-  docker tag "${worker_docker_image_erlang}" travis:erlang
-
-  docker pull "${worker_docker_image_go}"
-  docker tag "${worker_docker_image_go}" travis:go
-
-  docker pull "${worker_docker_image_haskell}"
-  docker tag "${worker_docker_image_haskell}" travis:haskell
-
-  docker pull "${worker_docker_image_jvm}"
-  docker tag "${worker_docker_image_jvm}" travis:jvm
-
-  docker pull "${worker_docker_image_node_js}"
-  docker tag "${worker_docker_image_node_js}" travis:node-js
-
-  docker pull "${worker_docker_image_perl}"
-  docker tag "${worker_docker_image_perl}" travis:perl
-
-  docker pull "${worker_docker_image_php}"
-  docker tag "${worker_docker_image_php}" travis:php
-
-  docker pull "${worker_docker_image_python}"
-  docker tag "${worker_docker_image_python}" travis:python
-
-  docker pull "${worker_docker_image_ruby}"
-  docker tag "${worker_docker_image_ruby}" travis:ruby
+  docker pull "\$image"
+  docker tag "\$image" "\$tag"
 }
 
 main "\$@"
 EOF
+  __log write-travis-worker-hooks end "$LINENO"
 }
 
 __setup_papertrail_rsyslog() {
+  __log setup-papertrail-rsyslog begin "$LINENO"
   # declared for shellcheck
   local syslog_address
   local syslog_host
@@ -169,15 +176,26 @@ __setup_papertrail_rsyslog() {
   sed -i "/$match/s/.*/$repl/" '/etc/rsyslog.d/65-papertrail.conf'
 
   restart rsyslog || start rsyslog
+  __log setup-papertrail-rsyslog end "$LINENO"
 }
 
 __fix_perms() {
+  __log fix-perms begin "$LINENO"
   chown -R travis:travis /etc/default/travis-worker* /var/tmp/*
   chmod 0640 /etc/default/travis-worker*
   chmod 0750 /var/tmp/travis-run.d/travis-worker*hook
+  __log fix-perms end "$LINENO"
+}
+
+__restart_worker() {
+  __log restart-worker begin "$LINENO"
+  stop travis-worker || true
+  start travis-worker || true
+  __log restart-worker end "$LINENO"
 }
 
 __set_hostname() {
+  __log set-hostname begin "$LINENO"
   # declared for shellcheck
   local index
   local env
@@ -194,7 +212,13 @@ __set_hostname() {
 
   echo "$instance_hostname" | tee /etc/hostname
   hostname -F /etc/hostname
-  echo "$hosts_line" | tee -a /etc/hosts
+  __write_etc_hosts_record "$hosts_line"
+  __log set-hostname end "$LINENO"
+}
+
+__log() {
+  echo "time=$(date -u +%Y-%m-%dT%H:%M:%S) " \
+    "type=cloud-init step=$1 state=$2 line=$3"
 }
 
 main "$@"

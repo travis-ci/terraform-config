@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+set -o errexit
+
+main() {
+  [[ "${GITHUB_TOKEN}" ]] || {
+    echo "Missing \${GITHUB_TOKEN}" >&2
+    exit 1
+  }
+
+  [[ "${GITHUB_USERNAME}" ]] || {
+    echo "Missing \${GITHUB_USERNAME}" >&2
+    exit 1
+  }
+
+  : "${GITHUB_ORG:=travis-infrastructure}"
+  : "${GITHUB_TEAM:=blue-ssh}"
+
+  echo "github_users = \"$(
+    __github_users "${GITHUB_USERNAME}:${GITHUB_TOKEN}" \
+      "${GITHUB_ORG}" "${GITHUB_TEAM}" \
+      | tr "\n" " " | sed 's/  *$//'
+
+  )\""
+}
+
+__github_users() {
+  local auth="$1"
+  local org="$2"
+  local team="$3"
+
+  local team_id
+  team_id="$(
+    __ghcurl "${auth}" "/orgs/${org}/teams" \
+      | jq -r ".[]|select(.name==\"${team}\")|.id"
+  )"
+  __ghcurl "${auth}" "/teams/${team_id}/members" | jq -r '.[]|.login' | sort
+}
+
+__ghcurl() {
+  local auth="$1"
+  shift
+  local path="$1"
+  shift
+
+  curl -s "https://${auth}@api.github.com${path}" "$@"
+}
+
+main "$@"

@@ -21,6 +21,7 @@ variable "worker_asg_scale_in_threshold" { default = 64 }
 variable "worker_asg_scale_out_cooldown" { default = 300 }
 variable "worker_asg_scale_out_qty" { default = 1 }
 variable "worker_asg_scale_out_threshold" { default = 48 }
+variable "worker_cache_bucket" {}
 variable "worker_config" {}
 variable "worker_docker_image_android" {}
 variable "worker_docker_image_default" {}
@@ -38,6 +39,39 @@ variable "worker_instance_type" { default = "c3.2xlarge" }
 variable "worker_queue" {}
 variable "worker_subnets" {}
 
+resource "aws_iam_user" "worker_cache" {
+  name = "worker-cache-${var.env}-${var.index}-${var.site}"
+}
+
+resource "aws_iam_access_key" "worker_cache" {
+  user = "${aws_iam_user.worker_cache.name}"
+  depends_on = ["aws_iam_user.worker_cache"]
+}
+
+resource "aws_iam_user_policy" "worker_cache_actions" {
+  name = "worker_cache_actions_${var.env}_${var.index}_${var.site}"
+  user = "${aws_iam_user.worker_cache.name}"
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject"
+      ],
+      "Effect": "Allow",
+      "Resource": [
+        "arn:aws:s3:::${var.worker_cache_bucket}/*",
+        "arn:aws:s3:::${var.worker_cache_bucket}"
+      ]
+    }
+  ]
+}
+EOF
+  depends_on = ["aws_iam_user.worker_cache"]
+}
+
 data "template_file" "worker_cloud_init" {
   template = "${file("${path.module}/worker-cloud-init.tpl")}"
   vars {
@@ -49,6 +83,9 @@ data "template_file" "worker_cloud_init" {
     site = "${var.site}"
     syslog_address = "${var.syslog_address}"
     syslog_host = "${element(split(":", var.syslog_address), 0)}"
+    worker_cache_access_key = "${aws_iam_access_key.worker_cache.id}"
+    worker_cache_bucket = "${var.worker_cache_bucket}"
+    worker_cache_secret_key = "${aws_iam_access_key.worker_cache.secret}"
     worker_config = "${var.worker_config}"
     worker_docker_image_android = "${var.worker_docker_image_android}"
     worker_docker_image_default = "${var.worker_docker_image_default}"
@@ -192,13 +229,13 @@ resource "aws_iam_user_policy" "cyclist_actions" {
   "Statement": [
     {
       "Action": [
-        "SNS:*",
+        "sns:*",
         "autoscaling:*",
         "cloudwatch:PutMetricAlarm",
         "iam:PassRole"
       ],
-      "Resource": "*",
-      "Effect": "Allow"
+      "Effect": "Allow",
+      "Resource": "*"
     }
   ]
 }
@@ -213,8 +250,8 @@ resource "aws_iam_role" "workers_sns" {
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Effect": "Allow",
       "Action": "sts:AssumeRole",
+      "Effect": "Allow",
       "Principal": {
         "Service": "autoscaling.amazonaws.com"
       }
@@ -232,12 +269,12 @@ resource "aws_iam_role_policy" "workers_sns" {
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Effect": "Allow",
       "Action": [
         "sqs:SendMessage",
         "sqs:GetQueueUrl",
         "sns:Publish"
       ],
+      "Effect": "Allow",
       "Resource": "*"
     }
   ]

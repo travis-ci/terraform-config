@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+
+set -o errexit
+set -o pipefail
+
+main() {
+  local halp='^(-h|--help|help)$'
+  for arg in "${@}"; do
+    if [[ "${arg}" =~ $halp ]]; then
+      __usage
+      exit 0
+    fi
+  done
+
+  if [[ $# -lt 1 ]]; then
+    __usage
+    exit 1
+  fi
+
+  [[ "${HEROKU_API_KEY}" ]] || {
+    echo "Missing \$HEROKU_API_KEY" >&2
+    exit 2
+  }
+
+  __heroku_dump_shell_config "${1}"
+}
+
+__heroku_dump_shell_config() {
+  local heroku_app="${1}"
+
+  __heroku_curl -fs \
+    "https://api.heroku.com/apps/${heroku_app}/config-vars" \
+    | jq -r ". | to_entries | .[] \
+      | [\"export \", (.key|ascii_upcase), \"=\", (.value|@sh)] \
+      | join(\"\")" \
+    | sort
+}
+
+__heroku_curl() {
+  curl \
+    -n \
+    -H "Authorization: Bearer ${HEROKU_API_KEY}" \
+    -H "Content-Type: application/json" \
+    -H "Accept: application/vnd.heroku+json; version=3" \
+    "${@}"
+}
+
+__usage() {
+  cat >&2 <<EOF
+Usage: $(basename "${0}") <app>
+
+Dump Heroku config in shell format for app named <app>
+
+    $(basename "${0}") lovely-lil-app
+
+EOF
+}
+
+main "${@}"
