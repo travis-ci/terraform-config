@@ -15,12 +15,12 @@ main() {
   local instance_ipv4
   local syslog_address
 
-  curl -sSL -o "${RUNDIR}/instance-id" \
-    'http://169.254.169.254/latest/meta-data/instance-id'
+  curl -sSL 'http://169.254.169.254/latest/meta-data/instance-id' \
+    >"${RUNDIR}/instance-id"
   instance_id="$(cat "${RUNDIR}/instance-id")"
 
-  curl -sSL -o "${RUNDIR}/instance-ipv4" \
-    'http://169.254.169.254/latest/meta-data/local-ipv4'
+  curl -sSL 'http://169.254.169.254/latest/meta-data/local-ipv4' \
+    >"${RUNDIR}/instance-ipv4"
   instance_ipv4="$(cat "${RUNDIR}/instance-ipv4")"
 
   instance_hostname="$(
@@ -30,8 +30,9 @@ main() {
   hosts_line="${instance_ipv4} ${instance_hostname} ${instance_hostname%%.*}"
   syslog_address="$(cat "${RUNDIR}/syslog-address")"
 
-  sed -i \
-    "s/___INSTANCE_ID___/${instance_id}/g" "${ETCDIR}/default/travis-worker"*
+  for envfile in "${ETCDIR}/default/travis-worker"*; do
+    sed -i "s/___INSTANCE_ID___/${instance_id}/g" "${envfile}"
+  done
 
   echo "${instance_hostname}" \
     | tee "${ETCDIR}/hostname" >"${RUNDIR}/instance-hostname"
