@@ -72,33 +72,45 @@ EOF
   depends_on = ["aws_iam_user.worker_cache"]
 }
 
-data "template_file" "worker_cloud_init" {
-  template = "${file("${path.module}/worker-cloud-init.tpl")}"
+data "template_file" "cloud_init_env" {
+  template = <<EOF
+export CYCLIST_AUTH_TOKEN="${var.cyclist_auth_token}"
+export CYCLIST_URL="${replace(heroku_app.cyclist.web_url, "/\\/$/", "")}"
+export TRAVIS_WORKER_BUILD_CACHE_S3_ACCESS_KEY_ID="${aws_iam_access_key.worker_cache.id}"
+export TRAVIS_WORKER_BUILD_CACHE_S3_BUCKET="${var.worker_cache_bucket}"
+export TRAVIS_WORKER_BUILD_CACHE_S3_SECRET_ACCESS_KEY="${aws_iam_access_key.worker_cache.secret}"
+export TRAVIS_WORKER_DOCKER_IMAGE_ANDROID="${var.worker_docker_image_android}"
+export TRAVIS_WORKER_DOCKER_IMAGE_DEFAULT="${var.worker_docker_image_default}"
+export TRAVIS_WORKER_DOCKER_IMAGE_ERLANG="${var.worker_docker_image_erlang}"
+export TRAVIS_WORKER_DOCKER_IMAGE_GO="${var.worker_docker_image_go}"
+export TRAVIS_WORKER_DOCKER_IMAGE_HASKELL="${var.worker_docker_image_haskell}"
+export TRAVIS_WORKER_DOCKER_IMAGE_JVM="${var.worker_docker_image_jvm}"
+export TRAVIS_WORKER_DOCKER_IMAGE_NODE_JS="${var.worker_docker_image_node_js}"
+export TRAVIS_WORKER_DOCKER_IMAGE_PERL="${var.worker_docker_image_perl}"
+export TRAVIS_WORKER_DOCKER_IMAGE_PHP="${var.worker_docker_image_php}"
+export TRAVIS_WORKER_DOCKER_IMAGE_PYTHON="${var.worker_docker_image_python}"
+export TRAVIS_WORKER_DOCKER_IMAGE_RUBY="${var.worker_docker_image_ruby}"
+export TRAVIS_WORKER_HEARTBEAT_URL="${replace(heroku_app.cyclist.web_url, "/\\/$/", "")}/heartbeats/___INSTANCE_ID___"
+export TRAVIS_WORKER_HEARTBEAT_URL_AUTH_TOKEN="file:///var/tmp/travis-run.d/instance-token"
+export TRAVIS_WORKER_PRESTART_HOOK="/var/tmp/travis-run.d/travis-worker-prestart-hook"
+export TRAVIS_WORKER_SELF_IMAGE="${var.worker_docker_self_image}"
+export TRAVIS_WORKER_START_HOOK="/var/tmp/travis-run.d/travis-worker-start-hook"
+export TRAVIS_WORKER_STOP_HOOK="/var/tmp/travis-run.d/travis-worker-stop-hook"
+EOF
+}
+
+data "template_file" "cloud_config" {
+  template = "${file("${path.module}/cloud-config.yml.tpl")}"
   vars {
-    cyclist_auth_token = "${var.cyclist_auth_token}"
+    cloud_init_bash = "${file("${path.module}/cloud-init.bash")}"
+    cloud_init_env = "${data.template_file.cloud_init_env.rendered}"
     cyclist_url = "${replace(heroku_app.cyclist.web_url, "/\\/$/", "")}"
-    env = "${var.env}"
-    index = "${var.index}"
-    queue = "${var.worker_queue}"
-    site = "${var.site}"
+    hostname_tmpl = "___INSTANCE_ID___-${var.env}-${var.index}-worker-${var.site}-${var.worker_queue}.travisci.net"
+    prestart_hook_bash = "${file("${path.module}/prestart-hook.bash")}"
+    start_hook_bash = "${file("${path.module}/start-hook.bash")}"
+    stop_hook_bash = "${file("${path.module}/stop-hook.bash")}"
     syslog_address = "${var.syslog_address}"
-    syslog_host = "${element(split(":", var.syslog_address), 0)}"
-    worker_cache_access_key = "${aws_iam_access_key.worker_cache.id}"
-    worker_cache_bucket = "${var.worker_cache_bucket}"
-    worker_cache_secret_key = "${aws_iam_access_key.worker_cache.secret}"
     worker_config = "${var.worker_config}"
-    worker_docker_image_android = "${var.worker_docker_image_android}"
-    worker_docker_image_default = "${var.worker_docker_image_default}"
-    worker_docker_image_erlang = "${var.worker_docker_image_erlang}"
-    worker_docker_image_go = "${var.worker_docker_image_go}"
-    worker_docker_image_haskell = "${var.worker_docker_image_haskell}"
-    worker_docker_image_jvm = "${var.worker_docker_image_jvm}"
-    worker_docker_image_node_js = "${var.worker_docker_image_node_js}"
-    worker_docker_image_perl = "${var.worker_docker_image_perl}"
-    worker_docker_image_php = "${var.worker_docker_image_php}"
-    worker_docker_image_python = "${var.worker_docker_image_python}"
-    worker_docker_image_ruby = "${var.worker_docker_image_ruby}"
-    worker_docker_self_image = "${var.worker_docker_self_image}"
   }
 }
 
@@ -107,7 +119,7 @@ resource "aws_launch_configuration" "workers" {
   image_id = "${var.worker_ami}"
   instance_type = "${var.worker_instance_type}"
   security_groups = ["${split(",", var.security_groups)}"]
-  user_data = "${data.template_file.worker_cloud_init.rendered}"
+  user_data = "${data.template_file.cloud_config.rendered}"
   enable_monitoring = false
   lifecycle {
     create_before_destroy = true
@@ -346,3 +358,5 @@ exec ${path.module}/../../bin/heroku-wait-deploy-scale \
 EOF
   }
 }
+
+output "user_data" { value = "${data.template_file.cloud_config.rendered}" }
