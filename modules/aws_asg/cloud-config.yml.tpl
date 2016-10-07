@@ -2,6 +2,9 @@
 # vim:filetype=yaml
 
 write_files:
+- content: '${base64encode(github_users_env)}'
+  encoding: b64
+  path: /etc/default/github-users
 - content: '${base64encode(worker_config)}'
   encoding: b64
   owner: 'travis:travis'
@@ -12,7 +15,7 @@ write_files:
   path: /etc/default/travis-worker-cloud-init
 - content: '${base64encode(cloud_init_bash)}'
   encoding: b64
-  path: /var/lib/cloud/scripts/per-instance/travis-worker-cloud-init
+  path: /var/lib/cloud/scripts/per-instance/99-travis-worker-cloud-init
   permissions: '0750'
 - content: '${base64encode(cyclist_url)}'
   encoding: b64

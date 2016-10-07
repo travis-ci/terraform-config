@@ -1,5 +1,6 @@
 variable "aws_heroku_org" {}
 variable "env" { default = "staging" }
+variable "github_users" {}
 variable "index" { default = 1 }
 variable "syslog_address" {}
 variable "worker_ami" { default = "ami-c6710cd1" }
@@ -46,6 +47,7 @@ module "aws_asg_com" {
   cyclist_version = "v0.1.0"
   env = "${var.env}"
   env_short = "${var.env}"
+  github_users = "${var.github_users}"
   heroku_org = "${var.aws_heroku_org}"
   index = "${var.index}"
   security_groups = "${module.aws_az_1b.workers_com_security_group_id},${module.aws_az_1e.workers_com_security_group_id}"
@@ -90,6 +92,7 @@ module "aws_asg_org" {
   cyclist_version = "v0.1.0"
   env = "${var.env}"
   env_short = "${var.env}"
+  github_users = "${var.github_users}"
   heroku_org = "${var.aws_heroku_org}"
   index = "${var.index}"
   security_groups = "${module.aws_az_1b.workers_org_security_group_id},${module.aws_az_1e.workers_org_security_group_id}"
