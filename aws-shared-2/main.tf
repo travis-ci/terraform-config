@@ -1,4 +1,4 @@
-variable "bastion_ami" { default = "ami-53d4a344" }
+variable "bastion_ami" { default = "ami-c20749d5" }
 variable "env" { default = "shared" }
 variable "github_users" {}
 variable "index" { default = 2 }

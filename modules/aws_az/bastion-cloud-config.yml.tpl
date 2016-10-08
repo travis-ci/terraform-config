@@ -14,7 +14,11 @@ write_files:
   path: /var/tmp/travis-run.d/syslog-address
 - content: '${base64encode(duo_config)}'
   encoding: b64
+  owner: 'sshd:root'
   path: /etc/duo/login_duo.conf
+  permissions: '0600'
 - content: '${base64encode(duo_config)}'
   encoding: b64
+  owner: 'sshd:root'
   path: /etc/duo/pam_duo.conf
+  permissions: '0600'
