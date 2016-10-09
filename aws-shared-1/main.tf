@@ -1,4 +1,3 @@
-variable "bastion_ami" { default = "ami-53d4a344" }
 variable "env" { default = "shared" }
 variable "github_users" {}
 variable "index" { default = 1 }
@@ -24,6 +23,19 @@ data "aws_ami" "nat" {
     values = ["hvm"]
   }
   owners = ["137112412989"] # Amazon
+}
+
+data "aws_ami" "bastion" {
+  most_recent = true
+  filter {
+    name = "tag:role"
+    values = ["bastion"]
+  }
+  filter {
+    name = "virtualization-type"
+    values = ["hvm"]
+  }
+  owners = ["self"]
 }
 
 resource "aws_vpc" "main" {
@@ -72,7 +84,7 @@ EOF
 module "aws_az_1b" {
   source = "../modules/aws_az"
   az = "1b"
-  bastion_ami = "${var.bastion_ami}"
+  bastion_ami = "${data.aws_ami.bastion.id}"
   bastion_config = "${file("${path.module}/config/bastion-env")}"
   env = "${var.env}"
   gateway_id = "${aws_internet_gateway.gw.id}"
@@ -90,7 +102,7 @@ module "aws_az_1b" {
 module "aws_az_1e" {
   source = "../modules/aws_az"
   az = "1e"
-  bastion_ami = "${var.bastion_ami}"
+  bastion_ami = "${data.aws_ami.bastion.id}"
   bastion_config = "${file("${path.module}/config/bastion-env")}"
   env = "${var.env}"
   gateway_id = "${aws_internet_gateway.gw.id}"
