@@ -16,6 +16,8 @@ main() {
     sed -i "s/___INSTANCE_ID___/${instance_id}/g" "${envfile}"
   done
 
+  chown -R travis:travis "${RUNDIR}"
+
   service travis-worker stop || true
   service travis-worker start || true
 }

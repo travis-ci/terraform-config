@@ -3,7 +3,7 @@ variable "env" { default = "staging" }
 variable "github_users" {}
 variable "index" { default = 1 }
 variable "syslog_address" {}
-variable "worker_ami" { default = "ami-c6710cd1" }
+variable "worker_ami" { default = "ami-41eaa456" }
 variable "worker_com_cache_bucket" {}
 variable "worker_org_cache_bucket" {}
 

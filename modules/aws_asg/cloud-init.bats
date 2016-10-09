@@ -35,7 +35,7 @@ echo "\${RANDOM}\${RANDOM}\${RANDOM}"
 EOF
   chmod +x "${BATS_TMPDIR}/bin/mock"
 
-  for cmd in sed service; do
+  for cmd in chown sed service; do
     pushd "${BATS_TMPDIR}/bin" &>/dev/null
     ln -svf mock "${cmd}"
     popd &>/dev/null
@@ -64,6 +64,11 @@ assert_cmd() {
 @test "replaces instance id in env files" {
   run_cloud_init
   assert_cmd 'sed.*___INSTANCE_ID___.*travis-worker-bats'
+}
+
+@test "chowns the rundir" {
+  run_cloud_init
+  assert_cmd "chown -R travis:travis ${RUNDIR}"
 }
 
 @test "restarts travis-worker" {
