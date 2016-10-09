@@ -1,4 +1,4 @@
-variable "bastion_ami" { default = "ami-c20749d5" }
+variable "bastion_ami" { default = "ami-850b4292" }
 variable "duo_api_hostname" {}
 variable "duo_integration_key" {}
 variable "duo_secret_key" {}
