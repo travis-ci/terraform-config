@@ -1,8 +1,12 @@
+variable "duo_api_hostname" {}
+variable "duo_integration_key" {}
+variable "duo_secret_key" {}
 variable "env" { default = "shared" }
 variable "github_users" {}
 variable "index" { default = 2 }
 variable "public_subnet_1b_cidr" { default = "10.12.1.0/24" }
 variable "public_subnet_1e_cidr" { default = "10.12.4.0/24" }
+variable "syslog_address" {}
 variable "travisci_net_external_zone_id" {}
 variable "vpc_cidr" { default = "10.12.0.0/16" }
 variable "workers_com_subnet_1b_cidr" { default = "10.12.3.0/24" }
@@ -84,14 +88,18 @@ EOF
 module "aws_az_1b" {
   source = "../modules/aws_az"
   az = "1b"
+  duo_api_hostname = "${var.duo_api_hostname}"
+  duo_integration_key = "${var.duo_integration_key}"
+  duo_secret_key = "${var.duo_secret_key}"
   bastion_ami = "${data.aws_ami.bastion.id}"
-  bastion_config = "${file("${path.module}/config/bastion-env")}"
   env = "${var.env}"
   gateway_id = "${aws_internet_gateway.gw.id}"
+  github_users = "${var.github_users}"
   index = "${var.index}"
   nat_ami = "${data.aws_ami.nat.id}"
   nat_instance_type = "c3.8xlarge"
   public_subnet_cidr = "${var.public_subnet_1b_cidr}"
+  syslog_address = "${var.syslog_address}"
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
   vpc_cidr = "${var.vpc_cidr}"
   vpc_id = "${aws_vpc.main.id}"
@@ -102,14 +110,18 @@ module "aws_az_1b" {
 module "aws_az_1e" {
   source = "../modules/aws_az"
   az = "1e"
+  duo_api_hostname = "${var.duo_api_hostname}"
+  duo_integration_key = "${var.duo_integration_key}"
+  duo_secret_key = "${var.duo_secret_key}"
   bastion_ami = "${data.aws_ami.bastion.id}"
-  bastion_config = "${file("${path.module}/config/bastion-env")}"
   env = "${var.env}"
   gateway_id = "${aws_internet_gateway.gw.id}"
+  github_users = "${var.github_users}"
   index = "${var.index}"
   nat_ami = "${data.aws_ami.nat.id}"
   nat_instance_type = "c3.8xlarge"
   public_subnet_cidr = "${var.public_subnet_1e_cidr}"
+  syslog_address = "${var.syslog_address}"
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
   vpc_cidr = "${var.vpc_cidr}"
   vpc_id = "${aws_vpc.main.id}"

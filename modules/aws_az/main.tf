@@ -1,12 +1,16 @@
 variable "az" {}
 variable "bastion_ami" {}
-variable "bastion_config" {}
+variable "duo_api_hostname" {}
+variable "duo_integration_key" {}
+variable "duo_secret_key" {}
 variable "env" {}
 variable "gateway_id" {}
+variable "github_users" { default = "" }
 variable "index" {}
 variable "nat_ami" {}
 variable "nat_instance_type" {}
 variable "public_subnet_cidr" {}
+variable "syslog_address" {}
 variable "travisci_net_external_zone_id" {}
 variable "vpc_cidr" {}
 variable "vpc_id" {}
@@ -60,11 +64,24 @@ resource "aws_security_group" "bastion" {
   }
 }
 
-data "template_file" "bastion_cloud_init" {
-  template = "${file("${path.module}/bastion-cloud-init.tpl")}"
+data "template_file" "duo_config" {
+  template = <<EOF
+# Written by cloud-init :heart:
+[duo]
+ikey = ${var.duo_integration_key}
+skey = ${var.duo_secret_key}
+host = ${var.duo_api_hostname}
+failmode = secure
+EOF
+}
+
+data "template_file" "bastion_cloud_config" {
+  template = "${file("${path.module}/bastion-cloud-config.yml.tpl")}"
   vars {
-    instance_hostname = "bastion-${var.env}-${var.index}.aws-us-east-${var.az}.travisci.net"
-    bastion_config = "${var.bastion_config}"
+    github_users_env = "export GITHUB_USERS='${var.github_users}'"
+    hostname_tmpl = "bastion-${var.env}-${var.index}.aws-us-east-${var.az}.travisci.net"
+    syslog_address = "${var.syslog_address}"
+    duo_config = "${data.template_file.duo_config.rendered}"
   }
 }
 
@@ -78,7 +95,7 @@ resource "aws_instance" "bastion" {
   tags = {
     Name = "${var.env}-${var.index}-bastion-${var.az}"
   }
-  user_data = "${data.template_file.bastion_cloud_init.rendered}"
+  user_data = "${data.template_file.bastion_cloud_config.rendered}"
 }
 
 resource "aws_eip" "bastion" {

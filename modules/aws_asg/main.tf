@@ -6,6 +6,7 @@ variable "cyclist_scale" { default = "web=1:Standard-1X" }
 variable "cyclist_version" { default = "master" }
 variable "env" {}
 variable "env_short" {}
+variable "github_users" { default = "" }
 variable "heroku_org" {}
 variable "index" {}
 variable "security_groups" {}
@@ -105,6 +106,7 @@ data "template_file" "cloud_config" {
     cloud_init_bash = "${file("${path.module}/cloud-init.bash")}"
     cloud_init_env = "${data.template_file.cloud_init_env.rendered}"
     cyclist_url = "${replace(heroku_app.cyclist.web_url, "/\\/$/", "")}"
+    github_users_env = "export GITHUB_USERS='${var.github_users}'"
     hostname_tmpl = "___INSTANCE_ID___-${var.env}-${var.index}-worker-${var.site}-${var.worker_queue}.travisci.net"
     prestart_hook_bash = "${file("${path.module}/prestart-hook.bash")}"
     start_hook_bash = "${file("${path.module}/start-hook.bash")}"

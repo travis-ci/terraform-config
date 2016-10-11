@@ -17,6 +17,8 @@ setup() {
 
   touch "${ETCDIR}/hosts" "${ETCDIR}/hostname"
 
+  echo "i-${RANDOM}" >"${RUNDIR}/instance-id"
+
   cat >"${ETCDIR}/default/travis-worker-bats" <<EOF
 export TRAVIS_TRAVIS_FAFAFAF=galaga
 export TRAVIS_TARVIS_SNOOK=fafa/___INSTANCE_ID___/faf
@@ -33,16 +35,12 @@ echo "\${RANDOM}\${RANDOM}\${RANDOM}"
 EOF
   chmod +x "${BATS_TMPDIR}/bin/mock"
 
-  for cmd in chown curl hostname sed service; do
+  for cmd in chown sed service; do
     pushd "${BATS_TMPDIR}/bin" &>/dev/null
     ln -svf mock "${cmd}"
     popd &>/dev/null
   done
 
-  echo "i-${RANDOM}-___INSTANCE_ID___.foo.example.com" \
-    >"${RUNDIR}/instance-hostname.tmpl"
-
-  echo "logs.example.com:${RANDOM}" >"${RUNDIR}/syslog-address"
   export PATH="${BATS_TMPDIR}/bin:${PATH}"
 }
 
@@ -63,50 +61,14 @@ assert_cmd() {
   grep -E "$1" "${MOCKLOG}"
 }
 
-@test "writes instance id" {
-  run_cloud_init
-  assert_cmd 'curl.*meta-data/instance-id'
-  [ -s "${RUNDIR}/instance-id" ]
-}
-
-@test "writes instance ipv4" {
-  run_cloud_init
-  assert_cmd 'curl.*meta-data/local-ipv4'
-  [ -s "${RUNDIR}/instance-ipv4" ]
-}
-
 @test "replaces instance id in env files" {
   run_cloud_init
   assert_cmd 'sed.*___INSTANCE_ID___.*travis-worker-bats'
 }
 
-@test "sets hostname" {
-  run_cloud_init
-  assert_cmd "hostname -F ${ETCDIR}/hostname"
-}
-
-@test "writes hostname and ipv4 to /etc/hosts" {
-  echo 'known.with.dots' >"${BATS_TMPDIR}/returns/curl"
-  echo 'other.with.dots' >"${BATS_TMPDIR}/returns/sed"
-  run_cloud_init
-  grep -qE '^known.with.dots other.with.dots other$' "${ETCDIR}/hosts"
-}
-
-@test "sets permissions on rundir" {
+@test "chowns the rundir" {
   run_cloud_init
   assert_cmd "chown -R travis:travis ${RUNDIR}"
-}
-
-@test "appends syslog address to papertrail.conf" {
-  run_cloud_init
-  assert_cmd "sed -i.*${ETCDIR}/rsyslog\\.d/65-papertrail\\.conf"
-  [ -s "${ETCDIR}/rsyslog.d/65-papertrail.conf" ]
-}
-
-@test "restarts rsyslog" {
-  run_cloud_init
-  assert_cmd 'service rsyslog stop'
-  assert_cmd 'service rsyslog start'
 }
 
 @test "restarts travis-worker" {

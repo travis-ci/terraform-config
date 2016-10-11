@@ -1,8 +1,9 @@
 variable "aws_heroku_org" {}
 variable "env" { default = "staging" }
+variable "github_users" {}
 variable "index" { default = 1 }
 variable "syslog_address" {}
-variable "worker_ami" { default = "ami-c6710cd1" }
+variable "worker_ami" { default = "ami-41eaa456" }
 variable "worker_com_cache_bucket" {}
 variable "worker_org_cache_bucket" {}
 
@@ -19,6 +20,28 @@ data "terraform_remote_state" "vpc" {
 
 resource "random_id" "cyclist_token_com" { byte_length = 32 }
 resource "random_id" "cyclist_token_org" { byte_length = 32 }
+
+data "template_file" "worker_config_com" {
+  template = <<EOF
+### ${path.module}/config/worker-com-local.env
+${file("${path.module}/config/worker-com-local.env")}
+### ${path.module}/config/worker-com.env
+${file("${path.module}/config/worker-com.env")}
+### ${path.module}/worker.env
+${file("${path.module}/worker.env")}
+EOF
+}
+
+data "template_file" "worker_config_org" {
+  template = <<EOF
+### ${path.module}/config/worker-org-local.env
+${file("${path.module}/config/worker-org-local.env")}
+### ${path.module}/config/worker-org.env
+${file("${path.module}/config/worker-org.env")}
+### ${path.module}/worker.env
+${file("${path.module}/worker.env")}
+EOF
+}
 
 module "aws_az_1b" {
   source = "../modules/aws_workers_az"
@@ -46,6 +69,7 @@ module "aws_asg_com" {
   cyclist_version = "v0.1.0"
   env = "${var.env}"
   env_short = "${var.env}"
+  github_users = "${var.github_users}"
   heroku_org = "${var.aws_heroku_org}"
   index = "${var.index}"
   security_groups = "${module.aws_az_1b.workers_com_security_group_id},${module.aws_az_1e.workers_com_security_group_id}"
@@ -58,14 +82,7 @@ module "aws_asg_com" {
   worker_asg_scale_in_threshold = 16
   worker_asg_scale_out_threshold = 8
   worker_cache_bucket = "${var.worker_com_cache_bucket}"
-  worker_config = <<EOF
-### ${path.module}/config/worker-com-local.env
-${file("${path.module}/config/worker-com-local.env")}
-### ${path.module}/config/worker-com.env
-${file("${path.module}/config/worker-com.env")}
-### ${path.module}/worker.env
-${file("${path.module}/worker.env")}
-EOF
+  worker_config = "${data.template_file.worker_config_com.rendered}"
   worker_docker_image_android = "quay.io/travisci/ci-amethyst:packer-1473386113"
   worker_docker_image_default = "quay.io/travisci/ci-garnet:packer-1473395986"
   worker_docker_image_erlang = "quay.io/travisci/ci-amethyst:packer-1473386113"
@@ -90,6 +107,7 @@ module "aws_asg_org" {
   cyclist_version = "v0.1.0"
   env = "${var.env}"
   env_short = "${var.env}"
+  github_users = "${var.github_users}"
   heroku_org = "${var.aws_heroku_org}"
   index = "${var.index}"
   security_groups = "${module.aws_az_1b.workers_org_security_group_id},${module.aws_az_1e.workers_org_security_group_id}"
@@ -102,14 +120,7 @@ module "aws_asg_org" {
   worker_asg_scale_in_threshold = 16
   worker_asg_scale_out_threshold = 8
   worker_cache_bucket = "${var.worker_org_cache_bucket}"
-  worker_config = <<EOF
-### ${path.module}/config/worker-org-local.env
-${file("${path.module}/config/worker-org-local.env")}
-### ${path.module}/config/worker-org.env
-${file("${path.module}/config/worker-org.env")}
-### ${path.module}/worker.env
-${file("${path.module}/worker.env")}
-EOF
+  worker_config = "${data.template_file.worker_config_org.rendered}"
   worker_docker_image_android = "quay.io/travisci/ci-amethyst:packer-1473386113"
   worker_docker_image_default = "quay.io/travisci/ci-garnet:packer-1473395986"
   worker_docker_image_erlang = "quay.io/travisci/ci-amethyst:packer-1473386113"
