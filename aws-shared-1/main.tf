@@ -1,4 +1,3 @@
-variable "bastion_ami" { default = "ami-850b4292" }
 variable "duo_api_hostname" {}
 variable "duo_integration_key" {}
 variable "duo_secret_key" {}
@@ -28,6 +27,19 @@ data "aws_ami" "nat" {
     values = ["hvm"]
   }
   owners = ["137112412989"] # Amazon
+}
+
+data "aws_ami" "bastion" {
+  most_recent = true
+  filter {
+    name = "tag:role"
+    values = ["bastion"]
+  }
+  filter {
+    name = "virtualization-type"
+    values = ["hvm"]
+  }
+  owners = ["self"]
 }
 
 resource "aws_vpc" "main" {
@@ -76,7 +88,7 @@ EOF
 module "aws_az_1b" {
   source = "../modules/aws_az"
   az = "1b"
-  bastion_ami = "${var.bastion_ami}"
+  bastion_ami = "${data.aws_ami.bastion.id}"
   duo_api_hostname = "${var.duo_api_hostname}"
   duo_integration_key = "${var.duo_integration_key}"
   duo_secret_key = "${var.duo_secret_key}"
@@ -98,7 +110,7 @@ module "aws_az_1b" {
 module "aws_az_1e" {
   source = "../modules/aws_az"
   az = "1e"
-  bastion_ami = "${var.bastion_ami}"
+  bastion_ami = "${data.aws_ami.bastion.id}"
   duo_api_hostname = "${var.duo_api_hostname}"
   duo_integration_key = "${var.duo_integration_key}"
   duo_secret_key = "${var.duo_secret_key}"
