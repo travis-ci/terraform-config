@@ -21,6 +21,28 @@ data "terraform_remote_state" "vpc" {
 resource "random_id" "cyclist_token_com" { byte_length = 32 }
 resource "random_id" "cyclist_token_org" { byte_length = 32 }
 
+data "template_file" "worker_config_com" {
+  template = <<EOF
+### ${path.module}/config/worker-com-local.env
+${file("${path.module}/config/worker-com-local.env")}
+### ${path.module}/config/worker-com.env
+${file("${path.module}/config/worker-com.env")}
+### ${path.module}/worker.env
+${file("${path.module}/worker.env")}
+EOF
+}
+
+data "template_file" "worker_config_org" {
+  template = <<EOF
+### ${path.module}/config/worker-org-local.env
+${file("${path.module}/config/worker-org-local.env")}
+### ${path.module}/config/worker-org.env
+${file("${path.module}/config/worker-org.env")}
+### ${path.module}/worker.env
+${file("${path.module}/worker.env")}
+EOF
+}
+
 module "aws_az_1b" {
   source = "../modules/aws_workers_az"
   az = "1b"
@@ -60,14 +82,7 @@ module "aws_asg_com" {
   worker_asg_scale_in_threshold = 16
   worker_asg_scale_out_threshold = 8
   worker_cache_bucket = "${var.worker_com_cache_bucket}"
-  worker_config = <<EOF
-### ${path.module}/config/worker-com-local.env
-${file("${path.module}/config/worker-com-local.env")}
-### ${path.module}/config/worker-com.env
-${file("${path.module}/config/worker-com.env")}
-### ${path.module}/worker.env
-${file("${path.module}/worker.env")}
-EOF
+  worker_config = "${data.template_file.worker_config_com.rendered}"
   worker_docker_image_android = "quay.io/travisci/ci-amethyst:packer-1473386113"
   worker_docker_image_default = "quay.io/travisci/ci-garnet:packer-1473395986"
   worker_docker_image_erlang = "quay.io/travisci/ci-amethyst:packer-1473386113"
@@ -105,14 +120,7 @@ module "aws_asg_org" {
   worker_asg_scale_in_threshold = 16
   worker_asg_scale_out_threshold = 8
   worker_cache_bucket = "${var.worker_org_cache_bucket}"
-  worker_config = <<EOF
-### ${path.module}/config/worker-org-local.env
-${file("${path.module}/config/worker-org-local.env")}
-### ${path.module}/config/worker-org.env
-${file("${path.module}/config/worker-org.env")}
-### ${path.module}/worker.env
-${file("${path.module}/worker.env")}
-EOF
+  worker_config = "${data.template_file.worker_config_org.rendered}"
   worker_docker_image_android = "quay.io/travisci/ci-amethyst:packer-1473386113"
   worker_docker_image_default = "quay.io/travisci/ci-garnet:packer-1473395986"
   worker_docker_image_erlang = "quay.io/travisci/ci-amethyst:packer-1473386113"
