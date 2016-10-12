@@ -11,7 +11,7 @@ CONFIG_FILES := \
 	config/worker-env-org
 
 .PHONY: .config
-.config: $(CONFIG_FILES)
+.config: $(CONFIG_FILES) $(ENV_NAME).tfvars
 
 $(CONFIG_FILES):
 	mkdir -p config
