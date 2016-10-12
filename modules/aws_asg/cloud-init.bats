@@ -35,7 +35,7 @@ echo "\${RANDOM}\${RANDOM}\${RANDOM}"
 EOF
   chmod +x "${BATS_TMPDIR}/bin/mock"
 
-  for cmd in chown sed service; do
+  for cmd in chown iptables sed service; do
     pushd "${BATS_TMPDIR}/bin" &>/dev/null
     ln -svf mock "${cmd}"
     popd &>/dev/null
@@ -75,4 +75,9 @@ assert_cmd() {
   run_cloud_init
   assert_cmd 'service travis-worker stop'
   assert_cmd 'service travis-worker start'
+}
+
+@test "disables access to ec2 metadata api" {
+  run_cloud_init
+  assert_cmd 'iptables -t nat -I PREROUTING -p tcp -d 169.254.169.254 --dport 80 -j DNAT --to-destination 192.0.2.1'
 }

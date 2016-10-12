@@ -20,6 +20,9 @@ main() {
 
   service travis-worker stop || true
   service travis-worker start || true
+
+  iptables -t nat -I PREROUTING -p tcp -d '169.254.169.254' \
+    --dport 80 -j DNAT --to-destination '192.0.2.1'
 }
 
 main "$@"
