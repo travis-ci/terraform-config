@@ -32,12 +32,12 @@ $(CONFIG_FILES):
 	$(TOP)/bin/heroku-dump-shell-config travis-pro-$(ENV_SHORT) >config/travis-com.env
 	$(TOP)/bin/heroku-dump-shell-config travis-pro-build-$(ENV_SHORT) >config/travis-build-com.env
 	source config/travis-build-com.env && source config/travis-com.env && \
-		echo 'export TRAVIS_WORKER_BUILD_API_URI=https://'"$${API_TOKEN}"'@$(TRAVIS_BUILD_COM_HOST)/script' \
+		echo 'export TRAVIS_WORKER_BUILD_API_URI=https://'"$${API_TOKEN%%,*}"'@$(TRAVIS_BUILD_COM_HOST)/script' \
 			>config/worker-com-local.env && \
 		echo 'export TRAVIS_WORKER_AMQP_URI='$${$(AMQP_URL_VARNAME)} >>config/worker-com-local.env && \
 		$(TOP)/bin/env-url-to-parts $(AMQP_URL_VARNAME) config/ com
 	source config/travis-build-org.env && source config/travis-org.env && \
-		echo 'export TRAVIS_WORKER_BUILD_API_URI=https://'"$${API_TOKEN}"'@$(TRAVIS_BUILD_ORG_HOST)/script' \
+		echo 'export TRAVIS_WORKER_BUILD_API_URI=https://'"$${API_TOKEN%%,*}"'@$(TRAVIS_BUILD_ORG_HOST)/script' \
 			>config/worker-org-local.env && \
 		echo 'export TRAVIS_WORKER_AMQP_URI='$${$(AMQP_URL_VARNAME)} >>config/worker-org-local.env && \
 		$(TOP)/bin/env-url-to-parts $(AMQP_URL_VARNAME) config/ org
