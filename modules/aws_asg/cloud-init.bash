@@ -20,6 +20,8 @@ main() {
 
   service travis-worker stop || true
   service travis-worker start || true
+
+  iptables -A OUTPUT -d '169.254.169.254' -j DROP
 }
 
 main "$@"
