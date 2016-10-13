@@ -41,3 +41,32 @@ $(CONFIG_FILES):
 			>config/worker-org-local.env && \
 		echo 'export TRAVIS_WORKER_AMQP_URI='$${$(AMQP_URL_VARNAME)} >>config/worker-org-local.env && \
 		$(TOP)/bin/env-url-to-parts $(AMQP_URL_VARNAME) config/ org
+
+.PHONY: show-current-docker-images
+show-current-docker-images:
+	@terraform show \
+		| awk '/^export.+DOCKER_IMAGE/ { \
+	    gsub(/"/, "", $$2); \
+	    gsub(/=/, " ", $$2); \
+	    sub(/TRAVIS_WORKER_DOCKER_IMAGE_/, "", $$2); \
+			print $$2 " " $$3 \
+		}' \
+		| tr '[:upper:]' '[:lower:]' \
+		| sort \
+		| uniq
+
+.PHONY: show-proposed-docker-images
+show-proposed-docker-images:
+	@awk '/docker_image/ { \
+		gsub(/"/, "", $$3); \
+		sub(/.+docker_image_/, "", $$1); \
+		print $$1 " " $$3 \
+	}' $(ENV_NAME).tfvars
+
+.PHONY: diff-docker-images
+diff-docker-images:
+	@diff -u \
+		--label a/docker-images \
+		<($(MAKE) show-current-docker-images) \
+		--label b/docker-images \
+		<($(MAKE) show-proposed-docker-images)
