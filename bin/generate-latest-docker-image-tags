@@ -4,34 +4,33 @@ require 'net/http'
 require 'openssl'
 
 DEFAULT_STACKS = %w(
-	android
-	erlang
-	go
-	haskell
-	jvm
-	nodejs
-	perl
-	php
-	python
-	ruby
-	amethyst
-	connie
-	garnet
-)
+  android
+  erlang
+  go
+  haskell
+  jvm
+  nodejs
+  perl
+  php
+  python
+  ruby
+  amethyst
+  connie
+  garnet
+).freeze
 
 def main
-  group = ENV.fetch('GROUP', 'stable')
   stacks = ENV['STACKS'].to_s.split.map(&:strip)
   stacks = DEFAULT_STACKS if stacks.empty?
   stacks.each do |stack|
-    tag = latest_docker_image_tag(stack, group)
+    tag = latest_docker_image_tag(stack)
     $stdout.puts(%(latest_docker_image_#{stack} = #{tag.to_s.inspect}))
   end
 
   0
 end
 
-def latest_docker_image_tag(stack, group)
+def latest_docker_image_tag(stack)
   qs = URI.encode_www_form(
     service: 'registry.docker.io',
     scope: "repository:travisci/ci-#{stack}:pull"
