@@ -49,3 +49,4 @@ $(ENV_NAME).tfvars:
 	$(RM) $@
 	touch $@
 	$(TOP)/bin/generate-github-ssh-users >>$@
+	$(TOP)/bin/generate-latest-docker-image-tags >>$@

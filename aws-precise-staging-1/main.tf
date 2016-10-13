@@ -3,6 +3,16 @@ variable "env" { default = "precise-staging" }
 variable "env_short" { default = "staging" }
 variable "github_users" {}
 variable "index" { default = 1 }
+variable "latest_docker_image_android" {}
+variable "latest_docker_image_erlang" {}
+variable "latest_docker_image_go" {}
+variable "latest_docker_image_haskell" {}
+variable "latest_docker_image_jvm" {}
+variable "latest_docker_image_nodejs" {}
+variable "latest_docker_image_perl" {}
+variable "latest_docker_image_php" {}
+variable "latest_docker_image_python" {}
+variable "latest_docker_image_ruby" {}
 variable "syslog_address" {}
 variable "worker_ami" { default = "ami-c6710cd1" }
 variable "worker_com_cache_bucket" {}
@@ -84,17 +94,17 @@ module "aws_asg_com" {
   worker_asg_scale_out_threshold = 8
   worker_cache_bucket = "${var.worker_com_cache_bucket}"
   worker_config = "${data.template_file.worker_config_com.rendered}"
-  worker_docker_image_android = "quay.io/travisci/ci-android:packer-1473395968"
-  worker_docker_image_default = "quay.io/travisci/ci-ruby:packer-1473395984"
-  worker_docker_image_erlang = "quay.io/travisci/ci-erlang:packer-1473395969"
-  worker_docker_image_go = "quay.io/travisci/ci-go:packer-1473386112"
-  worker_docker_image_haskell = "quay.io/travisci/ci-haskell:packer-1473395984"
-  worker_docker_image_jvm = "quay.io/travisci/ci-jvm:packer-1473395987"
-  worker_docker_image_node_js = "quay.io/travisci/ci-nodejs:packer-1473395973"
-  worker_docker_image_perl = "quay.io/travisci/ci-perl:packer-1473395981"
-  worker_docker_image_php = "quay.io/travisci/ci-php:packer-1472315712"
-  worker_docker_image_python = "quay.io/travisci/ci-python:packer-1473396001"
-  worker_docker_image_ruby = "quay.io/travisci/ci-ruby:packer-1473395984"
+  worker_docker_image_android = "${var.latest_docker_image_android}"
+  worker_docker_image_default = "${var.latest_docker_image_ruby}"
+  worker_docker_image_erlang = "${var.latest_docker_image_erlang}"
+  worker_docker_image_go = "${var.latest_docker_image_go}"
+  worker_docker_image_haskell = "${var.latest_docker_image_haskell}"
+  worker_docker_image_jvm = "${var.latest_docker_image_jvm}"
+  worker_docker_image_node_js = "${var.latest_docker_image_nodejs}"
+  worker_docker_image_perl = "${var.latest_docker_image_perl}"
+  worker_docker_image_php = "${var.latest_docker_image_php}"
+  worker_docker_image_python = "${var.latest_docker_image_python}"
+  worker_docker_image_ruby = "${var.latest_docker_image_ruby}"
   worker_docker_self_image = "quay.io/travisci/worker:v2.4.0-23-g396d039"
   worker_queue = "docker"
   worker_subnets = "${data.terraform_remote_state.vpc.workers_com_subnet_1b_id},${data.terraform_remote_state.vpc.workers_com_subnet_1e_id}"
@@ -122,17 +132,17 @@ module "aws_asg_org" {
   worker_asg_scale_out_threshold = 8
   worker_cache_bucket = "${var.worker_org_cache_bucket}"
   worker_config = "${data.template_file.worker_config_org.rendered}"
-  worker_docker_image_android = "quay.io/travisci/ci-android:packer-1473395968"
-  worker_docker_image_default = "quay.io/travisci/ci-ruby:packer-1473395984"
-  worker_docker_image_erlang = "quay.io/travisci/ci-erlang:packer-1473395969"
-  worker_docker_image_go = "quay.io/travisci/ci-go:packer-1473386112"
-  worker_docker_image_haskell = "quay.io/travisci/ci-haskell:packer-1473395984"
-  worker_docker_image_jvm = "quay.io/travisci/ci-jvm:packer-1473395987"
-  worker_docker_image_node_js = "quay.io/travisci/ci-nodejs:packer-1473395973"
-  worker_docker_image_perl = "quay.io/travisci/ci-perl:packer-1473395981"
-  worker_docker_image_php = "quay.io/travisci/ci-php:packer-1472315712"
-  worker_docker_image_python = "quay.io/travisci/ci-python:packer-1473396001"
-  worker_docker_image_ruby = "quay.io/travisci/ci-ruby:packer-1473395984"
+  worker_docker_image_android = "${var.latest_docker_image_android}"
+  worker_docker_image_default = "${var.latest_docker_image_ruby}"
+  worker_docker_image_erlang = "${var.latest_docker_image_erlang}"
+  worker_docker_image_go = "${var.latest_docker_image_go}"
+  worker_docker_image_haskell = "${var.latest_docker_image_haskell}"
+  worker_docker_image_jvm = "${var.latest_docker_image_jvm}"
+  worker_docker_image_node_js = "${var.latest_docker_image_nodejs}"
+  worker_docker_image_perl = "${var.latest_docker_image_perl}"
+  worker_docker_image_php = "${var.latest_docker_image_php}"
+  worker_docker_image_python = "${var.latest_docker_image_python}"
+  worker_docker_image_ruby = "${var.latest_docker_image_ruby}"
   worker_docker_self_image = "quay.io/travisci/worker:v2.4.0-23-g396d039"
   worker_queue = "docker"
   worker_subnets = "${data.terraform_remote_state.vpc.workers_org_subnet_1b_id},${data.terraform_remote_state.vpc.workers_org_subnet_1e_id}"
