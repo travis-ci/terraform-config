@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+set -o errexit
+
+main() {
+  local tfvars="${1}"
+  local top
+  top="$(git rev-parse --show-toplevel)"
+
+  "${top}/bin/show-current-docker-images" | while read -r line; do
+    local line_parts=(${line})
+    local lang="${line_parts[0]}"
+    local image="${line_parts[1]}"
+    local stack
+    stack="$(echo "${image}" | sed 's,.*travisci/ci-,,;s,:.*,,')"
+    awk "/^latest_docker_image_${stack}/ {
+      gsub(/\"/, \"\", \$3);
+      print \"${lang} \" \$3
+    }" "${tfvars}" \
+      | sed 's/  *$//'
+  done
+}
+
+main "$@"
