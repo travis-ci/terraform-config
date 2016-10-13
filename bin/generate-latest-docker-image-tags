@@ -1,0 +1,67 @@
+#!/usr/bin/env ruby
+require 'json'
+require 'net/http'
+require 'openssl'
+
+DEFAULT_STACKS = %w(
+	android
+	erlang
+	go
+	haskell
+	jvm
+	nodejs
+	perl
+	php
+	python
+	ruby
+	amethyst
+	connie
+	garnet
+)
+
+def main
+  group = ENV.fetch('GROUP', 'stable')
+  stacks = ENV['STACKS'].to_s.split.map(&:strip)
+  stacks = DEFAULT_STACKS if stacks.empty?
+  stacks.each do |stack|
+    tag = latest_docker_image_tag(stack, group)
+    $stdout.puts(%(latest_docker_image_#{stack} = #{tag.to_s.inspect}))
+  end
+
+  0
+end
+
+def latest_docker_image_tag(stack, group)
+  qs = URI.encode_www_form(
+    service: 'registry.docker.io',
+    scope: "repository:travisci/ci-#{stack}:pull"
+  )
+
+  token = docker_index_get(
+    "/token?#{qs}",
+    host: 'auth.docker.io'
+  ).fetch('token')
+
+  tags = docker_index_get(
+    "/v2/travisci/ci-#{stack}/tags/list",
+    headers: { 'Authorization' => "Bearer #{token}" }
+  ).fetch('tags')
+
+  "travisci/ci-#{stack}:#{tags.sort.reverse.fetch(0)}"
+end
+
+def docker_index_get(path, host: 'index.docker.io', headers: {})
+  http = Net::HTTP.new(host, 443)
+  http.use_ssl = true
+  http.verify_mode = OpenSSL::SSL::VERIFY_PEER
+
+  request = Net::HTTP::Get.new(path)
+  request['Accept'] = 'application/json'
+  headers.each do |key, value|
+    request[key] = value
+  end
+  response = http.request(request)
+  JSON.parse(response.body)
+end
+
+exit(main) if $PROGRAM_NAME == __FILE__
