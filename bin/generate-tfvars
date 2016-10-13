@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+set -o errexit
+
+main() {
+  local top
+  top="$(git rev-parse --show-toplevel)"
+
+  "${top}/bin/generate-github-ssh-users"
+  "${top}/bin/generate-latest-docker-image-tags"
+}
+
+main "$@"

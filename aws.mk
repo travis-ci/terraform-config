@@ -22,22 +22,17 @@ CONFIG_FILES := \
 .config: $(CONFIG_FILES) $(ENV_NAME).tfvars
 
 $(CONFIG_FILES):
-	mkdir -p config
-	trvs generate-config --pro -p travis_worker -f env $(INFRA)-workers $(ENV_SHORT) \
-		| sed 's/^/export /' >config/worker-com.env
-	trvs generate-config -p travis_worker -f env $(INFRA)-workers $(ENV_SHORT) \
-		| sed 's/^/export /' >config/worker-org.env
-	$(TOP)/bin/heroku-dump-shell-config travis-$(ENV_SHORT) >config/travis-org.env
-	$(TOP)/bin/heroku-dump-shell-config travis-build-$(ENV_SHORT) >config/travis-build-org.env
-	$(TOP)/bin/heroku-dump-shell-config travis-pro-$(ENV_SHORT) >config/travis-com.env
-	$(TOP)/bin/heroku-dump-shell-config travis-pro-build-$(ENV_SHORT) >config/travis-build-com.env
-	source config/travis-build-com.env && source config/travis-com.env && \
-		echo 'export TRAVIS_WORKER_BUILD_API_URI=https://'"$${API_TOKEN%%,*}"'@$(TRAVIS_BUILD_COM_HOST)/script' \
-			>config/worker-com-local.env && \
-		echo 'export TRAVIS_WORKER_AMQP_URI='$${$(AMQP_URL_VARNAME)} >>config/worker-com-local.env && \
-		$(TOP)/bin/env-url-to-parts $(AMQP_URL_VARNAME) config/ com
-	source config/travis-build-org.env && source config/travis-org.env && \
-		echo 'export TRAVIS_WORKER_BUILD_API_URI=https://'"$${API_TOKEN%%,*}"'@$(TRAVIS_BUILD_ORG_HOST)/script' \
-			>config/worker-org-local.env && \
-		echo 'export TRAVIS_WORKER_AMQP_URI='$${$(AMQP_URL_VARNAME)} >>config/worker-org-local.env && \
-		$(TOP)/bin/env-url-to-parts $(AMQP_URL_VARNAME) config/ org
+	$(TOP)/bin/write-aws-config-files \
+		"$(INFRA)" \
+		"$(ENV_SHORT)" \
+		"$(TRAVIS_BUILD_COM_HOST)" \
+		"$(TRAVIS_BUILD_ORG_HOST)" \
+		"$(AMQP_URL_VARNAME)"
+
+.PHONY: diff-docker-images
+diff-docker-images:
+	@diff -u \
+		--label a/docker-images \
+		<($(TOP)/bin/show-current-docker-images) \
+		--label b/docker-images \
+		<($(TOP)/bin/show-proposed-docker-images "$(ENV_NAME).tfvars")

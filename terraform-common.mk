@@ -46,7 +46,4 @@ graph:
 	terraform graph -draw-cycles | dot -Tpng > graph.png
 
 $(ENV_NAME).tfvars:
-	$(RM) $@
-	touch $@
-	$(TOP)/bin/generate-github-ssh-users >>$@
-	$(TOP)/bin/generate-latest-docker-image-tags >>$@
+	$(TOP)/bin/generate-tfvars >$@
