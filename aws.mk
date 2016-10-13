@@ -46,9 +46,9 @@ $(CONFIG_FILES):
 show-current-docker-images:
 	@terraform show \
 		| awk '/^export.+DOCKER_IMAGE/ { \
-	    gsub(/"/, "", $$2); \
-	    gsub(/=/, " ", $$2); \
-	    sub(/TRAVIS_WORKER_DOCKER_IMAGE_/, "", $$2); \
+			gsub(/"/, "", $$2); \
+			gsub(/=/, " ", $$2); \
+			sub(/TRAVIS_WORKER_DOCKER_IMAGE_/, "", $$2); \
 			print $$2 " " $$3 \
 		}' \
 		| tr '[:upper:]' '[:lower:]' \
