@@ -13,13 +13,13 @@ main() {
 
   mkdir -p config
   trvs generate-config --pro \
-    -p travis_worker \
+    -p TRAVIS_WORKER \
     -f env \
     "${infra}-workers" "${env_short}" \
     | sed 's/^/export /' >config/worker-com.env
 
   trvs generate-config \
-    -p travis_worker \
+    -p TRAVIS_WORKER \
     -f env \
     "${infra}-workers" "${env_short}" \
     | sed 's/^/export /' >config/worker-org.env
