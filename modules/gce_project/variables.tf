@@ -8,6 +8,7 @@ variable "gcloud_cleanup_loop_sleep" { default = "1s" }
 variable "gcloud_cleanup_scale" { default = "worker=1:Standard-1X" }
 variable "gcloud_cleanup_version" { default = "master" }
 variable "gcloud_zone" {}
+variable "github_users" {}
 variable "heroku_org" {}
 variable "index" {}
 variable "nat_image" {}
