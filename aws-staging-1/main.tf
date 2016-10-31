@@ -6,8 +6,6 @@ variable "latest_docker_image_amethyst" {}
 variable "latest_docker_image_garnet" {}
 variable "syslog_address" {}
 variable "worker_ami" { default = "ami-41eaa456" }
-variable "worker_com_cache_bucket" {}
-variable "worker_org_cache_bucket" {}
 
 provider "aws" {}
 
@@ -83,7 +81,6 @@ module "aws_asg_com" {
   worker_asg_namespace = "Travis/com-staging"
   worker_asg_scale_in_threshold = 16
   worker_asg_scale_out_threshold = 8
-  worker_cache_bucket = "${var.worker_com_cache_bucket}"
   worker_config = "${data.template_file.worker_config_com.rendered}"
   worker_docker_image_android = "${var.latest_docker_image_amethyst}"
   worker_docker_image_default = "${var.latest_docker_image_garnet}"
@@ -121,7 +118,6 @@ module "aws_asg_org" {
   worker_asg_namespace = "Travis/org-staging"
   worker_asg_scale_in_threshold = 16
   worker_asg_scale_out_threshold = 8
-  worker_cache_bucket = "${var.worker_org_cache_bucket}"
   worker_config = "${data.template_file.worker_config_org.rendered}"
   worker_docker_image_android = "${var.latest_docker_image_amethyst}"
   worker_docker_image_default = "${var.latest_docker_image_garnet}"
