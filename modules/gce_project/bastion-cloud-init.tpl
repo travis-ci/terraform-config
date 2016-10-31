@@ -6,11 +6,10 @@ set -o errexit
 main() {
   # declared for shellcheck
   local bastion_config
-  local github_users
 
   ${bastion_config}
   __setup_papertrail_rsyslog "$GCE_BASTION_PAPERTRAIL_REMOTE_PORT"
-  __write_github_users "${github_users}"
+  __write_github_users
   __write_duo_configs \
     "$GCE_BASTION_DUO_INTEGRATION_KEY" \
     "$GCE_BASTION_DUO_SECRET_KEY" \
@@ -33,7 +32,8 @@ __setup_papertrail_rsyslog() {
 }
 
 __write_github_users() {
-  local github_users="$1"
+  # declared for shellcheck
+  local github_users
 
   cat >/etc/default/github-users <<EOF
 export GITHUB_USERS="${github_users}"
