@@ -5,6 +5,7 @@ set -o errexit
 
 main() {
   __write_gce_json
+  __write_github_users
   __write_docker_config
   __write_travis_worker_config
   __setup_papertrail_rsyslog
@@ -22,6 +23,15 @@ __write_gce_json() {
   local account_json
   cat >/var/tmp/gce.json <<EOF
 ${account_json}
+EOF
+}
+
+__write_github_users() {
+  # declared for shellcheck
+  local github_users
+
+  cat >/etc/default/github-users <<EOF
+export GITHUB_USERS="${github_users}"
 EOF
 }
 

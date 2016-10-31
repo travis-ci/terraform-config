@@ -6,6 +6,7 @@ module "gce_worker_b" {
   config_com = "${var.worker_config_com}"
   config_org = "${var.worker_config_org}"
   env = "${var.env}"
+  github_users = "${var.github_users}"
   index = "${var.index}"
   instance_count = 1
   machine_type = "g1-small"
@@ -25,6 +26,7 @@ module "gce_worker_c" {
   config_com = "${var.worker_config_com}"
   config_org = "${var.worker_config_org}"
   env = "${var.env}"
+  github_users = "${var.github_users}"
   index = "${var.index}"
   instance_count = 1
   machine_type = "g1-small"
