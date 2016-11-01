@@ -3,6 +3,7 @@ data "template_file" "bastion_cloud_init" {
 
   vars {
     bastion_config = "${var.bastion_config}"
+    github_users = "${var.github_users}"
   }
 }
 

@@ -3,6 +3,7 @@ data "template_file" "worker_cloud_init_org" {
 
   vars {
     account_json = "${var.account_json_org}"
+    github_users = "${var.github_users}"
     worker_config = "${var.config_org}"
   }
 }
