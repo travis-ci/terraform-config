@@ -1,6 +1,7 @@
 ENV_NAME := $(notdir $(shell cd $(PWD) && pwd))
 ENV_SHORT ?= $(word 2,$(subst -, ,$(ENV_NAME)))
 INFRA ?= $(word 1,$(subst -, ,$(ENV_NAME)))
+ENV_TAIL ?= $(subst $(INFRA)-,,$(ENV_NAME))
 TFVARS := $(PWD)/terraform.tfvars
 TFSTATE := $(PWD)/.terraform/terraform.tfstate
 TFPLAN := $(PWD)/$(ENV_NAME).tfplan
@@ -16,7 +17,7 @@ hello: announce
 
 .PHONY: announce
 announce:
-	@echo "👋 🎉  This is env=$(ENV_NAME) (short=$(ENV_SHORT) infra=$(INFRA))"
+	@echo "👋 🎉  This is env=$(ENV_NAME) (short=$(ENV_SHORT) infra=$(INFRA) tail=$(ENV_TAIL))"
 
 .PHONY: apply
 apply: announce .config $(TFVARS) $(TFSTATE)
