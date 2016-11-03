@@ -6,7 +6,7 @@ variable "github_users" {}
 variable "index" { default = 1 }
 variable "public_subnet_1b_cidr" { default = "10.10.1.0/24" }
 variable "public_subnet_1e_cidr" { default = "10.10.4.0/24" }
-variable "syslog_address" {}
+variable "syslog_address_com" {}
 variable "travisci_net_external_zone_id" {}
 variable "vpc_cidr" { default = "10.10.0.0/16" }
 variable "workers_com_subnet_1b_cidr" { default = "10.10.3.0/24" }
@@ -99,7 +99,7 @@ module "aws_az_1b" {
   nat_ami = "${data.aws_ami.nat.id}"
   nat_instance_type = "c3.4xlarge"
   public_subnet_cidr = "${var.public_subnet_1b_cidr}"
-  syslog_address = "${var.syslog_address}"
+  syslog_address = "${var.syslog_address_com}"
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
   vpc_cidr = "${var.vpc_cidr}"
   vpc_id = "${aws_vpc.main.id}"
@@ -121,7 +121,7 @@ module "aws_az_1e" {
   nat_ami = "${data.aws_ami.nat.id}"
   nat_instance_type = "c3.4xlarge"
   public_subnet_cidr = "${var.public_subnet_1e_cidr}"
-  syslog_address = "${var.syslog_address}"
+  syslog_address = "${var.syslog_address_com}"
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
   vpc_cidr = "${var.vpc_cidr}"
   vpc_id = "${aws_vpc.main.id}"
