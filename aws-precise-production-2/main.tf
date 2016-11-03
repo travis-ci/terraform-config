@@ -114,7 +114,7 @@ module "aws_asg_com" {
   worker_ami = "${var.worker_ami}"
   # NOTE: builds.docker value for com production
   # worker_asg_max_size = 100
-  worker_asg_max_size = 1
+  worker_asg_max_size = 2
   worker_asg_min_size = 1
   worker_asg_namespace = "Travis/com"
   # NOTE: builds.docker values for com production
@@ -136,7 +136,9 @@ module "aws_asg_com" {
   worker_docker_image_python = "${var.latest_docker_image_python}"
   worker_docker_image_ruby = "${var.latest_docker_image_ruby}"
   worker_docker_self_image = "quay.io/travisci/worker:v2.4.0-23-g396d039"
-  worker_instance_type = "c3.8xlarge"
+  # NOTE: working with a smaller instance size for canary rollout
+  # worker_instance_type = "c3.8xlarge"
+  worker_instance_type = "c3.2xlarge"
   worker_queue = "docker"
   worker_subnets = "${data.terraform_remote_state.vpc.workers_com_subnet_1b_id},${data.terraform_remote_state.vpc.workers_com_subnet_1e_id}"
 }
@@ -157,7 +159,7 @@ module "aws_asg_org" {
   worker_ami = "${var.worker_ami}"
   # NOTE: builds.docker value for org production
   # worker_asg_max_size = 75
-  worker_asg_max_size = 1
+  worker_asg_max_size = 2
   worker_asg_min_size = 1
   worker_asg_namespace = "Travis/org"
   # NOTE: builds.docker values for org production
@@ -179,7 +181,9 @@ module "aws_asg_org" {
   worker_docker_image_python = "${var.latest_docker_image_python}"
   worker_docker_image_ruby = "${var.latest_docker_image_ruby}"
   worker_docker_self_image = "quay.io/travisci/worker:v2.4.0-23-g396d039"
-  worker_instance_type = "c3.8xlarge"
+  # NOTE: working with a smaller instance size for canary rollout
+  # worker_instance_type = "c3.8xlarge"
+  worker_instance_type = "c3.2xlarge"
   worker_queue = "docker"
   worker_subnets = "${data.terraform_remote_state.vpc.workers_org_subnet_1b_id},${data.terraform_remote_state.vpc.workers_org_subnet_1e_id}"
 }
