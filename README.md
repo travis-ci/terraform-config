@@ -8,7 +8,7 @@ complete environment with the push of a button.
 
 ## Status
 
-Prototype (not yet in production)
+In production, with mixed adoption across infrastructures.
 
 ## Infrastructure
 
