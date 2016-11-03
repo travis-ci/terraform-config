@@ -280,7 +280,7 @@ resource "aws_autoscaling_lifecycle_hook" "workers_terminating" {
 }
 
 resource "heroku_app" "cyclist" {
-  name = "cyclist-${var.env}-${var.index}-${var.site}"
+  name = "cyclist-${replace(var.env, "production", "prod")}-${var.index}-${var.site}"
   region = "us"
   organization {
     name = "${var.heroku_org}"
