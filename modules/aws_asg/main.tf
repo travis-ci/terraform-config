@@ -3,6 +3,7 @@ variable "cyclist_aws_region" { default = "us-east-1" }
 variable "cyclist_debug" { default = "false" }
 variable "cyclist_redis_plan" { default = "premium-0" }
 variable "cyclist_scale" { default = "web=1:Standard-1X" }
+variable "cyclist_token_ttl" { default = "1h" }
 variable "cyclist_version" { default = "master" }
 variable "env" {}
 variable "env_short" {}
@@ -292,6 +293,7 @@ resource "heroku_app" "cyclist" {
     BUILDPACK_URL = "https://github.com/travis-ci/heroku-buildpack-makey-go"
     CYCLIST_AUTH_TOKENS = "${var.cyclist_auth_token}"
     CYCLIST_DEBUG = "${var.cyclist_debug}"
+    CYCLIST_TOKEN_TTL = "${var.cyclist_token_ttl}"
     GO_IMPORT_PATH = "github.com/travis-ci/cyclist"
   }
 }
