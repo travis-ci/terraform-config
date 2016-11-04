@@ -83,18 +83,6 @@ data "template_file" "cloud_config" {
   }
 }
 
-resource "null_resource" "config_verification" {
-  triggers {
-    worker_config_base64 = "${base64encode(data.template_file.cloud_config.rendered)}"
-  }
-  provisioner "local-exec" {
-    command = <<EOF
-exec ${path.module}/../../bin/travis-worker-verify-config \
-  "${base64encode(data.template_file.cloud_config.rendered)}"
-EOF
-  }
-}
-
 resource "aws_launch_configuration" "workers" {
   name_prefix = "${var.env}-${var.index}-workers-${var.site}-"
   image_id = "${var.worker_ami}"
@@ -105,7 +93,12 @@ resource "aws_launch_configuration" "workers" {
   lifecycle {
     create_before_destroy = true
   }
-  depends_on = ["null_resource.config_verification"]
+  provisioner "local-exec" {
+    command = <<EOF
+exec ${path.module}/../../bin/travis-worker-verify-config \
+  "${base64encode(data.template_file.cloud_config.rendered)}"
+EOF
+  }
 }
 
 resource "aws_autoscaling_group" "workers" {
