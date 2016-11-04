@@ -3,16 +3,6 @@ variable "env" { default = "precise-production" }
 variable "env_short" { default = "production" }
 variable "github_users" {}
 variable "index" { default = 2 }
-variable "latest_docker_image_android" {}
-variable "latest_docker_image_erlang" {}
-variable "latest_docker_image_go" {}
-variable "latest_docker_image_haskell" {}
-variable "latest_docker_image_jvm" {}
-variable "latest_docker_image_nodejs" {}
-variable "latest_docker_image_perl" {}
-variable "latest_docker_image_php" {}
-variable "latest_docker_image_python" {}
-variable "latest_docker_image_ruby" {}
 variable "rabbitmq_password_com" {}
 variable "rabbitmq_password_org" {}
 variable "rabbitmq_username_com" {}
@@ -125,17 +115,17 @@ module "aws_asg_com" {
   worker_asg_scale_out_qty = 2
   worker_asg_scale_out_threshold = 8
   worker_config = "${data.template_file.worker_config_com.rendered}"
-  worker_docker_image_android = "${var.latest_docker_image_android}"
-  worker_docker_image_default = "${var.latest_docker_image_ruby}"
-  worker_docker_image_erlang = "${var.latest_docker_image_erlang}"
-  worker_docker_image_go = "${var.latest_docker_image_go}"
-  worker_docker_image_haskell = "${var.latest_docker_image_haskell}"
-  worker_docker_image_jvm = "${var.latest_docker_image_jvm}"
-  worker_docker_image_node_js = "${var.latest_docker_image_nodejs}"
-  worker_docker_image_perl = "${var.latest_docker_image_perl}"
-  worker_docker_image_php = "${var.latest_docker_image_php}"
-  worker_docker_image_python = "${var.latest_docker_image_python}"
-  worker_docker_image_ruby = "${var.latest_docker_image_ruby}"
+  worker_docker_image_android = "quay.io/travisci/travis-android:latest"
+  worker_docker_image_default = "quay.io/travisci/travis-ruby:latest"
+  worker_docker_image_erlang = "quay.io/travisci/travis-erlang:latest"
+  worker_docker_image_go = "quay.io/travisci/travis-go:latest"
+  worker_docker_image_haskell = "quay.io/travisci/travis-haskell:latest"
+  worker_docker_image_jvm = "quay.io/travisci/travis-jvm:latest"
+  worker_docker_image_node_js = "quay.io/travisci/travis-node-js:latest"
+  worker_docker_image_perl = "quay.io/travisci/travis-perl:latest"
+  worker_docker_image_php = "quay.io/travisci/travis-php:latest"
+  worker_docker_image_python = "quay.io/travisci/travis-python:latest"
+  worker_docker_image_ruby = "quay.io/travisci/travis-ruby:latest"
   worker_docker_self_image = "quay.io/travisci/worker:v2.4.0-23-g396d039"
   # NOTE: working with a smaller instance size for canary rollout
   # worker_instance_type = "c3.8xlarge"
@@ -170,17 +160,17 @@ module "aws_asg_org" {
   worker_asg_scale_out_qty = 2
   worker_asg_scale_out_threshold = 8
   worker_config = "${data.template_file.worker_config_org.rendered}"
-  worker_docker_image_android = "${var.latest_docker_image_android}"
-  worker_docker_image_default = "${var.latest_docker_image_ruby}"
-  worker_docker_image_erlang = "${var.latest_docker_image_erlang}"
-  worker_docker_image_go = "${var.latest_docker_image_go}"
-  worker_docker_image_haskell = "${var.latest_docker_image_haskell}"
-  worker_docker_image_jvm = "${var.latest_docker_image_jvm}"
-  worker_docker_image_node_js = "${var.latest_docker_image_nodejs}"
-  worker_docker_image_perl = "${var.latest_docker_image_perl}"
-  worker_docker_image_php = "${var.latest_docker_image_php}"
-  worker_docker_image_python = "${var.latest_docker_image_python}"
-  worker_docker_image_ruby = "${var.latest_docker_image_ruby}"
+  worker_docker_image_android = "quay.io/travisci/travis-android:latest"
+  worker_docker_image_default = "quay.io/travisci/travis-ruby:latest"
+  worker_docker_image_erlang = "quay.io/travisci/travis-erlang:latest"
+  worker_docker_image_go = "quay.io/travisci/travis-go:latest"
+  worker_docker_image_haskell = "quay.io/travisci/travis-haskell:latest"
+  worker_docker_image_jvm = "quay.io/travisci/travis-jvm:latest"
+  worker_docker_image_node_js = "quay.io/travisci/travis-node-js:latest"
+  worker_docker_image_perl = "quay.io/travisci/travis-perl:latest"
+  worker_docker_image_php = "quay.io/travisci/travis-php:latest"
+  worker_docker_image_python = "quay.io/travisci/travis-python:latest"
+  worker_docker_image_ruby = "quay.io/travisci/travis-ruby:latest"
   worker_docker_self_image = "quay.io/travisci/worker:v2.4.0-23-g396d039"
   # NOTE: working with a smaller instance size for canary rollout
   # worker_instance_type = "c3.8xlarge"
