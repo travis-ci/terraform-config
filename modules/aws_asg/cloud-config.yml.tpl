@@ -43,3 +43,6 @@ write_files:
 - content: '${base64encode(syslog_address)}'
   encoding: b64
   path: /var/tmp/travis-run.d/syslog-address
+- content: '* * * * * dmesg | grep -q unregister_netdevice && /sbin/shutdown -P now "unregister_netdevice detected, shutting down instance"'
+  owner: 'root:root'
+  path: /etc/cron.d/unregister-netdevice-shutdown
