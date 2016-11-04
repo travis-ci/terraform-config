@@ -10,6 +10,7 @@ variable "env_short" {}
 variable "github_users" { default = "" }
 variable "heroku_org" {}
 variable "index" {}
+variable "lifecycle_hook_heartbeat_timeout" { default = 3600 }
 variable "security_groups" {}
 variable "site" {}
 variable "syslog_address" {}
@@ -277,7 +278,7 @@ resource "aws_autoscaling_lifecycle_hook" "workers_launching" {
   name = "${var.env}-${var.index}-workers-${var.site}-launching"
   autoscaling_group_name = "${aws_autoscaling_group.workers.name}"
   default_result = "CONTINUE"
-  heartbeat_timeout = 900
+  heartbeat_timeout = "${var.lifecycle_hook_heartbeat_timeout}"
   lifecycle_transition = "autoscaling:EC2_INSTANCE_LAUNCHING"
   notification_target_arn = "${aws_sns_topic.workers.arn}"
   role_arn = "${aws_iam_role.workers_sns.arn}"
@@ -287,7 +288,7 @@ resource "aws_autoscaling_lifecycle_hook" "workers_terminating" {
   name = "${var.env}-${var.index}-workers-${var.site}-terminating"
   autoscaling_group_name = "${aws_autoscaling_group.workers.name}"
   default_result = "CONTINUE"
-  heartbeat_timeout = 900
+  heartbeat_timeout = "${var.lifecycle_hook_heartbeat_timeout}"
   lifecycle_transition = "autoscaling:EC2_INSTANCE_TERMINATING"
   notification_target_arn = "${aws_sns_topic.workers.arn}"
   role_arn = "${aws_iam_role.workers_sns.arn}"
