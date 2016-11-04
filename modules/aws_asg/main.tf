@@ -72,11 +72,13 @@ data "template_file" "cloud_config" {
     cloud_init_env = "${data.template_file.cloud_init_env.rendered}"
     cyclist_url = "${replace(heroku_app.cyclist.web_url, "/\\/$/", "")}"
     github_users_env = "export GITHUB_USERS='${var.github_users}'"
+    handle_unregister_netdevice_bash = "${file("${path.module}/handle-unregister-netdevice.bash")}"
     hostname_tmpl = "___INSTANCE_ID___-${var.env}-${var.index}-worker-${var.site}-${var.worker_queue}.travisci.net"
     prestart_hook_bash = "${file("${path.module}/prestart-hook.bash")}"
     start_hook_bash = "${file("${path.module}/start-hook.bash")}"
     stop_hook_bash = "${file("${path.module}/stop-hook.bash")}"
     syslog_address = "${var.syslog_address}"
+    unregister_netdevice_crontab = "${file("${path.module}/unregister-netdevice.crontab")}"
     worker_config = "${var.worker_config}"
   }
 }

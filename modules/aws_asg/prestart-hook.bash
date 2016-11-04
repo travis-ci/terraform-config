@@ -4,6 +4,14 @@ set -o errexit
 
 main() {
   : "${RUNDIR:=/var/tmp/travis-run.d}"
+  : "${SHUTDOWN:=shutdown}"
+  : "${POST_SHUTDOWN_SLEEP:=300}"
+
+  if [[ -f "${RUNDIR}/implode" ]]; then
+    sudo "${SHUTDOWN}" -P now "imploding"
+    sleep "${POST_SHUTDOWN_SLEEP}"
+    exit 1
+  fi
 
   if [[ ! -f "${RUNDIR}/instance-token" ]]; then
     curl \

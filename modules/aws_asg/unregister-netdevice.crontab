@@ -1,0 +1,3 @@
+SHELL = /bin/bash
+
+* * * * * root /var/tmp/travis-run.d/handle-unregister-netdevice &>/dev/null
