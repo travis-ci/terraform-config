@@ -105,8 +105,8 @@ module "aws_asg_com" {
   worker_ami = "${var.worker_ami}"
   # NOTE: builds.docker value for com production
   # worker_asg_max_size = 100
-  worker_asg_max_size = 1
-  worker_asg_min_size = 0
+  worker_asg_max_size = 2
+  worker_asg_min_size = 1
   worker_asg_namespace = "Travis/com"
   # NOTE: builds.docker values for com production
   # worker_asg_scale_in_threshold = 100
