@@ -44,9 +44,11 @@ write_files:
   encoding: b64
   path: /var/tmp/travis-run.d/syslog-address
 - content: '${base64encode(unregister_netdevice_crontab)}'
+  encoding: b64
   owner: 'root:root'
   path: /etc/cron.d/unregister-netdevice-shutdown
 - content: '${base64encode(handle_unregister_netdevice_bash)}'
+  encoding: b64
   owner: 'root:root'
   path: /var/tmp/travis-run.d/handle-unregister-netdevice
   permissions: '0750'
