@@ -45,6 +45,16 @@ class TravisWorkerConfigVerifier
     )
   end
 
+  def verify_var_tmp_travis_run_d_handle_unregister_netdevice!(content)
+    assert! !(content =~ /DOCKER.+kill -s INT travis-worker/).nil?
+  end
+
+  def verify_etc_cron_d_unregister_netdevice_shutdown!(content)
+    assert! !(
+      content =~ %r{/var/tmp/travis-run\.d/handle-unregister-netdevice}
+    ).nil?
+  end
+
   def assert!(condition, msg: '')
     raise ValueError, msg unless condition
   end
