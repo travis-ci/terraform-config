@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 require 'base64'
+require 'pathname'
 require 'uri'
 require 'yaml'
 
@@ -39,24 +40,36 @@ class TravisWorkerConfigVerifier
     build_api_uri.user = nil
     build_api_uri.path = '/uptime'
 
-    assert! system(
-      "curl -s -f -H 'Authorization: token #{token}' #{build_api_uri.to_s}",
-      %i(out err) => '/dev/null'
+    assert!(
+      system(
+        "curl -s -f -H 'Authorization: token #{token}' #{build_api_uri.to_s}",
+        %i(out err) => '/dev/null'
+      ),
+      msg: 'travis-build credentials do not work'
     )
   end
 
-  def verify_var_tmp_travis_run_d_handle_unregister_netdevice!(content)
-    assert! !(content =~ /DOCKER.+kill -s INT travis-worker/).nil?
+  def verify_var_tmp_travis_run_d_check_unregister_netdevice!(content)
+    assert_identical_content!(
+      content, 'modules/aws_asg/check-unregister-netdevice.bash'
+    )
   end
 
-  def verify_etc_cron_d_unregister_netdevice_shutdown!(content)
-    assert! !(
-      content =~ %r{/var/tmp/travis-run\.d/handle-unregister-netdevice}
-    ).nil?
+  def verify_etc_cron_d_unregister_netdevice!(content)
+    assert_identical_content!(
+      content, 'modules/aws_asg/unregister-netdevice.crontab'
+    )
   end
 
   def assert!(condition, msg: '')
     raise ValueError, msg unless condition
+  end
+
+  def assert_identical_content!(content, path)
+    assert!(
+      content == load_relative_file(path),
+      msg: "content does not match #{path.inspect}"
+    )
   end
 
   def load_env_file(content)
@@ -68,6 +81,14 @@ class TravisWorkerConfigVerifier
       vars[key.strip] = value.strip.gsub(/["']/, '')
     end
     vars
+  end
+
+  def load_relative_file(path)
+    File.read(top.join(path))
+  end
+
+  def top
+    @top ||= Pathname.new(`git rev-parse --show-toplevel`.strip)
   end
 end
 

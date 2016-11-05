@@ -10,7 +10,7 @@ main() {
     return 0
   fi
 
-  date -u >"${RUNDIR}/implode"
+  echo 'detected unregister_netdevice via dmesg' | tee "${RUNDIR}/implode"
   "${DOCKER}" kill -s INT travis-worker
 }
 
