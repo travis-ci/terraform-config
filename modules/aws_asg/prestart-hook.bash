@@ -4,6 +4,17 @@ set -o errexit
 
 main() {
   : "${RUNDIR:=/var/tmp/travis-run.d}"
+  : "${SHUTDOWN:=shutdown}"
+  : "${POST_SHUTDOWN_SLEEP:=300}"
+
+  if [[ -f "${RUNDIR}/implode" ]]; then
+    local reason
+    reason="$(cat "${RUNDIR}/implode" 2>/dev/null)"
+    : "${reason:=not sure why}"
+    sudo "${SHUTDOWN}" -P now "imploding because ${reason}"
+    sleep "${POST_SHUTDOWN_SLEEP}"
+    exit 1
+  fi
 
   if [[ ! -f "${RUNDIR}/instance-token" ]]; then
     curl \

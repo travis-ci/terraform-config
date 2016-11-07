@@ -51,6 +51,9 @@ resource "aws_instance" "nat" {
   tags = {
     Name = "${var.env}-${var.index}-workers-nat-${var.site}-${var.az}"
   }
+  lifecycle {
+    ignore_changes = ["ami"]
+  }
 }
 
 resource "aws_route_table" "rtb" {

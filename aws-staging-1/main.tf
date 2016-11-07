@@ -4,10 +4,23 @@ variable "github_users" {}
 variable "index" { default = 1 }
 variable "latest_docker_image_amethyst" {}
 variable "latest_docker_image_garnet" {}
-variable "syslog_address" {}
-variable "worker_ami" { default = "ami-41eaa456" }
+variable "syslog_address_com" {}
+variable "syslog_address_org" {}
 
 provider "aws" {}
+
+data "aws_ami" "worker" {
+  most_recent = true
+  filter {
+    name = "tag:role"
+    values = ["worker"]
+  }
+  filter {
+    name = "virtualization-type"
+    values = ["hvm"]
+  }
+  owners = ["self"]
+}
 
 data "terraform_remote_state" "vpc" {
   backend = "s3"
@@ -74,8 +87,8 @@ module "aws_asg_com" {
   index = "${var.index}"
   security_groups = "${module.aws_az_1b.workers_com_security_group_id},${module.aws_az_1e.workers_com_security_group_id}"
   site = "com"
-  syslog_address = "${var.syslog_address}"
-  worker_ami = "${var.worker_ami}"
+  syslog_address = "${var.syslog_address_com}"
+  worker_ami = "${data.aws_ami.worker.id}"
   worker_asg_max_size = 1
   worker_asg_min_size = 0
   worker_asg_namespace = "Travis/com-staging"
@@ -111,8 +124,8 @@ module "aws_asg_org" {
   index = "${var.index}"
   security_groups = "${module.aws_az_1b.workers_org_security_group_id},${module.aws_az_1e.workers_org_security_group_id}"
   site = "org"
-  syslog_address = "${var.syslog_address}"
-  worker_ami = "${var.worker_ami}"
+  syslog_address = "${var.syslog_address_org}"
+  worker_ami = "${data.aws_ami.worker.id}"
   worker_asg_max_size = 3
   worker_asg_min_size = 0
   worker_asg_namespace = "Travis/org-staging"

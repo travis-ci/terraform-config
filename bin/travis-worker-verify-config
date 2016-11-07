@@ -1,0 +1,99 @@
+#!/usr/bin/env ruby
+require 'base64'
+require 'pathname'
+require 'uri'
+require 'yaml'
+
+class TravisWorkerConfigVerifier
+  def initialize(argv: ARGV)
+    @cloud_config_string_base64 = argv.fetch(0)
+    @prog = File.basename($PROGRAM_NAME)
+  end
+
+  attr_reader :cloud_config_string_base64, :prog
+
+  def verify!
+    cloud_config.fetch('write_files').each do |file_def|
+      content = file_def.fetch('content')
+      content = Base64.decode64(content) if file_def['encoding'] == 'b64'
+      verifier = "verify#{file_def.fetch('path').gsub(/[^_a-zA-Z0-9]/, '_')}!"
+      if respond_to?(verifier, true)
+        puts "#{prog}: Verifying cloud-config #{file_def.fetch('path')}"
+        send(verifier, content)
+      end
+    end
+  end
+
+  private
+
+  def cloud_config
+    @cloud_config ||= YAML.load(Base64.decode64(cloud_config_string_base64))
+  end
+
+  def verify_etc_default_travis_worker!(content)
+    vars = load_env_file(content)
+    assert! vars.key?('TRAVIS_WORKER_BUILD_API_URI')
+
+    build_api_uri = URI(vars['TRAVIS_WORKER_BUILD_API_URI'])
+
+    token = build_api_uri.user
+    build_api_uri.user = nil
+    build_api_uri.path = '/uptime'
+
+    assert!(
+      system(
+        "curl -s -f -H 'Authorization: token #{token}' #{build_api_uri.to_s}",
+        %i(out err) => '/dev/null'
+      ),
+      msg: 'travis-build credentials do not work'
+    )
+  end
+
+  def verify_var_tmp_travis_run_d_check_unregister_netdevice!(content)
+    assert_identical_content!(
+      content, 'modules/aws_asg/check-unregister-netdevice.bash'
+    )
+  end
+
+  def verify_etc_cron_d_unregister_netdevice!(content)
+    assert_identical_content!(
+      content, 'modules/aws_asg/unregister-netdevice.crontab'
+    )
+  end
+
+  def assert!(condition, msg: '')
+    raise ValueError, msg unless condition
+  end
+
+  def assert_identical_content!(content, path)
+    assert!(
+      content == load_relative_file(path),
+      msg: "content does not match #{path.inspect}"
+    )
+  end
+
+  def load_env_file(content)
+    vars = {}
+    content.split("\n").each do |line|
+      next if line.strip.start_with?('#')
+      key, value = line.sub(/^export /, '').split('=', 2)
+      next if key.nil? || value.nil?
+      vars[key.strip] = value.strip.gsub(/["']/, '')
+    end
+    vars
+  end
+
+  def load_relative_file(path)
+    File.read(top.join(path))
+  end
+
+  def top
+    @top ||= Pathname.new(`git rev-parse --show-toplevel`.strip)
+  end
+end
+
+def main
+  TravisWorkerConfigVerifier.new.verify!
+end
+
+main if $PROGRAM_NAME == __FILE__

@@ -14,7 +14,7 @@ main() {
   cyclist_url="$(cat "${RUNDIR}/cyclist-url")"
   instance_id="$(cat "${RUNDIR}/instance-id")"
   instance_token="$(cat "${RUNDIR}/instance-token")"
-  post_stop_sleep="$(cat "${RUNDIR}/post-stop-sleep" || echo 300)"
+  post_stop_sleep="$(cat "${RUNDIR}/post-stop-sleep" 2>/dev/null || echo 300)"
 
   curl \
     -f \

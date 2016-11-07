@@ -3,12 +3,14 @@ variable "cyclist_aws_region" { default = "us-east-1" }
 variable "cyclist_debug" { default = "false" }
 variable "cyclist_redis_plan" { default = "premium-0" }
 variable "cyclist_scale" { default = "web=1:Standard-1X" }
+variable "cyclist_token_ttl" { default = "1h" }
 variable "cyclist_version" { default = "master" }
 variable "env" {}
 variable "env_short" {}
 variable "github_users" { default = "" }
 variable "heroku_org" {}
 variable "index" {}
+variable "lifecycle_hook_heartbeat_timeout" { default = 3600 }
 variable "security_groups" {}
 variable "site" {}
 variable "syslog_address" {}
@@ -70,11 +72,13 @@ data "template_file" "cloud_config" {
     cloud_init_env = "${data.template_file.cloud_init_env.rendered}"
     cyclist_url = "${replace(heroku_app.cyclist.web_url, "/\\/$/", "")}"
     github_users_env = "export GITHUB_USERS='${var.github_users}'"
+    check_unregister_netdevice_bash = "${file("${path.module}/check-unregister-netdevice.bash")}"
     hostname_tmpl = "___INSTANCE_ID___-${var.env}-${var.index}-worker-${var.site}-${var.worker_queue}.travisci.net"
     prestart_hook_bash = "${file("${path.module}/prestart-hook.bash")}"
     start_hook_bash = "${file("${path.module}/start-hook.bash")}"
     stop_hook_bash = "${file("${path.module}/stop-hook.bash")}"
     syslog_address = "${var.syslog_address}"
+    unregister_netdevice_crontab = "${file("${path.module}/unregister-netdevice.crontab")}"
     worker_config = "${var.worker_config}"
   }
 }
@@ -88,6 +92,12 @@ resource "aws_launch_configuration" "workers" {
   enable_monitoring = false
   lifecycle {
     create_before_destroy = true
+  }
+  provisioner "local-exec" {
+    command = <<EOF
+exec ${path.module}/../../bin/travis-worker-verify-config \
+  "${base64encode(data.template_file.cloud_config.rendered)}"
+EOF
   }
 }
 
@@ -263,7 +273,7 @@ resource "aws_autoscaling_lifecycle_hook" "workers_launching" {
   name = "${var.env}-${var.index}-workers-${var.site}-launching"
   autoscaling_group_name = "${aws_autoscaling_group.workers.name}"
   default_result = "CONTINUE"
-  heartbeat_timeout = 900
+  heartbeat_timeout = "${var.lifecycle_hook_heartbeat_timeout}"
   lifecycle_transition = "autoscaling:EC2_INSTANCE_LAUNCHING"
   notification_target_arn = "${aws_sns_topic.workers.arn}"
   role_arn = "${aws_iam_role.workers_sns.arn}"
@@ -273,14 +283,14 @@ resource "aws_autoscaling_lifecycle_hook" "workers_terminating" {
   name = "${var.env}-${var.index}-workers-${var.site}-terminating"
   autoscaling_group_name = "${aws_autoscaling_group.workers.name}"
   default_result = "CONTINUE"
-  heartbeat_timeout = 900
+  heartbeat_timeout = "${var.lifecycle_hook_heartbeat_timeout}"
   lifecycle_transition = "autoscaling:EC2_INSTANCE_TERMINATING"
   notification_target_arn = "${aws_sns_topic.workers.arn}"
   role_arn = "${aws_iam_role.workers_sns.arn}"
 }
 
 resource "heroku_app" "cyclist" {
-  name = "cyclist-${replace(var.env, "production", "prod")}-${var.index}-${var.site}"
+  name = "cyclist-${replace(var.env, "precise-production", "precise-prod")}-${var.index}-${var.site}"
   region = "us"
   organization {
     name = "${var.heroku_org}"
@@ -292,6 +302,7 @@ resource "heroku_app" "cyclist" {
     BUILDPACK_URL = "https://github.com/travis-ci/heroku-buildpack-makey-go"
     CYCLIST_AUTH_TOKENS = "${var.cyclist_auth_token}"
     CYCLIST_DEBUG = "${var.cyclist_debug}"
+    CYCLIST_TOKEN_TTL = "${var.cyclist_token_ttl}"
     GO_IMPORT_PATH = "github.com/travis-ci/cyclist"
   }
 }
