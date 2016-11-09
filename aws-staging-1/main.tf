@@ -89,7 +89,7 @@ module "aws_asg_com" {
   site = "com"
   syslog_address = "${var.syslog_address_com}"
   worker_ami = "${data.aws_ami.worker.id}"
-  worker_asg_max_size = 1
+  worker_asg_max_size = 3
   worker_asg_min_size = 0
   worker_asg_namespace = "Travis/com-staging"
   worker_asg_scale_in_threshold = 16
