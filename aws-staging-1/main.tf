@@ -106,7 +106,7 @@ module "aws_asg_com" {
   worker_docker_image_php = "${var.latest_docker_image_garnet}"
   worker_docker_image_python = "${var.latest_docker_image_garnet}"
   worker_docker_image_ruby = "${var.latest_docker_image_garnet}"
-  worker_docker_self_image = "quay.io/travisci/worker:v2.4.0-23-g396d039"
+  worker_docker_self_image = "quay.io/travisci/worker:v2.5.0-8-g19ea9c2"
   worker_queue = "ec2"
   worker_subnets = "${data.terraform_remote_state.vpc.workers_com_subnet_1b_id},${data.terraform_remote_state.vpc.workers_com_subnet_1e_id}"
 }
@@ -143,7 +143,7 @@ module "aws_asg_org" {
   worker_docker_image_php = "${var.latest_docker_image_garnet}"
   worker_docker_image_python = "${var.latest_docker_image_garnet}"
   worker_docker_image_ruby = "${var.latest_docker_image_garnet}"
-  worker_docker_self_image = "quay.io/travisci/worker:v2.4.0-23-g396d039"
+  worker_docker_self_image = "quay.io/travisci/worker:v2.5.0-8-g19ea9c2"
   worker_queue = "ec2"
   worker_subnets = "${data.terraform_remote_state.vpc.workers_org_subnet_1b_id},${data.terraform_remote_state.vpc.workers_org_subnet_1e_id}"
 }

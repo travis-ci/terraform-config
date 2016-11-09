@@ -126,7 +126,7 @@ module "aws_asg_com" {
   worker_docker_image_php = "quay.io/travisci/travis-php:latest"
   worker_docker_image_python = "quay.io/travisci/travis-python:latest"
   worker_docker_image_ruby = "quay.io/travisci/travis-ruby:latest"
-  worker_docker_self_image = "quay.io/travisci/worker:v2.4.0-23-g396d039"
+  worker_docker_self_image = "quay.io/travisci/worker:v2.5.0-8-g19ea9c2"
   # NOTE: working with a smaller instance size for canary rollout
   # worker_instance_type = "c3.8xlarge"
   worker_instance_type = "c3.2xlarge"
@@ -171,7 +171,7 @@ module "aws_asg_org" {
   worker_docker_image_php = "quay.io/travisci/travis-php:latest"
   worker_docker_image_python = "quay.io/travisci/travis-python:latest"
   worker_docker_image_ruby = "quay.io/travisci/travis-ruby:latest"
-  worker_docker_self_image = "quay.io/travisci/worker:v2.4.0-23-g396d039"
+  worker_docker_self_image = "quay.io/travisci/worker:v2.5.0-8-g19ea9c2"
   # NOTE: working with a smaller instance size for canary rollout
   # worker_instance_type = "c3.8xlarge"
   worker_instance_type = "c3.2xlarge"
