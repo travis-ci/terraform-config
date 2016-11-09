@@ -109,9 +109,9 @@ module "aws_asg_com" {
   # NOTE: builds.docker values for com production
   # worker_asg_scale_in_threshold = 100
   # worker_asg_scale_out_threshold = 60
-  worker_asg_scale_in_threshold = 16
+  worker_asg_scale_in_threshold = 50
   worker_asg_scale_out_qty = 2
-  worker_asg_scale_out_threshold = 8
+  worker_asg_scale_out_threshold = 30
   worker_config = "${data.template_file.worker_config_com.rendered}"
   worker_docker_image_android = "quay.io/travisci/ci-amethyst:packer-1473386113"
   worker_docker_image_default = "quay.io/travisci/ci-garnet:packer-1473395986"
@@ -151,9 +151,9 @@ module "aws_asg_org" {
   # NOTE: builds.docker values for org production
   # worker_asg_scale_in_threshold = 64
   # worker_asg_scale_out_threshold = 48
-  worker_asg_scale_in_threshold = 16
+  worker_asg_scale_in_threshold = 50
   worker_asg_scale_out_qty = 2
-  worker_asg_scale_out_threshold = 8
+  worker_asg_scale_out_threshold = 30
   worker_config = "${data.template_file.worker_config_org.rendered}"
   worker_docker_image_android = "quay.io/travisci/ci-amethyst:packer-1473386113"
   worker_docker_image_default = "quay.io/travisci/ci-garnet:packer-1473395986"
