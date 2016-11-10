@@ -103,17 +103,12 @@ module "aws_asg_com" {
   site = "com"
   syslog_address = "${var.syslog_address_com}"
   worker_ami = "${var.worker_ami}"
-  # NOTE: builds.docker value for com production
-  # worker_asg_max_size = 100
-  worker_asg_max_size = 2
+  worker_asg_max_size = 100
   worker_asg_min_size = 1
   worker_asg_namespace = "Travis/com"
-  # NOTE: builds.docker values for com production
-  # worker_asg_scale_in_threshold = 100
-  # worker_asg_scale_out_threshold = 60
-  worker_asg_scale_in_threshold = 16
+  worker_asg_scale_in_threshold = 100
   worker_asg_scale_out_qty = 2
-  worker_asg_scale_out_threshold = 8
+  worker_asg_scale_out_threshold = 60
   worker_config = "${data.template_file.worker_config_com.rendered}"
   worker_docker_image_android = "quay.io/travisci/travis-android:latest"
   worker_docker_image_default = "quay.io/travisci/travis-ruby:latest"
@@ -127,9 +122,7 @@ module "aws_asg_com" {
   worker_docker_image_python = "quay.io/travisci/travis-python:latest"
   worker_docker_image_ruby = "quay.io/travisci/travis-ruby:latest"
   worker_docker_self_image = "quay.io/travisci/worker:v2.5.0-8-g19ea9c2"
-  # NOTE: working with a smaller instance size for canary rollout
-  # worker_instance_type = "c3.8xlarge"
-  worker_instance_type = "c3.2xlarge"
+  worker_instance_type = "c3.8xlarge"
   worker_queue = "docker"
   worker_subnets = "${data.terraform_remote_state.vpc.workers_com_subnet_1b_id},${data.terraform_remote_state.vpc.workers_com_subnet_1e_id}"
 }
@@ -148,17 +141,12 @@ module "aws_asg_org" {
   site = "org"
   syslog_address = "${var.syslog_address_org}"
   worker_ami = "${var.worker_ami}"
-  # NOTE: builds.docker value for org production
-  # worker_asg_max_size = 75
-  worker_asg_max_size = 5
+  worker_asg_max_size = 75
   worker_asg_min_size = 1
   worker_asg_namespace = "Travis/org"
-  # NOTE: builds.docker values for org production
-  # worker_asg_scale_in_threshold = 64
-  # worker_asg_scale_out_threshold = 48
-  worker_asg_scale_in_threshold = 16
+  worker_asg_scale_in_threshold = 64
   worker_asg_scale_out_qty = 2
-  worker_asg_scale_out_threshold = 8
+  worker_asg_scale_out_threshold = 48
   worker_config = "${data.template_file.worker_config_org.rendered}"
   worker_docker_image_android = "quay.io/travisci/travis-android:latest"
   worker_docker_image_default = "quay.io/travisci/travis-ruby:latest"
@@ -172,9 +160,7 @@ module "aws_asg_org" {
   worker_docker_image_python = "quay.io/travisci/travis-python:latest"
   worker_docker_image_ruby = "quay.io/travisci/travis-ruby:latest"
   worker_docker_self_image = "quay.io/travisci/worker:v2.5.0-8-g19ea9c2"
-  # NOTE: working with a smaller instance size for canary rollout
-  # worker_instance_type = "c3.8xlarge"
-  worker_instance_type = "c3.2xlarge"
+  worker_instance_type = "c3.8xlarge"
   worker_queue = "docker"
   worker_subnets = "${data.terraform_remote_state.vpc.workers_org_subnet_1b_id},${data.terraform_remote_state.vpc.workers_org_subnet_1e_id}"
 }
