@@ -54,6 +54,7 @@ ${file("${path.module}/config/worker-com.env")}
 ### ${path.module}/worker.env
 ${file("${path.module}/worker.env")}
 
+export TRAVIS_WORKER_HARD_TIMEOUT=2h
 export TRAVIS_WORKER_AMQP_URI=${module.rabbitmq_worker_config_com.uri}
 EOF
 }
@@ -67,6 +68,7 @@ ${file("${path.module}/config/worker-org.env")}
 ### ${path.module}/worker.env
 ${file("${path.module}/worker.env")}
 
+export TRAVIS_WORKER_HARD_TIMEOUT=50m0s
 export TRAVIS_WORKER_AMQP_URI=${module.rabbitmq_worker_config_org.uri}
 EOF
 }
