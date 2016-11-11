@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 require 'base64'
+require 'json'
 require 'pathname'
 require 'uri'
 require 'yaml'
@@ -70,6 +71,21 @@ class TravisWorkerConfigVerifier
         msg: "user #{github_user.inspect} incorrectly defined"
       )
     end
+  end
+
+  def verify_etc_docker_daemon_direct_lvm_json!(content)
+    config = JSON.parse(content)
+    assert!(config.key?('storage-opts'), msg: 'missing storage-opts config')
+    storage_opts = Hash[config.fetch('storage-opts').map { |s| s.split('=') }]
+    assert!(
+      storage_opts.key?('dm.basesize'),
+      msg: 'storage opts missing dm.basesize'
+    )
+    dm_basesize = storage_opts.fetch('dm.basesize')
+    assert!(dm_basesize.end_with?('G'), msg: 'dm.basesize is not in GB')
+
+    dm_basesize_gigs = Integer(dm_basesize.delete('G'))
+    assert!(dm_basesize_gigs > 5, msg: 'dm.basesize under 5GB')
   end
 
   def verify_var_lib_cloud_scripts_per_instance_99_travis_worker_cloud_init!(content)
