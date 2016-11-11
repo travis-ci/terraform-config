@@ -6,7 +6,7 @@ main() {
   : "${DMESG:=dmesg}"
   : "${DOCKER:=docker}"
 
-  "${DMESG}" | if grep ! -q unregister_netdevice; then
+  "${DMESG}" | if ! grep -q unregister_netdevice; then
     return 0
   fi
 
