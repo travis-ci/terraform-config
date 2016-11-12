@@ -2,6 +2,11 @@
 set -o errexit
 
 main() {
+  # HACK HACK HACK
+  echo "TODO: re-enable ${0}"
+  return 0
+  # HACK HACK HACK
+
   : "${DMESG:=dmesg}"
   : "${DOCKER:=docker}"
   : "${MAX_ERROR_COUNT:=4}"
