@@ -13,10 +13,14 @@ main() {
   error_count="$(cat "${RUNDIR}/implode.error-count" 2>/dev/null || echo 0)"
 
   if [[ -f "${RUNDIR}/implode.confirm" ]]; then
+    rm -vf \
+      "${RUNDIR}/implode" \
+      "${RUNDIR}/implode.config" \
+      "${RUNDIR}/implode.error-count"
     local reason
     reason="$(cat "${RUNDIR}/implode.confirm" 2>/dev/null)"
     : "${reason:=not sure why}"
-    "${SHUTDOWN}" -P now "imploding because ${reason}"
+    "${SHUTDOWN}" -r now "imploding because ${reason}"
     sleep "${POST_SHUTDOWN_SLEEP}"
     return 0
   fi
