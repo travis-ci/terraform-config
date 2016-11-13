@@ -13,6 +13,10 @@ write_files:
   encoding: b64
   owner: 'travis:travis'
   path: /etc/default/travis-worker-cloud-init
+- content: '${base64encode(docker_daemon_json)}'
+  encoding: b64
+  owner: 'root:root'
+  path: /etc/docker/daemon-direct-lvm.json
 - content: '${base64encode(cloud_init_bash)}'
   encoding: b64
   path: /var/lib/cloud/scripts/per-instance/99-travis-worker-cloud-init

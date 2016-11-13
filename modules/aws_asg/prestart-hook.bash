@@ -4,14 +4,14 @@ set -o errexit
 
 main() {
   : "${RUNDIR:=/var/tmp/travis-run.d}"
-  : "${SHUTDOWN:=shutdown}"
   : "${POST_SHUTDOWN_SLEEP:=300}"
 
   if [[ -f "${RUNDIR}/implode" ]]; then
     local reason
     reason="$(cat "${RUNDIR}/implode" 2>/dev/null)"
     : "${reason:=not sure why}"
-    sudo "${SHUTDOWN}" -P now "imploding because ${reason}"
+    echo "refusing to start travis-worker; instance imploding because ${reason}"
+    echo "${reason}" | tee /var/tmp/travis-run.d/implode.confirm
     sleep "${POST_SHUTDOWN_SLEEP}"
     exit 1
   fi
@@ -40,10 +40,16 @@ main() {
   __docker_pull_tag "$TRAVIS_WORKER_DOCKER_IMAGE_ANDROID" travis:android
   __docker_pull_tag "$TRAVIS_WORKER_DOCKER_IMAGE_DEFAULT" travis:default
   __docker_pull_tag "$TRAVIS_WORKER_DOCKER_IMAGE_ERLANG" travis:erlang
+  __docker_pull_tag "$TRAVIS_WORKER_DOCKER_IMAGE_ERLANG" travis:elixir
   __docker_pull_tag "$TRAVIS_WORKER_DOCKER_IMAGE_GO" travis:go
   __docker_pull_tag "$TRAVIS_WORKER_DOCKER_IMAGE_HASKELL" travis:haskell
   __docker_pull_tag "$TRAVIS_WORKER_DOCKER_IMAGE_JVM" travis:jvm
+  __docker_pull_tag "$TRAVIS_WORKER_DOCKER_IMAGE_JVM" travis:clojure
+  __docker_pull_tag "$TRAVIS_WORKER_DOCKER_IMAGE_JVM" travis:groovy
+  __docker_pull_tag "$TRAVIS_WORKER_DOCKER_IMAGE_JVM" travis:java
+  __docker_pull_tag "$TRAVIS_WORKER_DOCKER_IMAGE_JVM" travis:scala
   __docker_pull_tag "$TRAVIS_WORKER_DOCKER_IMAGE_NODE_JS" travis:node-js
+  __docker_pull_tag "$TRAVIS_WORKER_DOCKER_IMAGE_NODE_JS" travis:node_js
   __docker_pull_tag "$TRAVIS_WORKER_DOCKER_IMAGE_PERL" travis:perl
   __docker_pull_tag "$TRAVIS_WORKER_DOCKER_IMAGE_PHP" travis:php
   __docker_pull_tag "$TRAVIS_WORKER_DOCKER_IMAGE_PYTHON" travis:python
