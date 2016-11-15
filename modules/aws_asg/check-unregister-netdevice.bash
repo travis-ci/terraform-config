@@ -23,10 +23,6 @@ __handle_implode_confirm() {
   : "${POST_SHUTDOWN_SLEEP:=300}"
   : "${SHUTDOWN:=shutdown}"
 
-  rm -vf \
-    "${run_d}/implode" \
-    "${run_d}/implode.config" \
-    "${run_d}/implode.error-count"
   local reason
   reason="$(cat "${run_d}/implode.confirm" 2>/dev/null)"
   : "${reason:=not sure why}"
