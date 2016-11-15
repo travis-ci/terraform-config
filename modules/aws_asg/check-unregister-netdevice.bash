@@ -2,33 +2,33 @@
 set -o errexit
 
 main() {
-  # shellcheck disable=SC2153
-  : "${RUNDIR:=/var/tmp/travis-run.d}"
+  local run_d="${RUNDIR}"
+  : "${run_d:=/var/tmp/travis-run.d}"
 
   local error_count
-  error_count="$(cat "${RUNDIR}/implode.error-count" 2>/dev/null || echo 0)"
+  error_count="$(cat "${run_d}/implode.error-count" 2>/dev/null || echo 0)"
 
-  if [[ -f "${RUNDIR}/implode.confirm" ]]; then
-    __handle_implode_confirm "${RUNDIR}"
+  if [[ -f "${run_d}/implode.confirm" ]]; then
+    __handle_implode_confirm "${run_d}"
   fi
 
   "${DMESG:-dmesg}" | if grep -q unregister_netdevice; then
-    __handle_found_unregister_netdevice "${error_count}"
+    __handle_found_unregister_netdevice "${error_count}" "${run_d}"
   fi
 }
 
 __handle_implode_confirm() {
-  local rundir="${1}"
+  local run_d="${1}"
 
   : "${POST_SHUTDOWN_SLEEP:=300}"
   : "${SHUTDOWN:=shutdown}"
 
   rm -vf \
-    "${rundir}/implode" \
-    "${rundir}/implode.config" \
-    "${rundir}/implode.error-count"
+    "${run_d}/implode" \
+    "${run_d}/implode.config" \
+    "${run_d}/implode.error-count"
   local reason
-  reason="$(cat "${rundir}/implode.confirm" 2>/dev/null)"
+  reason="$(cat "${run_d}/implode.confirm" 2>/dev/null)"
   : "${reason:=not sure why}"
   "${SHUTDOWN}" -r now "imploding because ${reason}"
   sleep "${POST_SHUTDOWN_SLEEP}"
@@ -37,20 +37,20 @@ __handle_implode_confirm() {
 
 __handle_found_unregister_netdevice() {
   local error_count="${1}"
-  local rundir="${2}"
+  local run_d="${2}"
 
   : "${DOCKER:=docker}"
   : "${MAX_ERROR_COUNT:=4}"
 
   let error_count+=1
-  echo "${error_count}" >"${rundir}/implode.error-count"
+  echo "${error_count}" >"${run_d}/implode.error-count"
 
   if [[ "${error_count}" -lt "${MAX_ERROR_COUNT}" ]]; then
     return 0
   fi
 
   echo "detected unregister_netdevice via dmesg count=${error_count}" \
-    | tee "${rundir}/implode"
+    | tee "${run_d}/implode"
   "${DOCKER}" kill -s INT travis-worker
 }
 
