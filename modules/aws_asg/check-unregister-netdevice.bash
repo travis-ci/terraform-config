@@ -2,47 +2,51 @@
 set -o errexit
 
 main() {
-  # HACK HACK HACK
-  echo "TODO: re-enable ${0}"
-  return 0
-  # HACK HACK HACK
-
-  : "${DMESG:=dmesg}"
-  : "${DOCKER:=docker}"
-  : "${MAX_ERROR_COUNT:=4}"
-  : "${POST_SHUTDOWN_SLEEP:=300}"
-  : "${RUNDIR:=/var/tmp/travis-run.d}"
-  : "${SHUTDOWN:=shutdown}"
+  local run_d="${RUNDIR}"
+  : "${run_d:=/var/tmp/travis-run.d}"
 
   local error_count
-  error_count="$(cat "${RUNDIR}/implode.error-count" 2>/dev/null || echo 0)"
+  error_count="$(cat "${run_d}/implode.error-count" 2>/dev/null || echo 0)"
 
-  if [[ -f "${RUNDIR}/implode.confirm" ]]; then
-    rm -vf \
-      "${RUNDIR}/implode" \
-      "${RUNDIR}/implode.config" \
-      "${RUNDIR}/implode.error-count"
-    local reason
-    reason="$(cat "${RUNDIR}/implode.confirm" 2>/dev/null)"
-    : "${reason:=not sure why}"
-    "${SHUTDOWN}" -r now "imploding because ${reason}"
-    sleep "${POST_SHUTDOWN_SLEEP}"
-    return 0
+  if [[ -f "${run_d}/implode.confirm" ]]; then
+    __handle_implode_confirm "${run_d}"
   fi
 
-  "${DMESG}" | if ! grep -q unregister_netdevice; then
-    return 0
+  "${DMESG:-dmesg}" | if grep -q unregister_netdevice; then
+    __handle_found_unregister_netdevice "${error_count}" "${run_d}"
   fi
+}
+
+__handle_implode_confirm() {
+  local run_d="${1}"
+
+  : "${POST_SHUTDOWN_SLEEP:=300}"
+  : "${SHUTDOWN:=/sbin/shutdown}"
+
+  local reason
+  reason="$(cat "${run_d}/implode.confirm" 2>/dev/null)"
+  : "${reason:=not sure why}"
+  "${SHUTDOWN}" -P now "imploding because ${reason}"
+  sleep "${POST_SHUTDOWN_SLEEP}"
+  exit 0
+}
+
+__handle_found_unregister_netdevice() {
+  local error_count="${1}"
+  local run_d="${2}"
+
+  : "${DOCKER:=docker}"
+  : "${MAX_ERROR_COUNT:=4}"
 
   let error_count+=1
-  echo "${error_count}" >"${RUNDIR}/implode.error-count"
+  echo "${error_count}" >"${run_d}/implode.error-count"
 
   if [[ "${error_count}" -lt "${MAX_ERROR_COUNT}" ]]; then
     return 0
   fi
 
   echo "detected unregister_netdevice via dmesg count=${error_count}" \
-    | tee "${RUNDIR}/implode"
+    | tee "${run_d}/implode"
   "${DOCKER}" kill -s INT travis-worker
 }
 
