@@ -30,9 +30,7 @@ __handle_implode_confirm() {
   local reason
   reason="$(cat "${run_d}/implode.confirm" 2>/dev/null)"
   : "${reason:=not sure why}"
-  # TODO: shutdown with poweroff once mainline kernel upgrade changes are live
-  # "${SHUTDOWN}" -P now "imploding because ${reason}"
-  "${SHUTDOWN}" -r now "imploding because ${reason}"
+  "${SHUTDOWN}" -P now "imploding because ${reason}"
   sleep "${POST_SHUTDOWN_SLEEP}"
   exit 0
 }
