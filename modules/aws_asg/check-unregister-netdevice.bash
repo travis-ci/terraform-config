@@ -21,7 +21,7 @@ __handle_implode_confirm() {
   local run_d="${1}"
 
   : "${POST_SHUTDOWN_SLEEP:=300}"
-  : "${SHUTDOWN:=shutdown}"
+  : "${SHUTDOWN:=/sbin/shutdown}"
 
   local reason
   reason="$(cat "${run_d}/implode.confirm" 2>/dev/null)"
