@@ -23,17 +23,19 @@ def main
   stacks = ENV['STACKS'].to_s.split.map(&:strip)
   stacks = DEFAULT_STACKS if stacks.empty?
   stacks.each do |stack|
-    tag = latest_docker_image_tag(stack)
+    tag = latest_docker_image_tag("travisci/ci-#{stack}")
     $stdout.puts(%(latest_docker_image_#{stack} = #{tag.to_s.inspect}))
   end
+  worker_tag = latest_docker_image_tag('travisci/worker')
+  $stdout.puts(%(latest_docker_image_worker = #{worker_tag.to_s.inspect}))
 
   0
 end
 
-def latest_docker_image_tag(stack)
+def latest_docker_image_tag(image)
   qs = URI.encode_www_form(
     service: 'registry.docker.io',
-    scope: "repository:travisci/ci-#{stack}:pull"
+    scope: "repository:#{image}:pull"
   )
 
   token = docker_index_get(
@@ -42,11 +44,11 @@ def latest_docker_image_tag(stack)
   ).fetch('token')
 
   tags = docker_index_get(
-    "/v2/travisci/ci-#{stack}/tags/list",
+    "/v2/#{image}/tags/list",
     headers: { 'Authorization' => "Bearer #{token}" }
   ).fetch('tags')
 
-  "travisci/ci-#{stack}:#{tags.sort.reverse.fetch(0)}"
+  "#{image}:#{tags.sort.reverse.fetch(0)}"
 end
 
 def docker_index_get(path, host: 'index.docker.io', headers: {})
