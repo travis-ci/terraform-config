@@ -1,10 +1,10 @@
 variable "env" { default = "staging" }
-variable "gce_bastion_image" { default = "eco-emissary-99515/bastion-1475937881" }
+variable "gce_bastion_image" { default = "eco-emissary-99515/bastion-1478778272" }
 variable "gce_gcloud_zone" {}
 variable "gce_heroku_org" {}
-variable "gce_nat_image" { default = "eco-emissary-99515/nat-1475612719" }
+variable "gce_nat_image" { default = "eco-emissary-99515/nat-1478778271" }
 variable "gce_vault_consul_image" { default = "eco-emissary-99515/vault-consul-1473382992" }
-variable "gce_worker_image" { default = "eco-emissary-99515/travis-worker-1475934814" }
+variable "gce_worker_image" { default = "eco-emissary-99515/travis-worker-1479227423" }
 variable "github_users" {}
 variable "index" { default = 1 }
 variable "job_board_url" {}
