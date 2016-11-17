@@ -125,8 +125,7 @@ module "aws_asg_com" {
   syslog_address = "${var.syslog_address_com}"
   worker_ami = "${var.worker_ami}"
   worker_asg_max_size = 100
-  # worker_asg_min_size = 1
-  worker_asg_min_size = 54
+  worker_asg_min_size = 1
   worker_asg_namespace = "Travis/com"
   worker_asg_scale_in_threshold = 100
   worker_asg_scale_out_qty = 2
@@ -164,9 +163,8 @@ module "aws_asg_org" {
   site = "org"
   syslog_address = "${var.syslog_address_org}"
   worker_ami = "${var.worker_ami}"
-  worker_asg_max_size = 75
-  # worker_asg_min_size = 1
-  worker_asg_min_size = 60
+  worker_asg_max_size = 100
+  worker_asg_min_size = 1
   worker_asg_namespace = "Travis/org"
   worker_asg_scale_in_threshold = 64
   worker_asg_scale_out_qty = 2
