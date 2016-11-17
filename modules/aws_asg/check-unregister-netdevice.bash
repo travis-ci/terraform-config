@@ -2,6 +2,9 @@
 set -o errexit
 
 main() {
+  echo 'disabled!'
+  exit 0
+
   local run_d="${RUNDIR}"
   : "${run_d:=/var/tmp/travis-run.d}"
 
