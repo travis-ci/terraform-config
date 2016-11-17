@@ -112,7 +112,7 @@ resource "aws_launch_configuration" "workers" {
   instance_type = "${var.worker_instance_type}"
   security_groups = ["${split(",", var.security_groups)}"]
   user_data = "${data.template_file.cloud_config.rendered}"
-  enable_monitoring = false
+  enable_monitoring = true
   lifecycle {
     create_before_destroy = true
   }
