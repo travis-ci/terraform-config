@@ -1,53 +1,49 @@
 #!/usr/bin/env bash
 set -o errexit
+set -o pipefail
 
 main() {
+  local post_sleep="${POST_SHUTDOWN_SLEEP}"
+  local max_err="${MAX_ERROR_COUNT}"
   local run_d="${RUNDIR}"
+  local error_count
+  : "${post_sleep:=300}"
+  : "${max_err:=9}"
   : "${run_d:=/var/tmp/travis-run.d}"
 
-  local error_count
-  error_count="$(cat "${run_d}/implode.error-count" 2>/dev/null || echo 0)"
-
   if [[ -f "${run_d}/implode.confirm" ]]; then
-    __handle_implode_confirm "${run_d}"
+    __handle_implode_confirm "${run_d}" "${post_sleep}"
   fi
 
-  "${DMESG:-dmesg}" | if grep -q unregister_netdevice; then
-    __handle_found_unregister_netdevice "${error_count}" "${run_d}"
+  error_count="$(
+    "${DMESG:-dmesg}" \
+      | grep -c 'unregister_netdevice: waiting for lo to become free'
+  )"
+
+  if [[ "${error_count}" -gt "${max_err}" ]]; then
+    __handle_exceeded_max_unregister_netdevice "${run_d}" "${error_count}"
   fi
 }
 
 __handle_implode_confirm() {
   local run_d="${1}"
-
-  : "${POST_SHUTDOWN_SLEEP:=300}"
-  : "${SHUTDOWN:=/sbin/shutdown}"
+  local post_sleep="${2}"
 
   local reason
   reason="$(cat "${run_d}/implode.confirm" 2>/dev/null)"
   : "${reason:=not sure why}"
-  "${SHUTDOWN}" -P now "imploding because ${reason}"
+  "${SHUTDOWN:-/sbin/shutdown}" -P now "imploding because ${reason}"
   sleep "${POST_SHUTDOWN_SLEEP}"
   exit 0
 }
 
-__handle_found_unregister_netdevice() {
-  local error_count="${1}"
-  local run_d="${2}"
-
-  : "${DOCKER:=docker}"
-  : "${MAX_ERROR_COUNT:=4}"
-
-  let error_count+=1
-  echo "${error_count}" >"${run_d}/implode.error-count"
-
-  if [[ "${error_count}" -lt "${MAX_ERROR_COUNT}" ]]; then
-    return 0
-  fi
+__handle_exceeded_max_unregister_netdevice() {
+  local run_d="${1}"
+  local error_count="${2}"
 
   echo "detected unregister_netdevice via dmesg count=${error_count}" \
     | tee "${run_d}/implode"
-  "${DOCKER}" kill -s INT travis-worker
+  "${DOCKER:-docker}" kill -s INT travis-worker
 }
 
 main "$@"
