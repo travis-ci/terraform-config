@@ -21,7 +21,17 @@ run_check_unregister_netdevice() {
   run run_check_unregister_netdevice
   assert_cmd 'shutdown -P now.+imploding because i cannot go on'
   assert_cmd 'sleep 0.1'
-  [ "${status}" -eq 0 ]
+  [ "${status}" -eq 42 ]
+  [[ "${output}" =~ status=imploded ]]
+}
+
+@test "handles implosion confirmation with reasons unknown" {
+  touch "${RUNDIR}/implode.confirm"
+  run run_check_unregister_netdevice
+  assert_cmd 'shutdown -P now.+imploding because not sure why'
+  assert_cmd 'sleep 0.1'
+  [ "${status}" -eq 42 ]
+  [[ "${output}" =~ status=imploded ]]
 }
 
 @test "is a no-op if detected errors are below threshold" {
@@ -34,6 +44,7 @@ EOF
   run run_check_unregister_netdevice
   assert_cmd 'dmesg'
   [ "${status}" -eq 0 ]
+  [[ "${lines[0]}" =~ status=noop ]]
 }
 
 @test "triggers an implosion when errors exceed threshold" {
@@ -47,5 +58,6 @@ EOF
   assert_cmd 'dmesg'
   assert_cmd 'docker kill -s INT travis-worker'
   [ -f "${RUNDIR}/implode" ]
-  [ "${status}" -eq 0 ]
+  [ "${status}" -eq 86 ]
+  [[ "${output}" =~ status=imploding ]]
 }

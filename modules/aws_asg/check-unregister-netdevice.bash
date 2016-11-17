@@ -13,6 +13,7 @@ main() {
 
   if [[ -f "${run_d}/implode.confirm" ]]; then
     __handle_implode_confirm "${run_d}" "${post_sleep}"
+    __die imploded 42
   fi
 
   error_count="$(
@@ -22,7 +23,10 @@ main() {
 
   if [[ "${error_count}" -gt "${max_err}" ]]; then
     __handle_exceeded_max_unregister_netdevice "${run_d}" "${error_count}"
+    __die imploding 86
   fi
+
+  __die noop 0
 }
 
 __handle_implode_confirm() {
@@ -33,8 +37,7 @@ __handle_implode_confirm() {
   reason="$(cat "${run_d}/implode.confirm" 2>/dev/null)"
   : "${reason:=not sure why}"
   "${SHUTDOWN:-/sbin/shutdown}" -P now "imploding because ${reason}"
-  sleep "${POST_SHUTDOWN_SLEEP}"
-  exit 0
+  sleep "${post_sleep}"
 }
 
 __handle_exceeded_max_unregister_netdevice() {
@@ -44,6 +47,14 @@ __handle_exceeded_max_unregister_netdevice() {
   echo "detected unregister_netdevice via dmesg count=${error_count}" \
     | tee "${run_d}/implode"
   "${DOCKER:-docker}" kill -s INT travis-worker
+}
+
+__die() {
+  local status="${1}"
+  local code="${2}"
+  echo "time=$(date -u +%Y%m%dT%H%M%S) " \
+    "prog=$(basename "${0}") status=${status}"
+  exit "${code}"
 }
 
 main "$@"
