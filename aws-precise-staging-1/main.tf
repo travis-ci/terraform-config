@@ -13,6 +13,7 @@ variable "latest_docker_image_perl" {}
 variable "latest_docker_image_php" {}
 variable "latest_docker_image_python" {}
 variable "latest_docker_image_ruby" {}
+variable "latest_docker_image_worker" {}
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
 
@@ -116,7 +117,7 @@ module "aws_asg_com" {
   worker_docker_image_php = "${var.latest_docker_image_php}"
   worker_docker_image_python = "${var.latest_docker_image_python}"
   worker_docker_image_ruby = "${var.latest_docker_image_ruby}"
-  worker_docker_self_image = "quay.io/travisci/worker:v2.5.0-8-g19ea9c2"
+  worker_docker_self_image = "${var.latest_docker_image_worker}"
   worker_queue = "docker"
   worker_subnets = "${data.terraform_remote_state.vpc.workers_com_subnet_1b_id},${data.terraform_remote_state.vpc.workers_com_subnet_1e_id}"
 }
@@ -154,7 +155,7 @@ module "aws_asg_org" {
   worker_docker_image_php = "${var.latest_docker_image_php}"
   worker_docker_image_python = "${var.latest_docker_image_python}"
   worker_docker_image_ruby = "${var.latest_docker_image_ruby}"
-  worker_docker_self_image = "quay.io/travisci/worker:v2.5.0-8-g19ea9c2"
+  worker_docker_self_image = "${var.latest_docker_image_worker}"
   worker_queue = "docker"
   worker_subnets = "${data.terraform_remote_state.vpc.workers_org_subnet_1b_id},${data.terraform_remote_state.vpc.workers_org_subnet_1e_id}"
 }
