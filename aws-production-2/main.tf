@@ -93,7 +93,7 @@ module "aws_az_1e" {
 module "aws_asg_com" {
   source = "../modules/aws_asg"
   cyclist_auth_token = "${random_id.cyclist_token_com.hex}"
-  cyclist_version = "v0.1.0"
+  cyclist_version = "v0.4.0"
   docker_storage_dm_basesize = "19G"
   env = "${var.env}"
   env_short = "${var.env}"
@@ -136,7 +136,7 @@ module "aws_asg_com" {
 module "aws_asg_org" {
   source = "../modules/aws_asg"
   cyclist_auth_token = "${random_id.cyclist_token_org.hex}"
-  cyclist_version = "v0.1.0"
+  cyclist_version = "v0.4.0"
   docker_storage_dm_basesize = "19G"
   env = "${var.env}"
   env_short = "${var.env}"
