@@ -138,6 +138,16 @@ resource "aws_autoscaling_group" "workers" {
     "OldestInstance",
     "Default"
   ]
+  enabled_metrics = [
+    "GroupMinSize",
+    "GroupMaxSize",
+    "GroupDesiredCapacity",
+    "GroupInServiceInstances",
+    "GroupPendingInstances",
+    "GroupStandbyInstances",
+    "GroupTerminatingInstances",
+    "GroupTotalInstances"
+  ]
   tag {
     key = "Name"
     value = "${var.env}-${var.index}-worker-${var.site}-${var.worker_queue}"
