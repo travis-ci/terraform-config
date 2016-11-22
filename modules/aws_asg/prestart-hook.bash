@@ -11,7 +11,6 @@ main() {
     reason="$(cat "${RUNDIR}/implode" 2>/dev/null)"
     : "${reason:=not sure why}"
     echo "refusing to start travis-worker; instance imploding because ${reason}"
-    echo "${reason}" | tee /var/tmp/travis-run.d/implode.confirm
 
     curl \
       -f \
@@ -20,6 +19,7 @@ main() {
       -H "Authorization: token $CYCLIST_AUTH_TOKEN" \
       "$CYCLIST_URL/implosions/$(cat "${RUNDIR}/instance-id")"
 
+    echo "${reason}" | tee /var/tmp/travis-run.d/implode.confirm
     sleep "${POST_SHUTDOWN_SLEEP}"
     exit 1
   fi
