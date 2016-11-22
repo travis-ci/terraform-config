@@ -16,7 +16,7 @@ main() {
     curl \
       -f \
       -s \
-      -X POST
+      -X POST \
       -H "Authorization: token $CYCLIST_AUTH_TOKEN" \
       "$CYCLIST_URL/implosions/$(cat "${RUNDIR}/instance-id")"
 
