@@ -33,7 +33,7 @@ __heroku_dump_shell_config() {
     | jq -r ". | to_entries | .[] \
       | [\"export \", (.key|ascii_upcase), \"=\", (.value|@sh)] \
       | join(\"\")" \
-    | sort
+    | LC_ALL=C sort
 }
 
 __heroku_curl() {
