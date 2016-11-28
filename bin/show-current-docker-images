@@ -12,7 +12,7 @@ main() {
     }' \
     | sed 's/  *$//' \
     | tr '[:upper:]' '[:lower:]' \
-    | sort \
+    | LC_ALL=C sort \
     | uniq
 }
 
