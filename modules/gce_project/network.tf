@@ -62,23 +62,3 @@ resource "google_compute_firewall" "allow_ssh" {
     ports = [22]
   }
 }
-
-resource "google_compute_firewall" "allow_internal" {
-  name = "allow-internal"
-  network = "${google_compute_network.main.name}"
-  source_ranges = ["10.10.0.0/16"]
-
-  project = "${var.project}"
-
-  allow {
-    protocol = "icmp"
-  }
-
-  allow {
-    protocol = "tcp"
-  }
-
-  allow {
-    protocol = "udp"
-  }
-}
