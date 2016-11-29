@@ -84,19 +84,4 @@ resource "google_compute_firewall" "nomad_server_firewall" {
   target_tags = ["nomad-server"]
 }
 
-resource "google_compute_firewall" "nomad_server_http" {
-  name = "nomad-server-http"
-  description = "Allow Nomad HTTP access from anyhere"
-  network = "${var.gce_network}"
-  project = "${var.gce_project}"
-
-  allow {
-    protocol = "tcp"
-    ports = ["4646"]
-  }
-
-  source_ranges = ["0.0.0.0/0"]
-  target_tags = ["nomad-server"]
-}
-
 output "hashistack_server_ip" { value = ["${google_compute_instance.hashistack_server.*.network_interface.0.access_config.0.assigned_nat_ip}"] }
