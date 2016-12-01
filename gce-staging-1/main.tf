@@ -8,7 +8,7 @@ variable "gce_worker_image" { default = "eco-emissary-99515/travis-worker-147922
 variable "github_users" {}
 variable "index" { default = 1 }
 variable "job_board_url" {}
-variable "travisci_net_external_zone_id" {}
+variable "travisci_net_external_zone_id" { default = "Z2RI61YP4UWSIO" }
 
 provider "google" {
   project = "travis-staging-1"
