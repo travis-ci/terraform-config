@@ -3,28 +3,31 @@ variable "gce_bastion_image" { default = "eco-emissary-99515/bastion-1478778272"
 variable "gce_gcloud_zone" {}
 variable "gce_heroku_org" {}
 variable "gce_nat_image" { default = "eco-emissary-99515/nat-1478778271" }
-variable "gce_vault_consul_image" { default = "eco-emissary-99515/vault-consul-1473382992" }
+variable "gce_hashistack_server_image" { default = "eco-emissary-99515/hashistack-server-1480351044" }
 variable "gce_worker_image" { default = "eco-emissary-99515/travis-worker-1479227423" }
 variable "github_users" {}
 variable "index" { default = 1 }
 variable "job_board_url" {}
+variable "travisci_net_external_zone_id" {}
 
 provider "google" {
   project = "travis-staging-1"
 }
 
+provider "aws" {}
+
 provider "heroku" {}
 
-data "template_file" "vault_consul_cloud_init" {
-  template = "${file("${path.module}/vault-consul-init.tpl")}"
+data "template_file" "hashistack_server_cloud_init" {
+  template = "${file("${path.module}/hashistack-server-init.tpl")}"
   vars {
-    vault_consul_config = "${file("${path.module}/config/vault-consul-env")}"
+    hashistack_server_config = "${file("${path.module}/config/hashistack-server-env")}"
   }
 }
 
-module "vault_consul" {
-  source = "../modules/vault_consul"
-  cloud_init = "${data.template_file.vault_consul_cloud_init.rendered}"
+module "hashistack_server" {
+  source = "../modules/hashistack_server"
+  cloud_init = "${data.template_file.hashistack_server_cloud_init.rendered}"
   env = "${var.env}"
   gce_network = "${module.gce_project_1.gce_network}"
   gce_project = "travis-staging-1"
@@ -33,7 +36,17 @@ module "vault_consul" {
   gce_zone_suffix = "b"
   index = 1
   instance_count = 3
-  vault_consul_image = "${var.gce_vault_consul_image}"
+  hashistack_server_image = "${var.gce_hashistack_server_image}"
+}
+
+resource "aws_route53_record" "hashistack_server" {
+  zone_id = "${var.travisci_net_external_zone_id}"
+  name = "hashistack-server.gce-us-central1-b.travisci.net"
+  type = "A"
+  ttl = 5
+  records = [
+    "${module.hashistack_server.hashistack_server_ip}"
+  ]
 }
 
 module "gce_project_1" {
