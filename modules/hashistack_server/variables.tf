@@ -8,7 +8,7 @@ variable "gce_zone_suffix" {}
 variable "gce_machine_type" {
   default = "g1-small"
 }
-variable "vault_consul_image" {}
+variable "hashistack_server_image" {}
 
 variable "cloud_init" {}
 variable "gce_network" {}
