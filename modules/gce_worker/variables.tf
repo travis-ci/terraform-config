@@ -8,8 +8,7 @@ variable "index" {}
 variable "instance_count" {}
 variable "machine_type" { default = "n1-standard-1" }
 variable "project" {}
-variable "subnetwork_com" {}
-variable "subnetwork_org" {}
+variable "subnetwork_workers" {}
 variable "worker_image" {}
 variable "zone" {}
 variable "zone_suffix" {}

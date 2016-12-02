@@ -11,8 +11,7 @@ module "gce_worker_b" {
   instance_count = 1
   machine_type = "g1-small"
   project = "${var.project}"
-  subnetwork_com = "${google_compute_subnetwork.workers_com.name}"
-  subnetwork_org = "${google_compute_subnetwork.workers_org.name}"
+  subnetwork_workers = "${google_compute_subnetwork.workers.name}"
   worker_image = "${var.worker_image}"
   zone = "us-central1-b"
   zone_suffix = "b"
@@ -31,8 +30,7 @@ module "gce_worker_c" {
   instance_count = 1
   machine_type = "g1-small"
   project = "${var.project}"
-  subnetwork_com = "${google_compute_subnetwork.workers_com.name}"
-  subnetwork_org = "${google_compute_subnetwork.workers_org.name}"
+  subnetwork_workers = "${google_compute_subnetwork.workers.name}"
   worker_image = "${var.worker_image}"
   zone = "us-central1-c"
   zone_suffix = "c"

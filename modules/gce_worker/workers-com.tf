@@ -23,8 +23,14 @@ resource "google_compute_instance" "worker_com" {
   }
 
   network_interface {
-    subnetwork = "${var.subnetwork_com}"
+    subnetwork = "${var.subnetwork_workers}"
   }
+
+  # apparently not working :-/
+  # maybe need to re-bake worker on top of a newer gce ubuntu image
+  #metadata {
+  #  "block-project-ssh-keys" = "true"
+  #}
 
   metadata_startup_script = "${data.template_file.worker_cloud_init_com.rendered}"
 }
