@@ -9,6 +9,9 @@ variable "instance_count" {}
 variable "machine_type" { default = "n1-standard-1" }
 variable "project" {}
 variable "subnetwork_workers" {}
+variable "syslog_address_com" {}
+variable "syslog_address_org" {}
+variable "worker_docker_self_image" {}
 variable "worker_image" {}
 variable "zone" {}
 variable "zone_suffix" {}

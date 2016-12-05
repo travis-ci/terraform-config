@@ -83,10 +83,13 @@ resource "google_compute_firewall" "allow_internal" {
   }
 }
 
-/*resource "google_compute_firewall" "allow_nat" {
+resource "google_compute_firewall" "allow_nat" {
   name = "allow-nat"
   network = "${google_compute_network.main.name}"
-  source_ranges = ["0.0.0.0/0"]
+  source_ranges = [
+    "${google_compute_subnetwork.build_org.ip_cidr_range}",
+    "${google_compute_subnetwork.build_com.ip_cidr_range}",
+  ]
   target_tags = ["nat"]
 
   project = "${var.project}"
@@ -102,4 +105,4 @@ resource "google_compute_firewall" "allow_internal" {
   allow {
     protocol = "udp"
   }
-}*/
+}
