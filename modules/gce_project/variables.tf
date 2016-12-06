@@ -11,8 +11,6 @@ variable "gcloud_zone" {}
 variable "github_users" {}
 variable "heroku_org" {}
 variable "index" {}
-variable "instance_count_com" {}
-variable "instance_count_org" {}
 variable "nat_image" {}
 variable "nat_machine_type" {}
 variable "project" {}
@@ -24,3 +22,5 @@ variable "worker_config_com" {}
 variable "worker_config_org" {}
 variable "worker_docker_self_image" { default = "quay.io/travisci/worker:v2.5.0" }
 variable "worker_image" {}
+variable "worker_instance_count_com" {}
+variable "worker_instance_count_org" {}

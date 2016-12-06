@@ -64,9 +64,6 @@ module "gce_project_1" {
   gcloud_zone = "${var.gce_gcloud_zone}"
   heroku_org = "${var.gce_heroku_org}"
   index = "${var.index}"
-  # instance count must be a multiple of number of zones
-  instance_count_com = 2
-  instance_count_org = 2
   nat_image = "${var.gce_nat_image}"
   nat_machine_type = "g1-small"
   project = "travis-staging-1"
@@ -78,4 +75,7 @@ module "gce_project_1" {
   worker_config_org = "${file("${path.module}/config/worker-env-org")}"
   worker_docker_self_image = "quay.io/travisci/worker:v2.5.0-8-g19ea9c2"
   worker_image = "${var.gce_worker_image}"
+  # instance count must be a multiple of number of zones (currently 2)
+  worker_instance_count_com = 2
+  worker_instance_count_org = 2
 }
