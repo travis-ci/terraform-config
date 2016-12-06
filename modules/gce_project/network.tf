@@ -47,16 +47,30 @@ resource "google_compute_subnetwork" "build_com" {
   project = "${var.project}"
 }
 
-resource "google_compute_firewall" "allow_ssh" {
-  name = "allow-ssh"
+resource "google_compute_firewall" "allow_public_ssh" {
+  name = "allow-public-ssh"
   network = "${google_compute_network.main.name}"
   source_ranges = ["0.0.0.0/0"]
+  target_tags = ["bastion"]
 
   project = "${var.project}"
 
   allow {
     protocol = "tcp"
     ports = [22]
+  }
+}
+
+resource "google_compute_firewall" "allow_public_icmp" {
+  name = "allow-public-icmp"
+  network = "${google_compute_network.main.name}"
+  source_ranges = ["0.0.0.0/0"]
+  target_tags = ["nat", "bastion"]
+
+  project = "${var.project}"
+
+  allow {
+    protocol = "icmp"
   }
 }
 
@@ -83,8 +97,8 @@ resource "google_compute_firewall" "allow_internal" {
   }
 }
 
-resource "google_compute_firewall" "allow_nat" {
-  name = "allow-nat"
+resource "google_compute_firewall" "allow_build_nat" {
+  name = "allow-build-nat"
   network = "${google_compute_network.main.name}"
   source_ranges = [
     "${google_compute_subnetwork.build_org.ip_cidr_range}",
@@ -104,18 +118,5 @@ resource "google_compute_firewall" "allow_nat" {
 
   allow {
     protocol = "udp"
-  }
-}
-
-resource "google_compute_firewall" "allow_nat_icmp" {
-  name = "allow-nat-icmp"
-  network = "${google_compute_network.main.name}"
-  source_ranges = ["0.0.0.0/0"]
-  target_tags = ["nat", "bastion"]
-
-  project = "${var.project}"
-
-  allow {
-    protocol = "icmp"
   }
 }
