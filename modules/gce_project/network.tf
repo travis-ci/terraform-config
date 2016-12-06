@@ -106,3 +106,16 @@ resource "google_compute_firewall" "allow_nat" {
     protocol = "udp"
   }
 }
+
+resource "google_compute_firewall" "allow_nat_icmp" {
+  name = "allow-nat-icmp"
+  network = "${google_compute_network.main.name}"
+  source_ranges = ["0.0.0.0/0"]
+  target_tags = ["nat", "bastion"]
+
+  project = "${var.project}"
+
+  allow {
+    protocol = "icmp"
+  }
+}
