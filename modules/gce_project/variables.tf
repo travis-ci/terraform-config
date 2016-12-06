@@ -16,6 +16,7 @@ variable "nat_machine_type" {}
 variable "project" {}
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
+variable "travisci_net_external_zone_id" {}
 variable "worker_account_json_com" {}
 variable "worker_account_json_org" {}
 variable "worker_config_com" {}
