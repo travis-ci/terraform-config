@@ -1,3 +1,19 @@
+resource "google_compute_address" "bastion-b" {
+  name = "bastion-b"
+  region = "us-central1"
+  project = "${var.project}"
+}
+
+resource "aws_route53_record" "bastion-b" {
+  zone_id = "${var.travisci_net_external_zone_id}"
+  name = "bastion-${var.env}.gce-us-central1-b.travisci.net"
+  type = "A"
+  ttl = 5
+  records = [
+    "${google_compute_address.bastion-b.address}"
+  ]
+}
+
 data "template_file" "bastion_cloud_init" {
   template = "${file("${path.module}/bastion-cloud-init.tpl")}"
 
@@ -23,7 +39,7 @@ resource "google_compute_instance" "bastion-b" {
   network_interface {
     subnetwork = "public"
     access_config {
-      # Ephemeral IP
+      nat_ip = "${google_compute_address.bastion-b.address}"
     }
   }
 
