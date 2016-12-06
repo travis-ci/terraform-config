@@ -1,3 +1,9 @@
+resource "google_compute_address" "nat-b" {
+  name = "nat-b"
+  region = "us-central1"
+  project = "${var.project}"
+}
+
 resource "google_compute_instance" "nat-b" {
   name = "${var.env}-${var.index}-nat-b"
   machine_type = "${var.nat_machine_type}"
@@ -15,7 +21,7 @@ resource "google_compute_instance" "nat-b" {
   network_interface {
     subnetwork = "public"
     access_config {
-      # Ephemeral IP
+      nat_ip = "${google_compute_address.nat-b.address}"
     }
   }
 }
