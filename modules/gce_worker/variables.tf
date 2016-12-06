@@ -5,7 +5,8 @@ variable "config_org" {}
 variable "env" {}
 variable "github_users" {}
 variable "index" {}
-variable "instance_count" {}
+variable "instance_count_com" {}
+variable "instance_count_org" {}
 variable "machine_type" { default = "n1-standard-1" }
 variable "project" {}
 variable "subnetwork_workers" {}

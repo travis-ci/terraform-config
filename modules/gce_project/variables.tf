@@ -11,6 +11,8 @@ variable "gcloud_zone" {}
 variable "github_users" {}
 variable "heroku_org" {}
 variable "index" {}
+variable "instance_count_com" {}
+variable "instance_count_org" {}
 variable "nat_image" {}
 variable "nat_machine_type" {}
 variable "project" {}

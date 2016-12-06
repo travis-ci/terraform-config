@@ -64,6 +64,9 @@ module "gce_project_1" {
   gcloud_zone = "${var.gce_gcloud_zone}"
   heroku_org = "${var.gce_heroku_org}"
   index = "${var.index}"
+  # instance count must be a multiple of number of zones
+  instance_count_com = 2
+  instance_count_org = 2
   nat_image = "${var.gce_nat_image}"
   nat_machine_type = "g1-small"
   project = "travis-staging-1"

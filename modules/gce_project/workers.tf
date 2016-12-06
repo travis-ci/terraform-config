@@ -1,3 +1,5 @@
+variable "zone_count" { default = "2" }
+
 module "gce_worker_b" {
   source = "../gce_worker"
 
@@ -8,7 +10,8 @@ module "gce_worker_b" {
   env = "${var.env}"
   github_users = "${var.github_users}"
   index = "${var.index}"
-  instance_count = 1
+  instance_count_com = "${var.instance_count_com / var.zone_count}"
+  instance_count_org = "${var.instance_count_org / var.zone_count}"
   machine_type = "g1-small"
   project = "${var.project}"
   subnetwork_workers = "${google_compute_subnetwork.workers.name}"
@@ -30,7 +33,8 @@ module "gce_worker_c" {
   env = "${var.env}"
   github_users = "${var.github_users}"
   index = "${var.index}"
-  instance_count = 1
+  instance_count_com = "${var.instance_count_com / var.zone_count}"
+  instance_count_org = "${var.instance_count_org / var.zone_count}"
   machine_type = "g1-small"
   project = "${var.project}"
   subnetwork_workers = "${google_compute_subnetwork.workers.name}"
