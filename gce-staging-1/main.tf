@@ -65,6 +65,7 @@ module "gce_project_1" {
   heroku_org = "${var.gce_heroku_org}"
   index = "${var.index}"
   nat_image = "${var.gce_nat_image}"
+  nat_machine_type = "g1-small"
   project = "travis-staging-1"
   syslog_address_com = "${var.syslog_address_com}"
   syslog_address_org = "${var.syslog_address_org}"

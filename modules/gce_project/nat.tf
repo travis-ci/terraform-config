@@ -1,6 +1,6 @@
 resource "google_compute_instance" "nat-b" {
   name = "${var.env}-${var.index}-nat-b"
-  machine_type = "g1-small"
+  machine_type = "${var.nat_machine_type}"
   zone = "us-central1-b"
   tags = ["nat", "${var.env}"]
   can_ip_forward = true
