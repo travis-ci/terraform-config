@@ -20,6 +20,7 @@ module "macstadium_infrastructure" {
   internal_network_label = "dvPortGroup-Internal"
   management_network_label = "dvPortGroup-Mgmt"
   jobs_network_label = "dvPortGroup-Jobs"
+  wjb_num = 1
 }
 
 module "jupiter_brain_prod" {
