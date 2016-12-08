@@ -6,6 +6,23 @@ variable "env" {}
 variable "index" {}
 variable "port_suffix" {}
 
+data "template_file" "jupiter_brain_install" {
+  template = "${file("${path.module}/install-jupiter-brain.sh")}"
+
+  vars {
+    env = "${var.env}"
+    version = "${var.version}"
+  }
+}
+
+data "template_file" "jupiter_brain_upstart" {
+  template = "${file("${path.module}/jupiter-brain.conf.tpl")}"
+
+  vars {
+    env = "${var.env}"
+  }
+}
+
 resource "null_resource" "jupiter_brain" {
   triggers {
     version = "${var.version}"
@@ -42,64 +59,11 @@ EOF
   }
 
   provisioner "file" {
-    content = <<EOF
-description "Jupiter Brain (jupiter-brain-${var.env})"
-
-start on (started networking)
-stop on runlevel [!2345]
-
-instance $INST
-
-setuid jupiter-brain
-setgid nogroup
-
-respawn
-respawn limit 10 90
-
-script
-  JUPITER_BRAIN_RUN_DIR=/var/tmp/run/jupiter-brain
-
-  if [ -f /etc/default/$UPSTART_JOB ]; then
-    . /etc/default/$UPSTART_JOB
-  fi
-
-  if [ -f /etc/default/$UPSTART_JOB-$INST ] ; then
-    . /etc/default/$UPSTART_JOB-$INST
-  fi
-
-  cp -v /usr/local/bin/jb-server-${var.env} $JUPITER_BRAIN_RUN_DIR/$UPSTART_JOB-$INST
-  chmod u+x $JUPITER_BRAIN_RUN_DIR/$UPSTART_JOB-$INST
-  exec $JUPITER_BRAIN_RUN_DIR/$UPSTART_JOB-$INST
-end script
-
-post-stop script
-  JUPITER_BRAIN_RUN_DIR=/var/tmp/run/jupiter-brain
-
-  if [ -f /etc/default/$UPSTART_JOB ]; then
-    . /etc/default/$UPSTART_JOB
-  fi
-
-  rm -f $JUPITER_BRAIN_RUN_DIR/$UPSTART_JOB-$INST
-end script
-
-# vim:filetype=upstart
-EOF
+    content = "${data.template_file.jupiter_brain_upstart.rendered}"
     destination = "/tmp/init-jupiter-brain-${var.env}.conf"
   }
 
   provisioner "remote-exec" {
-    inline = [
-      "getent passwd jupiter-brain >/dev/null || sudo useradd -r -s /usr/bin/nologin jupiter-brain",
-      "sudo mv /tmp/etc-default-jupiter-brain-${var.env} /etc/default/jupiter-brain-${var.env}",
-      "sudo mv /tmp/etc-default-jupiter-brain-${var.env}-blue /etc/default/jupiter-brain-${var.env}-blue",
-      "sudo mv /tmp/etc-default-jupiter-brain-${var.env}-green /etc/default/jupiter-brain-${var.env}-green",
-      "sudo chown jupiter-brain /etc/default/jupiter-brain-${var.env} /etc/default/jupiter-brain-${var.env}-blue /etc/default/jupiter-brain-${var.env}-green",
-      "sudo chmod 0600 /etc/default/jupiter-brain-${var.env} /etc/default/jupiter-brain-${var.env}-blue /etc/default/jupiter-brain-${var.env}-green",
-      "sudo mkdir -p /var/tmp/run/jupiter-brain",
-      "sudo chown jupiter-brain /var/tmp/run/jupiter-brain",
-      "sudo mv /tmp/init-jupiter-brain-${var.env}.conf /etc/init/jupiter-brain-${var.env}.conf",
-      "sudo wget -O /usr/local/bin/jb-server-${var.env} https://s3.amazonaws.com/jupiter-brain-artifacts/travis-ci/jupiter-brain/${var.version}/build/linux/amd64/jb-server",
-      "sudo chmod 755 /usr/local/bin/jb-server-${var.env}",
-    ]
+    inline = ["${data.template_file.jupiter_brain_install.rendered}"]
   }
 }
