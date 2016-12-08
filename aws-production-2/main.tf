@@ -8,7 +8,7 @@ variable "rabbitmq_username_com" {}
 variable "rabbitmq_username_org" {}
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
-variable "worker_ami" { default = "ami-ccedc5db" }
+variable "worker_ami" { default = "ami-ccfcfadb" }
 
 provider "aws" {}
 
