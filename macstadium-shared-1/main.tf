@@ -3,6 +3,7 @@ variable "travisci_net_external_zone_id" { default = "Z2RI61YP4UWSIO" }
 variable "macstadium_vanilla_image" { default = "travis-ci-ubuntu14.04-internal-vanilla-1481140635" }
 variable "jupiter_brain_prod_version" { default = "v0.2.0-58-gce0b45a" }
 variable "jupiter_brain_staging_version" { default = "v0.2.0-58-gce0b45a" }
+variable "travis_worker_staging_version" { default = "v2.5.0-46-g0e3fae5" }
 variable "ssh_user" {
   description = "your username on the wjb instances"
 }
@@ -45,3 +46,24 @@ module "jupiter_brain_staging" {
   port_suffix = 2
 }
 
+module "worker_org_staging_1" {
+  source = "../modules/macstadium_go_worker"
+  ssh_ip_address = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+  version = "${var.travis_worker_staging_version}"
+  config_path = "${path.module}/config/travis-worker-org-staging-1"
+  vm_ssh_key_path = "${path.module}/config/travis-vm-ssh-key"
+  env = "org-staging-1"
+  index = "${var.index}"
+}
+
+module "worker_org_staging_2" {
+  source = "../modules/macstadium_go_worker"
+  ssh_ip_address = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+  version = "${var.travis_worker_staging_version}"
+  config_path = "${path.module}/config/travis-worker-org-staging-2"
+  vm_ssh_key_path = "${path.module}/config/travis-vm-ssh-key"
+  env = "org-staging-2"
+  index = "${var.index}"
+}
