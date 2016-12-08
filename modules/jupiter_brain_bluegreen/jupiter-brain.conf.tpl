@@ -22,6 +22,11 @@ script
     . /etc/default/$UPSTART_JOB-$INST
   fi
 
+  mkfifo $JUPITER_BRAIN_RUN_DIR/$UPSTART_JOB-$INST-output
+  ( logger -t $UPSTART_JOB-$INST < $JUPITER_BRAIN_RUN_DIR/$UPSTART_JOB-$INST-output & )
+  exec > $JUPITER_BRAIN_RUN_DIR/$UPSTART_JOB-$INST-output 2>&1
+  rm $JUPITER_BRAIN_RUN_DIR/$UPSTART_JOB-$INST-output
+
   cp -v /usr/local/bin/jb-server-${env} $JUPITER_BRAIN_RUN_DIR/$UPSTART_JOB-$INST
   chmod u+x $JUPITER_BRAIN_RUN_DIR/$UPSTART_JOB-$INST
   exec $JUPITER_BRAIN_RUN_DIR/$UPSTART_JOB-$INST
