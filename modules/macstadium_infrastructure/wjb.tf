@@ -5,6 +5,7 @@ resource "vsphere_virtual_machine" "wjb" {
   memory = 4096
   datacenter = "${var.datacenter}"
   cluster = "${var.cluster}"
+  domain = "macstadium-us-se-1.travisci.net"
 
   network_interface {
     label = "${var.internal_network_label}"
