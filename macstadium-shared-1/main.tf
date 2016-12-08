@@ -67,3 +67,23 @@ module "worker_org_staging_2" {
   env = "org-staging-2"
   index = "${var.index}"
 }
+
+module "haproxy" {
+  source = "../modules/haproxy"
+  ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+
+  config {
+    name = "jupiter-brain-prod"
+    frontend_port = "8081"
+    backend_port_blue = "9081"
+    backend_port_green = "10081"
+  }
+
+  config {
+    name = "jupiter-brain-staging"
+    frontend_port = "8082"
+    backend_port_blue = "9082"
+    backend_port_green = "10082"
+  }
+}
