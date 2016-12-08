@@ -1,6 +1,22 @@
+resource "google_compute_address" "nat-b" {
+  name = "nat-b"
+  region = "us-central1"
+  project = "${var.project}"
+}
+
+resource "aws_route53_record" "nat-b" {
+  zone_id = "${var.travisci_net_external_zone_id}"
+  name = "nat-${var.env}.gce-us-central1-b.travisci.net"
+  type = "A"
+  ttl = 5
+  records = [
+    "${google_compute_address.nat-b.address}"
+  ]
+}
+
 resource "google_compute_instance" "nat-b" {
   name = "${var.env}-${var.index}-nat-b"
-  machine_type = "g1-small"
+  machine_type = "${var.nat_machine_type}"
   zone = "us-central1-b"
   tags = ["nat", "${var.env}"]
   can_ip_forward = true
@@ -15,7 +31,7 @@ resource "google_compute_instance" "nat-b" {
   network_interface {
     subnetwork = "public"
     access_config {
-      # Ephemeral IP
+      nat_ip = "${google_compute_address.nat-b.address}"
     }
   }
 }
