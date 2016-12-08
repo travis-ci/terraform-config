@@ -7,6 +7,7 @@ variable "travis_worker_staging_version" { default = "v2.5.0-46-g0e3fae5" }
 variable "ssh_user" {
   description = "your username on the wjb instances"
 }
+variable "threatstack_key" {}
 
 provider "aws" {}
 provider "vsphere" {}
@@ -22,6 +23,8 @@ module "macstadium_infrastructure" {
   management_network_label = "dvPortGroup-Mgmt"
   jobs_network_label = "dvPortGroup-Jobs"
   wjb_num = 1
+  ssh_user = "${var.ssh_user}"
+  threatstack_key = "${var.threatstack_key}"
 }
 
 module "jupiter_brain_prod" {
