@@ -5,6 +5,7 @@ variable "config_path" {}
 variable "vm_ssh_key_path" {}
 variable "env" {}
 variable "index" {}
+variable "host_id" {}
 
 data "template_file" "worker_install" {
   template = "${file("${path.module}/install-worker.sh")}\nexport TRAVIS_WORKER_LIBRATO_SOURCE='travis-worker-macstadium-$${index}-$${env}'"
@@ -32,6 +33,7 @@ resource "null_resource" "worker" {
     upstart_script_signature = "${sha256(data.template_file.worker_upstart.rendered)}"
     ssh_key_signature = "${sha256(file(var.vm_ssh_key_path))}"
     name = "${var.env}-${var.index}"
+    host_id = "${var.host_id}"
   }
 
   connection {

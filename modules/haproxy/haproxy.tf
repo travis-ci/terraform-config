@@ -1,6 +1,7 @@
 variable "ssh_host" {}
 variable "ssh_user" {}
 variable "config" { type = "list" }
+variable "host_id" {}
 
 data "template_file" "haproxy_mappings" {
   template = <<EOF
@@ -30,6 +31,7 @@ resource "null_resource" "haproxy" {
   triggers {
     config_file_signature = "${sha256(file("${path.module}/haproxy.cfg"))}"
     config_signature = "${sha256(join("\n", data.template_file.haproxy_mappings.*.rendered))}"
+    host_id = "${var.host_id}"
   }
 
   connection {

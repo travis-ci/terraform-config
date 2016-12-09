@@ -5,6 +5,7 @@ variable "config_path" {}
 variable "env" {}
 variable "index" {}
 variable "port_suffix" {}
+variable "host_id" {}
 
 data "template_file" "jupiter_brain_install" {
   template = "${file("${path.module}/install-jupiter-brain.sh")}"
@@ -29,6 +30,7 @@ resource "null_resource" "jupiter_brain" {
     config_signature = "${sha256(file(var.config_path))}"
     name = "${var.env}-${var.index}"
     port_suffix = "${var.port_suffix}"
+    host_id = "${var.host_id}"
   }
 
   connection {

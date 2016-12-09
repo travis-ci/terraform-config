@@ -29,6 +29,7 @@ module "macstadium_infrastructure" {
 
 module "jupiter_brain_prod" {
   source = "../modules/jupiter_brain_bluegreen"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_ip_address = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user = "${var.ssh_user}"
   version = "${var.jupiter_brain_prod_version}"
@@ -40,6 +41,7 @@ module "jupiter_brain_prod" {
 
 module "jupiter_brain_staging" {
   source = "../modules/jupiter_brain_bluegreen"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_ip_address = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user = "${var.ssh_user}"
   version = "${var.jupiter_brain_prod_version}"
@@ -51,6 +53,7 @@ module "jupiter_brain_staging" {
 
 module "worker_org_staging_1" {
   source = "../modules/macstadium_go_worker"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_ip_address = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user = "${var.ssh_user}"
   version = "${var.travis_worker_staging_version}"
@@ -62,6 +65,7 @@ module "worker_org_staging_1" {
 
 module "worker_org_staging_2" {
   source = "../modules/macstadium_go_worker"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_ip_address = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user = "${var.ssh_user}"
   version = "${var.travis_worker_staging_version}"
@@ -73,6 +77,7 @@ module "worker_org_staging_2" {
 
 module "haproxy" {
   source = "../modules/haproxy"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user = "${var.ssh_user}"
 

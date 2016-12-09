@@ -45,3 +45,4 @@ resource "vsphere_virtual_machine" "wjb" {
 }
 
 output "wjb_ip" { value = "${vsphere_virtual_machine.wjb.network_interface.0.ipv4_address}" }
+output "wjb_uuid" { value = "${vsphere_virtual_machine.wjb.uuid}" }
