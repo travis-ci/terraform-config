@@ -1,4 +1,4 @@
-variable "ssh_ip_address" {}
+variable "ssh_host" {}
 variable "ssh_user" {}
 variable "version" {}
 variable "config_path" {}
@@ -37,7 +37,7 @@ resource "null_resource" "worker" {
   }
 
   connection {
-    host = "${var.ssh_ip_address}"
+    host = "${var.ssh_host}"
     user = "${var.ssh_user}"
     agent = true
   }

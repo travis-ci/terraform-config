@@ -25,53 +25,55 @@ module "macstadium_infrastructure" {
   wjb_num = 1
   ssh_user = "${var.ssh_user}"
   threatstack_key = "${var.threatstack_key}"
+  librato_agent_token = "${var.librato_agent_token}"
 }
 
-module "jupiter_brain_prod" {
+module "jupiter_brain_prod_com" {
   source = "../modules/jupiter_brain_bluegreen"
   host_id = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_ip_address = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user = "${var.ssh_user}"
   version = "${var.jupiter_brain_prod_version}"
-  config_path = "${path.module}/config/jupiter-brain-prod-env"
-  env = "prod"
+  config_path = "${path.module}/config/jupiter-brain-prod-com-env"
+  env = "com-prod"
   index = "${var.index}"
-  port_suffix = 1
+  port_suffix = 3
 }
 
-module "jupiter_brain_staging" {
+module "jupiter_brain_staging_com" {
   source = "../modules/jupiter_brain_bluegreen"
   host_id = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_ip_address = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user = "${var.ssh_user}"
   version = "${var.jupiter_brain_prod_version}"
-  config_path = "${path.module}/config/jupiter-brain-staging-env"
-  env = "staging"
+  config_path = "${path.module}/config/jupiter-brain-staging-com-env"
+  env = "staging-com"
   index = "${var.index}"
-  port_suffix = 2
+  port_suffix = 4
 }
 
-module "worker_org_staging_1" {
+
+module "worker_com_staging_1" {
   source = "../modules/macstadium_go_worker"
   host_id = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_ip_address = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user = "${var.ssh_user}"
   version = "${var.travis_worker_staging_version}"
-  config_path = "${path.module}/config/travis-worker-org-staging-1"
+  config_path = "${path.module}/config/travis-worker-com-staging-1"
   vm_ssh_key_path = "${path.module}/config/travis-vm-ssh-key"
-  env = "org-staging-1"
+  env = "com-staging-1"
   index = "${var.index}"
 }
 
-module "worker_org_staging_2" {
+module "worker_com_staging_2" {
   source = "../modules/macstadium_go_worker"
   host_id = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_ip_address = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user = "${var.ssh_user}"
   version = "${var.travis_worker_staging_version}"
-  config_path = "${path.module}/config/travis-worker-org-staging-2"
+  config_path = "${path.module}/config/travis-worker-com-staging-2"
   vm_ssh_key_path = "${path.module}/config/travis-vm-ssh-key"
-  env = "org-staging-2"
+  env = "com-staging-2"
   index = "${var.index}"
 }
 
@@ -82,16 +84,16 @@ module "haproxy" {
   ssh_user = "${var.ssh_user}"
 
   config {
-    name = "jupiter-brain-prod"
-    frontend_port = "8081"
-    backend_port_blue = "9081"
-    backend_port_green = "10081"
+    name = "jupiter-brain-staging-com"
+    frontend_port = "8084"
+    backend_port_blue = "9084"
+    backend_port_green = "10084"
   }
 
   config {
-    name = "jupiter-brain-staging"
-    frontend_port = "8082"
-    backend_port_blue = "9082"
-    backend_port_green = "10082"
+    name = "jupiter-brain-prod-com"
+    frontend_port = "8083"
+    backend_port_blue = "9083"
+    backend_port_green = "10083"
   }
 }

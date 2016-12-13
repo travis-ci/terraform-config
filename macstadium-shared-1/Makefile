@@ -17,10 +17,26 @@ $(CONFIG_FILES):
 	mkdir -p config
 	cp -v $$TRAVIS_KEYCHAIN_DIR/travis-keychain/macstadium/travis-vm-ssh-key config/
 	trvs generate-config -p JUPITER_BRAIN -f env jupiter-brain production-1 \
-		| sed 's/^/export /' >config/jupiter-brain-prod-env
+		| sed 's/^/export /' >config/jupiter-brain-prod-org-env
 	trvs generate-config -p JUPITER_BRAIN -f env jupiter-brain staging-1 \
-		| sed 's/^/export /' >config/jupiter-brain-staging-env
+		| sed 's/^/export /' >config/jupiter-brain-staging-org-env
 	trvs generate-config -p TRAVIS_WORKER -f env macstadium-workers staging-1-1 \
 		| sed 's/^/export /' >config/travis-worker-org-staging-1
 	trvs generate-config -p TRAVIS_WORKER -f env macstadium-workers staging-1-2 \
 		| sed 's/^/export /' >config/travis-worker-org-staging-2
+	trvs generate-config -p TRAVIS_WORKER -f env macstadium-workers production-1-1 \
+		| sed 's/^/export /' >config/travis-worker-org-prod-1
+	trvs generate-config -p TRAVIS_WORKER -f env macstadium-workers production-1-2 \
+		| sed 's/^/export /' >config/travis-worker-org-prod-2
+	trvs generate-config --pro -p JUPITER_BRAIN -f env jupiter-brain production-1 \
+		| sed 's/^/export /' >config/jupiter-brain-prod-com-env
+	trvs generate-config --pro -p JUPITER_BRAIN -f env jupiter-brain staging-1 \
+		| sed 's/^/export /' >config/jupiter-brain-staging-com-env
+	trvs generate-config --pro -p TRAVIS_WORKER -f env macstadium-workers staging-1-1 \
+		| sed 's/^/export /' >config/travis-worker-com-staging-1
+	trvs generate-config --pro -p TRAVIS_WORKER -f env macstadium-workers staging-1-2 \
+		| sed 's/^/export /' >config/travis-worker-com-staging-2
+	trvs generate-config --pro -p TRAVIS_WORKER -f env macstadium-workers production-1-1 \
+		| sed 's/^/export /' >config/travis-worker-com-prod-1
+	trvs generate-config --pro -p TRAVIS_WORKER -f env macstadium-workers production-1-2 \
+		| sed 's/^/export /' >config/travis-worker-com-prod-2
