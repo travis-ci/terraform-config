@@ -48,7 +48,8 @@ resource "null_resource" "haproxy" {
   provisioner "remote-exec" {
     inline = [
       "DEBIAN_FRONTEND=noninteractive sudo apt-get -y install haproxy",
-      "sudo mv /tmp/haproxy.cfg /etc/haproxy/haproxy.cfg"
+      "sudo mv /tmp/haproxy.cfg /etc/haproxy/haproxy.cfg",
+      "echo ENABLED=1 | sudo tee /etc/default/haproxy"
     ]
   }
 }
