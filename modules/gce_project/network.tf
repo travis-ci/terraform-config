@@ -9,7 +9,7 @@ output "gce_network" {
 
 resource "google_compute_subnetwork" "public" {
   name = "public"
-  ip_cidr_range = "10.10.1.0/24"
+  ip_cidr_range = "10.10.0.0/22"
   network = "${google_compute_network.main.self_link}"
   region = "us-central1"
 
@@ -22,7 +22,7 @@ output "gce_subnetwork_public" {
 
 resource "google_compute_subnetwork" "workers" {
   name = "workers"
-  ip_cidr_range = "10.10.2.0/24"
+  ip_cidr_range = "10.10.4.0/22"
   network = "${google_compute_network.main.self_link}"
   region = "us-central1"
 
@@ -31,7 +31,7 @@ resource "google_compute_subnetwork" "workers" {
 
 resource "google_compute_subnetwork" "build_org" {
   name = "buildorg"
-  ip_cidr_range = "10.10.3.0/24"
+  ip_cidr_range = "10.10.8.0/22"
   network = "${google_compute_network.main.self_link}"
   region = "us-central1"
 
@@ -40,7 +40,7 @@ resource "google_compute_subnetwork" "build_org" {
 
 resource "google_compute_subnetwork" "build_com" {
   name = "buildcom"
-  ip_cidr_range = "10.10.4.0/24"
+  ip_cidr_range = "10.10.12.0/22"
   network = "${google_compute_network.main.self_link}"
   region = "us-central1"
 
