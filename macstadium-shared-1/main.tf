@@ -25,7 +25,6 @@ module "macstadium_infrastructure" {
   wjb_num = 1
   ssh_user = "${var.ssh_user}"
   threatstack_key = "${var.threatstack_key}"
-  librato_agent_token = "${var.librato_agent_token}"
 }
 
 module "jupiter_brain_prod_com" {
