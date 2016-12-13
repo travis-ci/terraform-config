@@ -46,7 +46,7 @@ module "jupiter_brain_staging_com" {
   ssh_user = "${var.ssh_user}"
   version = "${var.jupiter_brain_prod_version}"
   config_path = "${path.module}/config/jupiter-brain-staging-com-env"
-  env = "staging-com"
+  env = "com-staging"
   index = "${var.index}"
   port_suffix = 4
 }
