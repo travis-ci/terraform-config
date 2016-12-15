@@ -20,6 +20,8 @@ $(CONFIG_FILES):
 		| sed 's/^/export /' >config/jupiter-brain-prod-org-env
 	trvs generate-config -p JUPITER_BRAIN -f env jupiter-brain staging-1 \
 		| sed 's/^/export /' >config/jupiter-brain-staging-org-env
+	trvs generate-config -p JUPITER_BRAIN -f env jupiter-brain custom-1 \
+		| sed 's/^/export /' >config/jupiter-brain-custom-1-env
 	trvs generate-config -p TRAVIS_WORKER -f env macstadium-workers staging-1-1 \
 		| sed 's/^/export /' >config/travis-worker-org-staging-1
 	trvs generate-config -p TRAVIS_WORKER -f env macstadium-workers staging-1-2 \
@@ -28,6 +30,8 @@ $(CONFIG_FILES):
 		| sed 's/^/export /' >config/travis-worker-org-prod-1
 	trvs generate-config -p TRAVIS_WORKER -f env macstadium-workers production-1-2 \
 		| sed 's/^/export /' >config/travis-worker-org-prod-2
+	trvs generate-config -p TRAVIS_WORKER -f env macstadium-workers custom-1 \
+		| sed 's/^/export /' >config/travis-worker-custom-1
 	trvs generate-config --pro -p JUPITER_BRAIN -f env jupiter-brain production-1 \
 		| sed 's/^/export /' >config/jupiter-brain-prod-com-env
 	trvs generate-config --pro -p JUPITER_BRAIN -f env jupiter-brain staging-1 \
