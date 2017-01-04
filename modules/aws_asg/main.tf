@@ -6,6 +6,7 @@ variable "cyclist_scale" { default = "web=1:Standard-1X" }
 variable "cyclist_token_ttl" { default = "1h" }
 variable "cyclist_version" { default = "master" }
 variable "docker_storage_dm_basesize" { default = "12G" }
+variable "docker_registry_mirror" { default = "" }
 variable "env" {}
 variable "env_short" {}
 variable "github_users" { default = "" }
@@ -75,14 +76,20 @@ data "template_file" "docker_daemon_json" {
     "unix:///var/run/docker.sock"
   ],
   "icc": false,
-  "userns-remap": "default",
+  "insecure-registries": [
+    "10.0.0.0/8"
+  ],
+  "registry-mirrors": [
+    "${var.docker_registry_mirror}"
+  ],
   "storage-driver": "devicemapper",
   "storage-opts": [
     "dm.basesize=${var.docker_storage_dm_basesize}",
     "dm.datadev=/dev/direct-lvm/data",
     "dm.metadatadev=/dev/direct-lvm/metadata",
     "dm.fs=xfs"
-  ]
+  ],
+  "userns-remap": "default"
 }
 EOF
 }
