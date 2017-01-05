@@ -79,9 +79,8 @@ data "template_file" "docker_daemon_json" {
   "insecure-registries": [
     "10.0.0.0/8"
   ],
-  "registry-mirrors": [
-    "${var.docker_registry_mirror}"
-  ],
+  ${var.docker_registry_mirror != "" ?
+    "\"registry-mirrors\": [\"${var.docker_registry_mirror}\"]," : ""}
   "storage-driver": "devicemapper",
   "storage-opts": [
     "dm.basesize=${var.docker_storage_dm_basesize}",

@@ -174,11 +174,12 @@ module "registry_1b" {
   az = "1b"
   env = "${var.env}"
   github_users = "${var.github_users}"
-  http_secret = "${var.registry_http_secret.hex}"
+  http_secret = "${random_id.registry_http_secret.hex}"
   index = "${var.index}"
   instance_type = "t2.medium"
   public_subnet_id = "${module.aws_az_1b.public_subnet_id}"
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
+  vpc_cidr = "${var.vpc_cidr}"
   vpc_id = "${aws_vpc.main.id}"
 }
 
@@ -188,25 +189,51 @@ module "registry_1e" {
   az = "1e"
   env = "${var.env}"
   github_users = "${var.github_users}"
-  http_secret = "${var.registry_http_secret.hex}"
+  http_secret = "${random_id.registry_http_secret.hex}"
   index = "${var.index}"
   instance_type = "t2.medium"
   public_subnet_id = "${module.aws_az_1e.public_subnet_id}"
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
+  vpc_cidr = "${var.vpc_cidr}"
   vpc_id = "${aws_vpc.main.id}"
 }
 
+resource "aws_security_group" "registry_elb" {
+  name = "${var.env}-${var.index}-registry-elb"
+  vpc_id = "${aws_vpc.main.id}"
+  ingress {
+    from_port = 80
+    to_port = 80
+    protocol = "tcp"
+    cidr_blocks = ["${var.vpc_cidr}"]
+  }
+  egress {
+    from_port = 0
+    to_port = 0
+    protocol = -1
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
 resource "aws_elb" "registry" {
-  name = "registry-${var.env}-${var.index}"
+  name = "registry-elb-${var.env}-${var.index}"
   subnets = [
     "${module.aws_az_1b.public_subnet_id}",
     "${module.aws_az_1e.public_subnet_id}"
   ]
+  security_groups = ["${aws_security_group.registry_elb.id}"]
   listener {
     instance_port = 8000
     instance_protocol = "http"
     lb_port = 80
     lb_protocol = "http"
+  }
+  health_check {
+    healthy_threshold = 2
+    unhealthy_threshold = 9
+    target = "HTTP:8000/v2/"
+    interval = 10
+    timeout = 5
   }
   instances = [
     "${module.registry_1b.instance_id}",
@@ -215,6 +242,17 @@ resource "aws_elb" "registry" {
   internal = true
   tags {
     Name = "registry-elb-${var.env}-${var.index}"
+  }
+}
+
+resource "aws_route53_record" "registry" {
+  zone_id = "${var.travisci_net_external_zone_id}"
+  name = "registry-elb-${var.env}-${var.index}.aws-us-east-1.travisci.net"
+  type = "A"
+  alias {
+    name = "${aws_elb.registry.dns_name}"
+    zone_id = "${aws_elb.registry.zone_id}"
+    evaluate_target_health = false
   }
 }
 
@@ -250,7 +288,7 @@ output "registry_1b_hostname" { value = "${module.registry_1b.hostname}" }
 output "registry_1b_private_ip" { value = "${module.registry_1b.private_ip}" }
 output "registry_1e_hostname" { value = "${module.registry_1e.hostname}" }
 output "registry_1e_private_ip" { value = "${module.registry_1e.private_ip}" }
-output "registry_dns_name" { value = "${aws_elb.registry.dns_name}" }
+output "registry_dns_name" { value = "${aws_route53_record.registry.fqdn}" }
 output "vpc_id" { value = "${aws_vpc.main.id}" }
 output "workers_com_nat_1b_id" { value = "${module.aws_az_1b.workers_com_nat_id}" }
 output "workers_com_nat_1e_id" { value = "${module.aws_az_1e.workers_com_nat_id}" }

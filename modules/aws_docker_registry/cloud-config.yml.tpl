@@ -1,6 +1,14 @@
 #cloud-config
 # vim:filetype=yaml
 
+users:
+- default
+- name: registry
+  gecos: Docker Registry
+  groups: registry
+  system: true
+  no-log-init: true
+
 write_files:
 - content: '${base64encode(github_users_env)}'
   encoding: b64

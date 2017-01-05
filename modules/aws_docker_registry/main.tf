@@ -10,6 +10,7 @@ variable "instance_type" { default = "m3.xlarge" }
 variable "public_subnet_id" {}
 variable "travisci_net_external_zone_id" {}
 variable "vpc_id" {}
+variable "vpc_cidr" {}
 
 resource "aws_security_group" "registry" {
   name = "${var.env}-${var.index}-registry-${var.az}"
@@ -18,7 +19,7 @@ resource "aws_security_group" "registry" {
     from_port = 0
     to_port = 0
     protocol = -1
-    cidr_blocks = ["10.0.0.0/8"]
+    cidr_blocks = ["${var.vpc_cidr}"]
   }
   egress {
     from_port = 0
