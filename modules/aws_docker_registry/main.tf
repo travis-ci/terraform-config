@@ -4,13 +4,15 @@ variable "data_ebs_volume_size" { default = 5 }
 variable "env" {}
 variable "github_users" {}
 variable "http_secret" {}
-variable "images_ebs_volume_size" { default = 100 }
 variable "index" {}
 variable "instance_type" { default = "m3.xlarge" }
 variable "public_subnet_id" {}
+variable "s3_access_key_id" {}
+variable "s3_bucket" {}
+variable "s3_secret_access_key" {}
 variable "travisci_net_external_zone_id" {}
-variable "vpc_id" {}
 variable "vpc_cidr" {}
+variable "vpc_id" {}
 
 resource "aws_security_group" "registry" {
   name = "${var.env}-${var.index}-registry-${var.az}"
@@ -32,13 +34,25 @@ resource "aws_security_group" "registry" {
   }
 }
 
+data "template_file" "registry_env" {
+  template = <<EOF
+REGISTRY_HTTP_ADDR=0.0.0.0:8000
+REGISTRY_HTTP_SECRET=${var.http_secret}
+REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io
+REGISTRY_STORAGE_S3_ACCESSKEY=${var.s3_access_key_id}
+REGISTRY_STORAGE_S3_BUCKET=${var.s3_bucket}
+REGISTRY_STORAGE_S3_REGION=us-east-1
+REGISTRY_STORAGE_S3_SECRETKEY=${var.s3_secret_access_key}
+EOF
+}
+
 data "template_file" "cloud_config" {
   template = "${file("${path.module}/cloud-config.yml.tpl")}"
   vars {
+    registry_env = "${data.template_file.registry_env.rendered}"
     cloud_init_bash = "${file("${path.module}/cloud-init.bash")}"
     github_users_env = "export GITHUB_USERS='${var.github_users}'"
     hostname_tmpl = "registry-${var.env}-${var.index}.aws-us-east-${var.az}.travisci.net"
-    http_secret = "${var.http_secret}"
   }
 }
 
@@ -47,14 +61,6 @@ resource "aws_ebs_volume" "data" {
   size = "${var.data_ebs_volume_size}"
   tags {
     Name = "registry-${var.env}-${var.index}-data-${var.az}"
-  }
-}
-
-resource "aws_ebs_volume" "images" {
-  availability_zone = "us-east-${var.az}"
-  size = "${var.images_ebs_volume_size}"
-  tags {
-    Name = "registry-${var.env}-${var.index}-images-${var.az}"
   }
 }
 
@@ -74,13 +80,6 @@ resource "aws_volume_attachment" "data" {
   device_name = "xvdc"
   force_detach = true
   volume_id = "${aws_ebs_volume.data.id}"
-  instance_id = "${aws_instance.registry.id}"
-}
-
-resource "aws_volume_attachment" "images" {
-  device_name = "xvdb"
-  force_detach = true
-  volume_id = "${aws_ebs_volume.images.id}"
   instance_id = "${aws_instance.registry.id}"
 }
 
