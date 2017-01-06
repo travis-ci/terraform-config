@@ -9,7 +9,7 @@ variable "public_subnet_1b_cidr" { default = "10.12.1.0/24" }
 variable "public_subnet_1c_cidr" { default = "10.12.7.0/24" }
 variable "public_subnet_1e_cidr" { default = "10.12.4.0/24" }
 variable "syslog_address_com" {}
-variable "travisci_net_external_zone_id" {}
+variable "travisci_net_external_zone_id" { default = "Z2RI61YP4UWSIO" }
 variable "vpc_cidr" { default = "10.12.0.0/16" }
 variable "workers_com_subnet_1a_cidr" { default = "10.12.12.0/24" }
 variable "workers_com_subnet_1b_cidr" { default = "10.12.3.0/24" }

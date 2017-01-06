@@ -9,7 +9,7 @@ variable "rabbitmq_username_com" {}
 variable "rabbitmq_username_org" {}
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
-variable "worker_ami" { default = "ami-ccedc5db" }
+variable "worker_ami" { default = "ami-a19d9bb6" }
 
 provider "aws" {}
 
@@ -127,8 +127,10 @@ module "aws_asg_com" {
   worker_asg_max_size = 100
   worker_asg_min_size = 1
   worker_asg_namespace = "Travis/com"
+  worker_asg_scale_in_cooldown = 150
   worker_asg_scale_in_threshold = 100
-  worker_asg_scale_out_qty = 2
+  worker_asg_scale_out_cooldown = 150
+  worker_asg_scale_out_qty = 4
   worker_asg_scale_out_threshold = 60
   worker_config = "${data.template_file.worker_config_com.rendered}"
   worker_docker_image_android = "quay.io/travisci/travis-android:latest"
@@ -166,9 +168,11 @@ module "aws_asg_org" {
   worker_asg_max_size = 100
   worker_asg_min_size = 1
   worker_asg_namespace = "Travis/org"
-  worker_asg_scale_in_threshold = 64
-  worker_asg_scale_out_qty = 2
-  worker_asg_scale_out_threshold = 48
+  worker_asg_scale_in_cooldown = 150
+  worker_asg_scale_in_threshold = 100
+  worker_asg_scale_out_cooldown = 150
+  worker_asg_scale_out_qty = 4
+  worker_asg_scale_out_threshold = 60
   worker_config = "${data.template_file.worker_config_org.rendered}"
   worker_docker_image_android = "quay.io/travisci/travis-android:latest"
   worker_docker_image_default = "quay.io/travisci/travis-ruby:latest"

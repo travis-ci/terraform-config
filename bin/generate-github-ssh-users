@@ -33,7 +33,7 @@ __github_users() {
       | jq -r ".[]|select(.name==\"${team}\")|.id"
   )"
   __ghcurl "${auth}" "/teams/${team_id}/members" | jq -r '.[]|.login' \
-    | sort \
+    | LC_ALL=C sort \
     | while read -r login; do
       __ghcurl "${auth}" "/users/${login}" \
         | jq -r '[(.name|split(" ")|.[0]|ascii_downcase), .login]|join(":")'
