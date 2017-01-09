@@ -1,5 +1,6 @@
 variable "az" {}
 variable "bastion_ami" {}
+variable "bastion_instance_type" { default = "t2.micro" }
 variable "duo_api_hostname" {}
 variable "duo_integration_key" {}
 variable "duo_secret_key" {}
@@ -87,7 +88,7 @@ data "template_file" "bastion_cloud_config" {
 
 resource "aws_instance" "bastion" {
   ami = "${var.bastion_ami}"
-  instance_type = "t2.micro"
+  instance_type = "${var.bastion_instance_type}"
   subnet_id = "${aws_subnet.public.id}"
   vpc_security_group_ids = [
     "${aws_security_group.bastion.id}",
