@@ -4,6 +4,7 @@ variable "duo_secret_key" {}
 variable "env" { default = "shared" }
 variable "github_users" {}
 variable "index" { default = 1 }
+variable "packer_build_subnet_cidr" { default = "10.10.99.0/24" }
 variable "public_subnet_1b_cidr" { default = "10.10.1.0/24" }
 variable "public_subnet_1e_cidr" { default = "10.10.4.0/24" }
 variable "syslog_address_com" {}
@@ -100,6 +101,32 @@ resource "aws_vpc_endpoint" "s3" {
   ]
 }
 EOF
+}
+
+resource "aws_subnet" "packer_build" {
+  vpc_id = "${aws_vpc.main.id}"
+  cidr_block = "${var.packer_build_subnet_cidr}"
+  availability_zone = "us-east-1a"
+  map_public_ip_on_launch = true
+  tags {
+    Name = "${var.env}-${var.index}-packer-build-1a"
+  }
+}
+
+resource "aws_route_table" "packer_build" {
+  vpc_id = "${aws_vpc.main.id}"
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = "${aws_internet_gateway.gw.id}"
+  }
+  tags = {
+    Name = "${var.env}-${var.index}-packer-build-1a"
+  }
+}
+
+resource "aws_route_table_association" "packer_build" {
+  subnet_id = "${aws_subnet.packer_build.id}"
+  route_table_id = "${aws_route_table.packer_build.id}"
 }
 
 module "aws_az_1b" {
