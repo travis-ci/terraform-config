@@ -63,6 +63,30 @@ module "jupiter_brain_custom_1" {
   port_suffix = 5
 }
 
+module "jupiter_brain_custom_2" {
+  source = "../modules/jupiter_brain_bluegreen"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_ip_address = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+  version = "${var.jupiter_brain_prod_version}"
+  config_path = "${path.module}/config/jupiter-brain-custom-2-env"
+  env = "custom-2"
+  index = "${var.index}"
+  port_suffix = 6
+}
+
+module "jupiter_brain_custom_3" {
+  source = "../modules/jupiter_brain_bluegreen"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_ip_address = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+  version = "${var.jupiter_brain_prod_version}"
+  config_path = "${path.module}/config/jupiter-brain-custom-3-env"
+  env = "custom-3"
+  index = "${var.index}"
+  port_suffix = 7
+}
+
 module "worker_com_staging_1" {
   source = "../modules/macstadium_go_worker"
   host_id = "${module.macstadium_infrastructure.wjb_uuid}"
@@ -99,6 +123,30 @@ module "worker_custom_1" {
   index = "${var.index}"
 }
 
+module "worker_custom_2" {
+  source = "../modules/macstadium_go_worker"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+  version = "${var.travis_worker_staging_version}"
+  config_path = "${path.module}/config/travis-worker-custom-2"
+  vm_ssh_key_path = "${path.module}/config/travis-vm-ssh-key"
+  env = "custom-2"
+  index = "${var.index}"
+}
+
+module "worker_custom_3" {
+  source = "../modules/macstadium_go_worker"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+  version = "${var.travis_worker_staging_version}"
+  config_path = "${path.module}/config/travis-worker-custom-3"
+  vm_ssh_key_path = "${path.module}/config/travis-vm-ssh-key"
+  env = "custom-3"
+  index = "${var.index}"
+}
+
 module "haproxy" {
   source = "../modules/haproxy"
   host_id = "${module.macstadium_infrastructure.wjb_uuid}"
@@ -124,5 +172,19 @@ module "haproxy" {
     frontend_port = "8085"
     backend_port_blue = "9085"
     backend_port_green = "10085"
+  }
+
+  config {
+    name = "jupiter-brain-custom-2"
+    frontend_port = "8086"
+    backend_port_blue = "9086"
+    backend_port_green = "10086"
+  }
+
+  config {
+    name = "jupiter-brain-custom-3"
+    frontend_port = "8086"
+    backend_port_blue = "9086"
+    backend_port_green = "10086"
   }
 }
