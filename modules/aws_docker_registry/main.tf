@@ -41,6 +41,7 @@ REGISTRY_HTTP_SECRET=${var.http_secret}
 REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io
 REGISTRY_STORAGE_S3_ACCESSKEY=${var.s3_access_key_id}
 REGISTRY_STORAGE_S3_BUCKET=${var.s3_bucket}
+REGISTRY_STORAGE_S3_OBJECTACL=public-read
 REGISTRY_STORAGE_S3_REGION=us-east-1
 REGISTRY_STORAGE_S3_SECRETKEY=${var.s3_secret_access_key}
 EOF
