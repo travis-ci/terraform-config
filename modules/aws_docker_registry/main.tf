@@ -2,14 +2,15 @@ variable "ami" {}
 variable "az" { default = "1b" }
 variable "data_ebs_volume_size" { default = 5 }
 variable "env" {}
+variable "gateway_id" {}
 variable "github_users" {}
 variable "http_secret" {}
 variable "index" {}
 variable "instance_type" { default = "m3.xlarge" }
-variable "public_subnet_id" {}
 variable "s3_access_key_id" {}
 variable "s3_bucket" {}
 variable "s3_secret_access_key" {}
+variable "subnet_cidr" {}
 variable "travisci_net_external_zone_id" {}
 variable "vpc_cidr" {}
 variable "vpc_id" {}
@@ -65,12 +66,38 @@ resource "aws_ebs_volume" "data" {
   }
 }
 
+resource "aws_subnet" "registry" {
+  vpc_id = "${var.vpc_id}"
+  cidr_block = "${var.subnet_cidr}"
+  availability_zone = "us-east-${var.az}"
+  map_public_ip_on_launch = false
+  tags {
+    Name = "${var.env}-${var.index}-registry-${var.az}"
+  }
+}
+
+resource "aws_route_table" "registry" {
+  vpc_id = "${var.vpc_id}"
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = "${var.gateway_id}"
+  }
+  tags = {
+    Name = "${var.env}-${var.index}-registry-${var.az}"
+  }
+}
+
+resource "aws_route_table_association" "registry" {
+  subnet_id = "${aws_subnet.registry.id}"
+  route_table_id = "${aws_route_table.registry.id}"
+}
+
 resource "aws_instance" "registry" {
   ami = "${var.ami}"
   instance_type = "${var.instance_type}"
-  subnet_id = "${var.public_subnet_id}"
+  subnet_id = "${aws_subnet.registry.id}"
   vpc_security_group_ids = ["${aws_security_group.registry.id}"]
-  associate_public_ip_address = true
+  associate_public_ip_address = false
   tags = {
     Name = "${var.env}-${var.index}-registry-${var.az}"
   }
@@ -96,3 +123,4 @@ resource "aws_route53_record" "registry" {
 output "hostname" { value = "${aws_route53_record.registry.name}" }
 output "instance_id" { value = "${aws_instance.registry.id}" }
 output "private_ip" { value = "${aws_instance.registry.private_ip}" }
+output "subnet_id" { value = "${aws_subnet.registry.id}" }

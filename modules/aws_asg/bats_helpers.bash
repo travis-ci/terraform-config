@@ -19,6 +19,8 @@ aws_asg_setup() {
 
   echo "i-${RANDOM}" >"${RUNDIR}/instance-id"
 
+  echo "subnet-abcd subnet-efgh" >"${RUNDIR}/registry-cidrs"
+
   cat >"${ETCDIR}/default/travis-worker-bats" <<EOF
 export TRAVIS_TRAVIS_FAFAFAF=galaga
 export TRAVIS_TARVIS_SNOOK=fafa/___INSTANCE_ID___/faf

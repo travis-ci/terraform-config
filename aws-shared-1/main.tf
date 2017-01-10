@@ -5,8 +5,11 @@ variable "env" { default = "shared" }
 variable "github_users" {}
 variable "index" { default = 1 }
 variable "packer_build_subnet_cidr" { default = "10.10.99.0/24" }
+variable "packer_build_repo" { default = "travis-infrastructure/packer-build" }
 variable "public_subnet_1b_cidr" { default = "10.10.1.0/24" }
 variable "public_subnet_1e_cidr" { default = "10.10.4.0/24" }
+variable "registry_subnet_1b_cidr" { default = "10.10.20.0/24" }
+variable "registry_subnet_1e_cidr" { default = "10.10.21.0/24" }
 variable "syslog_address_com" {}
 variable "travisci_net_external_zone_id" { default = "Z2RI61YP4UWSIO" }
 variable "vpc_cidr" { default = "10.10.0.0/16" }
@@ -248,11 +251,12 @@ module "registry_1b" {
   ami = "${data.aws_ami.docker.id}"
   az = "1b"
   env = "${var.env}"
+  gateway_id = "${aws_internet_gateway.gw.id}"
   github_users = "${var.github_users}"
   http_secret = "${random_id.registry_http_secret.hex}"
   index = "${var.index}"
   instance_type = "t2.micro"
-  public_subnet_id = "${module.aws_az_1b.public_subnet_id}"
+  subnet_cidr = "${var.registry_subnet_1b_cidr}"
   s3_access_key_id = "${aws_iam_access_key.registry.id}"
   s3_bucket = "${aws_s3_bucket.registry_images.id}"
   s3_secret_access_key = "${aws_iam_access_key.registry.secret}"
@@ -266,11 +270,12 @@ module "registry_1e" {
   ami = "${data.aws_ami.docker.id}"
   az = "1e"
   env = "${var.env}"
+  gateway_id = "${aws_internet_gateway.gw.id}"
   github_users = "${var.github_users}"
   http_secret = "${random_id.registry_http_secret.hex}"
   index = "${var.index}"
   instance_type = "t2.micro"
-  public_subnet_id = "${module.aws_az_1e.public_subnet_id}"
+  subnet_cidr = "${var.registry_subnet_1e_cidr}"
   s3_access_key_id = "${aws_iam_access_key.registry.id}"
   s3_bucket = "${aws_s3_bucket.registry_images.id}"
   s3_secret_access_key = "${aws_iam_access_key.registry.secret}"
@@ -299,8 +304,8 @@ resource "aws_security_group" "registry_elb" {
 resource "aws_elb" "registry" {
   name = "registry-elb-${var.env}-${var.index}"
   subnets = [
-    "${module.aws_az_1b.public_subnet_id}",
-    "${module.aws_az_1e.public_subnet_id}"
+    "${module.registry_1b.subnet_id}",
+    "${module.registry_1e.subnet_id}"
   ]
   security_groups = ["${aws_security_group.registry_elb.id}"]
   listener {
@@ -342,8 +347,19 @@ resource "null_resource" "outputs_signature" {
     bastion_security_group_1b_id = "${module.aws_az_1b.bastion_sg_id}"
     bastion_security_group_1e_id = "${module.aws_az_1e.bastion_sg_id}"
     gateway_id = "${aws_internet_gateway.gw.id}"
+    packer_build_subnet_cidr = "${var.packer_build_subnet_cidr}"
+    packer_build_subnet_id = "${aws_subnet.packer_build.id}"
     public_subnet_1b_cidr = "${var.public_subnet_1b_cidr}"
     public_subnet_1e_cidr = "${var.public_subnet_1e_cidr}"
+    registry_1b_hostname = "${module.registry_1b.hostname}"
+    registry_1b_instance_id = "${module.registry_1b.instance_id}"
+    registry_1b_private_ip = "${module.registry_1b.private_ip}"
+    registry_1e_hostname = "${module.registry_1e.hostname}"
+    registry_1e_instance_id = "${module.registry_1e.instance_id}"
+    registry_1e_private_ip = "${module.registry_1e.private_ip}"
+    registry_dns_name = "${aws_route53_record.registry.fqdn}"
+    registry_subnet_1b_cidr = "${var.registry_subnet_1b_cidr}"
+    registry_subnet_1e_cidr = "${var.registry_subnet_1e_cidr}"
     vpc_id = "${aws_vpc.main.id}"
     workers_com_nat_1b_id = "${module.aws_az_1b.workers_com_nat_id}"
     workers_com_nat_1e_id = "${module.aws_az_1e.workers_com_nat_id}"
@@ -358,18 +374,30 @@ resource "null_resource" "outputs_signature" {
     workers_org_subnet_1e_cidr = "${var.workers_org_subnet_1e_cidr}"
     workers_org_subnet_1e_id = "${module.aws_az_1e.workers_org_subnet_id}"
   }
+  provisioner "local-exec" {
+    command = <<EOF
+travis env set -r ${var.packer_build_repo} TRAVIS_VPC_ID ${aws_vpc.main.id};
+travis env set -r ${var.packer_build_repo} TRAVIS_SUBNET_ID ${aws_subnet.packer_build.id};
+EOF
+  }
 }
 
 output "bastion_security_group_1b_id" { value = "${module.aws_az_1b.bastion_sg_id}" }
 output "bastion_security_group_1e_id" { value = "${module.aws_az_1e.bastion_sg_id}" }
 output "gateway_id" { value = "${aws_internet_gateway.gw.id}" }
+output "packer_build_subnet_cidr" { value = "${var.packer_build_subnet_cidr}" }
+output "packer_build_subnet_id" { value = "${aws_subnet.packer_build.id}" }
 output "public_subnet_1b_cidr" { value = "${var.public_subnet_1b_cidr}" }
 output "public_subnet_1e_cidr" { value = "${var.public_subnet_1e_cidr}" }
 output "registry_1b_hostname" { value = "${module.registry_1b.hostname}" }
+output "registry_1b_instance_id" { value = "${module.registry_1b.instance_id}" }
 output "registry_1b_private_ip" { value = "${module.registry_1b.private_ip}" }
 output "registry_1e_hostname" { value = "${module.registry_1e.hostname}" }
+output "registry_1e_instance_id" { value = "${module.registry_1e.instance_id}" }
 output "registry_1e_private_ip" { value = "${module.registry_1e.private_ip}" }
 output "registry_dns_name" { value = "${aws_route53_record.registry.fqdn}" }
+output "registry_subnet_1b_cidr" { value = "${var.registry_subnet_1b_cidr}" }
+output "registry_subnet_1e_cidr" { value = "${var.registry_subnet_1e_cidr}" }
 output "vpc_id" { value = "${aws_vpc.main.id}" }
 output "workers_com_nat_1b_id" { value = "${module.aws_az_1b.workers_com_nat_id}" }
 output "workers_com_nat_1e_id" { value = "${module.aws_az_1e.workers_com_nat_id}" }
