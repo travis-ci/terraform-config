@@ -106,15 +106,14 @@ __heroku_curl() {
 }
 
 __usage() {
-  cat >&2 <<EOF
-Usage: $(basename "${0}") <slug> <app> <scale> [version]
-
-Deploy Heroku app named <app> from GitHub repo with <slug> at dyno <scale>,
-optionally at a specific [version], e.g.:
-
-    $(basename "${0}") travis-ci/flurb travis-flurb-prod web=1:Hobby fafafaf
-
-EOF
+  local prog
+  prog="$(basename "${0}")"
+  echo "Usage: ${prog} <slug> <app> <scale> [version]" >&2
+  echo >&2
+  echo "Deploy Heroku app named <app> from GitHub repo with <slug>" >&2
+  echo "at dyno <scale>, optionally at a specific [version], e.g.:" >&2
+  echo >&2
+  echo "${prog} travis-ci/flurb travis-flurb-prod web=1:Hobby fafafaf" >&2
 }
 
 main "${@}"
