@@ -198,52 +198,6 @@ resource "aws_route53_record" "workers_com_nat" {
   ]
 }
 
-resource "aws_s3_bucket" "registry_images" {
-  acl = "public-read"
-  bucket = "travis-${var.env}-${var.index}-registry-images"
-  region = "us-east-1"
-}
-
-resource "aws_iam_user" "registry" {
-  name = "registry-${var.env}-${var.index}"
-}
-
-resource "aws_iam_access_key" "registry" {
-  user = "${aws_iam_user.registry.name}"
-}
-
-resource "aws_iam_user_policy" "registry" {
-  name = "registry-${var.env}-${var.index}-policy"
-  user = "${aws_iam_user.registry.name}"
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "s3:ListBucket",
-        "s3:GetBucketLocation",
-        "s3:ListBucketMultipartUploads"
-      ],
-      "Resource": "${aws_s3_bucket.registry_images.arn}"
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
-        "s3:PutObject",
-        "s3:GetObject",
-        "s3:DeleteObject",
-        "s3:ListMultipartUploadParts",
-        "s3:AbortMultipartUpload"
-      ],
-      "Resource": "${aws_s3_bucket.registry_images.arn}/*"
-    }
-  ]
-}
-EOF
-}
-
 module "registry" {
   source = "../modules/aws_docker_registry"
   ami = "${data.aws_ami.docker.id}"
@@ -253,9 +207,6 @@ module "registry" {
   http_secret = "${random_id.registry_http_secret.hex}"
   index = "${var.index}"
   instance_type = "t2.micro"
-  s3_access_key_id = "${aws_iam_access_key.registry.id}"
-  s3_bucket = "${aws_s3_bucket.registry_images.id}"
-  s3_secret_access_key = "${aws_iam_access_key.registry.secret}"
   subnets = ["${module.aws_az_1b.public_subnet_id}", "${module.aws_az_1e.public_subnet_id}"]
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
   vpc_cidr = "${var.vpc_cidr}"

@@ -8,9 +8,6 @@ variable "http_secret" {}
 variable "index" {}
 variable "instance_type" { default = "t2.small" }
 variable "subnets" { type = "list" }
-variable "s3_access_key_id" {}
-variable "s3_bucket" {}
-variable "s3_secret_access_key" {}
 variable "travisci_net_external_zone_id" {}
 variable "vpc_cidr" {}
 variable "vpc_id" {}
@@ -36,16 +33,62 @@ resource "aws_security_group" "registry" {
   count = "${length(split(",", var.azs))}"
 }
 
+resource "aws_s3_bucket" "registry_images" {
+  acl = "public-read"
+  bucket = "travis-${var.env}-${var.index}-registry-images"
+  region = "us-east-1"
+}
+
+resource "aws_iam_user" "registry" {
+  name = "registry-${var.env}-${var.index}"
+}
+
+resource "aws_iam_access_key" "registry" {
+  user = "${aws_iam_user.registry.name}"
+}
+
+resource "aws_iam_user_policy" "registry" {
+  name = "registry-${var.env}-${var.index}-policy"
+  user = "${aws_iam_user.registry.name}"
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:ListBucket",
+        "s3:GetBucketLocation",
+        "s3:ListBucketMultipartUploads"
+      ],
+      "Resource": "${aws_s3_bucket.registry_images.arn}"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:PutObject",
+        "s3:GetObject",
+        "s3:DeleteObject",
+        "s3:ListMultipartUploadParts",
+        "s3:AbortMultipartUpload"
+      ],
+      "Resource": "${aws_s3_bucket.registry_images.arn}/*"
+    }
+  ]
+}
+EOF
+}
+
 data "template_file" "registry_env" {
   template = <<EOF
 REGISTRY_HTTP_ADDR=0.0.0.0:8000
 REGISTRY_HTTP_SECRET=${var.http_secret}
 REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io
-REGISTRY_STORAGE_S3_ACCESSKEY=${var.s3_access_key_id}
-REGISTRY_STORAGE_S3_BUCKET=${var.s3_bucket}
+REGISTRY_STORAGE_S3_ACCESSKEY=${aws_iam_access_key.registry.id}
+REGISTRY_STORAGE_S3_BUCKET=${aws_s3_bucket.registry_images.id}
 REGISTRY_STORAGE_S3_OBJECTACL=public-read
 REGISTRY_STORAGE_S3_REGION=us-east-1
-REGISTRY_STORAGE_S3_SECRETKEY=${var.s3_secret_access_key}
+REGISTRY_STORAGE_S3_SECRETKEY=${aws_iam_access_key.registry.secret}
 EOF
 }
 
