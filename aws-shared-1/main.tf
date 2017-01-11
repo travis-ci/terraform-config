@@ -256,6 +256,7 @@ module "registry" {
   s3_access_key_id = "${aws_iam_access_key.registry.id}"
   s3_bucket = "${aws_s3_bucket.registry_images.id}"
   s3_secret_access_key = "${aws_iam_access_key.registry.secret}"
+  subnets = ["${module.aws_az_1b.public_subnet_id}", "${module.aws_az_1e.public_subnet_id}"]
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
   vpc_cidr = "${var.vpc_cidr}"
   vpc_id = "${aws_vpc.main.id}"
@@ -271,7 +272,6 @@ resource "null_resource" "outputs_signature" {
     public_subnet_1b_cidr = "${var.public_subnet_1b_cidr}"
     public_subnet_1e_cidr = "${var.public_subnet_1e_cidr}"
     registry_hostname = "${module.registry.hostname}"
-    registry_subnet_cidrs = "${module.registry.subnet_cidrs}"
     vpc_id = "${aws_vpc.main.id}"
     workers_com_nat_1b_id = "${module.aws_az_1b.workers_com_nat_id}"
     workers_com_nat_1e_id = "${module.aws_az_1e.workers_com_nat_id}"
@@ -302,7 +302,6 @@ output "packer_build_subnet_id" { value = "${aws_subnet.packer_build.id}" }
 output "public_subnet_1b_cidr" { value = "${var.public_subnet_1b_cidr}" }
 output "public_subnet_1e_cidr" { value = "${var.public_subnet_1e_cidr}" }
 output "registry_hostname" { value = "${module.registry.hostname}" }
-output "registry_subnet_cidrs" { value = "${module.registry.subnet_cidrs}" }
 output "vpc_id" { value = "${aws_vpc.main.id}" }
 output "workers_com_nat_1b_id" { value = "${module.aws_az_1b.workers_com_nat_id}" }
 output "workers_com_nat_1e_id" { value = "${module.aws_az_1e.workers_com_nat_id}" }

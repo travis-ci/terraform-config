@@ -6,7 +6,6 @@ variable "cyclist_scale" { default = "web=1:Standard-1X" }
 variable "cyclist_token_ttl" { default = "1h" }
 variable "cyclist_version" { default = "master" }
 variable "docker_storage_dm_basesize" { default = "12G" }
-variable "docker_registry_cidrs" { default = "" }
 variable "docker_registry_mirror" { default = "" }
 variable "env" {}
 variable "env_short" {}
@@ -102,7 +101,6 @@ data "template_file" "cloud_config" {
     cloud_init_env = "${data.template_file.cloud_init_env.rendered}"
     cyclist_url = "${replace(heroku_app.cyclist.web_url, "/\\/$/", "")}"
     docker_daemon_json = "${data.template_file.docker_daemon_json.rendered}"
-    docker_registry_cidrs = "${var.docker_registry_cidrs}"
     github_users_env = "export GITHUB_USERS='${var.github_users}'"
     hostname_tmpl = "___INSTANCE_ID___-${var.env}-${var.index}-worker-${var.site}-${var.worker_queue}.travisci.net"
     prestart_hook_bash = "${file("${path.module}/prestart-hook.bash")}"

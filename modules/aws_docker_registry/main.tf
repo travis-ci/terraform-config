@@ -7,10 +7,10 @@ variable "github_users" {}
 variable "http_secret" {}
 variable "index" {}
 variable "instance_type" { default = "t2.small" }
+variable "subnets" { type = "list" }
 variable "s3_access_key_id" {}
 variable "s3_bucket" {}
 variable "s3_secret_access_key" {}
-variable "subnet_cidrs" { default = "10.10.20.0/24,10.10.21.0/24" }
 variable "travisci_net_external_zone_id" {}
 variable "vpc_cidr" {}
 variable "vpc_id" {}
@@ -59,35 +59,6 @@ data "template_file" "cloud_config" {
   }
 }
 
-resource "aws_subnet" "registry" {
-  vpc_id = "${var.vpc_id}"
-  cidr_block = "${element(split(",", var.subnet_cidrs), count.index)}"
-  availability_zone = "us-east-${element(split(",", var.azs), count.index)}"
-  map_public_ip_on_launch = false
-  count = "${length(split(",", var.azs))}"
-  tags {
-    Name = "${var.env}-${var.index}-registry-${element(split(",", var.azs), count.index)}"
-  }
-}
-
-resource "aws_route_table" "registry" {
-  vpc_id = "${var.vpc_id}"
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = "${var.gateway_id}"
-  }
-  tags = {
-    Name = "${var.env}-${var.index}-registry-${element(split(",", var.azs), count.index)}"
-  }
-  count = "${length(split(",", var.azs))}"
-}
-
-resource "aws_route_table_association" "registry" {
-  subnet_id = "${element(aws_subnet.registry.*.id, count.index)}"
-  route_table_id = "${element(aws_route_table.registry.*.id, count.index)}"
-  count = "${length(split(",", var.azs))}"
-}
-
 resource "aws_launch_configuration" "registry" {
   name_prefix = "${var.env}-${var.index}-registry-"
   image_id = "${var.ami}"
@@ -106,7 +77,7 @@ resource "aws_launch_configuration" "registry" {
 
 resource "aws_elb" "registry" {
   name = "registry-elb-${var.env}-${var.index}"
-  subnets = ["${aws_subnet.registry.*.id}"]
+  subnets = ["${var.subnets}"]
   security_groups = ["${aws_security_group.registry.*.id}"]
   listener {
     instance_port = 8000
@@ -135,7 +106,7 @@ resource "aws_autoscaling_group" "registry" {
   force_delete = true
   launch_configuration = "${aws_launch_configuration.registry.name}"
   load_balancers = ["${aws_elb.registry.name}"]
-  vpc_zone_identifier = ["${aws_subnet.registry.*.id}"]
+  vpc_zone_identifier = ["${var.subnets}"]
   force_delete = true
   metrics_granularity = "1Minute"
   wait_for_capacity_timeout = "10m"
@@ -158,4 +129,3 @@ resource "aws_route53_record" "registry" {
 }
 
 output "hostname" { value = "${aws_route53_record.registry.name}" }
-output "subnet_cidrs" { value = "${var.subnet_cidrs}" }
