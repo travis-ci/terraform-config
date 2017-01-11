@@ -18,6 +18,7 @@ aws_asg_setup() {
   touch "${ETCDIR}/hosts" "${ETCDIR}/hostname" "${MOCKLOG}"
 
   echo "i-${RANDOM}" >"${RUNDIR}/instance-id"
+  echo "flibbity-flob-${RANDOM}.example.com" >"${RUNDIR}/registry-hostname"
 
   cat >"${ETCDIR}/default/travis-worker-bats" <<EOF
 export TRAVIS_TRAVIS_FAFAFAF=galaga
