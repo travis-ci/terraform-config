@@ -1,22 +1,22 @@
 variable "ami" {}
-variable "az" { default = "1b" }
+variable "azs" { default = "1b,1e" }
 variable "data_ebs_volume_size" { default = 5 }
 variable "env" {}
 variable "gateway_id" {}
 variable "github_users" {}
 variable "http_secret" {}
 variable "index" {}
-variable "instance_type" { default = "m3.xlarge" }
+variable "instance_type" { default = "t2.small" }
 variable "s3_access_key_id" {}
 variable "s3_bucket" {}
 variable "s3_secret_access_key" {}
-variable "subnet_cidr" {}
+variable "subnet_cidrs" { default = "10.10.20.0/24,10.10.21.0/24" }
 variable "travisci_net_external_zone_id" {}
 variable "vpc_cidr" {}
 variable "vpc_id" {}
 
 resource "aws_security_group" "registry" {
-  name = "${var.env}-${var.index}-registry-${var.az}"
+  name = "${var.env}-${var.index}-registry-${element(split(",", var.azs), count.index)}"
   vpc_id = "${var.vpc_id}"
   ingress {
     from_port = 0
@@ -31,8 +31,9 @@ resource "aws_security_group" "registry" {
     cidr_blocks = ["0.0.0.0/0"]
   }
   tags = {
-    Name = "${var.env}-${var.index}-registry-${var.az}"
+    Name = "${var.env}-${var.index}-registry-${element(split(",", var.azs), count.index)}"
   }
+  count = "${length(split(",", var.azs))}"
 }
 
 data "template_file" "registry_env" {
@@ -54,25 +55,18 @@ data "template_file" "cloud_config" {
     registry_env = "${data.template_file.registry_env.rendered}"
     cloud_init_bash = "${file("${path.module}/cloud-init.bash")}"
     github_users_env = "export GITHUB_USERS='${var.github_users}'"
-    hostname_tmpl = "registry-${var.env}-${var.index}.aws-us-east-${var.az}.travisci.net"
-  }
-}
-
-resource "aws_ebs_volume" "data" {
-  availability_zone = "us-east-${var.az}"
-  size = "${var.data_ebs_volume_size}"
-  tags {
-    Name = "registry-${var.env}-${var.index}-data-${var.az}"
+    hostname_tmpl = "___INSTANCE_ID___-registry-${var.env}-${var.index}.aws-us-east-1.travisci.net"
   }
 }
 
 resource "aws_subnet" "registry" {
   vpc_id = "${var.vpc_id}"
-  cidr_block = "${var.subnet_cidr}"
-  availability_zone = "us-east-${var.az}"
+  cidr_block = "${element(split(",", var.subnet_cidrs), count.index)}"
+  availability_zone = "us-east-${element(split(",", var.azs), count.index)}"
   map_public_ip_on_launch = false
+  count = "${length(split(",", var.azs))}"
   tags {
-    Name = "${var.env}-${var.index}-registry-${var.az}"
+    Name = "${var.env}-${var.index}-registry-${element(split(",", var.azs), count.index)}"
   }
 }
 
@@ -83,44 +77,85 @@ resource "aws_route_table" "registry" {
     gateway_id = "${var.gateway_id}"
   }
   tags = {
-    Name = "${var.env}-${var.index}-registry-${var.az}"
+    Name = "${var.env}-${var.index}-registry-${element(split(",", var.azs), count.index)}"
   }
+  count = "${length(split(",", var.azs))}"
 }
 
 resource "aws_route_table_association" "registry" {
-  subnet_id = "${aws_subnet.registry.id}"
-  route_table_id = "${aws_route_table.registry.id}"
+  subnet_id = "${element(aws_subnet.registry.*.id, count.index)}"
+  route_table_id = "${element(aws_route_table.registry.*.id, count.index)}"
+  count = "${length(split(",", var.azs))}"
 }
 
-resource "aws_instance" "registry" {
-  ami = "${var.ami}"
+resource "aws_launch_configuration" "registry" {
+  name_prefix = "${var.env}-${var.index}-registry-"
+  image_id = "${var.ami}"
   instance_type = "${var.instance_type}"
-  subnet_id = "${aws_subnet.registry.id}"
-  vpc_security_group_ids = ["${aws_security_group.registry.id}"]
-  associate_public_ip_address = false
-  tags = {
-    Name = "${var.env}-${var.index}-registry-${var.az}"
-  }
+  security_groups = ["${aws_security_group.registry.*.id}"]
   user_data = "${data.template_file.cloud_config.rendered}"
+  enable_monitoring = false
+  ebs_block_device {
+    device_name = "xvdc"
+    volume_size = "${var.data_ebs_volume_size}"
+  }
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
-resource "aws_volume_attachment" "data" {
-  device_name = "xvdc"
-  force_detach = true
-  volume_id = "${aws_ebs_volume.data.id}"
-  instance_id = "${aws_instance.registry.id}"
+resource "aws_elb" "registry" {
+  name = "registry-elb-${var.env}-${var.index}"
+  subnets = ["${aws_subnet.registry.*.id}"]
+  security_groups = ["${aws_security_group.registry.*.id}"]
+  listener {
+    instance_port = 8000
+    instance_protocol = "http"
+    lb_port = 80
+    lb_protocol = "http"
+  }
+  health_check {
+    healthy_threshold = 2
+    unhealthy_threshold = 9
+    target = "HTTP:8000/v2/"
+    interval = 10
+    timeout = 5
+  }
+  internal = true
+  tags {
+    Name = "registry-elb-${var.env}-${var.index}"
+  }
+}
+
+resource "aws_autoscaling_group" "registry" {
+  name = "registry-${var.env}-${var.index}-asg"
+  max_size = 2
+  min_size = 2
+  desired_capacity = 2
+  force_delete = true
+  launch_configuration = "${aws_launch_configuration.registry.name}"
+  load_balancers = ["${aws_elb.registry.name}"]
+  vpc_zone_identifier = ["${aws_subnet.registry.*.id}"]
+  force_delete = true
+  metrics_granularity = "1Minute"
+  wait_for_capacity_timeout = "10m"
+  tag {
+    key = "Name"
+    value = "${var.env}-${var.index}-registry-asg"
+    propagate_at_launch = false
+  }
 }
 
 resource "aws_route53_record" "registry" {
   zone_id = "${var.travisci_net_external_zone_id}"
-  name = "registry-${var.env}-${var.index}.aws-us-east-${var.az}.travisci.net"
+  name = "registry-${var.env}-${var.index}.aws-us-east-1.travisci.net"
   type = "A"
-  ttl = 300
-  records = ["${aws_instance.registry.private_ip}"]
-  depends_on = ["aws_instance.registry"]
+  alias {
+    name = "${aws_elb.registry.dns_name}"
+    zone_id = "${aws_elb.registry.zone_id}"
+    evaluate_target_health = false
+  }
 }
 
 output "hostname" { value = "${aws_route53_record.registry.name}" }
-output "instance_id" { value = "${aws_instance.registry.id}" }
-output "private_ip" { value = "${aws_instance.registry.private_ip}" }
-output "subnet_id" { value = "${aws_subnet.registry.id}" }
+output "subnet_cidrs" { value = "${var.subnet_cidrs}" }
