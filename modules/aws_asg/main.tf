@@ -6,13 +6,13 @@ variable "cyclist_scale" { default = "web=1:Standard-1X" }
 variable "cyclist_token_ttl" { default = "1h" }
 variable "cyclist_version" { default = "master" }
 variable "docker_storage_dm_basesize" { default = "12G" }
-variable "docker_registry_mirror" { default = "" }
 variable "env" {}
 variable "env_short" {}
 variable "github_users" { default = "" }
 variable "heroku_org" {}
 variable "index" {}
 variable "lifecycle_hook_heartbeat_timeout" { default = 3600 }
+variable "registry_hostname" { default = "" }
 variable "security_groups" {}
 variable "site" {}
 variable "syslog_address" {}
@@ -79,8 +79,8 @@ data "template_file" "docker_daemon_json" {
   "insecure-registries": [
     "10.0.0.0/8"
   ],
-  ${var.docker_registry_mirror != "" ?
-    "\"registry-mirrors\": [\"${var.docker_registry_mirror}\"]," : ""}
+  ${var.registry_hostname != "" ?
+    "\"registry-mirrors\": [\"http://${var.registry_hostname}\"]," : ""}
   "storage-driver": "devicemapper",
   "storage-opts": [
     "dm.basesize=${var.docker_storage_dm_basesize}",
@@ -104,6 +104,7 @@ data "template_file" "cloud_config" {
     github_users_env = "export GITHUB_USERS='${var.github_users}'"
     hostname_tmpl = "___INSTANCE_ID___-${var.env}-${var.index}-worker-${var.site}-${var.worker_queue}.travisci.net"
     prestart_hook_bash = "${file("${path.module}/prestart-hook.bash")}"
+    registry_hostname = "${var.registry_hostname}"
     start_hook_bash = "${file("${path.module}/start-hook.bash")}"
     stop_hook_bash = "${file("${path.module}/stop-hook.bash")}"
     syslog_address = "${var.syslog_address}"
