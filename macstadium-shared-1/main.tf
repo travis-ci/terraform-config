@@ -147,6 +147,61 @@ module "worker_custom_3" {
   index = "${var.index}"
 }
 
+module "vsphere_janitor_prod_com" {
+  source = "../modules/vsphere_janitor"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+  version = "${var.vsphere_janitor_version}"
+  config_path = "${path.module}/config/vsphere-janitor-prod-com"
+  env = "com-prod"
+  index = "${var.index}"
+}
+
+module "vsphere_janitor_staging_com" {
+  source = "../modules/vsphere_janitor"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+  version = "${var.vsphere_janitor_version}"
+  config_path = "${path.module}/config/vsphere-janitor-staging-com"
+  env = "com-staging"
+  index = "${var.index}"
+}
+
+module "vsphere_janitor_custom_1" {
+  source = "../modules/vsphere_janitor"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+  version = "${var.vsphere_janitor_version}"
+  config_path = "${path.module}/config/vsphere-janitor-custom-1"
+  env = "custom-1"
+  index = "${var.index}"
+}
+
+module "vsphere_janitor_custom_2" {
+  source = "../modules/vsphere_janitor"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+  version = "${var.vsphere_janitor_version}"
+  config_path = "${path.module}/config/vsphere-janitor-custom-2"
+  env = "custom-2"
+  index = "${var.index}"
+}
+
+module "vsphere_janitor_custom_3" {
+  source = "../modules/vsphere_janitor"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+  version = "${var.vsphere_janitor_version}"
+  config_path = "${path.module}/config/vsphere-janitor-custom-3"
+  env = "custom-3"
+  index = "${var.index}"
+}
+
 module "haproxy" {
   source = "../modules/haproxy"
   host_id = "${module.macstadium_infrastructure.wjb_uuid}"

@@ -40,6 +40,16 @@ $(CONFIG_FILES):
 		| sed 's/^/export /' >config/travis-worker-custom-2
 	trvs generate-config -p TRAVIS_WORKER -f env macstadium-workers custom-3 \
 		| sed 's/^/export /' >config/travis-worker-custom-3
+	trvs generate-config --pro -p VSPHERE_JANITOR -f env vsphere-janitor production-1 \
+		| sed 's/^/export /' >config/vsphere-janitor-prod-com
+	trvs generate-config --pro -p VSPHERE_JANITOR -f env vsphere-janitor staging-1 \
+		| sed 's/^/export /' >config/vsphere-janitor-staging-com
+	trvs generate-config -p VSPHERE_JANITOR -f env vsphere-janitor custom-1 \
+		| sed 's/^/export /' >config/vsphere-janitor-custom-1
+	trvs generate-config -p VSPHERE_JANITOR -f env vsphere-janitor custom-2 \
+		| sed 's/^/export /' >config/vsphere-janitor-custom-2
+	trvs generate-config -p VSPHERE_JANITOR -f env vsphere-janitor custom-3 \
+		| sed 's/^/export /' >config/vsphere-janitor-custom-3
 	trvs generate-config --pro -p JUPITER_BRAIN -f env jupiter-brain production-1 \
 		| sed 's/^/export /' >config/jupiter-brain-prod-com-env
 	trvs generate-config --pro -p JUPITER_BRAIN -f env jupiter-brain staging-1 \
