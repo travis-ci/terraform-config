@@ -7,12 +7,12 @@ fi
 
 # Move configuration into place and correct permissions
 sudo mv /tmp/etc-default-vsphere-janitor-${env} /etc/default/vsphere-janitor-${env}
-sudo chown vsphere-janitor /etc/default/vsphere-janitor-${env}
+sudo chown vsphere-janitor:vsphere-janitor /etc/default/vsphere-janitor-${env}
 sudo chmod 0600 /etc/default/vsphere-janitor-${env}
 
 # Configure upstart
 sudo mkdir -p /var/tmp/run/vsphere-janitor
-sudo chown vsphere-janitor /var/tmp/run/vsphere-janitor
+sudo chown vsphere-janitor:vsphere-janitor /var/tmp/run/vsphere-janitor
 sudo mv /tmp/init-vsphere-janitor-${env}.conf /etc/init/vsphere-janitor-${env}.conf
 
 # Install the binary
