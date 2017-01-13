@@ -41,7 +41,7 @@ resource "null_resource" "vsphere_janitor" {
   }
 
   provisioner "file" {
-    source = "${var.config_path}"
+    content = "${file(var.config_path)}\nexport VSPHERE_JANITOR_LIBRATO_SOURCE='vsphere-janitor-${var.env}-${var.index}'\n"
     destination = "/tmp/etc-default-vsphere-janitor-${var.env}"
   }
 
