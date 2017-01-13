@@ -2,12 +2,11 @@ variable "ssh_host" {}
 variable "ssh_user" {}
 variable "version" {}
 variable "config_path" {}
-variable "vm_ssh_key_path" {}
 variable "env" {}
 variable "index" {}
 variable "host_id" {}
 
-data "template_file" "vsphere_janitor_install:" {
+data "template_file" "vsphere_janitor_install" {
   template = "${file("${path.module}/install-vsphere-janitor.sh")}"
 
   vars {

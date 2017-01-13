@@ -4,6 +4,7 @@ variable "macstadium_vanilla_image" { default = "travis-ci-ubuntu14.04-internal-
 variable "jupiter_brain_prod_version" { default = "v0.2.0-58-gce0b45a" }
 variable "jupiter_brain_staging_version" { default = "v0.2.0-58-gce0b45a" }
 variable "travis_worker_staging_version" { default = "v2.5.0-46-g0e3fae5" }
+variable "vsphere_janitor_version" { default = "9bde41b" }
 variable "ssh_user" {
   description = "your username on the wjb instances"
 }
