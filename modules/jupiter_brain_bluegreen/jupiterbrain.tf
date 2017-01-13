@@ -28,6 +28,8 @@ resource "null_resource" "jupiter_brain" {
   triggers {
     version = "${var.version}"
     config_signature = "${sha256(file(var.config_path))}"
+    install_script_signature = "${sha256(data.template_file.jupiter_brain_install.rendered)}"
+    upstart_script_signature = "${sha256(data.template_file.jupiter_brain_upstart.rendered)}"
     name = "${var.env}-${var.index}"
     port_suffix = "${var.port_suffix}"
     host_id = "${var.host_id}"
