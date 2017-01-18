@@ -2,8 +2,15 @@ variable "index" { default = 1 }
 variable "travisci_net_external_zone_id" { default = "Z2RI61YP4UWSIO" }
 variable "macstadium_vanilla_image" { default = "travis-ci-ubuntu14.04-internal-vanilla-1481140635" }
 variable "jupiter_brain_prod_version" { default = "v0.2.0-58-gce0b45a" }
+variable "jupiter_brain_custom-1_version" { default = "v0.2.0-58-gce0b45a" }
+variable "jupiter_brain_custom-2_version" { default = "v0.2.0-58-gce0b45a" }
+variable "jupiter_brain_custom-3_version" { default = "v0.2.0-58-gce0b45a" }
 variable "jupiter_brain_staging_version" { default = "v0.2.0-58-gce0b45a" }
-variable "travis_worker_staging_version" { default = "v2.5.0-46-g0e3fae5" }
+variable "travis_worker_prod_version" { default = "v2.6.0" }
+variable "travis_worker_custom-1_version" { default = "v2.6.0" }
+variable "travis_worker_custom-2_version" { default = "v2.6.0" }
+variable "travis_worker_custom-3_version" { default = "v2.6.0" }
+variable "travis_worker_staging_version" { default = "v2.6.0" }
 variable "vsphere_janitor_version" { default = "9bde41b" }
 variable "ssh_user" {
   description = "your username on the wjb instances"
@@ -57,7 +64,7 @@ module "jupiter_brain_custom_1" {
   host_id = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_ip_address = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user = "${var.ssh_user}"
-  version = "${var.jupiter_brain_prod_version}"
+  version = "${var.jupiter_brain_custom-1_version}"
   config_path = "${path.module}/config/jupiter-brain-custom-1-env"
   env = "custom-1"
   index = "${var.index}"
@@ -69,7 +76,7 @@ module "jupiter_brain_custom_2" {
   host_id = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_ip_address = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user = "${var.ssh_user}"
-  version = "${var.jupiter_brain_prod_version}"
+  version = "${var.jupiter_brain_custom-2_version}"
   config_path = "${path.module}/config/jupiter-brain-custom-2-env"
   env = "custom-2"
   index = "${var.index}"
@@ -81,7 +88,7 @@ module "jupiter_brain_custom_3" {
   host_id = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_ip_address = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user = "${var.ssh_user}"
-  version = "${var.jupiter_brain_prod_version}"
+  version = "${var.jupiter_brain_custom-3_version}"
   config_path = "${path.module}/config/jupiter-brain-custom-3-env"
   env = "custom-3"
   index = "${var.index}"
@@ -117,7 +124,7 @@ module "worker_custom_1" {
   host_id = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user = "${var.ssh_user}"
-  version = "${var.travis_worker_staging_version}"
+  version = "${var.travis_worker_custom-1_version}"
   config_path = "${path.module}/config/travis-worker-custom-1"
   vm_ssh_key_path = "${path.module}/config/travis-vm-ssh-key"
   env = "custom-1"
@@ -129,7 +136,7 @@ module "worker_custom_2" {
   host_id = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user = "${var.ssh_user}"
-  version = "${var.travis_worker_staging_version}"
+  version = "${var.travis_worker_custom-2_version}"
   config_path = "${path.module}/config/travis-worker-custom-2"
   vm_ssh_key_path = "${path.module}/config/travis-vm-ssh-key"
   env = "custom-2"
@@ -141,7 +148,7 @@ module "worker_custom_3" {
   host_id = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user = "${var.ssh_user}"
-  version = "${var.travis_worker_staging_version}"
+  version = "${var.travis_worker_custom-3_version}"
   config_path = "${path.module}/config/travis-worker-custom-3"
   vm_ssh_key_path = "${path.module}/config/travis-vm-ssh-key"
   env = "custom-3"
