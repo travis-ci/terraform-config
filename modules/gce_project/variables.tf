@@ -21,7 +21,7 @@ variable "worker_account_json_com" {}
 variable "worker_account_json_org" {}
 variable "worker_config_com" {}
 variable "worker_config_org" {}
-variable "worker_docker_self_image" { default = "quay.io/travisci/worker:v2.5.0" }
+variable "worker_docker_self_image" { default = "travisci/worker:v2.6.0" }
 variable "worker_image" {}
 variable "worker_instance_count_com" {}
 variable "worker_instance_count_org" {}
