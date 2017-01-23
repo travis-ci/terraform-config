@@ -32,7 +32,7 @@ post-stop script
     . /etc/default/$UPSTART_JOB
   fi
 
-  rm -f $TRAVIS_WORKER_RUN_DIR/$UPSTART_JOB-$INST
+  rm -f $TRAVIS_WORKER_RUN_DIR/$UPSTART_JOB
 end script
 
 # vim:filetype=upstart

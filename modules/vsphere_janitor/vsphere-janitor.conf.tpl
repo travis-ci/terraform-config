@@ -32,7 +32,7 @@ post-stop script
     . /etc/default/$UPSTART_JOB
   fi
 
-  rm -f $VSPHERE_JANITOR_RUN_DIR/$UPSTART_JOB-$INST
+  rm -f $VSPHERE_JANITOR_RUN_DIR/$UPSTART_JOB
 end script
 
 # vim:filetype=upstart
