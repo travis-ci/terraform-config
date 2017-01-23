@@ -38,7 +38,7 @@ variable "worker_docker_image_perl" {}
 variable "worker_docker_image_php" {}
 variable "worker_docker_image_python" {}
 variable "worker_docker_image_ruby" {}
-variable "worker_docker_self_image" { default = "travisci/worker:v2.6.0" }
+variable "worker_docker_self_image" { default = "travisci/worker:v2.6.1" }
 variable "worker_instance_type" { default = "c3.2xlarge" }
 variable "worker_queue" {}
 variable "worker_subnets" {}
