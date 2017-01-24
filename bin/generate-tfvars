@@ -5,9 +5,25 @@ set -o errexit
 main() {
   local top
   top="$(git rev-parse --show-toplevel)"
+  local out="${1}"
+  if [[ "${out}" ]]; then
+    exec 1<>"${out}"
+  fi
 
-  "${top}/bin/generate-github-ssh-users"
-  "${top}/bin/generate-latest-docker-image-tags"
+  if ! "${top}/bin/generate-github-ssh-users"; then
+    __cleanup "${out}"
+    exit 1
+  fi
+
+  if ! "${top}/bin/generate-latest-docker-image-tags"; then
+    __cleanup "${out}"
+  fi
+}
+
+__cleanup() {
+  if [[ "${1}" && -f "${1}" ]]; then
+    rm -f "${1}"
+  fi
 }
 
 main "$@"
