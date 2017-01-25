@@ -12,10 +12,13 @@ variable "travis_worker_custom-2_version" { default = "v2.6.1" }
 variable "travis_worker_custom-3_version" { default = "v2.6.1" }
 variable "travis_worker_staging_version" { default = "v2.6.1" }
 variable "vsphere_janitor_version" { default = "9bde41b" }
+variable "collectd_vsphere_version" { default = "5062c4b" }
 variable "ssh_user" {
   description = "your username on the wjb instances"
 }
 variable "threatstack_key" {}
+variable "librato_email" {}
+variable "librato_token" {}
 
 provider "aws" {}
 provider "vsphere" {}
@@ -207,6 +210,19 @@ module "vsphere_janitor_custom_3" {
   version = "${var.vsphere_janitor_version}"
   config_path = "${path.module}/config/vsphere-janitor-custom-3"
   env = "custom-3"
+  index = "${var.index}"
+}
+
+module "collectd-vsphere-common-1" {
+  source = "../modules/collectd_vsphere"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+  version = "${var.collectd_vsphere_version}"
+  config_path = "${path.module}/config/collectd-vsphere-common-1"
+  librato_email = "${var.librato_email}"
+  librato_token = "${var.librato_token}"
+  env = "common-1"
   index = "${var.index}"
 }
 
