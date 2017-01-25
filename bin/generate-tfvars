@@ -7,7 +7,7 @@ main() {
   top="$(git rev-parse --show-toplevel)"
   local out="${1}"
   if [[ "${out}" ]]; then
-    exec 1<>"${out}"
+    exec 1>"${out}"
   fi
 
   if ! "${top}/bin/generate-github-ssh-users"; then
@@ -17,6 +17,7 @@ main() {
 
   if ! "${top}/bin/generate-latest-docker-image-tags"; then
     __cleanup "${out}"
+    exit 1
   fi
 }
 
