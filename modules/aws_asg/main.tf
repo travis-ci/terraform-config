@@ -131,60 +131,93 @@ EOF
   }
 }
 
-resource "aws_autoscaling_group" "workers" {
+resource "aws_cloudformation_stack" "workers_asg" {
   name = "${var.env}-${var.index}-workers-${var.site}"
-  default_cooldown = 300
-  health_check_grace_period = 0
-  health_check_type = "EC2"
-  launch_configuration = "${aws_launch_configuration.workers.name}"
-  max_size = "${var.worker_asg_max_size}"
-  min_size = "${var.worker_asg_min_size}"
-  vpc_zone_identifier = ["${split(",", var.worker_subnets)}"]
-  termination_policies = [
-    "OldestLaunchConfiguration",
-    "OldestInstance",
-    "Default"
-  ]
-  enabled_metrics = [
-    "GroupMinSize",
-    "GroupMaxSize",
-    "GroupDesiredCapacity",
-    "GroupInServiceInstances",
-    "GroupPendingInstances",
-    "GroupStandbyInstances",
-    "GroupTerminatingInstances",
-    "GroupTotalInstances"
-  ]
-  tag {
-    key = "Name"
-    value = "${var.env}-${var.index}-worker-${var.site}-${var.worker_queue}"
-    propagate_at_launch = true
+  template_body = <<EOF
+{
+  "Resources": {
+    "AutoScalingGroup": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "Properties": {
+        "Cooldown": 300,
+        "HealthCheckType": "EC2",
+        "HealthCheckGracePeriod": 0,
+        "LaunchConfigurationName": "${aws_launch_configuration.workers.name}",
+        "MaxSize": "${var.worker_asg_max_size}",
+        "MetricsCollection": [
+          {
+            "Granularity": "1Minute",
+            "Metrics": [
+              "GroupMinSize",
+              "GroupMaxSize",
+              "GroupDesiredCapacity",
+              "GroupInServiceInstances",
+              "GroupPendingInstances",
+              "GroupStandbyInstances",
+              "GroupTerminatingInstances",
+              "GroupTotalInstances"
+            ]
+          }
+        ],
+        "MinSize": "${var.worker_asg_min_size}",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "${var.env}-${var.index}-worker-${var.site}-${var.worker_queue}",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "env",
+            "Value": "${var.env}",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "queue",
+            "Value": "${var.worker_queue}",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "role",
+            "Value": "worker",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "site",
+            "Value": "${var.site}",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "index",
+            "Value": "${var.index}",
+            "PropagateAtLaunch": true
+          }
+        ],
+        "TerminationPolicies": [
+          "OldestLaunchConfiguration",
+          "OldestInstance",
+          "Default"
+        ],
+        "VPCZoneIdentifier": ${jsonencode(split(",", var.worker_subnets))}
+      },
+      "UpdatePolicy": {
+        "AutoScalingRollingUpdate": {
+          "MinInstancesInService": "${var.worker_asg_min_size}",
+          "MaxBatchSize": "2",
+          "PauseTime": "PT0S"
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "AsgName": {
+      "Description": "The name of the auto scaling group",
+      "Value": {
+        "Ref": "AutoScalingGroup"
+      }
+    }
   }
-  tag {
-    key = "env"
-    value = "${var.env}"
-    propagate_at_launch = true
-  }
-  tag {
-    key = "queue"
-    value = "${var.worker_queue}"
-    propagate_at_launch = true
-  }
-  tag {
-    key = "role"
-    value = "worker"
-    propagate_at_launch = true
-  }
-  tag {
-    key = "site"
-    value = "${var.site}"
-    propagate_at_launch = true
-  }
-  tag {
-    key = "index"
-    value = "${var.index}"
-    propagate_at_launch = true
-  }
+}
+EOF
 }
 
 resource "aws_autoscaling_policy" "workers_remove_capacity" {
@@ -192,7 +225,7 @@ resource "aws_autoscaling_policy" "workers_remove_capacity" {
   scaling_adjustment = "${var.worker_asg_scale_in_qty}"
   adjustment_type = "ChangeInCapacity"
   cooldown = "${var.worker_asg_scale_in_cooldown}"
-  autoscaling_group_name = "${aws_autoscaling_group.workers.name}"
+  autoscaling_group_name = "${aws_cloudformation_stack.workers_asg.outputs["AsgName"]}"
 }
 
 resource "aws_cloudwatch_metric_alarm" "workers_remove_capacity" {
@@ -212,7 +245,7 @@ resource "aws_autoscaling_policy" "workers_add_capacity" {
   scaling_adjustment = "${var.worker_asg_scale_out_qty}"
   adjustment_type = "ChangeInCapacity"
   cooldown = "${var.worker_asg_scale_out_cooldown}"
-  autoscaling_group_name = "${aws_autoscaling_group.workers.name}"
+  autoscaling_group_name = "${aws_cloudformation_stack.workers_asg.outputs["AsgName"]}"
 }
 
 resource "aws_cloudwatch_metric_alarm" "workers_add_capacity" {
@@ -311,7 +344,7 @@ EOF
 
 resource "aws_autoscaling_lifecycle_hook" "workers_launching" {
   name = "${var.env}-${var.index}-workers-${var.site}-launching"
-  autoscaling_group_name = "${aws_autoscaling_group.workers.name}"
+  autoscaling_group_name = "${aws_cloudformation_stack.workers_asg.outputs["AsgName"]}"
   default_result = "CONTINUE"
   heartbeat_timeout = "${var.lifecycle_hook_heartbeat_timeout}"
   lifecycle_transition = "autoscaling:EC2_INSTANCE_LAUNCHING"
@@ -321,7 +354,7 @@ resource "aws_autoscaling_lifecycle_hook" "workers_launching" {
 
 resource "aws_autoscaling_lifecycle_hook" "workers_terminating" {
   name = "${var.env}-${var.index}-workers-${var.site}-terminating"
-  autoscaling_group_name = "${aws_autoscaling_group.workers.name}"
+  autoscaling_group_name = "${aws_cloudformation_stack.workers_asg.outputs["AsgName"]}"
   default_result = "CONTINUE"
   heartbeat_timeout = "${var.lifecycle_hook_heartbeat_timeout}"
   lifecycle_transition = "autoscaling:EC2_INSTANCE_TERMINATING"
