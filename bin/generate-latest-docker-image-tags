@@ -33,10 +33,6 @@ def main
 end
 
 def latest_docker_image_tag(image)
-  "#{image}:#{docker_image_tags(image).sort.reverse.fetch(0)}"
-end
-
-def docker_image_tags(image)
   qs = URI.encode_www_form(
     service: 'registry.docker.io',
     scope: "repository:#{image}:pull"
@@ -51,6 +47,8 @@ def docker_image_tags(image)
     "/v2/#{image}/tags/list",
     headers: { 'Authorization' => "Bearer #{token}" }
   ).fetch('tags')
+
+  "#{image}:#{tags.sort.reverse.fetch(0)}"
 end
 
 def docker_index_get(path, host: 'index.docker.io', headers: {})
