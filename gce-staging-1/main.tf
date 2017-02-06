@@ -74,7 +74,7 @@ module "gce_project_1" {
   worker_account_json_org = "${file("${path.module}/config/gce-workers-staging-1.json")}"
   worker_config_com = "${file("${path.module}/config/worker-env-com")}"
   worker_config_org = "${file("${path.module}/config/worker-env-org")}"
-  worker_docker_self_image = "travisci/worker:v2.6.2"
+  worker_docker_self_image = "travisci/worker:v2.6.2-17-g297b8e0"
   worker_image = "${var.gce_worker_image}"
   # instance count must be a multiple of number of zones (currently 2)
   worker_instance_count_com = 2
