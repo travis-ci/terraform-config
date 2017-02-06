@@ -32,6 +32,9 @@ resource "google_compute_instance" "worker_org" {
 
   network_interface {
     subnetwork = "${var.subnetwork_workers}"
+    access_config {
+      # ephemeral ip
+    }
   }
 
   # apparently not working :-/
