@@ -6,7 +6,7 @@ resource "google_compute_address" "bastion-b" {
 
 resource "aws_route53_record" "bastion-b" {
   zone_id = "${var.travisci_net_external_zone_id}"
-  name = "bastion-${var.env}.gce-us-central1-b.travisci.net"
+  name = "bastion-${var.env}-${var.index}.gce-us-central1-b.travisci.net"
   type = "A"
   ttl = 5
   records = [
