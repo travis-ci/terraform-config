@@ -11,8 +11,6 @@ variable "gcloud_zone" {}
 variable "github_users" {}
 variable "heroku_org" {}
 variable "index" {}
-variable "nat_image" {}
-variable "nat_machine_type" {}
 variable "project" {}
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
