@@ -63,4 +63,4 @@ $(CONFIG_FILES):
 	trvs generate-config --pro -p TRAVIS_WORKER -f env macstadium-workers production-1-2 \
 		| sed 's/^/export /' >config/travis-worker-com-prod-2
 	trvs generate-config -p COLLECTD_VSPHERE -f env collectd-vsphere common-1 \
-		| sed 's/^/export /' >config/collectd-vsphere-common-1
+		| sed 's/^/export /' | sed 's/ COLLECTD_VSPHERE_/ /' >config/collectd-vsphere-common-1

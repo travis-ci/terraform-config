@@ -31,13 +31,22 @@ data "template_file" "librato_conf" {
   }
 }
 
+data "template_file" "collectd_vsphere_upstart" {
+  template = "${file("${path.module}/collectd-vsphere.conf.tpl")}"
+
+  vars {
+    env = "${var.env}"
+  }
+}
+
 resource "null_resource" "collectd_vsphere" {
   triggers {
     version = "${var.version}"
     config_signature = "${sha256(file(var.config_path))}"
     install_script_signature = "${sha256(data.template_file.collectd_vsphere_install.rendered)}"
     librato_creds_signature = "${sha256(data.template_file.librato_conf.rendered)}"
-    collectd_creds_signature = "${sha256(data.template_file.collectd_conf.rendered)}"
+    collectd_config_signature = "${sha256(data.template_file.collectd_conf.rendered)}"
+    collectd_vsphere_init_signature = "${sha256(data.template_file.collectd_vsphere_upstart.rendered)}"
     name = "${var.env}-${var.index}"
     host_id = "${var.host_id}"
   }
@@ -51,6 +60,11 @@ resource "null_resource" "collectd_vsphere" {
   provisioner "file" {
     content = "${file(var.config_path)}"
     destination = "/tmp/etc-default-collectd-vsphere-${var.env}"
+  }
+
+  provisioner "file" {
+    content = "${data.template_file.collectd_vsphere_upstart.rendered}"
+    destination = "/tmp/init-collectd-vsphere-${var.env}.conf"
   }
 
   provisioner "file" {
