@@ -40,5 +40,5 @@ module "gce_project_6" {
   worker_image = "${var.gce_worker_image}"
   # instance count must be a multiple of number of zones (currently 2)
   worker_instance_count_com = 2
-  worker_instance_count_org = 0
+  worker_instance_count_org = 2
 }
