@@ -18,7 +18,7 @@ data "template_file" "cloud_config_com" {
 
 resource "google_compute_instance" "worker_com" {
   count = "${var.instance_count_com}"
-  name = "${var.env}-${var.index}-worker-com-${var.zone_suffix}-${count.index + 1}"
+  name = "${var.env}-${var.index}-worker-com-${var.zone_suffix}-${count.index + 1}-gce"
   machine_type = "${var.machine_type}"
   zone = "${var.zone}"
   tags = ["worker", "${var.env}", "com"]
