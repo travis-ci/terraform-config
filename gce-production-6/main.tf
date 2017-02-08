@@ -34,6 +34,6 @@ module "gce_project_6" {
   worker_config_org = "${file("${path.module}/config/worker-env-org")}"
   worker_docker_self_image = "travisci/worker:v2.7.0"
   worker_image = "${var.gce_worker_image}"
-  worker_instance_count_com = 12
+  worker_instance_count_com = 10
   worker_instance_count_org = 0
 }
