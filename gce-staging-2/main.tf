@@ -2,6 +2,7 @@ variable "env" { default = "staging" }
 variable "gce_bastion_image" { default = "eco-emissary-99515/bastion-1478778272" }
 variable "gce_gcloud_zone" {}
 variable "gce_heroku_org" {}
+variable "gce_nat_image" { default = "eco-emissary-99515/nat-1478778271" }
 variable "gce_worker_image" { default = "eco-emissary-99515/travis-worker-1480649763" }
 variable "github_users" {}
 variable "index" { default = 2 }
@@ -31,6 +32,8 @@ module "gce_project_2" {
   gcloud_zone = "${var.gce_gcloud_zone}"
   heroku_org = "${var.gce_heroku_org}"
   index = "${var.index}"
+  nat_image = "${var.gce_nat_image}"
+  nat_machine_type = "g1-small"
   project = "travis-staging-2"
   syslog_address_com = "${var.syslog_address_com}"
   syslog_address_org = "${var.syslog_address_org}"
