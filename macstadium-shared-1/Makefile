@@ -64,3 +64,7 @@ $(CONFIG_FILES):
 		| sed 's/^/export /' >config/travis-worker-com-prod-2
 	trvs generate-config -p COLLECTD_VSPHERE -f env collectd-vsphere common-1 \
 		| sed 's/^/export /' | sed 's/ COLLECTD_VSPHERE_/ /' >config/collectd-vsphere-common-1
+
+$(ENV_NAME).tfvars:
+	$(TOP)/bin/generate-tfvars >$@
+	trvs generate-config -f hcl collectd-vsphere common-1 >> $@

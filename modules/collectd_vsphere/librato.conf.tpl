@@ -1,6 +1,6 @@
 LoadPlugin write_http
 <Plugin write_http>
-  <Node "librato">
+  <Node "${host}">
     URL "https://collectd.librato.com/v1/measurements"
     Format "JSON"
     BufferSize 8192

@@ -19,6 +19,10 @@ variable "ssh_user" {
 variable "threatstack_key" {}
 variable "librato_email" {}
 variable "librato_token" {}
+variable "collectd_vsphere_collectd_network_user" {}
+variable "collectd_vsphere_collectd_network_token" {}
+variable "fw_ip" {}
+variable "fw_snmp_community" {}
 
 provider "aws" {}
 provider "vsphere" {}
@@ -224,6 +228,10 @@ module "collectd-vsphere-common-1" {
   librato_token = "${var.librato_token}"
   env = "common-1"
   index = "${var.index}"
+  collectd_vsphere_collectd_network_user = "${var.collectd_vsphere_collectd_network_user}"
+  collectd_vsphere_collectd_network_token = "${var.collectd_vsphere_collectd_network_token}"
+  fw_ip = "${var.fw_ip}"
+  fw_snmp_community = "${var.fw_snmp_community}"
 }
 
 module "haproxy" {

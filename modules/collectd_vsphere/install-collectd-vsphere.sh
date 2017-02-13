@@ -9,7 +9,7 @@ echo "deb https://packagecloud.io/librato/librato-collectd/ubuntu/ trusty main" 
 curl https://packagecloud.io/gpg.key 2> /dev/null | sudo apt-key add - #if you have a less reckless solution lmk
 sudo apt-get update -yqq
 sudo apt-get install -y debian-archive-keyring apt-transport-https
-sudo apt-get install -y liboping0
+sudo apt-get install -y liboping0 snmp snmp-mibs-downloader
 sudo apt-get install -y collectd
 
 # put collectd configs in place
@@ -20,6 +20,14 @@ sudo chmod 644 "/opt/collectd/etc/collectd.conf"
 sudo cp "/tmp/librato.conf" "/opt/collectd/etc/collectd.conf.d/librato.conf"
 sudo chown root:root "/opt/collectd/etc/collectd.conf.d/librato.conf"
 sudo chmod 644 "/opt/collectd/etc/collectd.conf.d/librato.conf"
+
+sudo cp "/tmp/snmp.conf" "/opt/collectd/etc/collectd.conf.d/snmp.conf"
+sudo chown root:root "/opt/collectd/etc/collectd.conf.d/snmp.conf"
+sudo chmod 644 "/opt/collectd/etc/collectd.conf.d/snmp.conf"
+
+sudo cp "/tmp/collectd-network-auth" "/opt/collectd/etc/collectd-network-auth"
+sudo chown root:root "/opt/collectd/etc/collectd-network-auth"
+sudo chmod 644 "/opt/collectd/etc/collectd-network-auth"
 
 #put collectd-vsphere config in /etc/default
 sudo cp "/tmp/etc-default-collectd-vsphere-${env}" "/etc/default/collectd-vsphere-${env}"
