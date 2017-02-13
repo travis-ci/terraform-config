@@ -2,6 +2,7 @@
 .env
 aws-*/config/
 gce-*/config/
+macstadium-*/config/
 *.tfvars
 *.tfplan
 graph.png
