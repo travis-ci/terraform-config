@@ -46,14 +46,13 @@ __heroku_curl() {
 }
 
 __usage() {
-  cat >&2 <<EOF
-Usage: $(basename "${0}") <app>
-
-Dump Heroku config in shell format for app named <app>
-
-    $(basename "${0}") lovely-lil-app
-
-EOF
+  local prog
+  prog="$(basename "${0}")"
+  echo "Usage: ${prog} <app>" >&2
+  echo >&2
+  echo "Dump Heroku config in shell format for app named <app>" >&2
+  echo >&2
+  echo "${prog} lovely-lil-app" >&2
 }
 
 main "${@}"

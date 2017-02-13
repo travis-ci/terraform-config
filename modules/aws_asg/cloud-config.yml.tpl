@@ -29,6 +29,10 @@ write_files:
   encoding: b64
   owner: 'travis:travis'
   path: /var/tmp/travis-run.d/instance-hostname.tmpl
+- content: '${base64encode(registry_hostname)}'
+  encoding: b64
+  owner: 'travis:travis'
+  path: /var/tmp/travis-run.d/registry-hostname
 - content: '${base64encode(prestart_hook_bash)}'
   encoding: b64
   owner: 'travis:travis'

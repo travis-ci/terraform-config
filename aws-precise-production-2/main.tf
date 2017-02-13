@@ -9,7 +9,7 @@ variable "rabbitmq_username_com" {}
 variable "rabbitmq_username_org" {}
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
-variable "worker_ami" { default = "ami-a19d9bb6" }
+variable "worker_ami" { default = "ami-a38664b5" }
 
 provider "aws" {}
 
@@ -144,7 +144,7 @@ module "aws_asg_com" {
   worker_docker_image_php = "quay.io/travisci/travis-php:latest"
   worker_docker_image_python = "quay.io/travisci/travis-python:latest"
   worker_docker_image_ruby = "quay.io/travisci/travis-ruby:latest"
-  worker_docker_self_image = "quay.io/travisci/worker:v2.5.0-8-g19ea9c2"
+  worker_docker_self_image = "travisci/worker:v2.5.0"
   worker_instance_type = "c3.8xlarge"
   worker_queue = "docker"
   worker_subnets = "${data.terraform_remote_state.vpc.workers_com_subnet_1a_id},${data.terraform_remote_state.vpc.workers_com_subnet_1b_id},${data.terraform_remote_state.vpc.workers_com_subnet_1c_id},${data.terraform_remote_state.vpc.workers_com_subnet_1e_id}"
@@ -185,7 +185,7 @@ module "aws_asg_org" {
   worker_docker_image_php = "quay.io/travisci/travis-php:latest"
   worker_docker_image_python = "quay.io/travisci/travis-python:latest"
   worker_docker_image_ruby = "quay.io/travisci/travis-ruby:latest"
-  worker_docker_self_image = "quay.io/travisci/worker:v2.5.0-8-g19ea9c2"
+  worker_docker_self_image = "travisci/worker:v2.5.0"
   worker_instance_type = "c3.8xlarge"
   worker_queue = "docker"
   worker_subnets = "${data.terraform_remote_state.vpc.workers_org_subnet_1a_id},${data.terraform_remote_state.vpc.workers_org_subnet_1b_id},${data.terraform_remote_state.vpc.workers_org_subnet_1c_id},${data.terraform_remote_state.vpc.workers_org_subnet_1e_id}"

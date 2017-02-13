@@ -2,7 +2,6 @@ variable "env" { default = "staging" }
 variable "gce_bastion_image" { default = "eco-emissary-99515/bastion-1478778272" }
 variable "gce_gcloud_zone" {}
 variable "gce_heroku_org" {}
-variable "gce_nat_image" { default = "eco-emissary-99515/nat-1478778271" }
 variable "gce_hashistack_server_image" { default = "eco-emissary-99515/hashistack-server-1480351044" }
 variable "gce_worker_image" { default = "eco-emissary-99515/travis-worker-1480649763" }
 variable "github_users" {}
@@ -64,8 +63,6 @@ module "gce_project_1" {
   gcloud_zone = "${var.gce_gcloud_zone}"
   heroku_org = "${var.gce_heroku_org}"
   index = "${var.index}"
-  nat_image = "${var.gce_nat_image}"
-  nat_machine_type = "g1-small"
   project = "travis-staging-1"
   syslog_address_com = "${var.syslog_address_com}"
   syslog_address_org = "${var.syslog_address_org}"
@@ -74,7 +71,7 @@ module "gce_project_1" {
   worker_account_json_org = "${file("${path.module}/config/gce-workers-staging-1.json")}"
   worker_config_com = "${file("${path.module}/config/worker-env-com")}"
   worker_config_org = "${file("${path.module}/config/worker-env-org")}"
-  worker_docker_self_image = "quay.io/travisci/worker:v2.5.0-8-g19ea9c2"
+  worker_docker_self_image = "travisci/worker:v2.6.2-17-g297b8e0"
   worker_image = "${var.gce_worker_image}"
   # instance count must be a multiple of number of zones (currently 2)
   worker_instance_count_com = 2

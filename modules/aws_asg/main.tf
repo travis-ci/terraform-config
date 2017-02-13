@@ -12,6 +12,7 @@ variable "github_users" { default = "" }
 variable "heroku_org" {}
 variable "index" {}
 variable "lifecycle_hook_heartbeat_timeout" { default = 3600 }
+variable "registry_hostname" { default = "" }
 variable "security_groups" {}
 variable "site" {}
 variable "syslog_address" {}
@@ -37,7 +38,7 @@ variable "worker_docker_image_perl" {}
 variable "worker_docker_image_php" {}
 variable "worker_docker_image_python" {}
 variable "worker_docker_image_ruby" {}
-variable "worker_docker_self_image" { default = "quay.io/travisci/worker:v2.5.0" }
+variable "worker_docker_self_image" { default = "travisci/worker:v2.6.2" }
 variable "worker_instance_type" { default = "c3.2xlarge" }
 variable "worker_queue" {}
 variable "worker_subnets" {}
@@ -75,14 +76,19 @@ data "template_file" "docker_daemon_json" {
     "unix:///var/run/docker.sock"
   ],
   "icc": false,
-  "userns-remap": "default",
+  "insecure-registries": [
+    "10.0.0.0/8"
+  ],
+  ${var.registry_hostname != "" ?
+    "\"registry-mirrors\": [\"http://${var.registry_hostname}\"]," : ""}
   "storage-driver": "devicemapper",
   "storage-opts": [
     "dm.basesize=${var.docker_storage_dm_basesize}",
     "dm.datadev=/dev/direct-lvm/data",
     "dm.metadatadev=/dev/direct-lvm/metadata",
     "dm.fs=xfs"
-  ]
+  ],
+  "userns-remap": "default"
 }
 EOF
 }
@@ -98,6 +104,7 @@ data "template_file" "cloud_config" {
     github_users_env = "export GITHUB_USERS='${var.github_users}'"
     hostname_tmpl = "___INSTANCE_ID___-${var.env}-${var.index}-worker-${var.site}-${var.worker_queue}.travisci.net"
     prestart_hook_bash = "${file("${path.module}/prestart-hook.bash")}"
+    registry_hostname = "${var.registry_hostname}"
     start_hook_bash = "${file("${path.module}/start-hook.bash")}"
     stop_hook_bash = "${file("${path.module}/stop-hook.bash")}"
     syslog_address = "${var.syslog_address}"
