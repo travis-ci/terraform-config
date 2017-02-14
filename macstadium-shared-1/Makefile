@@ -4,10 +4,28 @@ include $(shell git rev-parse --show-toplevel)/terraform.mk
 default: hello
 
 CONFIG_FILES := \
-		config/jupiter-brain-prod-env \
-		config/jupiter-brain-staging-env \
+		config/jupiter-brain-prod-org-env \
+		config/jupiter-brain-staging-org-env \
+		config/jupiter-brain-custom-1-env \
+		config/jupiter-brain-custom-2-env \
+		config/jupiter-brain-custom-3-env \
 		config/travis-worker-org-staging-1 \
 		config/travis-worker-org-staging-2 \
+		config/travis-worker-org-prod-1 \
+		config/travis-worker-org-prod-2 \
+		config/travis-worker-custom-1 \
+		config/travis-worker-custom-2 \
+		config/travis-worker-custom-3 \
+		config/vsphere-janitor-prod-com \
+		config/vsphere-janitor-staging-com \
+		config/vsphere-janitor-custom-1 \
+		config/vsphere-janitor-custom-2 \
+		config/vsphere-janitor-custom-3 \
+		config/jupiter-brain-prod-com-env \
+		config/jupiter-brain-staging-com-env \
+		config/travis-worker-com-staging-1 \
+		config/travis-worker-com-prod-1 \
+		config/collectd-vsphere-common-1 \
 		config/travis-vm-ssh-key
 
 .PHONY: .config
