@@ -2,14 +2,8 @@ variable "index" { default = 2 }
 variable "travisci_net_external_zone_id" { default = "Z2RI61YP4UWSIO" }
 variable "macstadium_vanilla_image" { default = "travis-ci-ubuntu14.04-internal-vanilla-1481140635" }
 variable "jupiter_brain_prod_version" { default = "v0.2.0-58-gce0b45a" }
-variable "jupiter_brain_custom-1_version" { default = "v0.2.0-58-gce0b45a" }
-variable "jupiter_brain_custom-2_version" { default = "v0.2.0-58-gce0b45a" }
-variable "jupiter_brain_custom-3_version" { default = "v0.2.0-58-gce0b45a" }
 variable "jupiter_brain_staging_version" { default = "v0.2.0-58-gce0b45a" }
 variable "travis_worker_prod_version" { default = "v2.6.2" }
-variable "travis_worker_custom-1_version" { default = "v2.6.2" }
-variable "travis_worker_custom-2_version" { default = "v2.6.2" }
-variable "travis_worker_custom-3_version" { default = "v2.6.2" }
 variable "travis_worker_staging_version" { default = "v2.6.2" }
 variable "vsphere_janitor_version" { default = "9bde41b" }
 variable "collectd_vsphere_version" { default = "b648672" }
@@ -72,42 +66,6 @@ module "jupiter_brain_staging_com" {
   env = "com-staging"
   index = "${var.index}"
   port_suffix = 4
-}
-
-module "jupiter_brain_custom_1" {
-  source = "../modules/jupiter_brain_bluegreen"
-  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_ip_address = "${module.macstadium_infrastructure.wjb_ip}"
-  ssh_user = "${var.ssh_user}"
-  version = "${var.jupiter_brain_custom-1_version}"
-  config_path = "${path.module}/config/jupiter-brain-custom-1-env"
-  env = "custom-1"
-  index = "${var.index}"
-  port_suffix = 5
-}
-
-module "jupiter_brain_custom_2" {
-  source = "../modules/jupiter_brain_bluegreen"
-  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_ip_address = "${module.macstadium_infrastructure.wjb_ip}"
-  ssh_user = "${var.ssh_user}"
-  version = "${var.jupiter_brain_custom-2_version}"
-  config_path = "${path.module}/config/jupiter-brain-custom-2-env"
-  env = "custom-2"
-  index = "${var.index}"
-  port_suffix = 6
-}
-
-module "jupiter_brain_custom_3" {
-  source = "../modules/jupiter_brain_bluegreen"
-  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_ip_address = "${module.macstadium_infrastructure.wjb_ip}"
-  ssh_user = "${var.ssh_user}"
-  version = "${var.jupiter_brain_custom-3_version}"
-  config_path = "${path.module}/config/jupiter-brain-custom-3-env"
-  env = "custom-3"
-  index = "${var.index}"
-  port_suffix = 7
 }
 
 module "worker_com_staging_1" {
