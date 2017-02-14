@@ -23,9 +23,17 @@ variable "collectd_vsphere_collectd_network_user" {}
 variable "collectd_vsphere_collectd_network_token" {}
 variable "fw_ip" {}
 variable "fw_snmp_community" {}
+variable "vsphere_user" {}
+variable "vsphere_password" {}
+variable "vsphere_server" {}
 
 provider "aws" {}
-provider "vsphere" {}
+provider "vsphere" {
+  user           = "${var.vsphere_user}"
+  password       = "${var.vsphere_password}"
+  vsphere_server = "${var.vsphere_server}"
+  allow_unverified_ssl = true
+}
 
 module "macstadium_infrastructure" {
   source = "../modules/macstadium_infrastructure"
