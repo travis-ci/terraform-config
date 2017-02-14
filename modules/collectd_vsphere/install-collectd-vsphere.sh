@@ -13,31 +13,31 @@ sudo apt-get install -y liboping0 snmp snmp-mibs-downloader
 sudo apt-get install -y collectd
 
 # put collectd configs in place
-sudo cp "/tmp/collectd.conf" "/opt/collectd/etc/collectd.conf"
+sudo mv "/tmp/collectd.conf" "/opt/collectd/etc/collectd.conf"
 sudo chown root:root "/opt/collectd/etc/collectd.conf"
 sudo chmod 644 "/opt/collectd/etc/collectd.conf"
 
-sudo cp "/tmp/librato.conf" "/opt/collectd/etc/collectd.conf.d/librato.conf"
+sudo mv "/tmp/librato.conf" "/opt/collectd/etc/collectd.conf.d/librato.conf"
 sudo chown root:root "/opt/collectd/etc/collectd.conf.d/librato.conf"
 sudo chmod 644 "/opt/collectd/etc/collectd.conf.d/librato.conf"
 
-sudo cp "/tmp/snmp.conf" "/opt/collectd/etc/collectd.conf.d/snmp.conf"
+sudo mv "/tmp/snmp.conf" "/opt/collectd/etc/collectd.conf.d/snmp.conf"
 sudo chown root:root "/opt/collectd/etc/collectd.conf.d/snmp.conf"
 sudo chmod 644 "/opt/collectd/etc/collectd.conf.d/snmp.conf"
 
-sudo cp "/tmp/collectd-network-auth" "/opt/collectd/etc/collectd-network-auth"
+sudo mv "/tmp/collectd-network-auth" "/opt/collectd/etc/collectd-network-auth"
 sudo chown root:root "/opt/collectd/etc/collectd-network-auth"
 sudo chmod 644 "/opt/collectd/etc/collectd-network-auth"
 
 #put collectd-vsphere config in /etc/default
-sudo cp "/tmp/etc-default-collectd-vsphere-${env}" "/etc/default/collectd-vsphere-${env}"
+sudo mv "/tmp/etc-default-collectd-vsphere-${env}" "/etc/default/collectd-vsphere-${env}"
 sudo chown root:root "/etc/default/collectd-vsphere-${env}"
 sudo chmod 644 "/etc/default/collectd-vsphere-${env}"
 
 #deploy collectd-vsphere upstart config
 sudo mkdir -p /var/tmp/run/collectd-vsphere
 sudo chown collectd-vsphere:collectd-vsphere /var/tmp/run/collectd-vsphere
-sudo cp "/tmp/init-collectd-vsphere-${env}.conf" "/etc/init/collectd-vsphere-${env}.conf"
+sudo mv "/tmp/init-collectd-vsphere-${env}.conf" "/etc/init/collectd-vsphere-${env}.conf"
 sudo chown root:root "/etc/init/collectd-vsphere-${env}"
 sudo chmod 644 "/etc/init/collectd-vsphere-${env}"
 
