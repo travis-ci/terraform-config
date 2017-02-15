@@ -225,16 +225,16 @@ module "vsphere_janitor_custom_3" {
   index = "${var.index}"
 }
 
-module "collectd-vsphere-common-1" {
+module "collectd-vsphere-common" {
   source = "../modules/collectd_vsphere"
   host_id = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user = "${var.ssh_user}"
   version = "${var.collectd_vsphere_version}"
-  config_path = "${path.module}/config/collectd-vsphere-common-1"
+  config_path = "${path.module}/config/collectd-vsphere-common"
   librato_email = "${var.librato_email}"
   librato_token = "${var.librato_token}"
-  env = "common-1"
+  env = "common"
   index = "${var.index}"
   collectd_vsphere_collectd_network_user = "${var.collectd_vsphere_collectd_network_user}"
   collectd_vsphere_collectd_network_token = "${var.collectd_vsphere_collectd_network_token}"
