@@ -15,7 +15,9 @@ CONFIG_FILES := \
 		config/jupiter-brain-production-com-env \
 		config/jupiter-brain-staging-com-env \
 		config/travis-worker-staging-com-1 \
+		config/travis-worker-staging-com-2 \
 		config/travis-worker-production-com-1 \
+		config/travis-worker-production-com-2 \
 		config/collectd-vsphere-common \
 		config/travis-vm-ssh-key
 
