@@ -1,4 +1,4 @@
-description "collectd-vsphere (collectd-vsphere-${env})"
+description "collectd-vsphere (collectd-vsphere-${index}-${env})"
 
 stop on runlevel [!2345]
 

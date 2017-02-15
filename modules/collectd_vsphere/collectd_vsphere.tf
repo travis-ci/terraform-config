@@ -1,4 +1,4 @@
-variable "ssh_host" {} 
+variable "ssh_host" {}
 variable "ssh_user" {}
 variable "version" {}
 variable "config_path" {}
@@ -57,6 +57,7 @@ data "template_file" "collectd_vsphere_upstart" {
 
   vars {
     env = "${var.env}"
+    index = "${var.index}"
   }
 }
 
