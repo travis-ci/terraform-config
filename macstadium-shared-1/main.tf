@@ -1,15 +1,15 @@
 variable "index" { default = 1 }
 variable "travisci_net_external_zone_id" { default = "Z2RI61YP4UWSIO" }
 variable "macstadium_vanilla_image" { default = "travis-ci-ubuntu14.04-internal-vanilla-1481140635" }
-variable "jupiter_brain_prod_version" { default = "v0.2.0-58-gce0b45a" }
+variable "jupiter_brain_production_version" { default = "v0.2.0-58-gce0b45a" }
 variable "jupiter_brain_custom-1_version" { default = "v0.2.0-58-gce0b45a" }
 variable "jupiter_brain_custom-2_version" { default = "v0.2.0-58-gce0b45a" }
 variable "jupiter_brain_custom-3_version" { default = "v0.2.0-58-gce0b45a" }
 variable "jupiter_brain_staging_version" { default = "v0.2.0-58-gce0b45a" }
-variable "travis_worker_prod_version" { default = "v2.6.2" }
 variable "travis_worker_custom-1_version" { default = "v2.6.2" }
 variable "travis_worker_custom-2_version" { default = "v2.6.2" }
 variable "travis_worker_custom-3_version" { default = "v2.6.2" }
+variable "travis_worker_production_version" { default = "v2.6.2" }
 variable "travis_worker_staging_version" { default = "v2.6.2" }
 variable "vsphere_janitor_version" { default = "9bde41b" }
 variable "collectd_vsphere_version" { default = "e1b57fe" }
@@ -52,14 +52,14 @@ module "macstadium_infrastructure" {
   vsphere_ip = "${var.vsphere_ip}"
 }
 
-module "jupiter_brain_prod_com" {
+module "jupiter_brain_production_com" {
   source = "../modules/jupiter_brain_bluegreen"
   host_id = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_ip_address = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user = "${var.ssh_user}"
-  version = "${var.jupiter_brain_prod_version}"
-  config_path = "${path.module}/config/jupiter-brain-prod-com-env"
-  env = "com-prod"
+  version = "${var.jupiter_brain_production_version}"
+  config_path = "${path.module}/config/jupiter-brain-production-com-env"
+  env = "com-production"
   index = "${var.index}"
   port_suffix = 3
 }
@@ -69,7 +69,7 @@ module "jupiter_brain_staging_com" {
   host_id = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_ip_address = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user = "${var.ssh_user}"
-  version = "${var.jupiter_brain_prod_version}"
+  version = "${var.jupiter_brain_production_version}"
   config_path = "${path.module}/config/jupiter-brain-staging-com-env"
   env = "com-staging"
   index = "${var.index}"
@@ -110,6 +110,30 @@ module "jupiter_brain_custom_3" {
   env = "custom-3"
   index = "${var.index}"
   port_suffix = 7
+}
+
+module "worker_com_production_1" {
+  source = "../modules/macstadium_go_worker"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+  version = "${var.travis_worker_production_version}"
+  config_path = "${path.module}/config/travis-worker-com-production-1"
+  vm_ssh_key_path = "${path.module}/config/travis-vm-ssh-key"
+  env = "com-production-1"
+  index = "${var.index}"
+}
+
+module "worker_com_production_2" {
+  source = "../modules/macstadium_go_worker"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+  version = "${var.travis_worker_production_version}"
+  config_path = "${path.module}/config/travis-worker-com-production-2"
+  vm_ssh_key_path = "${path.module}/config/travis-vm-ssh-key"
+  env = "com-production-2"
+  index = "${var.index}"
 }
 
 module "worker_com_staging_1" {
@@ -172,14 +196,14 @@ module "worker_custom_3" {
   index = "${var.index}"
 }
 
-module "vsphere_janitor_prod_com" {
+module "vsphere_janitor_production_com" {
   source = "../modules/vsphere_janitor"
   host_id = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user = "${var.ssh_user}"
   version = "${var.vsphere_janitor_version}"
-  config_path = "${path.module}/config/vsphere-janitor-prod-com"
-  env = "com-prod"
+  config_path = "${path.module}/config/vsphere-janitor-production-com"
+  env = "com-production"
   index = "${var.index}"
 }
 
@@ -258,7 +282,7 @@ module "haproxy" {
   }
 
   config {
-    name = "jupiter-brain-prod-com"
+    name = "jupiter-brain-production-com"
     frontend_port = "8083"
     backend_port_blue = "9083"
     backend_port_green = "10083"
