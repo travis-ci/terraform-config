@@ -19,7 +19,7 @@ CONFIG_FILES := \
 		config/collectd-vsphere-common \
 		config/travis-vm-ssh-key
 
-INDEX := 2
+INDEX ?= $(subst $(INFRA)-$(ENV_SHORT)-,,$(ENV_NAME))
 
 .PHONY: .config
 .config: $(CONFIG_FILES) $(ENV_NAME).tfvars
