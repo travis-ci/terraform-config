@@ -6,7 +6,7 @@ variable "jupiter_brain_staging_version" { default = "v0.2.0-58-gce0b45a" }
 variable "travis_worker_prod_version" { default = "v2.6.2" }
 variable "travis_worker_staging_version" { default = "v2.6.2" }
 variable "vsphere_janitor_version" { default = "9bde41b" }
-variable "collectd_vsphere_version" { default = "b648672" }
+variable "collectd_vsphere_version" { default = "e1b57fe" }
 variable "ssh_user" {
   description = "your username on the wjb instances"
 }
