@@ -59,7 +59,7 @@ module "jupiter_brain_production_com" {
   ssh_user = "${var.ssh_user}"
   version = "${var.jupiter_brain_production_version}"
   config_path = "${path.module}/config/jupiter-brain-production-com-env"
-  env = "com-production"
+  env = "production-com"
   index = "${var.index}"
   port_suffix = 3
 }
@@ -71,7 +71,7 @@ module "jupiter_brain_staging_com" {
   ssh_user = "${var.ssh_user}"
   version = "${var.jupiter_brain_production_version}"
   config_path = "${path.module}/config/jupiter-brain-staging-com-env"
-  env = "com-staging"
+  env = "staging-com"
   index = "${var.index}"
   port_suffix = 4
 }
@@ -112,51 +112,51 @@ module "jupiter_brain_custom_3" {
   port_suffix = 7
 }
 
-module "worker_com_production_1" {
+module "worker_production_com_1" {
   source = "../modules/macstadium_go_worker"
   host_id = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user = "${var.ssh_user}"
   version = "${var.travis_worker_production_version}"
-  config_path = "${path.module}/config/travis-worker-com-production-1"
+  config_path = "${path.module}/config/travis-worker-production-com-1"
   vm_ssh_key_path = "${path.module}/config/travis-vm-ssh-key"
-  env = "com-production-1"
+  env = "production-com-1"
   index = "${var.index}"
 }
 
-module "worker_com_production_2" {
+module "worker_production_com_2" {
   source = "../modules/macstadium_go_worker"
   host_id = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user = "${var.ssh_user}"
   version = "${var.travis_worker_production_version}"
-  config_path = "${path.module}/config/travis-worker-com-production-2"
+  config_path = "${path.module}/config/travis-worker-production-com-2"
   vm_ssh_key_path = "${path.module}/config/travis-vm-ssh-key"
-  env = "com-production-2"
+  env = "production-com-2"
   index = "${var.index}"
 }
 
-module "worker_com_staging_1" {
+module "worker_staging_com_1" {
   source = "../modules/macstadium_go_worker"
   host_id = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user = "${var.ssh_user}"
   version = "${var.travis_worker_staging_version}"
-  config_path = "${path.module}/config/travis-worker-com-staging-1"
+  config_path = "${path.module}/config/travis-worker-staging-com-1"
   vm_ssh_key_path = "${path.module}/config/travis-vm-ssh-key"
-  env = "com-staging-1"
+  env = "staging-com-1"
   index = "${var.index}"
 }
 
-module "worker_com_staging_2" {
+module "worker_staging_com_2" {
   source = "../modules/macstadium_go_worker"
   host_id = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user = "${var.ssh_user}"
   version = "${var.travis_worker_staging_version}"
-  config_path = "${path.module}/config/travis-worker-com-staging-2"
+  config_path = "${path.module}/config/travis-worker-staging-com-2"
   vm_ssh_key_path = "${path.module}/config/travis-vm-ssh-key"
-  env = "com-staging-2"
+  env = "staging-com-2"
   index = "${var.index}"
 }
 
@@ -203,7 +203,7 @@ module "vsphere_janitor_production_com" {
   ssh_user = "${var.ssh_user}"
   version = "${var.vsphere_janitor_version}"
   config_path = "${path.module}/config/vsphere-janitor-production-com"
-  env = "com-production"
+  env = "production-com"
   index = "${var.index}"
 }
 
@@ -214,7 +214,7 @@ module "vsphere_janitor_staging_com" {
   ssh_user = "${var.ssh_user}"
   version = "${var.vsphere_janitor_version}"
   config_path = "${path.module}/config/vsphere-janitor-staging-com"
-  env = "com-staging"
+  env = "staging-com"
   index = "${var.index}"
 }
 
