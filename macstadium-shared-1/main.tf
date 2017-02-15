@@ -26,6 +26,7 @@ variable "fw_snmp_community" {}
 variable "vsphere_user" {}
 variable "vsphere_password" {}
 variable "vsphere_server" {}
+variable "vsphere_ip" {}
 
 provider "aws" {}
 provider "vsphere" {
@@ -45,9 +46,10 @@ module "macstadium_infrastructure" {
   internal_network_label = "dvPortGroup-Internal"
   management_network_label = "dvPortGroup-Mgmt"
   jobs_network_label = "dvPortGroup-Jobs"
-  wjb_num = 1
   ssh_user = "${var.ssh_user}"
   threatstack_key = "${var.threatstack_key}"
+  travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
+  vsphere_ip = "${var.vsphere_ip}"
 }
 
 module "jupiter_brain_prod_com" {
