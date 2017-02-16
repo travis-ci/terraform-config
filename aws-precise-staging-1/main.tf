@@ -7,11 +7,13 @@ variable "env" {
 variable "env_short" {
   default = "staging"
 }
+
 variable "github_users" {}
 
 variable "index" {
   default = 1
 }
+
 variable "latest_docker_image_android" {}
 variable "latest_docker_image_erlang" {}
 variable "latest_docker_image_go" {}

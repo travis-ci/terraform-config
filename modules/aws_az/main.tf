@@ -4,6 +4,7 @@ variable "bastion_ami" {}
 variable "bastion_instance_type" {
   default = "t2.micro"
 }
+
 variable "duo_api_hostname" {}
 variable "duo_integration_key" {}
 variable "duo_secret_key" {}
@@ -13,6 +14,7 @@ variable "gateway_id" {}
 variable "github_users" {
   default = ""
 }
+
 variable "index" {}
 variable "nat_ami" {}
 variable "nat_instance_type" {}

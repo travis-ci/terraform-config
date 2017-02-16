@@ -17,6 +17,7 @@ variable "perm_write" {
 variable "scheme" {
   default = "amqp"
 }
+
 variable "username" {}
 variable "vhost" {}
 

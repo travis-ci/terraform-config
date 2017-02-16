@@ -27,12 +27,14 @@ variable "cyclist_version" {
 variable "docker_storage_dm_basesize" {
   default = "12G"
 }
+
 variable "env" {}
 variable "env_short" {}
 
 variable "github_users" {
   default = ""
 }
+
 variable "heroku_org" {}
 variable "index" {}
 
@@ -43,6 +45,7 @@ variable "lifecycle_hook_heartbeat_timeout" {
 variable "registry_hostname" {
   default = ""
 }
+
 variable "security_groups" {}
 variable "site" {}
 variable "syslog_address" {}
@@ -55,6 +58,7 @@ variable "worker_asg_max_size" {
 variable "worker_asg_min_size" {
   default = 1
 }
+
 variable "worker_asg_namespace" {}
 
 variable "worker_asg_scale_in_cooldown" {
@@ -80,6 +84,7 @@ variable "worker_asg_scale_out_qty" {
 variable "worker_asg_scale_out_threshold" {
   default = 48
 }
+
 variable "worker_config" {}
 variable "worker_docker_image_android" {}
 variable "worker_docker_image_default" {}
@@ -100,6 +105,7 @@ variable "worker_docker_self_image" {
 variable "worker_instance_type" {
   default = "c3.2xlarge"
 }
+
 variable "worker_queue" {}
 variable "worker_subnets" {}
 

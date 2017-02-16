@@ -5,22 +5,26 @@ variable "env" {
 variable "gce_bastion_image" {
   default = "eco-emissary-99515/bastion-1478778272"
 }
+
 variable "gce_gcloud_zone" {}
 variable "gce_heroku_org" {}
 
 variable "gce_worker_image" {
   default = "eco-emissary-99515/travis-worker-1480649763"
 }
+
 variable "github_users" {}
 
 variable "index" {
   default = 2
 }
+
 variable "job_board_url" {}
 
 variable "travisci_net_external_zone_id" {
   default = "Z2RI61YP4UWSIO"
 }
+
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
 

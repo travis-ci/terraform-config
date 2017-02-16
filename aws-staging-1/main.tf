@@ -3,11 +3,13 @@ variable "aws_heroku_org" {}
 variable "env" {
   default = "staging"
 }
+
 variable "github_users" {}
 
 variable "index" {
   default = 1
 }
+
 variable "latest_docker_image_amethyst" {}
 variable "latest_docker_image_garnet" {}
 variable "latest_docker_image_worker" {}

@@ -5,6 +5,7 @@ variable "duo_secret_key" {}
 variable "env" {
   default = "shared"
 }
+
 variable "github_users" {}
 
 variable "index" {
@@ -26,6 +27,7 @@ variable "public_subnet_1c_cidr" {
 variable "public_subnet_1e_cidr" {
   default = "10.12.4.0/24"
 }
+
 variable "syslog_address_com" {}
 
 variable "travisci_net_external_zone_id" {

@@ -11,6 +11,7 @@ variable "instance_count_org" {}
 variable "machine_type" {
   default = "n1-standard-1"
 }
+
 variable "project" {}
 variable "subnetwork_workers" {}
 variable "syslog_address_com" {}

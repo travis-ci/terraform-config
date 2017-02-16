@@ -3,11 +3,13 @@ variable "aws_heroku_org" {}
 variable "env" {
   default = "production"
 }
+
 variable "github_users" {}
 
 variable "index" {
   default = 2
 }
+
 variable "rabbitmq_password_com" {}
 variable "rabbitmq_password_org" {}
 variable "rabbitmq_username_com" {}

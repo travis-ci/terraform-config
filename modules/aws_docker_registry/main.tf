@@ -7,6 +7,7 @@ variable "azs" {
 variable "data_ebs_volume_size" {
   default = 5
 }
+
 variable "env" {}
 variable "gateway_id" {}
 variable "github_users" {}
@@ -20,6 +21,7 @@ variable "instance_type" {
 variable "subnets" {
   type = "list"
 }
+
 variable "travisci_net_external_zone_id" {}
 variable "vpc_cidr" {}
 variable "vpc_id" {}

@@ -4,6 +4,7 @@ variable "ssh_user" {}
 variable "config" {
   type = "list"
 }
+
 variable "host_id" {}
 
 data "template_file" "haproxy_mappings" {

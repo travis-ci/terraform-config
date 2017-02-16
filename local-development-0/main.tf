@@ -5,6 +5,7 @@ variable "rabbitmq_admin_password" {
 variable "rabbitmq_admin_username" {
   default = "guest"
 }
+
 variable "rabbitmq_host" {}
 
 variable "rabbitmq_username" {
