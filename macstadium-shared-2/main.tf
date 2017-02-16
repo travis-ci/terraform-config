@@ -93,6 +93,28 @@ module "worker_com_staging_2" {
   index = "${var.index}"
 }
 
+module "worker_production_com_1" {
+  source = "../modules/macstadium_go_worker"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+  version = "${var.travis_worker_production_version}"
+  config_path = "${path.module}/config/travis-worker-production-com-1"
+  env = "production-com-1"
+  index = "${var.index}"
+}
+
+module "worker_production_com_2" {
+  source = "../modules/macstadium_go_worker"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+  version = "${var.travis_worker_production_version}"
+  config_path = "${path.module}/config/travis-worker-production-com-2"
+  env = "production-com-2"
+  index = "${var.index}"
+}
+
 module "vsphere_janitor_production_com" {
   source = "../modules/vsphere_janitor"
   host_id = "${module.macstadium_infrastructure.wjb_uuid}"
