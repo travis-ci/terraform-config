@@ -50,6 +50,7 @@ module "macstadium_infrastructure" {
   threatstack_key = "${var.threatstack_key}"
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
   vsphere_ip = "${var.vsphere_ip}"
+  vm_ssh_key_path = "${path.module}/config/travis-vm-ssh-key"
 }
 
 module "jupiter_brain_production_com" {
@@ -119,7 +120,6 @@ module "worker_production_com_1" {
   ssh_user = "${var.ssh_user}"
   version = "${var.travis_worker_production_version}"
   config_path = "${path.module}/config/travis-worker-production-com-1"
-  vm_ssh_key_path = "${path.module}/config/travis-vm-ssh-key"
   env = "production-com-1"
   index = "${var.index}"
 }
@@ -131,7 +131,6 @@ module "worker_production_com_2" {
   ssh_user = "${var.ssh_user}"
   version = "${var.travis_worker_production_version}"
   config_path = "${path.module}/config/travis-worker-production-com-2"
-  vm_ssh_key_path = "${path.module}/config/travis-vm-ssh-key"
   env = "production-com-2"
   index = "${var.index}"
 }
@@ -143,7 +142,6 @@ module "worker_staging_com_1" {
   ssh_user = "${var.ssh_user}"
   version = "${var.travis_worker_staging_version}"
   config_path = "${path.module}/config/travis-worker-staging-com-1"
-  vm_ssh_key_path = "${path.module}/config/travis-vm-ssh-key"
   env = "staging-com-1"
   index = "${var.index}"
 }
@@ -155,7 +153,6 @@ module "worker_staging_com_2" {
   ssh_user = "${var.ssh_user}"
   version = "${var.travis_worker_staging_version}"
   config_path = "${path.module}/config/travis-worker-staging-com-2"
-  vm_ssh_key_path = "${path.module}/config/travis-vm-ssh-key"
   env = "staging-com-2"
   index = "${var.index}"
 }
@@ -167,7 +164,6 @@ module "worker_custom_1" {
   ssh_user = "${var.ssh_user}"
   version = "${var.travis_worker_custom-1_version}"
   config_path = "${path.module}/config/travis-worker-custom-1"
-  vm_ssh_key_path = "${path.module}/config/travis-vm-ssh-key"
   env = "custom-1"
   index = "${var.index}"
 }
@@ -179,7 +175,6 @@ module "worker_custom_2" {
   ssh_user = "${var.ssh_user}"
   version = "${var.travis_worker_custom-2_version}"
   config_path = "${path.module}/config/travis-worker-custom-2"
-  vm_ssh_key_path = "${path.module}/config/travis-vm-ssh-key"
   env = "custom-2"
   index = "${var.index}"
 }
@@ -191,7 +186,6 @@ module "worker_custom_3" {
   ssh_user = "${var.ssh_user}"
   version = "${var.travis_worker_custom-3_version}"
   config_path = "${path.module}/config/travis-worker-custom-3"
-  vm_ssh_key_path = "${path.module}/config/travis-vm-ssh-key"
   env = "custom-3"
   index = "${var.index}"
 }

@@ -44,5 +44,32 @@ resource "vsphere_virtual_machine" "wjb" {
   }
 }
 
+resource "null_resource" "worker" {
+  triggers {
+    host_id = "${vsphere_virtual_machine.wjb.uuid}"
+    ssh_key_file_signature = "${sha256(file(var.vm_ssh_key_path))}"
+  }
+
+  connection {
+    host = "${vsphere_virtual_machine.wjb.network_interface.0.ipv4_address}"
+    user = "${var.ssh_user}"
+    agent = true
+  }
+
+  provisioner "file" {
+    source      = "${var.vm_ssh_key_path}"
+    destination = "/tmp/travis-vm-ssh-key"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "if ! getent passwd travis-worker >/dev/null; then sudo useradd -r -s /usr/bin/nologin travis-worker; fi",
+      "sudo mv /tmp/travis-vm-ssh-key /etc/travis-vm-ssh-key",
+      "sudo chown travis-worker:travis-worker /etc/travis-vm-ssh-key",
+      "sudo chmod 0600 /etc/travis-vm-ssh-key",
+    ]
+  }
+}
+
 output "wjb_ip" { value = "${vsphere_virtual_machine.wjb.network_interface.0.ipv4_address}" }
 output "wjb_uuid" { value = "${vsphere_virtual_machine.wjb.uuid}" }
