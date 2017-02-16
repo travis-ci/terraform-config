@@ -40,8 +40,8 @@ sudo chmod 644 "/etc/default/collectd-vsphere-${env}"
 sudo mkdir -p /var/tmp/run/collectd-vsphere
 sudo chown collectd-vsphere:collectd-vsphere /var/tmp/run/collectd-vsphere
 sudo mv "/tmp/init-collectd-vsphere-${env}.conf" "/etc/init/collectd-vsphere-${env}.conf"
-sudo chown root:root "/etc/init/collectd-vsphere-${env}"
-sudo chmod 644 "/etc/init/collectd-vsphere-${env}"
+sudo chown root:root "/etc/init/collectd-vsphere-${env}.conf"
+sudo chmod 644 "/etc/init/collectd-vsphere-${env}.conf"
 
 # install collectd-vsphere binary
 sudo wget -O "/usr/local/bin/collectd-vsphere-${env}" "https://s3.amazonaws.com/travis-ci-collectd-vsphere-artifacts/travis-ci/collectd-vsphere/${version}/build/linux/amd64/collectd-vsphere"
