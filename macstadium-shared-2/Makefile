@@ -34,7 +34,7 @@ $(CONFIG_FILES):
 	trvs generate-config -n -p JUPITER_BRAIN -f env jupiter-brain staging-$(INDEX) \
 		| sed 's/^/export /' >config/jupiter-brain-staging-org-env
 	trvs generate-config -n -p TRAVIS_WORKER -f env macstadium-workers staging-$(INDEX)-1 \
-    | sed 's/^/export /' >config/travis-worker-staging-org-1
+		| sed 's/^/export /' >config/travis-worker-staging-org-1
 	trvs generate-config -n -p TRAVIS_WORKER -f env macstadium-workers staging-$(INDEX)-2 \
 		| sed 's/^/export /' >config/travis-worker-staging-org-2
 	trvs generate-config -n -p TRAVIS_WORKER -f env macstadium-workers production-$(INDEX)-1 \
