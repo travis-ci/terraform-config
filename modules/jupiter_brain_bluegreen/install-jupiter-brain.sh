@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 # Create jupiter-brain user if it doesn't exist
 if ! getent passwd jupiter-brain >/dev/null; then
     sudo useradd -r -s /usr/bin/nologin jupiter-brain

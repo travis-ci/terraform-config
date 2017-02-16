@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 if ! getent passwd collectd-vsphere >/dev/null; then
   sudo useradd -r -s /usr/bin/nologin collectd-vsphere
 fi

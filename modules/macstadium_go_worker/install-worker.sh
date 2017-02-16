@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 # Create travis-worker user if it doesn't exist
 if ! getent passwd travis-worker >/dev/null; then
     sudo useradd -r -s /usr/bin/nologin travis-worker
