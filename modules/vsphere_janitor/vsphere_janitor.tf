@@ -10,9 +10,9 @@ data "template_file" "vsphere_janitor_install" {
   template = "${file("${path.module}/install-vsphere-janitor.sh")}"
 
   vars {
-    env = "${var.env}"
+    env     = "${var.env}"
     version = "${var.version}"
-    index = "${var.index}"
+    index   = "${var.index}"
   }
 }
 
@@ -26,27 +26,27 @@ data "template_file" "vsphere_janitor_upstart" {
 
 resource "null_resource" "vsphere_janitor" {
   triggers {
-    version = "${var.version}"
-    config_signature = "${sha256(file(var.config_path))}"
+    version                  = "${var.version}"
+    config_signature         = "${sha256(file(var.config_path))}"
     install_script_signature = "${sha256(data.template_file.vsphere_janitor_install.rendered)}"
     upstart_script_signature = "${sha256(data.template_file.vsphere_janitor_upstart.rendered)}"
-    name = "${var.env}-${var.index}"
-    host_id = "${var.host_id}"
+    name                     = "${var.env}-${var.index}"
+    host_id                  = "${var.host_id}"
   }
 
   connection {
-    host = "${var.ssh_host}"
-    user = "${var.ssh_user}"
+    host  = "${var.ssh_host}"
+    user  = "${var.ssh_user}"
     agent = true
   }
 
   provisioner "file" {
-    content = "${file(var.config_path)}\nexport VSPHERE_JANITOR_LIBRATO_SOURCE='vsphere-janitor-${var.env}-${var.index}'\n"
+    content     = "${file(var.config_path)}\nexport VSPHERE_JANITOR_LIBRATO_SOURCE='vsphere-janitor-${var.env}-${var.index}'\n"
     destination = "/tmp/etc-default-vsphere-janitor-${var.env}"
   }
 
   provisioner "file" {
-    content = "${data.template_file.vsphere_janitor_upstart.rendered}"
+    content     = "${data.template_file.vsphere_janitor_upstart.rendered}"
     destination = "/tmp/init-vsphere-janitor-${var.env}.conf"
   }
 
