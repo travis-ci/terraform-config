@@ -40,3 +40,9 @@ for d in $(git ls-files '*.tf' | xargs -n1 dirname | LC_ALL=C sort | uniq); do
   terraform validate "${d}"
   echo "✓"
 done
+
+echo 'Running terraform fmt'
+# Running `terraform fmt` twice because sometimes it takes two applies to converge on a format
+# See https://github.com/hashicorp/terraform/issues/12017
+terraform fmt
+terraform fmt
