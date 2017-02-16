@@ -10,3 +10,4 @@ variable "threatstack_key" {}
 variable "travisci_net_external_zone_id" {}
 variable "vsphere_ip" {}
 variable "ssh_user" {}
+variable "vm_ssh_key_path" {}
