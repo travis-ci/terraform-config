@@ -63,6 +63,7 @@ resource "null_resource" "worker" {
 
   provisioner "remote-exec" {
     inline = [
+      "if ! getent passwd travis-worker >/dev/null; then sudo useradd -r -s /usr/bin/nologin travis-worker; fi"
       "sudo mv /tmp/travis-vm-ssh-key /etc/travis-vm-ssh-key",
       "sudo chown travis-worker:travis-worker /etc/travis-vm-ssh-key",
       "sudo chmod 0600 /etc/travis-vm-ssh-key",
