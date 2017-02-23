@@ -16,7 +16,7 @@ resource "vsphere_virtual_machine" "wjb" {
 
   network_interface {
     label = "${var.jobs_network_label}"
-    ipv4_address = "${cidrhost("10.182.0.0/18", 30 + var.index)}"
+    ipv4_address = "${cidrhost(var.jobs_network_subnet, 30 + var.index)}"
     ipv4_prefix_length = "18"
   }
 

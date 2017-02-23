@@ -46,6 +46,7 @@ module "macstadium_infrastructure" {
   internal_network_label = "dvPortGroup-Internal"
   management_network_label = "dvPortGroup-Mgmt"
   jobs_network_label = "dvPortGroup-Jobs"
+  jobs_network_subnet = "10.182.0.0/18"
   ssh_user = "${var.ssh_user}"
   threatstack_key = "${var.threatstack_key}"
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
