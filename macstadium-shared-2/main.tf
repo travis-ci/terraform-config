@@ -3,8 +3,12 @@ variable "travisci_net_external_zone_id" { default = "Z2RI61YP4UWSIO" }
 variable "macstadium_vanilla_image" { default = "travis-ci-ubuntu14.04-internal-vanilla-1481140635" }
 variable "jupiter_brain_production_version" { default = "v0.2.0-58-gce0b45a" }
 variable "jupiter_brain_staging_version" { default = "v0.2.0-58-gce0b45a" }
+variable "jupiter_brain_custom-4_version" { default = "v0.2.0-58-gce0b45a" }
+variable "jupiter_brain_custom-5_version" { default = "v0.2.0-58-gce0b45a" }
 variable "travis_worker_production_version" { default = "v2.6.2" }
 variable "travis_worker_staging_version" { default = "v2.6.2" }
+variable "travis_worker_custom-4_version" { default = "v2.6.2" }
+variable "travis_worker_custom-5_version" { default = "v2.6.2" }
 variable "vsphere_janitor_version" { default = "9bde41b" }
 variable "collectd_vsphere_version" { default = "e1b57fe" }
 variable "ssh_user" {
@@ -80,6 +84,30 @@ module "jupiter_brain_staging_com" {
   port_suffix = 4
 }
 
+module "jupiter_brain_custom_4" {
+  source = "../modules/jupiter_brain_bluegreen"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_ip_address = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+  version = "${var.jupiter_brain_custom-4_version}"
+  config_path = "${path.module}/config/jupiter-brain-custom-4-env"
+  env = "custom-4"
+  index = "${var.index}"
+  port_suffix = 8
+}
+
+module "jupiter_brain_custom_5" {
+  source = "../modules/jupiter_brain_bluegreen"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_ip_address = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+  version = "${var.jupiter_brain_custom-5_version}"
+  config_path = "${path.module}/config/jupiter-brain-custom-5-env"
+  env = "custom-5"
+  index = "${var.index}"
+  port_suffix = 9
+}
+
 module "worker_staging_com_1" {
   source = "../modules/macstadium_go_worker"
   host_id = "${module.macstadium_infrastructure.wjb_uuid}"
@@ -124,6 +152,28 @@ module "worker_production_com_2" {
   index = "${var.index}"
 }
 
+module "worker_custom_4" {
+  source = "../modules/macstadium_go_worker"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+  version = "${var.travis_worker_custom-4_version}"
+  config_path = "${path.module}/config/travis-worker-custom-4"
+  env = "custom-4"
+  index = "${var.index}"
+}
+
+module "worker_custom_5" {
+  source = "../modules/macstadium_go_worker"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+  version = "${var.travis_worker_custom-5_version}"
+  config_path = "${path.module}/config/travis-worker-custom-5"
+  env = "custom-5"
+  index = "${var.index}"
+}
+
 module "vsphere_janitor_production_com" {
   source = "../modules/vsphere_janitor"
   host_id = "${module.macstadium_infrastructure.wjb_uuid}"
@@ -143,6 +193,28 @@ module "vsphere_janitor_staging_com" {
   version = "${var.vsphere_janitor_version}"
   config_path = "${path.module}/config/vsphere-janitor-staging-com"
   env = "staging-com"
+  index = "${var.index}"
+}
+
+module "vsphere_janitor_custom_4" {
+  source = "../modules/vsphere_janitor"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+  version = "${var.vsphere_janitor_version}"
+  config_path = "${path.module}/config/vsphere-janitor-custom-4"
+  env = "custom-4"
+  index = "${var.index}"
+}
+
+module "vsphere_janitor_custom_5" {
+  source = "../modules/vsphere_janitor"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+  version = "${var.vsphere_janitor_version}"
+  config_path = "${path.module}/config/vsphere-janitor-custom-5"
+  env = "custom-5"
   index = "${var.index}"
 }
 
@@ -189,5 +261,19 @@ module "haproxy" {
     frontend_port = "8083"
     backend_port_blue = "9083"
     backend_port_green = "10083"
+  }
+
+  config {
+    name = "jupiter-brain-custom-4"
+    frontend_port = "8088"
+    backend_port_blue = "9088"
+    backend_port_green = "10088"
+  }
+
+  config {
+    name = "jupiter-brain-custom-5"
+    frontend_port = "8089"
+    backend_port_blue = "9089"
+    backend_port_green = "10089"
   }
 }
