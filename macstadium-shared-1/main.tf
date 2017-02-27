@@ -23,6 +23,14 @@ variable "collectd_vsphere_collectd_network_user" {}
 variable "collectd_vsphere_collectd_network_token" {}
 variable "fw_ip" {}
 variable "fw_snmp_community" {}
+variable "pfsense_1_ip" {}
+variable "pfsense_1_snmp_community" {}
+variable "pfsense_2_ip" {}
+variable "pfsense_2_snmp_community" {}
+variable "pfsense_2_1_ip" {}
+variable "pfsense_2_1_snmp_community" {}
+variable "pfsense_2_2_ip" {}
+variable "pfsense_2_2_snmp_community" {}
 variable "vsphere_user" {}
 variable "vsphere_password" {}
 variable "vsphere_server" {}
@@ -261,6 +269,14 @@ module "collectd-vsphere-common" {
   collectd_vsphere_collectd_network_token = "${var.collectd_vsphere_collectd_network_token}"
   fw_ip = "${var.fw_ip}"
   fw_snmp_community = "${var.fw_snmp_community}"
+  pfsense_1_ip = "${var.pfsense_1_ip}"
+  pfsense_1_snmp_community = "${var.pfsense_1_snmp_community}"
+  pfsense_2_ip = "${var.pfsense_2_ip}"
+  pfsense_2_snmp_community = "${var.pfsense_2_snmp_community}"
+  pfsense_2_1_ip = "${var.pfsense_2_1_ip}"
+  pfsense_2_1_snmp_community = "${var.pfsense_2_1_snmp_community}"
+  pfsense_2_2_ip = "${var.pfsense_2_2_ip}"
+  pfsense_2_2_snmp_community = "${var.pfsense_2_2_snmp_community}"
 }
 
 module "haproxy" {

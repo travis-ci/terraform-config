@@ -11,6 +11,14 @@ variable "collectd_vsphere_collectd_network_user" {}
 variable "collectd_vsphere_collectd_network_token" {}
 variable "fw_ip" {}
 variable "fw_snmp_community" {}
+variable "pfsense_1_ip" {}
+variable "pfsense_1_snmp_community" {}
+variable "pfsense_2_ip" {}
+variable "pfsense_2_snmp_community" {}
+variable "pfsense_2_1_ip" {}
+variable "pfsense_2_1_snmp_community" {}
+variable "pfsense_2_2_ip" {}
+variable "pfsense_2_2_snmp_community" {}
 
 data "template_file" "collectd_vsphere_install" {
   template = "${file("${path.module}/install-collectd-vsphere.sh")}"
@@ -23,7 +31,14 @@ data "template_file" "collectd_vsphere_install" {
 }
 
 data "template_file" "collectd_conf" {
-  template = "${file("${path.module}/collectd.conf")}"
+  template = "${file("${path.module}/collectd.conf.tpl")}"
+
+  vars {
+    pfsense_1_ip = "${var.pfsense_1_ip}"
+    pfsense_2_ip = "${var.pfsense_2_ip}"
+    pfsense_2_1_ip = "${var.pfsense_2_1_ip}"
+    pfsense_2_2_ip = "${var.pfsense_2_2_ip}"
+  }
 }
 
 data "template_file" "librato_conf" {
@@ -42,6 +57,14 @@ data "template_file" "snmp_conf" {
   vars {
     fw_ip = "${var.fw_ip}"
     fw_snmp_community = "${var.fw_snmp_community}"
+    pfsense_1_ip = "${var.pfsense_1_ip}"
+    pfsense_1_snmp_community = "${var.pfsense_1_snmp_community}"
+    pfsense_2_ip = "${var.pfsense_2_ip}"
+    pfsense_2_snmp_community = "${var.pfsense_2_snmp_community}"
+    pfsense_2_1_ip = "${var.pfsense_2_1_ip}"
+    pfsense_2_1_snmp_community = "${var.pfsense_2_1_snmp_community}"
+    pfsense_2_2_ip = "${var.pfsense_2_2_ip}"
+    pfsense_2_2_snmp_community = "${var.pfsense_2_2_snmp_community}"
   }
 }
 
