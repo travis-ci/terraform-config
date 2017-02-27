@@ -6,10 +6,16 @@ default: hello
 CONFIG_FILES := \
 		config/jupiter-brain-production-org-env \
 		config/jupiter-brain-staging-org-env \
+		config/jupiter-brain-custom-4-env \
+		config/jupiter-brain-custom-5-env \
 		config/travis-worker-staging-org-1 \
 		config/travis-worker-staging-org-2 \
 		config/travis-worker-production-org-1 \
 		config/travis-worker-production-org-2 \
+		config/travis-worker-custom-4 \
+		config/travis-worker-custom-5 \
+		config/vsphere-janitor-custom-4 \
+		config/vsphere-janitor-custom-5 \
 		config/vsphere-janitor-production-com \
 		config/vsphere-janitor-staging-com \
 		config/jupiter-brain-production-com-env \
@@ -33,6 +39,10 @@ $(CONFIG_FILES):
 		| sed 's/^/export /' >config/jupiter-brain-production-org-env
 	trvs generate-config -n -p JUPITER_BRAIN -f env jupiter-brain staging-$(INDEX) \
 		| sed 's/^/export /' >config/jupiter-brain-staging-org-env
+	trvs generate-config -n -p JUPITER_BRAIN -f env jupiter-brain custom-4-$(INDEX) \
+		| sed 's/^/export /' >config/jupiter-brain-custom-4-env
+	trvs generate-config -n -p JUPITER_BRAIN -f env jupiter-brain custom-5-$(INDEX) \
+		| sed 's/^/export /' >config/jupiter-brain-custom-5-env
 	trvs generate-config -n -p TRAVIS_WORKER -f env macstadium-workers staging-$(INDEX)-1 \
 		| sed 's/^/export /' >config/travis-worker-staging-org-1
 	trvs generate-config -n -p TRAVIS_WORKER -f env macstadium-workers staging-$(INDEX)-2 \
@@ -41,6 +51,14 @@ $(CONFIG_FILES):
 		| sed 's/^/export /' >config/travis-worker-production-org-1
 	trvs generate-config -n -p TRAVIS_WORKER -f env macstadium-workers production-$(INDEX)-2 \
 		| sed 's/^/export /' >config/travis-worker-production-org-2
+	trvs generate-config -n -p TRAVIS_WORKER -f env macstadium-workers custom-4-$(INDEX) \
+		| sed 's/^/export /' >config/travis-worker-custom-4
+	trvs generate-config -n -p TRAVIS_WORKER -f env macstadium-workers custom-5-$(INDEX) \
+		| sed 's/^/export /' >config/travis-worker-custom-5
+	trvs generate-config -n -p VSPHERE_JANITOR -f env vsphere-janitor custom-4-$(INDEX) \
+		| sed 's/^/export /' >config/vsphere-janitor-custom-4
+	trvs generate-config -n -p VSPHERE_JANITOR -f env vsphere-janitor custom-5-$(INDEX) \
+		| sed 's/^/export /' >config/vsphere-janitor-custom-5
 	trvs generate-config --pro -p VSPHERE_JANITOR -f env vsphere-janitor production-$(INDEX) \
 		| sed 's/^/export /' >config/vsphere-janitor-production-com
 	trvs generate-config -n --pro -p VSPHERE_JANITOR -f env vsphere-janitor staging-$(INDEX) \
