@@ -28,9 +28,12 @@ CONFIG_FILES := \
 		config/vsphere-janitor-custom-4 \
 		config/vsphere-janitor-custom-5 \
 		config/jupiter-brain-production-com-env \
+		config/jupiter-brain-production-com-xserve-env \
 		config/jupiter-brain-staging-com-env \
 		config/travis-worker-production-com-1 \
 		config/travis-worker-production-com-2 \
+		config/travis-worker-production-com-xserve-1 \
+		config/travis-worker-production-com-xserve-2 \
 		config/travis-worker-staging-com-1 \
 		config/travis-worker-staging-com-2 \
 		config/collectd-vsphere-common \
@@ -92,6 +95,8 @@ $(CONFIG_FILES):
 		| sed 's/^/export /' >config/vsphere-janitor-custom-5
 	trvs generate-config -n --pro -p JUPITER_BRAIN -f env jupiter-brain production-$(INDEX) \
 		| sed 's/^/export /' >config/jupiter-brain-production-com-env
+	trvs generate-config -n --pro -p JUPITER_BRAIN -f env jupiter-brain production-$(INDEX)-xserve \
+		| sed 's/^/export /' >config/jupiter-brain-production-com-xserve-env
 	trvs generate-config -n --pro -p JUPITER_BRAIN -f env jupiter-brain staging-$(INDEX) \
 		| sed 's/^/export /' >config/jupiter-brain-staging-com-env
 	trvs generate-config -n --pro -p TRAVIS_WORKER -f env macstadium-workers staging-$(INDEX)-1 \
@@ -102,6 +107,10 @@ $(CONFIG_FILES):
 		| sed 's/^/export /' >config/travis-worker-production-com-1
 	trvs generate-config -n --pro -p TRAVIS_WORKER -f env macstadium-workers production-$(INDEX)-2 \
 		| sed 's/^/export /' >config/travis-worker-production-com-2
+	trvs generate-config -n --pro -p TRAVIS_WORKER -f env macstadium-workers production-$(INDEX)-xserve-1 \
+		| sed 's/^/export /' >config/travis-worker-production-com-xserve-1
+	trvs generate-config -n --pro -p TRAVIS_WORKER -f env macstadium-workers production-$(INDEX)-xserve-2 \
+		| sed 's/^/export /' >config/travis-worker-production-com-xserve-2
 	trvs generate-config -n -p COLLECTD_VSPHERE -f env collectd-vsphere common-$(INDEX) \
 		| sed 's/^/export /' >config/collectd-vsphere-common
 
