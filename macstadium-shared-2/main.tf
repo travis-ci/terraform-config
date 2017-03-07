@@ -60,6 +60,18 @@ module "macstadium_infrastructure" {
   vm_ssh_key_path = "${path.module}/config/travis-vm-ssh-key"
 }
 
+module "jupiter_brain_staging_org" {
+  source = "../modules/jupiter_brain_bluegreen"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_ip_address = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+  version = "${var.jupiter_brain_production_version}"
+  config_path = "${path.module}/config/jupiter-brain-staging-org-env"
+  env = "staging-org"
+  index = "${var.index}"
+  port_suffix = 2
+}
+
 module "jupiter_brain_production_com" {
   source = "../modules/jupiter_brain_bluegreen"
   host_id = "${module.macstadium_infrastructure.wjb_uuid}"
@@ -106,6 +118,28 @@ module "jupiter_brain_custom_5" {
   env = "custom-5"
   index = "${var.index}"
   port_suffix = 9
+}
+
+module "worker_staging_org_1" {
+  source = "../modules/macstadium_go_worker"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+  version = "${var.travis_worker_staging_version}"
+  config_path = "${path.module}/config/travis-worker-staging-org-1"
+  env = "staging-org-1"
+  index = "${var.index}"
+}
+
+module "worker_staging_org_2" {
+  source = "../modules/macstadium_go_worker"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+  version = "${var.travis_worker_staging_version}"
+  config_path = "${path.module}/config/travis-worker-staging-org-2"
+  env = "staging-org-2"
+  index = "${var.index}"
 }
 
 module "worker_staging_com_1" {
@@ -250,10 +284,10 @@ module "haproxy" {
   ssh_user = "${var.ssh_user}"
 
   config {
-    name = "jupiter-brain-staging-com"
-    frontend_port = "8084"
-    backend_port_blue = "9084"
-    backend_port_green = "10084"
+    name = "jupiter-brain-staging-org"
+    frontend_port = "8082"
+    backend_port_blue = "9082"
+    backend_port_green = "10082"
   }
 
   config {
@@ -261,6 +295,13 @@ module "haproxy" {
     frontend_port = "8083"
     backend_port_blue = "9083"
     backend_port_green = "10083"
+  }
+
+  config {
+    name = "jupiter-brain-staging-com"
+    frontend_port = "8084"
+    backend_port_blue = "9084"
+    backend_port_green = "10084"
   }
 
   config {
