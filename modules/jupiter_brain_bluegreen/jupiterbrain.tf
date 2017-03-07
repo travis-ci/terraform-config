@@ -48,7 +48,7 @@ resource "null_resource" "jupiter_brain" {
 
   provisioner "file" {
     content = <<EOF
-export JUPITER_BRAIN_ADDR='127.0.0.1:908${var.port_suffix}'
+export JUPITER_BRAIN_ADDR='127.0.0.1:${9080 + var.port_suffix}'
 export JUPITER_BRAIN_LIBRATO_SOURCE='jupiter-brain-${var.env}-${var.index}-blue'
 EOF
     destination = "/tmp/etc-default-jupiter-brain-${var.env}-blue"
@@ -56,7 +56,7 @@ EOF
 
   provisioner "file" {
     content = <<EOF
-export JUPITER_BRAIN_ADDR='127.0.0.1:1008${var.port_suffix}'
+export JUPITER_BRAIN_ADDR='127.0.0.1:${10080 + var.port_suffix}'
 export JUPITER_BRAIN_LIBRATO_SOURCE='jupiter-brain-${var.env}-${var.index}-green'
 EOF
     destination = "/tmp/etc-default-jupiter-brain-${var.env}-green"
