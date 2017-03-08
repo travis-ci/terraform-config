@@ -13,6 +13,13 @@
 		Values "IF-MIB::ifHCInUcastPkts" "IF-MIB::ifHCOutUcastPkts"
 	</Data>
 
+  <Data "cpu_percentage">
+    Type "percent"
+    Table true
+    Instance "HOST-RESOURCES-MIB::hrDeviceDescr"
+    Values "HOST-RESOURCES-MIB::hrProcessorLoad"
+  </Data>
+
 	<Host "TravisCI-Prod-FW">
 		Address "${fw_ip}"
 		Version 2
@@ -25,7 +32,7 @@
 		Address "${pfsense_1_ip}"
 		Version 2
 		Community "${pfsense_1_snmp_community}"
-		Collect "ifmib_if_octets64" "ifmib_if_packets64"
+		Collect "ifmib_if_octets64" "ifmib_if_packets64" "cpu_percentage"
 		Interval 60
 	</Host>
 
@@ -33,7 +40,7 @@
 		Address "${pfsense_2_ip}"
 		Version 2
 		Community "${pfsense_2_snmp_community}"
-		Collect "ifmib_if_octets64" "ifmib_if_packets64"
+		Collect "ifmib_if_octets64" "ifmib_if_packets64" "cpu_percentage"
 		Interval 60
 	</Host>
 
@@ -41,7 +48,7 @@
 		Address "${pfsense_2_1_ip}"
 		Version 2
 		Community "${pfsense_2_1_snmp_community}"
-		Collect "ifmib_if_octets64" "ifmib_if_packets64"
+		Collect "ifmib_if_octets64" "ifmib_if_packets64" "cpu_percentage"
 		Interval 60
 	</Host>
 
@@ -49,7 +56,7 @@
 		Address "${pfsense_2_2_ip}"
 		Version 2
 		Community "${pfsense_2_2_snmp_community}"
-		Collect "ifmib_if_octets64" "ifmib_if_packets64"
+		Collect "ifmib_if_octets64" "ifmib_if_packets64" "cpu_percentage"
 		Interval 60
 	</Host>
 </Plugin>
