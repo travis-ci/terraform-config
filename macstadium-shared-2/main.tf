@@ -60,6 +60,18 @@ module "macstadium_infrastructure" {
   vm_ssh_key_path = "${path.module}/config/travis-vm-ssh-key"
 }
 
+module "jupiter_brain_production_org" {
+  source = "../modules/jupiter_brain_bluegreen"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_ip_address = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+  version = "${var.jupiter_brain_production_version}"
+  config_path = "${path.module}/config/jupiter-brain-production-org-env"
+  env = "production-org"
+  index = "${var.index}"
+  port_suffix = 1
+}
+
 module "jupiter_brain_staging_org" {
   source = "../modules/jupiter_brain_bluegreen"
   host_id = "${module.macstadium_infrastructure.wjb_uuid}"
@@ -130,6 +142,28 @@ module "jupiter_brain_custom_5" {
   env = "custom-5"
   index = "${var.index}"
   port_suffix = 9
+}
+
+module "worker_production_org_1" {
+  source = "../modules/macstadium_go_worker"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+  version = "${var.travis_worker_production_version}"
+  config_path = "${path.module}/config/travis-worker-production-org-1"
+  env = "production-org-1"
+  index = "${var.index}"
+}
+
+module "worker_production_org_2" {
+  source = "../modules/macstadium_go_worker"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+  version = "${var.travis_worker_production_version}"
+  config_path = "${path.module}/config/travis-worker-production-org-2"
+  env = "production-org-2"
+  index = "${var.index}"
 }
 
 module "worker_staging_org_1" {
@@ -316,6 +350,13 @@ module "haproxy" {
   host_id = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user = "${var.ssh_user}"
+
+  config {
+    name = "jupiter-brain-production-org"
+    frontend_port = "8081"
+    backend_port_blue = "9081"
+    backend_port_green = "10081"
+  }
 
   config {
     name = "jupiter-brain-staging-org"
