@@ -9,7 +9,8 @@ variable "travis_worker_production_version" { default = "v2.6.2" }
 variable "travis_worker_staging_version" { default = "v2.6.2" }
 variable "travis_worker_custom-4_version" { default = "v2.6.2" }
 variable "travis_worker_custom-5_version" { default = "v2.6.2" }
-variable "vsphere_janitor_version" { default = "9bde41b" }
+variable "vsphere_janitor_version" { default = "0a41b7f" }
+variable "vsphere_janitor_staging_version" { default = "0a41b7f" }
 variable "collectd_vsphere_version" { default = "e1b57fe" }
 variable "ssh_user" {
   description = "your username on the wjb instances"
@@ -294,7 +295,7 @@ module "vsphere_janitor_staging_com" {
   host_id = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user = "${var.ssh_user}"
-  version = "${var.vsphere_janitor_version}"
+  version = "${var.vsphere_janitor_staging_version}"
   config_path = "${path.module}/config/vsphere-janitor-staging-com"
   env = "staging-com"
   index = "${var.index}"
