@@ -433,6 +433,20 @@ module "haproxy" {
   }
 
   config {
+    name = "jupiter-brain-custom-2"
+    frontend_port = "8086"
+    backend_port_blue = "9086"
+    backend_port_green = "10086"
+  }
+
+  config {
+    name = "jupiter-brain-custom-3"
+    frontend_port = "8086"
+    backend_port_blue = "9086"
+    backend_port_green = "10086"
+  }
+
+  config {
     name = "jupiter-brain-custom-4"
     frontend_port = "8088"
     backend_port_blue = "9088"
