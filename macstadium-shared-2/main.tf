@@ -351,6 +351,28 @@ module "vsphere_janitor_staging_com" {
   index = "${var.index}"
 }
 
+module "vsphere_janitor_custom_2" {
+  source = "../modules/vsphere_janitor"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+  version = "${var.vsphere_janitor_version}"
+  config_path = "${path.module}/config/vsphere-janitor-custom-2"
+  env = "custom-2"
+  index = "${var.index}"
+}
+
+module "vsphere_janitor_custom_3" {
+  source = "../modules/vsphere_janitor"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+  version = "${var.vsphere_janitor_version}"
+  config_path = "${path.module}/config/vsphere-janitor-custom-3"
+  env = "custom-3"
+  index = "${var.index}"
+}
+
 module "vsphere_janitor_custom_4" {
   source = "../modules/vsphere_janitor"
   host_id = "${module.macstadium_infrastructure.wjb_uuid}"
@@ -430,6 +452,20 @@ module "haproxy" {
     frontend_port = "8084"
     backend_port_blue = "9084"
     backend_port_green = "10084"
+  }
+
+  config {
+    name = "jupiter-brain-custom-2"
+    frontend_port = "8086"
+    backend_port_blue = "9086"
+    backend_port_green = "10086"
+  }
+
+  config {
+    name = "jupiter-brain-custom-3"
+    frontend_port = "8087"
+    backend_port_blue = "9087"
+    backend_port_green = "10087"
   }
 
   config {
