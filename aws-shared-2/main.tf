@@ -20,6 +20,15 @@ variable "workers_org_subnet_1b_cidr" { default = "10.12.2.0/24" }
 variable "workers_org_subnet_1c_cidr" { default = "10.12.9.0/24" }
 variable "workers_org_subnet_1e_cidr" { default = "10.12.6.0/24" }
 
+terraform {
+  backend "s3" {
+    bucket = "travis-terraform-state"
+    key = "terraform-config/aws-shared-2.tfstate"
+    region = "us-east-1"
+    encrypt = "true"
+  }
+}
+
 provider "aws" {}
 
 data "aws_ami" "nat" {

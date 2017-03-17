@@ -39,6 +39,15 @@ variable "vsphere_password" {}
 variable "vsphere_server" {}
 variable "vsphere_ip" {}
 
+terraform {
+  backend "s3" {
+    bucket = "travis-terraform-state"
+    key = "terraform-config/macstadium-shared-2.tfstate"
+    region = "us-east-1"
+    encrypt = "true"
+  }
+}
+
 provider "aws" {
   region = "us-east-1"
 }

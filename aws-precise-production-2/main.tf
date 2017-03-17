@@ -11,6 +11,15 @@ variable "syslog_address_com" {}
 variable "syslog_address_org" {}
 variable "worker_ami" { default = "ami-a38664b5" }
 
+terraform {
+  backend "s3" {
+    bucket = "travis-terraform-state"
+    key = "terraform-config/aws-precise-production-2.tfstate"
+    region = "us-east-1"
+    encrypt = "true"
+  }
+}
+
 provider "aws" {}
 
 data "terraform_remote_state" "vpc" {

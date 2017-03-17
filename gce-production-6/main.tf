@@ -9,6 +9,15 @@ variable "travisci_net_external_zone_id" { default = "Z2RI61YP4UWSIO" }
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
 
+terraform {
+  backend "s3" {
+    bucket = "travis-terraform-state"
+    key = "terraform-config/gce-production-6.tfstate"
+    region = "us-east-1"
+    encrypt = "true"
+  }
+}
+
 provider "google" { project = "travis-ci-prod-6" }
 provider "aws" {}
 provider "heroku" {}
