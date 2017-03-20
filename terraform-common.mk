@@ -5,7 +5,6 @@ ENV_TAIL ?= $(subst $(INFRA)-,,$(ENV_NAME))
 TFVARS := $(PWD)/terraform.tfvars
 TFSTATE := $(PWD)/.terraform/terraform.tfstate
 TFPLAN := $(PWD)/$(ENV_NAME).tfplan
-TFCONF := $(PWD)/.terraform/configured
 TOP := $(shell git rev-parse --show-toplevel)
 
 .PHONY: hello
@@ -31,12 +30,12 @@ plan: announce .config $(TFVARS) $(TFSTATE)
 		-module-depth=-1 \
 		-out=$(TFPLAN)
 
-$(TFSTATE): $(TFCONF)
-	terraform get
+$(TFSTATE):
+	terraform init
 
 .PHONY: clean
 clean: announce
-	$(RM) -r config $(TFVARS) $(TFCONF) $(ENV_NAME).tfvars
+	$(RM) -r config $(TFVARS) $(ENV_NAME).tfvars
 
 .PHONY: distclean
 distclean: clean

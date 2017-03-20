@@ -17,6 +17,15 @@ variable "latest_docker_image_worker" {}
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
 
+terraform {
+  backend "s3" {
+    bucket = "travis-terraform-state"
+    key = "terraform-config/aws-precise-staging-1.tfstate"
+    region = "us-east-1"
+    encrypt = "true"
+  }
+}
+
 provider "aws" {}
 
 data "aws_ami" "worker" {
