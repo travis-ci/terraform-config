@@ -36,6 +36,7 @@ CONFIG_FILES := \
 		config/travis-worker-production-com-xserve-2 \
 		config/travis-worker-staging-com-1 \
 		config/travis-worker-staging-com-2 \
+		config/vsphere-monitor \
 		config/collectd-vsphere-common \
 		config/travis-vm-ssh-key
 
@@ -93,6 +94,8 @@ $(CONFIG_FILES):
 		| sed 's/^/export /' >config/vsphere-janitor-custom-4
 	trvs generate-config -n -p VSPHERE_JANITOR -f env vsphere-janitor custom-5-$(INDEX) \
 		| sed 's/^/export /' >config/vsphere-janitor-custom-5
+	trvs generate-config -n -p VSPHERE_MONITOR -f env vsphere-monitor common-$(INDEX) \
+		| sed 's/^/export /' >config/vsphere-monitor
 	trvs generate-config -n --pro -p JUPITER_BRAIN -f env jupiter-brain production-$(INDEX) \
 		| sed 's/^/export /' >config/jupiter-brain-production-com-env
 	trvs generate-config -n --pro -p JUPITER_BRAIN -f env jupiter-brain production-$(INDEX)-xserve \

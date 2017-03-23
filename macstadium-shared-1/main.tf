@@ -440,6 +440,16 @@ module "vsphere_janitor_custom_5" {
   index = "${var.index}"
 }
 
+module "vsphere_monitor" {
+  source = "../modules/vsphere_monitor"
+  host_id = "${module.macstadium_infrastructure.util_uuid}"
+  ssh_host = "${module.macstadium_infrastructure.util_ip}"
+  ssh_user = "${var.ssh_user}"
+  version = "${var.vsphere_monitor_version}"
+  config_path = "${path.module}/config/vsphere-monitor"
+  index = "${var.index}"
+}
+
 module "collectd-vsphere-common" {
   source = "../modules/collectd_vsphere"
   host_id = "${module.macstadium_infrastructure.wjb_uuid}"
