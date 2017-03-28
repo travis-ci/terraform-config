@@ -1,10 +1,10 @@
 variable "index" { default = 2 }
 variable "travisci_net_external_zone_id" { default = "Z2RI61YP4UWSIO" }
 variable "macstadium_vanilla_image" { default = "travis-ci-ubuntu14.04-internal-vanilla-1481140635" }
-variable "jupiter_brain_production_version" { default = "v1.0.0" }
-variable "jupiter_brain_staging_version" { default = "v1.0.0" }
-variable "jupiter_brain_custom-4_version" { default = "v1.0.0" }
-variable "jupiter_brain_custom-5_version" { default = "v1.0.0" }
+variable "jupiter_brain_production_version" { default = "v1.0.0-2-gb24b7f9" }
+variable "jupiter_brain_staging_version" { default = "v1.0.0-2-gb24b7f9" }
+variable "jupiter_brain_custom-4_version" { default = "v1.0.0-2-gb24b7f9" }
+variable "jupiter_brain_custom-5_version" { default = "v1.0.0-2-gb24b7f9" }
 variable "travis_worker_production_version" { default = "v2.6.2" }
 variable "travis_worker_staging_version" { default = "v2.6.2" }
 variable "travis_worker_custom-4_version" { default = "v2.6.2" }
