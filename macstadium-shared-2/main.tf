@@ -15,6 +15,7 @@ variable "travis_worker_custom-4_version" { default = "v2.6.2" }
 variable "travis_worker_custom-5_version" { default = "v2.6.2" }
 variable "vsphere_janitor_version" { default = "0a41b7f" }
 variable "vsphere_janitor_staging_version" { default = "0a41b7f" }
+variable "vsphere_monitor_version" { default = "0a459b3" }
 variable "collectd_vsphere_version" { default = "e1b57fe" }
 variable "ssh_user" {
   description = "your username on the wjb instances"
