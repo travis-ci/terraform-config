@@ -19,7 +19,7 @@ resource "null_resource" "vsphere_monitor" {
     version = "${var.version}"
     config_signature = "${sha256(file(var.config_path))}"
     install_script_signature = "${sha256(data.template_file.vsphere_monitor_install.rendered)}"
-    upstart_script_signature = "${sha256(data.template_file.vsphere_monitor_upstart.rendered)}"
+    upstart_script_signature = "${sha256(file("${path.module}/vsphere-monitor.conf"))}"
     name = "${var.index}"
     host_id = "${var.host_id}"
   }
