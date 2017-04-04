@@ -7,6 +7,8 @@ CONFIG_FILES := \
 		config/jupiter-brain-production-org-env \
 		config/jupiter-brain-staging-org-env \
 		config/jupiter-brain-custom-1-env \
+		config/jupiter-brain-custom-2-env \
+		config/jupiter-brain-custom-3-env \
 		config/jupiter-brain-custom-4-env \
 		config/jupiter-brain-custom-5-env \
 		config/travis-worker-staging-org-1 \
@@ -14,9 +16,13 @@ CONFIG_FILES := \
 		config/travis-worker-production-org-1 \
 		config/travis-worker-production-org-2 \
 		config/travis-worker-custom-1 \
+		config/travis-worker-custom-2 \
+		config/travis-worker-custom-3 \
 		config/travis-worker-custom-4 \
 		config/travis-worker-custom-5 \
 		config/vsphere-janitor-custom-1 \
+		config/vsphere-janitor-custom-2 \
+		config/vsphere-janitor-custom-3 \
 		config/vsphere-janitor-custom-4 \
 		config/vsphere-janitor-custom-5 \
 		config/vsphere-janitor-production-com \
