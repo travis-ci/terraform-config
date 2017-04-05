@@ -77,6 +77,8 @@ module "macstadium_infrastructure" {
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
   vsphere_ip = "${var.vsphere_ip}"
   vm_ssh_key_path = "${path.module}/config/travis-vm-ssh-key"
+  pfsense_1_ip = "208.78.110.202"
+  pfsense_2_ip = "208.78.110.203"
 }
 
 module "jupiter_brain_production_org" {
