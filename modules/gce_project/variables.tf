@@ -23,3 +23,8 @@ variable "worker_docker_self_image" { default = "travisci/worker:v2.6.2" }
 variable "worker_image" {}
 variable "worker_instance_count_com" {}
 variable "worker_instance_count_org" {}
+
+variable "public_subnet_cidr_range" { default = "10.10.0.0/22" }
+variable "workers_subnet_cidr_range" { default = "10.10.4.0/22" }
+variable "build_org_subnet_cidr_range" { default = "10.10.8.0/22" }
+variable "build_com_subnet_cidr_range" { default = "10.10.12.0/22" }
