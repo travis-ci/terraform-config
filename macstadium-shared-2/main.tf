@@ -2,7 +2,7 @@ variable "index" { default = 2 }
 variable "travisci_net_external_zone_id" { default = "Z2RI61YP4UWSIO" }
 variable "macstadium_vanilla_image" { default = "travis-ci-ubuntu14.04-internal-vanilla-1481140635" }
 variable "jupiter_brain_production_version" { default = "v0.2.0-58-gce0b45a" }
-variable "jupiter_brain_staging_version" { default = "v0.2.0-58-gce0b45a" }
+variable "jupiter_brain_staging_version" { default = "v1.0.0-3-g9665e76" }
 variable "jupiter_brain_custom-1_version" { default = "v0.2.0-58-gce0b45a" }
 variable "jupiter_brain_custom-2_version" { default = "v0.2.0-58-gce0b45a" }
 variable "jupiter_brain_custom-3_version" { default = "v0.2.0-58-gce0b45a" }
@@ -98,7 +98,7 @@ module "jupiter_brain_staging_org" {
   host_id = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_ip_address = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user = "${var.ssh_user}"
-  version = "${var.jupiter_brain_production_version}"
+  version = "${var.jupiter_brain_staging_version}"
   config_path = "${path.module}/config/jupiter-brain-staging-org-env"
   env = "staging-org"
   index = "${var.index}"
@@ -134,7 +134,7 @@ module "jupiter_brain_staging_com" {
   host_id = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_ip_address = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user = "${var.ssh_user}"
-  version = "${var.jupiter_brain_production_version}"
+  version = "${var.jupiter_brain_staging_version}"
   config_path = "${path.module}/config/jupiter-brain-staging-com-env"
   env = "staging-com"
   index = "${var.index}"
