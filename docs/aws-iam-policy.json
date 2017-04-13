@@ -42,17 +42,9 @@
                 "iam:*"
             ],
             "Resource": [
-                "arn:aws:iam::*:user/cyclist-*"
-            ]
-        },
-        {
-            "Effect": "Allow",
-            "Action": [
-                "iam:*"
-            ],
-            "Resource": [
                 "arn:aws:iam::341288657826:role/*",
                 "arn:aws:iam::341288657826:user/registry-shared-1"
+                "arn:aws:iam::*:user/cyclist-*",
             ]
         }
     ]
