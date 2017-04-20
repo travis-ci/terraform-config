@@ -210,7 +210,7 @@ module "jupiter_brain_custom_6" {
   config_path = "${path.module}/config/jupiter-brain-custom-6-env"
   env = "custom-6"
   index = "${var.index}"
-  port_suffix = 9
+  port_suffix = 11
 }
 
 module "worker_production_org_1" {
