@@ -201,6 +201,18 @@ module "jupiter_brain_custom_5" {
   port_suffix = 9
 }
 
+module "jupiter_brain_custom_6" {
+  source = "../modules/jupiter_brain_bluegreen"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_ip_address = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+  version = "${var.jupiter_brain_custom-6_version}"
+  config_path = "${path.module}/config/jupiter-brain-custom-6-env"
+  env = "custom-6"
+  index = "${var.index}"
+  port_suffix = 9
+}
+
 module "worker_production_org_1" {
   source = "../modules/macstadium_go_worker"
   host_id = "${module.macstadium_infrastructure.wjb_uuid}"
@@ -366,6 +378,17 @@ module "worker_custom_5" {
   index = "${var.index}"
 }
 
+module "worker_custom_6" {
+  source = "../modules/macstadium_go_worker"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+  version = "${var.travis_worker_custom-6_version}"
+  config_path = "${path.module}/config/travis-worker-custom-6"
+  env = "custom-6"
+  index = "${var.index}"
+}
+
 module "vsphere_janitor_production_com" {
   source = "../modules/vsphere_janitor"
   host_id = "${module.macstadium_infrastructure.wjb_uuid}"
@@ -440,6 +463,17 @@ module "vsphere_janitor_custom_5" {
   version = "${var.vsphere_janitor_version}"
   config_path = "${path.module}/config/vsphere-janitor-custom-5"
   env = "custom-5"
+  index = "${var.index}"
+}
+
+module "vsphere_janitor_custom_6" {
+  source = "../modules/vsphere_janitor"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+  version = "${var.vsphere_janitor_version}"
+  config_path = "${path.module}/config/vsphere-janitor-custom-6"
+  env = "custom-6"
   index = "${var.index}"
 }
 
@@ -552,5 +586,12 @@ module "haproxy" {
     frontend_port = "8090"
     backend_port_blue = "9090"
     backend_port_green = "10090"
+  }
+
+  config {
+    name = "jupiter-brain-custom-6"
+    frontend_port = "8091"
+    backend_port_blue = "9091"
+    backend_port_green = "10091"
   }
 }
