@@ -5,6 +5,7 @@
             "Effect": "Allow",
             "Action": [
                 "ec2:*",
+                "elasticloadbalancing:*",
                 "route53:*",
                 "autoscaling:*",
                 "cloudwatch:*",
@@ -17,14 +18,13 @@
         {
             "Effect": "Allow",
             "Action": [
-                "s3:DeleteObject",
-                "s3:GetObject",
-                "s3:ListBucket",
-                "s3:PutObject"
+                "s3:*"
             ],
             "Resource": [
                 "arn:aws:s3:::travis-terraform-state",
-                "arn:aws:s3:::travis-terraform-state/*"
+                "arn:aws:s3:::travis-terraform-state/*",
+                "arn:aws:s3:::travis-shared-1-registry-images",
+                "arn:aws:s3:::travis-shared-1-registry-images/*"
             ]
         },
         {
@@ -42,7 +42,9 @@
                 "iam:*"
             ],
             "Resource": [
-                "arn:aws:iam::341288657826:role/*"
+                "arn:aws:iam::341288657826:role/*",
+                "arn:aws:iam::341288657826:user/registry-shared-1",
+                "arn:aws:iam::*:user/cyclist-*"
             ]
         }
     ]
