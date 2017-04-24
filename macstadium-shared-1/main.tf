@@ -7,12 +7,14 @@ variable "jupiter_brain_custom-2_version" { default = "v0.2.0-58-gce0b45a" }
 variable "jupiter_brain_custom-3_version" { default = "v0.2.0-58-gce0b45a" }
 variable "jupiter_brain_custom-4_version" { default = "v0.2.0-58-gce0b45a" }
 variable "jupiter_brain_custom-5_version" { default = "v0.2.0-58-gce0b45a" }
-variable "jupiter_brain_staging_version" { default = "v0.2.0-58-gce0b45a" }
+variable "jupiter_brain_custom-6_version" { default = "v0.2.0-58-gce0b45a" }
+variable "jupiter_brain_staging_version" { default = "v1.0.0-3-g9665e76" }
 variable "travis_worker_custom-1_version" { default = "v2.6.2" }
 variable "travis_worker_custom-2_version" { default = "v2.6.2" }
 variable "travis_worker_custom-3_version" { default = "v2.6.2" }
 variable "travis_worker_custom-4_version" { default = "v2.6.2" }
 variable "travis_worker_custom-5_version" { default = "v2.6.2" }
+variable "travis_worker_custom-6_version" { default = "v2.6.2" }
 variable "travis_worker_production_version" { default = "v2.6.2" }
 variable "travis_worker_staging_version" { default = "v2.6.2" }
 variable "vsphere_janitor_version" { default = "0a41b7f" }
@@ -98,7 +100,7 @@ module "jupiter_brain_staging_org" {
   host_id = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_ip_address = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user = "${var.ssh_user}"
-  version = "${var.jupiter_brain_production_version}"
+  version = "${var.jupiter_brain_staging_version}"
   config_path = "${path.module}/config/jupiter-brain-staging-org-env"
   env = "staging-org"
   index = "${var.index}"
@@ -134,7 +136,7 @@ module "jupiter_brain_staging_com" {
   host_id = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_ip_address = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user = "${var.ssh_user}"
-  version = "${var.jupiter_brain_production_version}"
+  version = "${var.jupiter_brain_staging_version}"
   config_path = "${path.module}/config/jupiter-brain-staging-com-env"
   env = "staging-com"
   index = "${var.index}"
@@ -199,6 +201,18 @@ module "jupiter_brain_custom_5" {
   env = "custom-5"
   index = "${var.index}"
   port_suffix = 9
+}
+
+module "jupiter_brain_custom_6" {
+  source = "../modules/jupiter_brain_bluegreen"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_ip_address = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+  version = "${var.jupiter_brain_custom-6_version}"
+  config_path = "${path.module}/config/jupiter-brain-custom-6-env"
+  env = "custom-6"
+  index = "${var.index}"
+  port_suffix = 11
 }
 
 module "worker_production_org_1" {
@@ -366,6 +380,17 @@ module "worker_custom_5" {
   index = "${var.index}"
 }
 
+module "worker_custom_6" {
+  source = "../modules/macstadium_go_worker"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+  version = "${var.travis_worker_custom-6_version}"
+  config_path = "${path.module}/config/travis-worker-custom-6"
+  env = "custom-6"
+  index = "${var.index}"
+}
+
 module "vsphere_janitor_production_com" {
   source = "../modules/vsphere_janitor"
   host_id = "${module.macstadium_infrastructure.wjb_uuid}"
@@ -440,6 +465,17 @@ module "vsphere_janitor_custom_5" {
   version = "${var.vsphere_janitor_version}"
   config_path = "${path.module}/config/vsphere-janitor-custom-5"
   env = "custom-5"
+  index = "${var.index}"
+}
+
+module "vsphere_janitor_custom_6" {
+  source = "../modules/vsphere_janitor"
+  host_id = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+  version = "${var.vsphere_janitor_version}"
+  config_path = "${path.module}/config/vsphere-janitor-custom-6"
+  env = "custom-6"
   index = "${var.index}"
 }
 
@@ -552,5 +588,12 @@ module "haproxy" {
     frontend_port = "8090"
     backend_port_blue = "9090"
     backend_port_green = "10090"
+  }
+
+  config {
+    name = "jupiter-brain-custom-6"
+    frontend_port = "8091"
+    backend_port_blue = "9091"
+    backend_port_green = "10091"
   }
 }
