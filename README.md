@@ -25,7 +25,7 @@ services:
 
 ## Requirements
 
-* [terraform](https://www.terraform.io/) 0.7.0+
+* [terraform](https://www.terraform.io/) 0.9.0+
 * `trvs`, a Travis CI tool shrouded in mystery, along with access to secret
   secrets for making secret stuff
 
