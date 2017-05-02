@@ -1,6 +1,10 @@
 variable "ssh_host" {}
 variable "ssh_user" {}
-variable "config" { type = "list" }
+
+variable "config" {
+  type = "list"
+}
+
 variable "host_id" {}
 
 data "template_file" "haproxy_mappings" {
@@ -19,10 +23,11 @@ backend servers-$${name}
 EOF
 
   count = "${length(var.config)}"
+
   vars {
-    name = "${lookup(var.config[count.index], "name")}"
-    frontend_port = "${lookup(var.config[count.index], "frontend_port")}"
-    backend_port_blue = "${lookup(var.config[count.index], "backend_port_blue")}"
+    name               = "${lookup(var.config[count.index], "name")}"
+    frontend_port      = "${lookup(var.config[count.index], "frontend_port")}"
+    backend_port_blue  = "${lookup(var.config[count.index], "backend_port_blue")}"
     backend_port_green = "${lookup(var.config[count.index], "backend_port_green")}"
   }
 }
@@ -30,18 +35,18 @@ EOF
 resource "null_resource" "haproxy" {
   triggers {
     config_file_signature = "${sha256(file("${path.module}/haproxy.cfg"))}"
-    config_signature = "${sha256(join("\n", data.template_file.haproxy_mappings.*.rendered))}"
-    host_id = "${var.host_id}"
+    config_signature      = "${sha256(join("\n", data.template_file.haproxy_mappings.*.rendered))}"
+    host_id               = "${var.host_id}"
   }
 
   connection {
-    host = "${var.ssh_host}"
-    user = "${var.ssh_user}"
+    host  = "${var.ssh_host}"
+    user  = "${var.ssh_user}"
     agent = true
   }
 
   provisioner "file" {
-    content = "${file("${path.module}/haproxy.cfg")}\n${join("\n", data.template_file.haproxy_mappings.*.rendered)}"
+    content     = "${file("${path.module}/haproxy.cfg")}\n${join("\n", data.template_file.haproxy_mappings.*.rendered)}"
     destination = "/tmp/haproxy.cfg"
   }
 
@@ -49,7 +54,7 @@ resource "null_resource" "haproxy" {
     inline = [
       "DEBIAN_FRONTEND=noninteractive sudo apt-get -y install haproxy",
       "sudo mv /tmp/haproxy.cfg /etc/haproxy/haproxy.cfg",
-      "echo ENABLED=1 | sudo tee /etc/default/haproxy"
+      "echo ENABLED=1 | sudo tee /etc/default/haproxy",
     ]
   }
 }

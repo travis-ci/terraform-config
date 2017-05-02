@@ -1,10 +1,23 @@
 variable "admin_password" {}
 variable "admin_username" {}
 variable "endpoint" {}
-variable "perm_configure" { default = ".*" }
-variable "perm_read" { default = ".*" }
-variable "perm_write" { default = ".*" }
-variable "scheme" { default = "amqp" }
+
+variable "perm_configure" {
+  default = ".*"
+}
+
+variable "perm_read" {
+  default = ".*"
+}
+
+variable "perm_write" {
+  default = ".*"
+}
+
+variable "scheme" {
+  default = "amqp"
+}
+
 variable "username" {}
 variable "vhost" {}
 
@@ -19,19 +32,22 @@ resource "random_id" "password" {
 }
 
 resource "rabbitmq_user" "user" {
-  name = "${var.username}"
+  name     = "${var.username}"
   password = "${random_id.password.hex}"
-  tags = ["travis"]
+  tags     = ["travis"]
 }
 
 resource "rabbitmq_permissions" "perms" {
   permissions {
     configure = "${var.perm_configure}"
-    read = "${var.perm_read}"
-    write = "${var.perm_write}"
+    read      = "${var.perm_read}"
+    write     = "${var.perm_write}"
   }
-  user = "${rabbitmq_user.user.name}"
+
+  user  = "${rabbitmq_user.user.name}"
   vhost = "${var.vhost}"
 }
 
-output "uri" { value = "${var.scheme}://${rabbitmq_user.user.name}:${rabbitmq_user.user.password}@${element(split("//", var.endpoint), 1)}/${var.vhost}" }
+output "uri" {
+  value = "${var.scheme}://${rabbitmq_user.user.name}:${rabbitmq_user.user.password}@${element(split("//", var.endpoint), 1)}/${var.vhost}"
+}

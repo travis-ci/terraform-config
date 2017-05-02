@@ -24,9 +24,9 @@ data "template_file" "collectd_vsphere_install" {
   template = "${file("${path.module}/install-collectd-vsphere.sh")}"
 
   vars {
-    env = "${var.env}"
+    env     = "${var.env}"
     version = "${var.version}"
-    index = "${var.index}"
+    index   = "${var.index}"
   }
 }
 
@@ -34,8 +34,8 @@ data "template_file" "collectd_conf" {
   template = "${file("${path.module}/collectd.conf.tpl")}"
 
   vars {
-    pfsense_1_ip = "${var.pfsense_1_ip}"
-    pfsense_2_ip = "${var.pfsense_2_ip}"
+    pfsense_1_ip   = "${var.pfsense_1_ip}"
+    pfsense_2_ip   = "${var.pfsense_2_ip}"
     pfsense_2_1_ip = "${var.pfsense_2_1_ip}"
     pfsense_2_2_ip = "${var.pfsense_2_2_ip}"
   }
@@ -45,7 +45,7 @@ data "template_file" "librato_conf" {
   template = "${file("${path.module}/librato.conf.tpl")}"
 
   vars {
-    host = "wjb-${var.index}"
+    host  = "wjb-${var.index}"
     email = "${var.librato_email}"
     token = "${var.librato_token}"
   }
@@ -55,21 +55,20 @@ data "template_file" "snmp_conf" {
   template = "${file("${path.module}/snmp.conf.tpl")}"
 
   vars {
-    fw_ip = "${var.fw_ip}"
-    fw_snmp_community = "${var.fw_snmp_community}"
-    pfsense_1_ip = "${var.pfsense_1_ip}"
-    pfsense_1_snmp_community = "${var.pfsense_1_snmp_community}"
-    pfsense_2_ip = "${var.pfsense_2_ip}"
-    pfsense_2_snmp_community = "${var.pfsense_2_snmp_community}"
-    pfsense_2_1_ip = "${var.pfsense_2_1_ip}"
+    fw_ip                      = "${var.fw_ip}"
+    fw_snmp_community          = "${var.fw_snmp_community}"
+    pfsense_1_ip               = "${var.pfsense_1_ip}"
+    pfsense_1_snmp_community   = "${var.pfsense_1_snmp_community}"
+    pfsense_2_ip               = "${var.pfsense_2_ip}"
+    pfsense_2_snmp_community   = "${var.pfsense_2_snmp_community}"
+    pfsense_2_1_ip             = "${var.pfsense_2_1_ip}"
     pfsense_2_1_snmp_community = "${var.pfsense_2_1_snmp_community}"
-    pfsense_2_2_ip = "${var.pfsense_2_2_ip}"
+    pfsense_2_2_ip             = "${var.pfsense_2_2_ip}"
     pfsense_2_2_snmp_community = "${var.pfsense_2_2_snmp_community}"
   }
 }
 
 data "template_file" "collectd_network_token_file" {
-
   vars {
     collectd_vsphere_token = "${var.collectd_vsphere_collectd_network_token}"
   }
@@ -79,58 +78,58 @@ data "template_file" "collectd_vsphere_upstart" {
   template = "${file("${path.module}/collectd-vsphere.conf.tpl")}"
 
   vars {
-    env = "${var.env}"
+    env   = "${var.env}"
     index = "${var.index}"
   }
 }
 
 resource "null_resource" "collectd_vsphere" {
   triggers {
-    version = "${var.version}"
-    config_signature = "${sha256(file(var.config_path))}"
-    install_script_signature = "${sha256(data.template_file.collectd_vsphere_install.rendered)}"
-    librato_creds_signature = "${sha256(data.template_file.librato_conf.rendered)}"
-    collectd_config_signature = "${sha256(data.template_file.collectd_conf.rendered)}"
-    collectd_vsphere_init_signature = "${sha256(data.template_file.collectd_vsphere_upstart.rendered)}"
+    version                               = "${var.version}"
+    config_signature                      = "${sha256(file(var.config_path))}"
+    install_script_signature              = "${sha256(data.template_file.collectd_vsphere_install.rendered)}"
+    librato_creds_signature               = "${sha256(data.template_file.librato_conf.rendered)}"
+    collectd_config_signature             = "${sha256(data.template_file.collectd_conf.rendered)}"
+    collectd_vsphere_init_signature       = "${sha256(data.template_file.collectd_vsphere_upstart.rendered)}"
     collectd_network_token_file_signature = "${sha256(data.template_file.collectd_network_token_file.rendered)}"
-    collectd_snmp_config_signature = "${sha256(data.template_file.snmp_conf.rendered)}"
-    name = "${var.env}-${var.index}"
-    host_id = "${var.host_id}"
+    collectd_snmp_config_signature        = "${sha256(data.template_file.snmp_conf.rendered)}"
+    name                                  = "${var.env}-${var.index}"
+    host_id                               = "${var.host_id}"
   }
 
   connection {
-    host = "${var.ssh_host}"
-    user = "${var.ssh_user}"
+    host  = "${var.ssh_host}"
+    user  = "${var.ssh_user}"
     agent = true
   }
 
   provisioner "file" {
-    content = "${file(var.config_path)}"
+    content     = "${file(var.config_path)}"
     destination = "/tmp/etc-default-collectd-vsphere-${var.env}"
   }
 
   provisioner "file" {
-    content = "${data.template_file.collectd_vsphere_upstart.rendered}"
+    content     = "${data.template_file.collectd_vsphere_upstart.rendered}"
     destination = "/tmp/init-collectd-vsphere-${var.env}.conf"
   }
 
   provisioner "file" {
-    content = "${data.template_file.collectd_conf.rendered}"
+    content     = "${data.template_file.collectd_conf.rendered}"
     destination = "/tmp/collectd.conf"
   }
 
   provisioner "file" {
-    content = "${data.template_file.librato_conf.rendered}"
+    content     = "${data.template_file.librato_conf.rendered}"
     destination = "/tmp/librato.conf"
   }
 
   provisioner "file" {
-    content = "${data.template_file.snmp_conf.rendered}"
+    content     = "${data.template_file.snmp_conf.rendered}"
     destination = "/tmp/snmp.conf"
   }
 
   provisioner "file" {
-    content = "${var.collectd_vsphere_collectd_network_user}: ${var.collectd_vsphere_collectd_network_token}"
+    content     = "${var.collectd_vsphere_collectd_network_user}: ${var.collectd_vsphere_collectd_network_token}"
     destination = "/tmp/collectd-network-auth"
   }
 
