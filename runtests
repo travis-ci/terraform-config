@@ -40,3 +40,6 @@ for d in $(git ls-files '*.tf' | xargs -n1 dirname | LC_ALL=C sort | uniq); do
   terraform validate "${d}"
   echo "✓"
 done
+
+echo 'Running terraform fmt'
+terraform fmt
