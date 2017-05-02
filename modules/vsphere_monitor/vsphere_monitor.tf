@@ -10,33 +10,33 @@ data "template_file" "vsphere_monitor_install" {
 
   vars {
     version = "${var.version}"
-    index = "${var.index}"
+    index   = "${var.index}"
   }
 }
 
 resource "null_resource" "vsphere_monitor" {
   triggers {
-    version = "${var.version}"
-    config_signature = "${sha256(file(var.config_path))}"
+    version                  = "${var.version}"
+    config_signature         = "${sha256(file(var.config_path))}"
     install_script_signature = "${sha256(data.template_file.vsphere_monitor_install.rendered)}"
     upstart_script_signature = "${sha256(file("${path.module}/vsphere-monitor.conf"))}"
-    name = "${var.index}"
-    host_id = "${var.host_id}"
+    name                     = "${var.index}"
+    host_id                  = "${var.host_id}"
   }
 
   connection {
-    host = "${var.ssh_host}"
-    user = "${var.ssh_user}"
+    host  = "${var.ssh_host}"
+    user  = "${var.ssh_user}"
     agent = true
   }
 
   provisioner "file" {
-    content = "${file(var.config_path)}"
+    content     = "${file(var.config_path)}"
     destination = "/tmp/etc-default-vsphere-monitor"
   }
 
   provisioner "file" {
-    content = "${file("${path.module}/vsphere-monitor.conf")}"
+    content     = "${file("${path.module}/vsphere-monitor.conf")}"
     destination = "/tmp/init-vsphere-monitor.conf"
   }
 
