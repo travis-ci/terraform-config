@@ -668,3 +668,10 @@ module "haproxy" {
     backend_port_green = "10091"
   }
 }
+
+module "wjb-host-utils" {
+  source   = "../modules/macstadium_host_utils"
+  host_id  = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+}
