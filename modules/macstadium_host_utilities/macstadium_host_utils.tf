@@ -7,7 +7,7 @@ variable "script" {
 
 variable "host_id" {}
 
-resource "null_resource" "macstadium_host_utils_install" {
+resource "null_resource" "macstadium_host_utilities_install" {
   triggers {
     script_signature = "${sha256(var.script)}"
     host_id          = "${var.host_id}"
