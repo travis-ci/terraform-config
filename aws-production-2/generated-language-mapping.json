@@ -1,0 +1,13 @@
+{
+  "android": "travisci/ci-amethyst:packer-1478744929",
+  "erlang": "travisci/ci-amethyst:packer-1478744929",
+  "haskell": "travisci/ci-amethyst:packer-1478744929",
+  "perl": "travisci/ci-amethyst:packer-1478744929",
+  "default": "travisci/ci-garnet:packer-1478744932",
+  "go": "travisci/ci-garnet:packer-1478744932",
+  "jvm": "travisci/ci-garnet:packer-1478744932",
+  "node_js": "travisci/ci-garnet:packer-1478744932",
+  "php": "travisci/ci-garnet:packer-1478744932",
+  "python": "travisci/ci-garnet:packer-1478744932",
+  "ruby": "travisci/ci-garnet:packer-1478744932"
+}

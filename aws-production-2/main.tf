@@ -21,6 +21,18 @@ variable "worker_ami" {
   default = "ami-a38664b5"
 }
 
+variable "amethyst_image" {
+  default = "travisci/ci-amethyst:packer-1478744929"
+}
+
+variable "garnet_image" {
+  default = "travisci/ci-garnet:packer-1478744932"
+}
+
+variable "worker_image" {
+  default = "travisci/worker:v2.5.0"
+}
+
 terraform {
   backend "s3" {
     bucket  = "travis-terraform-state"
@@ -146,18 +158,18 @@ module "aws_asg_com" {
   worker_asg_scale_out_qty       = 2
   worker_asg_scale_out_threshold = 30
   worker_config                  = "${data.template_file.worker_config_com.rendered}"
-  worker_docker_image_android    = "travisci/ci-amethyst:packer-1478744929"
-  worker_docker_image_default    = "travisci/ci-garnet:packer-1478744932"
-  worker_docker_image_erlang     = "travisci/ci-amethyst:packer-1478744929"
-  worker_docker_image_go         = "travisci/ci-garnet:packer-1478744932"
-  worker_docker_image_haskell    = "travisci/ci-amethyst:packer-1478744929"
-  worker_docker_image_jvm        = "travisci/ci-garnet:packer-1478744932"
-  worker_docker_image_node_js    = "travisci/ci-garnet:packer-1478744932"
-  worker_docker_image_perl       = "travisci/ci-amethyst:packer-1478744929"
-  worker_docker_image_php        = "travisci/ci-garnet:packer-1478744932"
-  worker_docker_image_python     = "travisci/ci-garnet:packer-1478744932"
-  worker_docker_image_ruby       = "travisci/ci-garnet:packer-1478744932"
-  worker_docker_self_image       = "travisci/worker:v2.5.0"
+  worker_docker_image_android    = "${var.amethyst_image}"
+  worker_docker_image_default    = "${var.garnet_image}"
+  worker_docker_image_erlang     = "${var.amethyst_image}"
+  worker_docker_image_go         = "${var.garnet_image}"
+  worker_docker_image_haskell    = "${var.amethyst_image}"
+  worker_docker_image_jvm        = "${var.garnet_image}"
+  worker_docker_image_node_js    = "${var.garnet_image}"
+  worker_docker_image_perl       = "${var.amethyst_image}"
+  worker_docker_image_php        = "${var.garnet_image}"
+  worker_docker_image_python     = "${var.garnet_image}"
+  worker_docker_image_ruby       = "${var.garnet_image}"
+  worker_docker_self_image       = "${var.worker_image}"
   worker_instance_type           = "c3.8xlarge"
   worker_queue                   = "ec2"
   worker_subnets                 = "${data.terraform_remote_state.vpc.workers_com_subnet_1b_id},${data.terraform_remote_state.vpc.workers_com_subnet_1e_id}"
@@ -193,19 +205,35 @@ module "aws_asg_org" {
   worker_asg_scale_out_qty       = 2
   worker_asg_scale_out_threshold = 30
   worker_config                  = "${data.template_file.worker_config_org.rendered}"
-  worker_docker_image_android    = "travisci/ci-amethyst:packer-1478744929"
-  worker_docker_image_default    = "travisci/ci-garnet:packer-1478744932"
-  worker_docker_image_erlang     = "travisci/ci-amethyst:packer-1478744929"
-  worker_docker_image_go         = "travisci/ci-garnet:packer-1478744932"
-  worker_docker_image_haskell    = "travisci/ci-amethyst:packer-1478744929"
-  worker_docker_image_jvm        = "travisci/ci-garnet:packer-1478744932"
-  worker_docker_image_node_js    = "travisci/ci-garnet:packer-1478744932"
-  worker_docker_image_perl       = "travisci/ci-amethyst:packer-1478744929"
-  worker_docker_image_php        = "travisci/ci-garnet:packer-1478744932"
-  worker_docker_image_python     = "travisci/ci-garnet:packer-1478744932"
-  worker_docker_image_ruby       = "travisci/ci-garnet:packer-1478744932"
-  worker_docker_self_image       = "travisci/worker:v2.5.0"
+  worker_docker_image_android    = "${var.amethyst_image}"
+  worker_docker_image_default    = "${var.garnet_image}"
+  worker_docker_image_erlang     = "${var.amethyst_image}"
+  worker_docker_image_go         = "${var.garnet_image}"
+  worker_docker_image_haskell    = "${var.amethyst_image}"
+  worker_docker_image_jvm        = "${var.garnet_image}"
+  worker_docker_image_node_js    = "${var.garnet_image}"
+  worker_docker_image_perl       = "${var.amethyst_image}"
+  worker_docker_image_php        = "${var.garnet_image}"
+  worker_docker_image_python     = "${var.garnet_image}"
+  worker_docker_image_ruby       = "${var.garnet_image}"
+  worker_docker_self_image       = "${var.worker_image}"
   worker_instance_type           = "c3.8xlarge"
   worker_queue                   = "ec2"
   worker_subnets                 = "${data.terraform_remote_state.vpc.workers_org_subnet_1b_id},${data.terraform_remote_state.vpc.workers_org_subnet_1e_id}"
+}
+
+resource "null_resource" "language_mapping_json" {
+  triggers {
+    amethyst_image = "${var.amethyst_image}"
+    garnet_image   = "${var.garnet_image}"
+  }
+
+  provisioner "local-exec" {
+    command = <<EOF
+exec ${path.module}/../bin/format-images-json \
+  ${var.amethyst_image}=android,erlang,haskell,perl \
+  ${var.garnet_image}=default,go,jvm,node_js,php,python,ruby \
+  >${path.module}/generated-language-mapping.json
+EOF
+  }
 }
