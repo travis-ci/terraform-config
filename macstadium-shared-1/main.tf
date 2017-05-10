@@ -675,3 +675,10 @@ module "wjb-host-utilities" {
   ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user = "${var.ssh_user}"
 }
+
+module "util-host-utilities" {
+  source   = "../modules/macstadium_host_utilities"
+  host_id  = "${module.macstadium_infrastructure.util_uuid}"
+  ssh_host = "${module.macstadium_infrastructure.util_ip}"
+  ssh_user = "${var.ssh_user}"
+}
