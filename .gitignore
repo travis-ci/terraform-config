@@ -1,9 +1,10 @@
-.terraform/
+*.tfplan
+*.tfstate.backup
+*.tfvars
 .env
+.terraform/
 aws-*/config/
 gce-*/config/
-macstadium-*/config/
-*.tfvars
-*.tfplan
 graph.png
 local-development-0/local-development-0.tfstate
+macstadium-*/config/
