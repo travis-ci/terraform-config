@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 # vim:filetype=sh
-
 set -o errexit
 
 main() {

@@ -3,43 +3,49 @@
 set -o errexit
 set -o pipefail
 
-if [[ $# -gt 1 && $1 = --env ]]; then
-  echo "Running isolated with env ${2}"
-  exec env -i HOME="${HOME}" PATH="${PATH}" \
-    TERM="${TERM}" \
-    LANG="${LANG}" \
-    bash -c "source '${2}' && bash ${BASH_SOURCE[0]}"
-fi
+main() {
+  if [[ $# -gt 1 && $1 == --env ]]; then
+    echo "Running isolated with env ${2}"
+    exec env -i \
+      HOME="${HOME}" \
+      PATH="${PATH}" \
+      TERM="${TERM}" \
+      LANG="${LANG}" \
+      bash -c "source '${2}' && bash ${BASH_SOURCE[0]}"
+  fi
 
-for f in $(git ls-files '*.json'); do
-  echo -en "$f "
-  python -m json.tool <"${f}" >/dev/null
-  echo "✓"
-done
+  for f in $(git ls-files '*.json'); do
+    echo -en "$f "
+    python -m json.tool <"${f}" >/dev/null
+    echo "✓"
+  done
 
-for f in $(git ls-files '*Makefile'); do
-  echo -en "${f} "
-  make -C "$(dirname "${f}")" -p >/dev/null
-  echo "✓"
-done
+  for f in $(git ls-files '*Makefile'); do
+    echo -en "${f} "
+    make -C "$(dirname "${f}")" -p >/dev/null
+    echo "✓"
+  done
 
-echo 'Running shellcheck'
-git grep -l '^#!/usr/bin/env bash' | xargs shellcheck
+  echo 'Running shellcheck'
+  git grep -l '^#!/usr/bin/env bash' | xargs shellcheck
 
-echo 'Running shfmt'
-git grep -l '^#!/usr/bin/env bash' | xargs shfmt -i 2 -w
+  echo 'Running shfmt'
+  git grep -l '^#!/usr/bin/env bash' | xargs shfmt -i 2 -w
 
-echo 'Running bats'
-for f in $(git ls-files '*.bats'); do
-  echo "${f}"
-  bats -t "${f}"
-done
+  echo 'Running bats'
+  for f in $(git ls-files '*.bats'); do
+    echo "${f}"
+    bats -t "${f}"
+  done
 
-for d in $(git ls-files '*.tf' | xargs -n1 dirname | LC_ALL=C sort | uniq); do
-  echo -en "${d} "
-  terraform validate "${d}"
-  echo "✓"
-done
+  for d in $(git ls-files '*.tf' | xargs -n1 dirname | LC_ALL=C sort | uniq); do
+    echo -en "${d} "
+    terraform validate "${d}"
+    echo "✓"
+  done
 
-echo 'Running terraform fmt'
-terraform fmt
+  echo 'Running terraform fmt'
+  terraform fmt
+}
+
+main "$@"
