@@ -2,7 +2,7 @@ variable "ssh_host" {}
 variable "ssh_user" {}
 
 variable "script" {
-  default = "sudo apt-get install -y ntp"
+  default = "sudo apt-get install -y ntp nmap"
 }
 
 variable "host_id" {}
