@@ -15,7 +15,7 @@ variable "jupiter_brain_production_version" {
 }
 
 variable "jupiter_brain_staging_version" {
-  default = "v1.0.0-9-gf94c765"
+  default = "v1.0.0-10-g39d4402"
 }
 
 variable "jupiter_brain_custom-1_version" {
