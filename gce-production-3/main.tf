@@ -26,14 +26,14 @@ variable "syslog_address_org" {}
 terraform {
   backend "s3" {
     bucket  = "travis-terraform-state"
-    key     = "terraform-config/gce-production-1.tfstate"
+    key     = "terraform-config/gce-production-3.tfstate"
     region  = "us-east-1"
     encrypt = "true"
   }
 }
 
 provider "google" {
-  project = "eco-emissary-99515"
+  project = "travis-ci-prod-3"
 }
 
 provider "aws" {}
@@ -44,18 +44,18 @@ module "gce_project_1" {
   bastion_config                = "${file("${path.module}/config/bastion-env")}"
   bastion_image                 = "${var.gce_bastion_image}"
   env                           = "${var.env}"
-  gcloud_cleanup_account_json   = "${file("${path.module}/config/gce-cleanup-production-1.json")}"
+  gcloud_cleanup_account_json   = "${file("${path.module}/config/gce-cleanup-production-3.json")}"
   gcloud_cleanup_job_board_url  = "${var.job_board_url}"
   gcloud_zone                   = "${var.gce_gcloud_zone}"
   github_users                  = "${var.github_users}"
   heroku_org                    = "${var.gce_heroku_org}"
-  index                         = "1"
-  project                       = "eco-emissary-99515"
+  index                         = "3"
+  project                       = "travis-ci-prod-3"
   syslog_address_com            = "${var.syslog_address_com}"
   syslog_address_org            = "${var.syslog_address_org}"
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
-  worker_account_json_com       = "${file("${path.module}/config/gce-workers-production-1.json")}"
-  worker_account_json_org       = "${file("${path.module}/config/gce-workers-production-1.json")}"
+  worker_account_json_com       = "${file("${path.module}/config/gce-workers-production-3.json")}"
+  worker_account_json_org       = "${file("${path.module}/config/gce-workers-production-3.json")}"
   worker_config_com             = "${file("${path.module}/config/worker-env-com")}"
   worker_config_org             = "${file("${path.module}/config/worker-env-org")}"
   worker_docker_self_image      = "travisci/worker:v2.7.0"

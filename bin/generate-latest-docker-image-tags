@@ -48,7 +48,27 @@ def latest_docker_image_tag(image)
     headers: { 'Authorization' => "Bearer #{token}" }
   ).fetch('tags')
 
-  "#{image}:#{tags.sort.reverse.fetch(0)}"
+  "#{image}:#{fancy_sorted(tags).reverse.fetch(0)}"
+end
+
+def fancy_sorted(tags)
+  tags.sort do |a, b|
+    if a =~ /^packer/ && b =~ /^packer/
+      Integer(a.split('-').last) <=> Integer(b.split('-').last)
+    elsif a =~ /^v\d/ && b =~ /^v\d/
+      vers2int(a) <=> vers2int(b)
+    else
+      a <=> b
+    end
+  end
+end
+
+def vers2int(vers)
+  parts = vers.sub(/^v/, '').split('-')
+  parts = parts.map { |part| part.split('.') }.flatten.compact
+  parts.reject! { |part| part.start_with?('g') || part.start_with?('dirty') }
+  parts << 0 if parts.length < 4
+  parts.map { |part| sprintf('%03d' % Integer(part)) }.join.to_i
 end
 
 def docker_index_get(path, host: 'index.docker.io', headers: {})
