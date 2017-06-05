@@ -9,10 +9,6 @@ variable "gce_bastion_image" {
 variable "gce_gcloud_zone" {}
 variable "gce_heroku_org" {}
 
-variable "gce_hashistack_server_image" {
-  default = "eco-emissary-99515/hashistack-server-1480351044"
-}
-
 variable "gce_worker_image" {
   default = "eco-emissary-99515/travis-worker-1480649763"
 }
@@ -48,39 +44,6 @@ provider "google" {
 provider "aws" {}
 
 provider "heroku" {}
-
-data "template_file" "hashistack_server_cloud_init" {
-  template = "${file("${path.module}/hashistack-server-init.tpl")}"
-
-  vars {
-    hashistack_server_config = "${file("${path.module}/config/hashistack-server-env")}"
-  }
-}
-
-module "hashistack_server" {
-  source                  = "../modules/hashistack_server"
-  cloud_init              = "${data.template_file.hashistack_server_cloud_init.rendered}"
-  env                     = "${var.env}"
-  gce_network             = "${module.gce_project_1.gce_network}"
-  gce_project             = "travis-staging-1"
-  gce_subnetwork          = "${module.gce_project_1.gce_subnetwork_public}"
-  gce_zone                = "us-central1-b"
-  gce_zone_suffix         = "b"
-  index                   = 1
-  instance_count          = 3
-  hashistack_server_image = "${var.gce_hashistack_server_image}"
-}
-
-resource "aws_route53_record" "hashistack_server" {
-  zone_id = "${var.travisci_net_external_zone_id}"
-  name    = "hashistack-server.gce-us-central1-b.travisci.net"
-  type    = "A"
-  ttl     = 5
-
-  records = [
-    "${module.hashistack_server.hashistack_server_ip}",
-  ]
-}
 
 module "gce_project_1" {
   source                        = "../modules/gce_project"
