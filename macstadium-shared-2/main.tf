@@ -549,75 +549,68 @@ module "haproxy" {
   ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user = "${var.ssh_user}"
 
-  config {
-    name               = "jupiter-brain-production-org"
-    frontend_port      = "8081"
-    backend_port_blue  = "9081"
-    backend_port_green = "10081"
-  }
-
-  config {
-    name               = "jupiter-brain-staging-org"
-    frontend_port      = "8082"
-    backend_port_blue  = "9082"
-    backend_port_green = "10082"
-  }
-
-  config {
-    name               = "jupiter-brain-production-com"
-    frontend_port      = "8083"
-    backend_port_blue  = "9083"
-    backend_port_green = "10083"
-  }
-
-  config {
-    name               = "jupiter-brain-staging-com"
-    frontend_port      = "8084"
-    backend_port_blue  = "9084"
-    backend_port_green = "10084"
-  }
-
-  config {
-    name               = "jupiter-brain-custom-1"
-    frontend_port      = "8085"
-    backend_port_blue  = "9085"
-    backend_port_green = "10085"
-  }
-
-  config {
-    name               = "jupiter-brain-custom-2"
-    frontend_port      = "8086"
-    backend_port_blue  = "9086"
-    backend_port_green = "10086"
-  }
-
-  config {
-    name               = "jupiter-brain-custom-3"
-    frontend_port      = "8087"
-    backend_port_blue  = "9087"
-    backend_port_green = "10087"
-  }
-
-  config {
-    name               = "jupiter-brain-custom-4"
-    frontend_port      = "8088"
-    backend_port_blue  = "9088"
-    backend_port_green = "10088"
-  }
-
-  config {
-    name               = "jupiter-brain-custom-5"
-    frontend_port      = "8089"
-    backend_port_blue  = "9089"
-    backend_port_green = "10089"
-  }
-
-  config {
-    name               = "jupiter-brain-production-com-xserve"
-    frontend_port      = "8090"
-    backend_port_blue  = "9090"
-    backend_port_green = "10090"
-  }
+  config = [
+    {
+      name               = "jupiter-brain-production-org"
+      frontend_port      = "8081"
+      backend_port_blue  = "9081"
+      backend_port_green = "10081"
+    },
+    {
+      name               = "jupiter-brain-staging-org"
+      frontend_port      = "8082"
+      backend_port_blue  = "9082"
+      backend_port_green = "10082"
+    },
+    {
+      name               = "jupiter-brain-production-com"
+      frontend_port      = "8083"
+      backend_port_blue  = "9083"
+      backend_port_green = "10083"
+    },
+    {
+      name               = "jupiter-brain-staging-com"
+      frontend_port      = "8084"
+      backend_port_blue  = "9084"
+      backend_port_green = "10084"
+    },
+    {
+      name               = "jupiter-brain-custom-1"
+      frontend_port      = "8085"
+      backend_port_blue  = "9085"
+      backend_port_green = "10085"
+    },
+    {
+      name               = "jupiter-brain-custom-2"
+      frontend_port      = "8086"
+      backend_port_blue  = "9086"
+      backend_port_green = "10086"
+    },
+    {
+      name               = "jupiter-brain-custom-3"
+      frontend_port      = "8087"
+      backend_port_blue  = "9087"
+      backend_port_green = "10087"
+    },
+    {
+      name               = "jupiter-brain-custom-4"
+      frontend_port      = "8088"
+      backend_port_blue  = "9088"
+      backend_port_green = "10088"
+    },
+    {
+      name               = "jupiter-brain-custom-5"
+      frontend_port      = "8089"
+      backend_port_blue  = "9089"
+      backend_port_green = "10089"
+    },
+    {
+      name               = "jupiter-brain-production-com-xserve"
+      frontend_port      = "8090"
+      backend_port_blue  = "9090"
+      backend_port_green = "10090"
+    }
+  ]
 }
 
 module "wjb-host-utilities" {
