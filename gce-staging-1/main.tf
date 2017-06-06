@@ -13,6 +13,10 @@ variable "gce_worker_image" {
   default = "eco-emissary-99515/travis-worker-1480649763"
 }
 
+variable "gce_worker_docker_image" {
+  default = "travisci/worker:v2.8.2"
+}
+
 variable "github_users" {}
 
 variable "index" {
@@ -66,7 +70,7 @@ module "gce_project_1" {
   worker_account_json_org       = "${file("${path.module}/config/gce-workers-staging-1.json")}"
   worker_config_com             = "${file("${path.module}/config/worker-env-com")}"
   worker_config_org             = "${file("${path.module}/config/worker-env-org")}"
-  worker_docker_self_image      = "travisci/worker:v2.6.2-17-g297b8e0"
+  worker_docker_self_image      = "${var.gce_worker_docker_image}"
   worker_image                  = "${var.gce_worker_image}"
 
   # instance count must be a multiple of number of zones (currently 2)

@@ -30,7 +30,7 @@ variable "garnet_image" {
 }
 
 variable "worker_image" {
-  default = "travisci/worker:v2.5.0"
+  default = "travisci/worker:v2.8.2"
 }
 
 terraform {
