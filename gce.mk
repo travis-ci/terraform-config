@@ -6,7 +6,6 @@ default: hello
 CONFIG_FILES := \
 	config/bastion-env \
 	config/gce-workers-$(ENV_SHORT).json \
-	config/hashistack-server-env \
 	config/worker-env-com \
 	config/worker-env-org
 
@@ -22,5 +21,3 @@ $(CONFIG_FILES):
 		| sed 's/^/export /' >config/worker-env-com
 	trvs generate-config --pro -p GCE_BASTION -f env gce-bastion $(ENV_SHORT) \
 		| sed 's/^/export /' >config/bastion-env
-	trvs generate-config -p GCE_HASHISTACK_SERVER -f env gce-hashistack-server $(ENV_SHORT) \
-		>config/hashistack-server-env
