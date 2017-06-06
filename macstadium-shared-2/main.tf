@@ -609,7 +609,7 @@ module "haproxy" {
       frontend_port      = "8090"
       backend_port_blue  = "9090"
       backend_port_green = "10090"
-    }
+    },
   ]
 }
 
