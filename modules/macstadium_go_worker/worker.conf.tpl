@@ -6,7 +6,7 @@ setuid travis-worker
 setgid nogroup
 
 respawn
-respawn limit 10 90
+respawn limit unlimited
 
 script
   TRAVIS_WORKER_RUN_DIR=/var/tmp/run/travis-worker
