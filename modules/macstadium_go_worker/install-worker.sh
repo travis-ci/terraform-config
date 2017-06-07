@@ -18,5 +18,5 @@ sudo chown travis-worker:travis-worker /var/tmp/run/travis-worker
 sudo mv /tmp/init-travis-worker-${env}.conf /etc/init/travis-worker-${env}.conf
 
 # Install the binary
-sudo wget -O /usr/local/bin/travis-worker-${env} https://s3.amazonaws.com/travis-worker-artifacts/travis-ci/worker/${version}/build/linux/amd64/travis-worker
+sudo wget -O /usr/local/bin/travis-worker-${env} https://s3.amazonaws.com/travis-worker-artifacts/travis-ci/worker/${version}/linux/amd64/travis-worker
 sudo chmod 755 /usr/local/bin/travis-worker-${env}

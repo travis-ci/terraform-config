@@ -71,7 +71,7 @@ variable "travis_worker_production_version" {
 }
 
 variable "travis_worker_staging_version" {
-  default = "v2.6.2"
+  default = "v2.9.0"
 }
 
 variable "vsphere_janitor_version" {
