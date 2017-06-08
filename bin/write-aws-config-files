@@ -6,7 +6,8 @@ main() {
   local env_short="${2}"
   local build_com_host="${3}"
   local build_org_host="${4}"
-  local amqp_url_varname="${5}"
+  local job_board_host="${5}"
+  local amqp_url_varname="${6}"
   local top
   top="$(git rev-parse --show-toplevel)"
 
@@ -35,6 +36,9 @@ main() {
   "${top}/bin/heroku-dump-shell-config" \
     "travis-pro-build-${env_short}" >config/travis-build-com.env
 
+  "${top}/bin/heroku-dump-shell-config" \
+    "job-board-${env_short}" >config/job-board.env
+
   # shellcheck source=/dev/null
   source config/travis-build-com.env
   # shellcheck source=/dev/null
@@ -58,6 +62,13 @@ main() {
   echo "export TRAVIS_WORKER_AMQP_URI=$(eval "echo \$${amqp_url_varname}")" \
     >>config/worker-org-local.env
   "${top}/bin/env-url-to-parts" "${amqp_url_varname}" config/ org
+
+  # shellcheck source=/dev/null
+  source config/job-board.env
+  local job_board_auth='travis-worker:'"${AUTH_TOKENS%%:*}"
+  local job_board_uri="https://${job_board_auth}@${job_board_host}"
+  echo "export TRAVIS_WORKER_JOB_BOARD_URL=${job_board_uri}" \
+    | tee -a config/worker-com-local.env >>config/worker-org-local.env
 }
 
 main "$@"

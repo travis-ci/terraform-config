@@ -3,6 +3,7 @@ SHELL := bash
 TOP := $(shell git rev-parse --show-toplevel)
 TRAVIS_BUILD_COM_HOST ?= build.travis-ci.com
 TRAVIS_BUILD_ORG_HOST ?= build.travis-ci.org
+JOB_BOARD_HOST ?= job-board.travis-ci.com
 AMQP_URL_VARNAME ?= AMQP_URL
 
 include $(TOP)/terraform.mk
@@ -27,6 +28,7 @@ $(CONFIG_FILES):
 		"$(ENV_SHORT)" \
 		"$(TRAVIS_BUILD_COM_HOST)" \
 		"$(TRAVIS_BUILD_ORG_HOST)" \
+		"$(JOB_BOARD_HOST)" \
 		"$(AMQP_URL_VARNAME)"
 
 .PHONY: diff-docker-images
