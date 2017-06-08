@@ -28,7 +28,7 @@ class TravisWorkerConfigVerifier
   private
 
   def cloud_config
-    @cloud_config ||= YAML.load(Base64.decode64(cloud_config_string_base64))
+    @cloud_config ||= YAML.safe_load(Base64.decode64(cloud_config_string_base64))
   end
 
   def verify_etc_default_travis_worker!(content)
@@ -43,10 +43,21 @@ class TravisWorkerConfigVerifier
 
     assert!(
       system(
-        "curl -s -f -H 'Authorization: token #{token}' #{build_api_uri.to_s}",
-        %i(out err) => '/dev/null'
+        "curl -s -f -H 'Authorization: token #{token}' #{build_api_uri}",
+        %i[out err] => '/dev/null'
       ),
       msg: 'travis-build credentials do not work'
+    )
+
+    assert! vars.key?('TRAVIS_WORKER_JOB_BOARD_URL')
+
+    job_board_url = URI(vars['TRAVIS_WORKER_JOB_BOARD_URL'])
+    assert!(
+      system(
+        "curl -s -f #{job_board_url}",
+        %i[out err] => '/dev/null'
+      ),
+      msg: 'job-board credentials do not work'
     )
   end
 
