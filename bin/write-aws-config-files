@@ -65,7 +65,8 @@ main() {
 
   # shellcheck source=/dev/null
   source config/job-board.env
-  local job_board_uri='https://'"${AUTH_TOKENS%%:*}@${job_board_host}"
+  local job_board_auth='travis-worker:'"${AUTH_TOKENS%%:*}"
+  local job_board_uri="https://${job_board_auth}@${job_board_host}"
   echo "export TRAVIS_WORKER_JOB_BOARD_URL=${job_board_uri}" \
     | tee -a config/worker-com-local.env >>config/worker-org-local.env
 }
