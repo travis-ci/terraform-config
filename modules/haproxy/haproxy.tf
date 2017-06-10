@@ -45,26 +45,28 @@ resource "null_resource" "haproxy" {
     agent = true
   }
 
-# NOTE: terraform 0.9.7 introduced a validator for this provisioner that does
-# not play well with `content` and `data.template_file` (maybe?).  See:
-# https://github.com/hashicorp/terraform/issues/15177
-#   provisioner "file" {
-#     content     = "${file("${path.module}/haproxy.cfg")}\n${join("\n", data.template_file.haproxy_mappings.*.rendered)}"
-#     destination = "/tmp/haproxy.cfg"
-#   }
-# HACK{
+  # NOTE: terraform 0.9.7 introduced a validator for this provisioner that does
+  # not play well with `content` and `data.template_file` (maybe?).  See:
+  # https://github.com/hashicorp/terraform/issues/15177
+  #   provisioner "file" {
+  #     content     = "${file("${path.module}/haproxy.cfg")}\n${join("\n", data.template_file.haproxy_mappings.*.rendered)}"
+  #     destination = "/tmp/haproxy.cfg"
+  #   }
+  # HACK{
   provisioner "remote-exec" {
     inline = [
-<<EOF
+      <<EOF
 cat >/tmp/haproxy.cfg.b64 <<EONESTEDF
 ${base64encode("${file("${path.module}/haproxy.cfg")}\n${join("\n", data.template_file.haproxy_mappings.*.rendered)}")}
 EONESTEDF
 base64 --decode </tmp/haproxy.cfg.b64 \
   >/tmp/haproxy.cfg
 EOF
+      ,
     ]
   }
-# }HACK
+
+  # }HACK
 
   provisioner "remote-exec" {
     inline = [

@@ -64,26 +64,28 @@ EOF
     destination = "/tmp/etc-default-jupiter-brain-${var.env}-green"
   }
 
-# NOTE: terraform 0.9.7 introduced a validator for this provisioner that does
-# not play well with `content` and `data.template_file` (maybe?).  See:
-# https://github.com/hashicorp/terraform/issues/15177
-#   provisioner "file" {
-#     content     = "${data.template_file.jupiter_brain_upstart.rendered}"
-#     destination = "/tmp/init-jupiter-brain-${var.env}.conf"
-#   }
-# HACK{
+  # NOTE: terraform 0.9.7 introduced a validator for this provisioner that does
+  # not play well with `content` and `data.template_file` (maybe?).  See:
+  # https://github.com/hashicorp/terraform/issues/15177
+  #   provisioner "file" {
+  #     content     = "${data.template_file.jupiter_brain_upstart.rendered}"
+  #     destination = "/tmp/init-jupiter-brain-${var.env}.conf"
+  #   }
+  # HACK{
   provisioner "remote-exec" {
     inline = [
-<<EOF
+      <<EOF
 cat >/tmp/init-jupiter-brain-${var.env}.conf.b64 <<EONESTEDF
 ${base64encode(data.template_file.jupiter_brain_upstart.rendered)}
 EONESTEDF
 base64 --decode </tmp/init-jupiter-brain-${var.env}.conf.b64 \
   >/tmp/init-jupiter-brain-${var.env}.conf
 EOF
+      ,
     ]
   }
-# }HACK
+
+  # }HACK
 
   provisioner "remote-exec" {
     inline = ["${data.template_file.jupiter_brain_install.rendered}"]

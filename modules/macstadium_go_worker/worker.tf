@@ -45,26 +45,28 @@ resource "null_resource" "worker" {
     destination = "/tmp/etc-default-travis-worker-${var.env}"
   }
 
-# NOTE: terraform 0.9.7 introduced a validator for this provisioner that does
-# not play well with `content` and `data.template_file` (maybe?).  See:
-# https://github.com/hashicorp/terraform/issues/15177
-#   provisioner "file"  {
-#     content     = "${data.template_file.worker_upstart.rendered}"
-#     destination = "/tmp/init-travis-worker-${var.env}.conf"
-#   }
-# HACK{
+  # NOTE: terraform 0.9.7 introduced a validator for this provisioner that does
+  # not play well with `content` and `data.template_file` (maybe?).  See:
+  # https://github.com/hashicorp/terraform/issues/15177
+  #   provisioner "file"  {
+  #     content     = "${data.template_file.worker_upstart.rendered}"
+  #     destination = "/tmp/init-travis-worker-${var.env}.conf"
+  #   }
+  # HACK{
   provisioner "remote-exec" {
     inline = [
-<<EOF
+      <<EOF
 cat >/tmp/init-travis-worker-${var.env}.conf.b64 <<EONESTEDF
 ${base64encode(data.template_file.worker_upstart.rendered)}
 EONESTEDF
 base64 --decode </tmp/init-travis-worker-${var.env}.conf.b64 \
   >/tmp/init-travis-worker-${var.env}.conf
 EOF
+      ,
     ]
   }
-# }HACK
+
+  # }HACK
 
   provisioner "remote-exec" {
     inline = ["${data.template_file.worker_install.rendered}"]
