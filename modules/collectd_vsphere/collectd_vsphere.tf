@@ -108,25 +108,77 @@ resource "null_resource" "collectd_vsphere" {
     destination = "/tmp/etc-default-collectd-vsphere-${var.env}"
   }
 
-  provisioner "file" {
-    content     = "${data.template_file.collectd_vsphere_upstart.rendered}"
-    destination = "/tmp/init-collectd-vsphere-${var.env}.conf"
+# NOTE: terraform 0.9.7 introduced a validator for this provisioner that does
+# not play well with `content` and `data.template_file` (maybe?).  See:
+# https://github.com/hashicorp/terraform/issues/15177
+#   provisioner "file" {
+#     content     = "${data.template_file.collectd_vsphere_upstart.rendered}"
+#     destination = "/tmp/init-collectd-vsphere-${var.env}.conf"
+#   }
+#
+#   provisioner "file" {
+#     content     = "${data.template_file.collectd_conf.rendered}"
+#     destination = "/tmp/collectd.conf"
+#   }
+#
+#   provisioner "file" {
+#     content     = "${data.template_file.librato_conf.rendered}"
+#     destination = "/tmp/librato.conf"
+#   }
+#
+#   provisioner "file" {
+#     content     = "${data.template_file.snmp_conf.rendered}"
+#     destination = "/tmp/snmp.conf"
+#   }
+# HACK{
+  provisioner "remote-exec" {
+    inline = [
+<<EOF
+cat >/tmp/init-collectd-vsphere-${var.env}.conf.b64 <<EONESTEDF
+${base64encode(data.template_file.collectd_vsphere_upstart.rendered)}
+EONESTEDF
+base64 --decode </tmp/init-collectd-vsphere-${var.env}.conf.b64 \
+  >/tmp/init-collectd-vsphere-${var.env}.conf
+EOF
+    ]
   }
 
-  provisioner "file" {
-    content     = "${data.template_file.collectd_conf.rendered}"
-    destination = "/tmp/collectd.conf"
+  provisioner "remote-exec" {
+    inline = [
+<<EOF
+cat >/tmp/collectd.conf.b64 <<EONESTEDF
+${base64encode(data.template_file.collectd_conf.rendered)}
+EONESTEDF
+base64 --decode </tmp/collectd.conf.b64 \
+  >/tmp/collectd.conf
+EOF
+    ]
   }
 
-  provisioner "file" {
-    content     = "${data.template_file.librato_conf.rendered}"
-    destination = "/tmp/librato.conf"
+  provisioner "remote-exec" {
+    inline = [
+<<EOF
+cat >/tmp/librato.conf.b64 <<EONESTEDF
+${base64encode(data.template_file.librato_conf.rendered)}
+EONESTEDF
+base64 --decode </tmp/librato.conf.b64 \
+  >/tmp/librato.conf
+EOF
+    ]
   }
 
-  provisioner "file" {
-    content     = "${data.template_file.snmp_conf.rendered}"
-    destination = "/tmp/snmp.conf"
+  provisioner "remote-exec" {
+    inline = [
+<<EOF
+cat >/tmp/snmp.conf.b64 <<EONESTEDF
+${base64encode(data.template_file.snmp_conf.rendered)}
+EONESTEDF
+base64 --decode </tmp/snmp.conf.b64 \
+  >/tmp/snmp.conf
+EOF
+    ]
   }
+# }HACK
 
   provisioner "file" {
     content     = "${var.collectd_vsphere_collectd_network_user}: ${var.collectd_vsphere_collectd_network_token}"
