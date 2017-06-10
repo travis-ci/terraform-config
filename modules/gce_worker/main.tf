@@ -21,7 +21,6 @@ variable "worker_image" {}
 variable "zone" {}
 variable "zone_suffix" {}
 
-
 data "template_file" "cloud_init_env_com" {
   template = <<EOF
 export TRAVIS_WORKER_SELF_IMAGE="${var.worker_docker_self_image}"
@@ -65,10 +64,9 @@ resource "google_compute_instance" "worker_com" {
 
   metadata {
     "block-project-ssh-keys" = "true"
-    "user-data" = "${data.template_file.cloud_config_com.rendered}"
+    "user-data"              = "${data.template_file.cloud_config_com.rendered}"
   }
 }
-
 
 data "template_file" "cloud_init_env_org" {
   template = <<EOF
@@ -113,6 +111,6 @@ resource "google_compute_instance" "worker_org" {
 
   metadata {
     "block-project-ssh-keys" = "true"
-    "user-data" = "${data.template_file.cloud_config_org.rendered}"
+    "user-data"              = "${data.template_file.cloud_config_org.rendered}"
   }
 }
