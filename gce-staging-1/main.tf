@@ -3,14 +3,14 @@ variable "env" {
 }
 
 variable "gce_bastion_image" {
-  default = "eco-emissary-99515/bastion-1478778272"
+  default = "eco-emissary-99515/bastion-1496867305"
 }
 
 variable "gce_gcloud_zone" {}
 variable "gce_heroku_org" {}
 
 variable "gce_worker_image" {
-  default = "eco-emissary-99515/travis-worker-1480649763"
+  default = "eco-emissary-99515/travis-worker-1496867326"
 }
 
 variable "github_users" {}
@@ -66,7 +66,7 @@ module "gce_project_1" {
   worker_account_json_org       = "${file("${path.module}/config/gce-workers-staging-1.json")}"
   worker_config_com             = "${file("${path.module}/config/worker-env-com")}"
   worker_config_org             = "${file("${path.module}/config/worker-env-org")}"
-  worker_docker_self_image      = "travisci/worker:v2.9.0"
+  worker_docker_self_image      = "travisci/worker:v2.9.1"
   worker_image                  = "${var.gce_worker_image}"
 
   # instance count must be a multiple of number of zones (currently 2)
