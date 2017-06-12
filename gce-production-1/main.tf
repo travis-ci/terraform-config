@@ -58,7 +58,7 @@ module "gce_project_1" {
   worker_account_json_org       = "${file("${path.module}/config/gce-workers-production-1.json")}"
   worker_config_com             = "${file("${path.module}/config/worker-env-com")}"
   worker_config_org             = "${file("${path.module}/config/worker-env-org")}"
-  worker_docker_self_image      = "travisci/worker:v2.7.0"
+  worker_docker_self_image      = "travisci/worker:v2.9.1"
   worker_image                  = "${var.gce_worker_image}"
   worker_instance_count_com     = 6
   worker_instance_count_org     = 6
