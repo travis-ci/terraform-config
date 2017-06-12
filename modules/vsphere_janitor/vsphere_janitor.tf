@@ -45,10 +45,28 @@ resource "null_resource" "vsphere_janitor" {
     destination = "/tmp/etc-default-vsphere-janitor-${var.env}"
   }
 
-  provisioner "file" {
-    content     = "${data.template_file.vsphere_janitor_upstart.rendered}"
-    destination = "/tmp/init-vsphere-janitor-${var.env}.conf"
+  # NOTE: terraform 0.9.7 introduced a validator for this provisioner that does
+  # not play well with `content` and `data.template_file` (maybe?).  See:
+  # https://github.com/hashicorp/terraform/issues/15177
+  #   provisioner "file" {
+  #     content     = "${data.template_file.vsphere_janitor_upstart.rendered}"
+  #     destination = "/tmp/init-vsphere-janitor-${var.env}.conf"
+  #   }
+  # HACK{
+  provisioner "remote-exec" {
+    inline = [
+      <<EOF
+cat >/tmp/init-vsphere-janitor-${var.env}.conf.b64 <<EONESTEDF
+${base64encode(data.template_file.vsphere_janitor_upstart.rendered)}
+EONESTEDF
+base64 --decode </tmp/init-vsphere-janitor-${var.env}.conf.b64 \
+  >/tmp/init-vsphere-janitor-${var.env}.conf
+EOF
+      ,
+    ]
   }
+
+  # }HACK
 
   provisioner "remote-exec" {
     inline = ["${data.template_file.vsphere_janitor_install.rendered}"]
