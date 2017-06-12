@@ -1,0 +1,116 @@
+variable "account_json_com" {}
+variable "account_json_org" {}
+variable "config_com" {}
+variable "config_org" {}
+variable "env" {}
+variable "github_users" {}
+variable "index" {}
+variable "instance_count_com" {}
+variable "instance_count_org" {}
+
+variable "machine_type" {
+  default = "n1-standard-1"
+}
+
+variable "project" {}
+variable "subnetwork_workers" {}
+variable "syslog_address_com" {}
+variable "syslog_address_org" {}
+variable "worker_docker_self_image" {}
+variable "worker_image" {}
+variable "zone" {}
+variable "zone_suffix" {}
+
+data "template_file" "cloud_init_env_com" {
+  template = <<EOF
+export TRAVIS_WORKER_SELF_IMAGE="${var.worker_docker_self_image}"
+EOF
+}
+
+data "template_file" "cloud_config_com" {
+  template = "${file("${path.module}/cloud-config.yml.tpl")}"
+
+  vars {
+    cloud_init_bash  = "${file("${path.module}/cloud-init.bash")}"
+    cloud_init_env   = "${data.template_file.cloud_init_env_com.rendered}"
+    gce_account_json = "${var.account_json_com}"
+    github_users_env = "export GITHUB_USERS='${var.github_users}'"
+    syslog_address   = "${var.syslog_address_com}"
+    worker_config    = "${var.config_com}"
+  }
+}
+
+resource "google_compute_instance" "worker_com" {
+  count        = "${var.instance_count_com}"
+  name         = "${var.env}-${var.index}-worker-com-${var.zone_suffix}-${count.index + 1}-gce"
+  machine_type = "${var.machine_type}"
+  zone         = "${var.zone}"
+  tags         = ["worker", "${var.env}", "com"]
+  project      = "${var.project}"
+
+  disk {
+    auto_delete = true
+    image       = "${var.worker_image}"
+    type        = "pd-ssd"
+  }
+
+  network_interface {
+    subnetwork = "${var.subnetwork_workers}"
+
+    access_config {
+      # ephemeral ip
+    }
+  }
+
+  metadata {
+    "block-project-ssh-keys" = "true"
+    "user-data"              = "${data.template_file.cloud_config_com.rendered}"
+  }
+}
+
+data "template_file" "cloud_init_env_org" {
+  template = <<EOF
+export TRAVIS_WORKER_SELF_IMAGE="${var.worker_docker_self_image}"
+EOF
+}
+
+data "template_file" "cloud_config_org" {
+  template = "${file("${path.module}/cloud-config.yml.tpl")}"
+
+  vars {
+    cloud_init_bash  = "${file("${path.module}/cloud-init.bash")}"
+    cloud_init_env   = "${data.template_file.cloud_init_env_org.rendered}"
+    gce_account_json = "${var.account_json_org}"
+    github_users_env = "export GITHUB_USERS='${var.github_users}'"
+    syslog_address   = "${var.syslog_address_org}"
+    worker_config    = "${var.config_org}"
+  }
+}
+
+resource "google_compute_instance" "worker_org" {
+  count        = "${var.instance_count_org}"
+  name         = "${var.env}-${var.index}-worker-org-${var.zone_suffix}-${count.index + 1}-gce"
+  machine_type = "${var.machine_type}"
+  zone         = "${var.zone}"
+  tags         = ["worker", "${var.env}", "org"]
+  project      = "${var.project}"
+
+  disk {
+    auto_delete = true
+    image       = "${var.worker_image}"
+    type        = "pd-ssd"
+  }
+
+  network_interface {
+    subnetwork = "${var.subnetwork_workers}"
+
+    access_config {
+      # ephemeral ip
+    }
+  }
+
+  metadata {
+    "block-project-ssh-keys" = "true"
+    "user-data"              = "${data.template_file.cloud_config_org.rendered}"
+  }
+}
