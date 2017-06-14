@@ -136,7 +136,7 @@ class TravisWorkerConfigVerifier
   end
 
   def assert!(condition, msg: '')
-    raise ValueError, msg unless condition
+    raise Exception, msg unless condition
   end
 
   def assert_identical_content!(content, path)
