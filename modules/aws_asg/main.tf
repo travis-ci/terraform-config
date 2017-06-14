@@ -265,11 +265,15 @@ resource "aws_autoscaling_group" "workers" {
 }
 
 resource "aws_autoscaling_policy" "workers_remove_capacity" {
-  name                   = "${var.env}-${var.index}-workers-${var.site}-remove-capacity"
-  scaling_adjustment     = "${var.worker_asg_scale_in_qty}"
-  adjustment_type        = "ChangeInCapacity"
-  cooldown               = "${var.worker_asg_scale_in_cooldown}"
-  autoscaling_group_name = "${aws_autoscaling_group.workers.name}"
+  name                      = "${var.env}-${var.index}-workers-${var.site}-remove-capacity"
+  adjustment_type           = "ChangeInCapacity"
+  policy_type               = "StepScaling"
+  autoscaling_group_name    = "${aws_autoscaling_group.workers.name}"
+  estimated_instance_warmup = "${var.worker_asg_scale_in_cooldown}"
+
+  step_adjustment {
+    scaling_adjustment = "${var.worker_asg_scale_in_qty}"
+  }
 }
 
 resource "aws_cloudwatch_metric_alarm" "workers_remove_capacity" {
@@ -285,11 +289,15 @@ resource "aws_cloudwatch_metric_alarm" "workers_remove_capacity" {
 }
 
 resource "aws_autoscaling_policy" "workers_add_capacity" {
-  name                   = "${var.env}-${var.index}-workers-${var.site}-add-capacity"
-  scaling_adjustment     = "${var.worker_asg_scale_out_qty}"
-  adjustment_type        = "ChangeInCapacity"
-  cooldown               = "${var.worker_asg_scale_out_cooldown}"
-  autoscaling_group_name = "${aws_autoscaling_group.workers.name}"
+  name                      = "${var.env}-${var.index}-workers-${var.site}-add-capacity"
+  adjustment_type           = "ChangeInCapacity"
+  policy_type               = "StepScaling"
+  autoscaling_group_name    = "${aws_autoscaling_group.workers.name}"
+  estimated_instance_warmup = "${var.worker_asg_scale_out_cooldown}"
+
+  step_adjustment {
+    scaling_adjustment = "${var.worker_asg_scale_out_qty}"
+  }
 }
 
 resource "aws_cloudwatch_metric_alarm" "workers_add_capacity" {
