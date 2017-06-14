@@ -270,9 +270,11 @@ resource "aws_autoscaling_policy" "workers_remove_capacity" {
   policy_type               = "StepScaling"
   autoscaling_group_name    = "${aws_autoscaling_group.workers.name}"
   estimated_instance_warmup = "${var.worker_asg_scale_in_cooldown}"
+  metric_aggregation_type   = "Maximum"
 
   step_adjustment {
-    scaling_adjustment = "${var.worker_asg_scale_in_qty}"
+    scaling_adjustment          = "${var.worker_asg_scale_in_qty}"
+    metric_interval_lower_bound = 1.0
   }
 }
 
@@ -294,9 +296,11 @@ resource "aws_autoscaling_policy" "workers_add_capacity" {
   policy_type               = "StepScaling"
   autoscaling_group_name    = "${aws_autoscaling_group.workers.name}"
   estimated_instance_warmup = "${var.worker_asg_scale_out_cooldown}"
+  metric_aggregation_type   = "Maximum"
 
   step_adjustment {
-    scaling_adjustment = "${var.worker_asg_scale_out_qty}"
+    scaling_adjustment          = "${var.worker_asg_scale_out_qty}"
+    metric_interval_lower_bound = 1.0
   }
 }
 
