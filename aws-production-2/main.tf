@@ -29,10 +29,6 @@ variable "garnet_image" {
   default = "travisci/ci-garnet:packer-1478744932"
 }
 
-variable "worker_image" {
-  default = "travisci/worker:v2.8.2"
-}
-
 terraform {
   backend "s3" {
     bucket  = "travis-terraform-state"
@@ -171,7 +167,6 @@ module "aws_asg_com" {
   worker_docker_image_php        = "${var.garnet_image}"
   worker_docker_image_python     = "${var.garnet_image}"
   worker_docker_image_ruby       = "${var.garnet_image}"
-  worker_docker_self_image       = "${var.worker_image}"
   worker_instance_type           = "c3.8xlarge"
   worker_queue                   = "ec2"
   worker_subnets                 = "${data.terraform_remote_state.vpc.workers_com_subnet_1b_id},${data.terraform_remote_state.vpc.workers_com_subnet_1e_id}"
@@ -218,7 +213,6 @@ module "aws_asg_org" {
   worker_docker_image_php        = "${var.garnet_image}"
   worker_docker_image_python     = "${var.garnet_image}"
   worker_docker_image_ruby       = "${var.garnet_image}"
-  worker_docker_self_image       = "${var.worker_image}"
   worker_instance_type           = "c3.8xlarge"
   worker_queue                   = "ec2"
   worker_subnets                 = "${data.terraform_remote_state.vpc.workers_org_subnet_1b_id},${data.terraform_remote_state.vpc.workers_org_subnet_1e_id}"
