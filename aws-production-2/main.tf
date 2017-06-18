@@ -127,34 +127,25 @@ module "aws_az_1e" {
 }
 
 module "aws_asg_com" {
-  source                     = "../modules/aws_asg"
-  cyclist_auth_token         = "${random_id.cyclist_token_com.hex}"
-  cyclist_version            = "v0.4.0"
-  docker_storage_dm_basesize = "19G"
-  env                        = "${var.env}"
-  env_short                  = "${var.env}"
-  github_users               = "${var.github_users}"
-  heroku_org                 = "${var.aws_heroku_org}"
-  index                      = "${var.index}"
-  security_groups            = "${module.aws_az_1b.workers_com_security_group_id},${module.aws_az_1e.workers_com_security_group_id}"
-  site                       = "com"
-  syslog_address             = "${var.syslog_address_com}"
-  worker_ami                 = "${var.worker_ami}"
-
-  # NOTE: builds.docker value for com production
-  # worker_asg_max_size = 100
-  worker_asg_max_size = 20
-
-  worker_asg_min_size  = 1
-  worker_asg_namespace = "Travis/com"
-
-  # NOTE: builds.docker values for com production
-  # worker_asg_scale_in_threshold = 100
-  # worker_asg_scale_out_threshold = 60
-  worker_asg_scale_in_threshold = 50
-
+  source                         = "../modules/aws_asg"
+  cyclist_auth_token             = "${random_id.cyclist_token_com.hex}"
+  cyclist_version                = "v0.4.0"
+  docker_storage_dm_basesize     = "19G"
+  env                            = "${var.env}"
+  env_short                      = "${var.env}"
+  github_users                   = "${var.github_users}"
+  heroku_org                     = "${var.aws_heroku_org}"
+  index                          = "${var.index}"
+  security_groups                = "${module.aws_az_1b.workers_com_security_group_id},${module.aws_az_1e.workers_com_security_group_id}"
+  site                           = "com"
+  syslog_address                 = "${var.syslog_address_com}"
+  worker_ami                     = "${var.worker_ami}"
+  worker_asg_max_size            = 100
+  worker_asg_min_size            = 1
+  worker_asg_namespace           = "Travis/com"
+  worker_asg_scale_in_threshold  = 100
+  worker_asg_scale_out_threshold = 60
   worker_asg_scale_out_qty       = 2
-  worker_asg_scale_out_threshold = 30
   worker_config                  = "${data.template_file.worker_config_com.rendered}"
   worker_docker_image_android    = "${var.amethyst_image}"
   worker_docker_image_default    = "${var.garnet_image}"
@@ -173,34 +164,25 @@ module "aws_asg_com" {
 }
 
 module "aws_asg_org" {
-  source                     = "../modules/aws_asg"
-  cyclist_auth_token         = "${random_id.cyclist_token_org.hex}"
-  cyclist_version            = "v0.4.0"
-  docker_storage_dm_basesize = "19G"
-  env                        = "${var.env}"
-  env_short                  = "${var.env}"
-  github_users               = "${var.github_users}"
-  heroku_org                 = "${var.aws_heroku_org}"
-  index                      = "${var.index}"
-  security_groups            = "${module.aws_az_1b.workers_org_security_group_id},${module.aws_az_1e.workers_org_security_group_id}"
-  site                       = "org"
-  syslog_address             = "${var.syslog_address_org}"
-  worker_ami                 = "${var.worker_ami}"
-
-  # NOTE: builds.docker value for org production
-  # worker_asg_max_size = 75
-  worker_asg_max_size = 20
-
-  worker_asg_min_size  = 1
-  worker_asg_namespace = "Travis/org"
-
-  # NOTE: builds.docker values for org production
-  # worker_asg_scale_in_threshold = 64
-  # worker_asg_scale_out_threshold = 48
-  worker_asg_scale_in_threshold = 50
-
+  source                         = "../modules/aws_asg"
+  cyclist_auth_token             = "${random_id.cyclist_token_org.hex}"
+  cyclist_version                = "v0.4.0"
+  docker_storage_dm_basesize     = "19G"
+  env                            = "${var.env}"
+  env_short                      = "${var.env}"
+  github_users                   = "${var.github_users}"
+  heroku_org                     = "${var.aws_heroku_org}"
+  index                          = "${var.index}"
+  security_groups                = "${module.aws_az_1b.workers_org_security_group_id},${module.aws_az_1e.workers_org_security_group_id}"
+  site                           = "org"
+  syslog_address                 = "${var.syslog_address_org}"
+  worker_ami                     = "${var.worker_ami}"
+  worker_asg_max_size            = 75
+  worker_asg_min_size            = 1
+  worker_asg_namespace           = "Travis/org"
+  worker_asg_scale_in_threshold  = 64
+  worker_asg_scale_out_threshold = 48
   worker_asg_scale_out_qty       = 2
-  worker_asg_scale_out_threshold = 30
   worker_config                  = "${data.template_file.worker_config_org.rendered}"
   worker_docker_image_android    = "${var.amethyst_image}"
   worker_docker_image_default    = "${var.garnet_image}"
