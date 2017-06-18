@@ -60,7 +60,7 @@ module "gce_project_1" {
   worker_config_org             = "${file("${path.module}/config/worker-env-org")}"
   worker_image                  = "${var.gce_worker_image}"
   worker_instance_count_com     = 0
-  worker_instance_count_org     = 12
+  worker_instance_count_org     = 13
 
   public_subnet_cidr_range    = "10.10.1.0/24"
   workers_subnet_cidr_range   = "10.10.16.0/22"
