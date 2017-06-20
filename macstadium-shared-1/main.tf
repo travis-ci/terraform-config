@@ -43,31 +43,31 @@ variable "jupiter_brain_staging_version" {
 }
 
 variable "travis_worker_custom-1_version" {
-  default = "v2.9.2"
+  default = "v2.6.2"
 }
 
 variable "travis_worker_custom-2_version" {
-  default = "v2.9.2"
+  default = "v2.6.2"
 }
 
 variable "travis_worker_custom-3_version" {
-  default = "v2.9.2"
+  default = "v2.6.2"
 }
 
 variable "travis_worker_custom-4_version" {
-  default = "v2.9.2"
+  default = "v2.6.2"
 }
 
 variable "travis_worker_custom-5_version" {
-  default = "v2.9.2"
+  default = "v2.6.2"
 }
 
 variable "travis_worker_custom-6_version" {
-  default = "v2.9.2"
+  default = "v2.6.2"
 }
 
 variable "travis_worker_production_version" {
-  default = "v2.9.2"
+  default = "v2.6.2"
 }
 
 variable "travis_worker_staging_version" {
