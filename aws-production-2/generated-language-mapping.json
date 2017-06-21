@@ -1,8 +1,8 @@
 {
-  "android": "travisci/ci-amethyst:packer-1478744929",
-  "erlang": "travisci/ci-amethyst:packer-1478744929",
-  "haskell": "travisci/ci-amethyst:packer-1478744929",
-  "perl": "travisci/ci-amethyst:packer-1478744929",
+  "android": "travisci/ci-amethyst:packer-1498069769",
+  "erlang": "travisci/ci-amethyst:packer-1498069769",
+  "haskell": "travisci/ci-amethyst:packer-1498069769",
+  "perl": "travisci/ci-amethyst:packer-1498069769",
   "default": "travisci/ci-garnet:packer-1496954857",
   "go": "travisci/ci-garnet:packer-1496954857",
   "jvm": "travisci/ci-garnet:packer-1496954857",

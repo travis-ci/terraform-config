@@ -22,7 +22,7 @@ variable "worker_ami" {
 }
 
 variable "amethyst_image" {
-  default = "travisci/ci-amethyst:packer-1478744929"
+  default = "travisci/ci-amethyst:packer-1498069769"
 }
 
 variable "garnet_image" {
