@@ -84,6 +84,9 @@ data "template_file" "cloud_config_org" {
     github_users_env = "export GITHUB_USERS='${var.github_users}'"
     syslog_address   = "${var.syslog_address_org}"
     worker_config    = "${var.config_org}"
+    worker_service   = "${file("${path.module}/../../assets/travis-worker/travis-worker.service")}"
+    worker_upstart   = "${file("${path.module}/../../assets/travis-worker/travis-worker.conf")}"
+    worker_wrapper   = "${file("${path.module}/../../assets/travis-worker/travis-worker-wrapper")}"
   }
 }
 

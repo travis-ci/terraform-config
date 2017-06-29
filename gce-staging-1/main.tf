@@ -10,7 +10,7 @@ variable "gce_gcloud_zone" {}
 variable "gce_heroku_org" {}
 
 variable "gce_worker_image" {
-  default = "eco-emissary-99515/travis-worker-1496867326"
+  default = "eco-emissary-99515/tfw-1498714220"
 }
 
 variable "github_users" {}
