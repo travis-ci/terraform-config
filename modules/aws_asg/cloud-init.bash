@@ -6,6 +6,7 @@ shopt -s nullglob
 
 main() {
   : "${ETCDIR:=/etc}"
+  : "${VARTMP:=/var/tmp}"
   : "${RUNDIR:=/var/tmp/travis-run.d}"
 
   local instance_id
@@ -17,18 +18,19 @@ main() {
 
   chown -R travis:travis "${RUNDIR}"
 
-  if [[ -d /etc/systemd/system ]]; then
-    cp -v /var/tmp/travis-worker.service \
-          /etc/systemd/system/travis-worker.service
-    systemctl enable travis-worker
-    systemctl stop travis-worker
-    systemctl start travis-worker
-  elif [[ -d /etc/init ]]; then
-    cp -v /var/tmp/travis-worker.conf \
-          /etc/init/travis-worker.conf
-    service travis-worker stop || true
-    service travis-worker start || true
+  if [[ -d "${ETCDIR}/systemd/system" ]]; then
+    cp -v "${VARTMP}/travis-worker.service" \
+      "${ETCDIR}/systemd/system/travis-worker.service"
+    systemctl enable travis-worker || true
   fi
+
+  if [[ -d "${ETCDIR}/init" ]]; then
+    cp -v "${VARTMP}/travis-worker.conf" \
+      "${ETCDIR}/init/travis-worker.conf"
+  fi
+
+  service travis-worker stop || true
+  service travis-worker start || true
 
   iptables -t nat -I PREROUTING -p tcp -d '169.254.169.254' \
     --dport 80 -j DNAT --to-destination '192.0.2.1'
