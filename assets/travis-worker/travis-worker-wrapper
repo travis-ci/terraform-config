@@ -9,6 +9,7 @@ main() {
   mkdir -p "${run_dir}"
   local env_file="${run_dir}/env"
   travis-tfw-combined-env travis-worker >"${env_file}"
+  set -o allexport
   # shellcheck source=/dev/null
   source "${env_file}"
 

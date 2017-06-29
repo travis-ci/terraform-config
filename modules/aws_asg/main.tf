@@ -164,7 +164,6 @@ data "template_file" "cloud_config" {
 
   vars {
     check_unregister_netdevice_bash = "${file("${path.module}/check-unregister-netdevice.bash")}"
-    cloud_init_bash                 = "${file("${path.module}/cloud-init.bash")}"
     cloud_init_env                  = "${data.template_file.cloud_init_env.rendered}"
     cyclist_url                     = "${replace(heroku_app.cyclist.web_url, "/\\/$/", "")}"
     docker_daemon_json              = "${data.template_file.docker_daemon_json.rendered}"
@@ -183,12 +182,26 @@ data "template_file" "cloud_config" {
   }
 }
 
+data "template_cloudinit_config" "cloud_config" {
+  part {
+    filename     = "cloud-config"
+    content_type = "text/cloud-config"
+    content      = "${data.template_file.cloud_config.rendered}"
+  }
+
+  part {
+    filename     = "cloud-init"
+    content_type = "text/x-shellscript"
+    content      = "${file("${path.module}/cloud-init.bash")}"
+  }
+}
+
 resource "aws_launch_configuration" "workers" {
   name_prefix       = "${var.env}-${var.index}-workers-${var.site}-"
   image_id          = "${var.worker_ami}"
   instance_type     = "${var.worker_instance_type}"
   security_groups   = ["${split(",", var.security_groups)}"]
-  user_data         = "${data.template_file.cloud_config.rendered}"
+  user_data         = "${data.template_cloudinit_config.cloud_config.rendered}"
   enable_monitoring = true
 
   lifecycle {
