@@ -177,6 +177,9 @@ data "template_file" "cloud_config" {
     syslog_address                  = "${var.syslog_address}"
     unregister_netdevice_crontab    = "${file("${path.module}/unregister-netdevice.crontab")}"
     worker_config                   = "${var.worker_config}"
+    worker_service                  = "${file("${path.module}/../../assets/travis-worker/travis-worker.service")}"
+    worker_upstart                  = "${file("${path.module}/../../assets/travis-worker/travis-worker.conf")}"
+    worker_wrapper                  = "${file("${path.module}/../../assets/travis-worker/travis-worker-wrapper")}"
   }
 }
 

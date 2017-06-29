@@ -17,8 +17,18 @@ main() {
 
   chown -R travis:travis "${RUNDIR}"
 
-  service travis-worker stop || true
-  service travis-worker start || true
+  if [[ -d /etc/systemd/system ]]; then
+    cp -v /var/tmp/travis-worker.service \
+          /etc/systemd/system/travis-worker.service
+    systemctl enable travis-worker
+    systemctl stop travis-worker
+    systemctl start travis-worker
+  elif [[ -d /etc/init ]]; then
+    cp -v /var/tmp/travis-worker.conf \
+          /etc/init/travis-worker.conf
+    service travis-worker stop || true
+    service travis-worker start || true
+  fi
 
   iptables -t nat -I PREROUTING -p tcp -d '169.254.169.254' \
     --dport 80 -j DNAT --to-destination '192.0.2.1'

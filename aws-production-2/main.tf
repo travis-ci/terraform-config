@@ -18,7 +18,8 @@ variable "syslog_address_com" {}
 variable "syslog_address_org" {}
 
 variable "worker_ami" {
-  default = "ami-a38664b5"
+  # tfw 2017-06-29 02-07-17
+  default = "ami-57e6d541"
 }
 
 variable "amethyst_image" {
