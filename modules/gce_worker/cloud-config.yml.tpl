@@ -13,11 +13,15 @@ write_files:
   encoding: b64
   owner: 'travis:travis'
   path: /etc/default/travis-worker-cloud-init
+- content: '${base64encode(docker_env)}'
+  encoding: b64
+  owner: 'root:root'
+  path: /etc/default/docker
 - content: '${base64encode(worker_wrapper)}'
   encoding: b64
   owner: 'root:root'
   path: /usr/local/bin/travis-worker-wrapper
-  permissions: '0750'
+  permissions: '0755'
 - content: '${base64encode(gce_account_json)}'
   encoding: b64
   owner: 'travis:travis'
