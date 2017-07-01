@@ -219,8 +219,7 @@ EOF
 # cs50 {
 
 variable "cs50_image" {
-  # FIXME: use cs50 image
-  default = "travisci/ci-garnet:packer-1498163271"
+  default = "cs50/travis-ci:latest"
 }
 
 resource "random_id" "cyclist_token_cs50" {
