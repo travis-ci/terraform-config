@@ -2,6 +2,10 @@ variable "index" {
   default = 1
 }
 
+variable "travis_worker_version" {
+  default = "v2.10.0"
+}
+
 variable "travisci_net_external_zone_id" {
   default = "Z2RI61YP4UWSIO"
 }
@@ -43,35 +47,35 @@ variable "jupiter_brain_staging_version" {
 }
 
 variable "travis_worker_custom-1_version" {
-  default = "v2.9.3"
+  default = "${var.travis_worker_version}"
 }
 
 variable "travis_worker_custom-2_version" {
-  default = "v2.9.3"
+  default = "${var.travis_worker_version}"
 }
 
 variable "travis_worker_custom-3_version" {
-  default = "v2.9.3"
+  default = "${var.travis_worker_version}"
 }
 
 variable "travis_worker_custom-4_version" {
-  default = "v2.9.3"
+  default = "${var.travis_worker_version}"
 }
 
 variable "travis_worker_custom-5_version" {
-  default = "v2.9.3"
+  default = "${var.travis_worker_version}"
 }
 
 variable "travis_worker_custom-6_version" {
-  default = "v2.9.3"
+  default = "${var.travis_worker_version}"
 }
 
 variable "travis_worker_production_version" {
-  default = "v2.9.3"
+  default = "${var.travis_worker_version}"
 }
 
 variable "travis_worker_staging_version" {
-  default = "v2.9.3"
+  default = "${var.travis_worker_version}"
 }
 
 variable "vsphere_janitor_version" {
