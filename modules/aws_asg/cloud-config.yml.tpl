@@ -65,3 +65,11 @@ write_files:
   encoding: b64
   owner: 'root:root'
   path: /var/tmp/travis-worker.service
+- content: '${base64encode(worker_rsyslog_watch)}'
+  encoding: b64
+  owner: 'root:root'
+  path: /etc/rsyslog.d/60-travis-worker.conf
+- content: '${base64encode(rsyslog_conf)}'
+  encoding: b64
+  owner: 'root:root'
+  path: /etc/rsyslog.conf
