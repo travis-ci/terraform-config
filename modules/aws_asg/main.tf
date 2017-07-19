@@ -171,6 +171,7 @@ data "template_file" "cloud_config" {
     hostname_tmpl                   = "___INSTANCE_ID___-${var.env}-${var.index}-worker-${var.site}-${var.worker_queue}.travisci.net"
     prestart_hook_bash              = "${file("${path.module}/prestart-hook.bash")}"
     registry_hostname               = "${var.registry_hostname}"
+    rsyslog_conf                    = "${file("${path.module}/../../assets/rsyslog/rsyslog.conf")}"
     start_hook_bash                 = "${file("${path.module}/start-hook.bash")}"
     stop_hook_bash                  = "${file("${path.module}/stop-hook.bash")}"
     syslog_address                  = "${var.syslog_address}"

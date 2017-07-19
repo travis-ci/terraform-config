@@ -30,6 +30,15 @@ plan: announce .config $(TFVARS) $(TFSTATE)
 		-module-depth=-1 \
 		-out=$(TFPLAN)
 
+.PHONY: destroy
+destroy: announce .config $(TFVARS) $(TFSTATE)
+	terraform plan \
+		-var-file=$(ENV_NAME).tfvars \
+		-var-file=$(TFVARS) \
+		-module-depth=-1 \
+		-destroy \
+		-out=$(TFPLAN)
+
 $(TFSTATE):
 	terraform init
 
