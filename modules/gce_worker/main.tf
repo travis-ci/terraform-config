@@ -47,6 +47,10 @@ data "template_file" "cloud_config_com" {
 }
 
 resource "null_resource" "worker_com_validation" {
+  triggers {
+    config_signature = "${sha256(data.template_file.cloud_config_com.rendered)}"
+  }
+
   provisioner "local-exec" {
     command = <<EOF
 exec ${path.module}/../../bin/travis-worker-verify-config \
@@ -111,6 +115,10 @@ data "template_file" "cloud_config_org" {
 }
 
 resource "null_resource" "worker_org_validation" {
+  triggers {
+    config_signature = "${sha256(data.template_file.cloud_config_org.rendered)}"
+  }
+
   provisioner "local-exec" {
     command = <<EOF
 exec ${path.module}/../../bin/travis-worker-verify-config \
