@@ -46,6 +46,15 @@ data "template_file" "cloud_config_com" {
   }
 }
 
+resource "null_resource" "worker_com_validation" {
+  provisioner "local-exec" {
+    command = <<EOF
+exec ${path.module}/../../bin/travis-worker-verify-config \
+  "${base64encode(data.template_file.cloud_config_com.rendered)}"
+EOF
+  }
+}
+
 resource "google_compute_instance" "worker_com" {
   count        = "${var.instance_count_com}"
   name         = "${var.env}-${var.index}-worker-com-${var.zone_suffix}-${count.index + 1}-gce"
@@ -72,6 +81,8 @@ resource "google_compute_instance" "worker_com" {
     "block-project-ssh-keys" = "true"
     "user-data"              = "${data.template_file.cloud_config_com.rendered}"
   }
+
+  depends_on = ["null_resource.worker_com_validation"]
 }
 
 data "template_file" "cloud_init_env_org" {
@@ -96,6 +107,15 @@ data "template_file" "cloud_config_org" {
     worker_service       = "${file("${path.module}/../../assets/travis-worker/travis-worker.service")}"
     worker_upstart       = "${file("${path.module}/../../assets/travis-worker/travis-worker.conf")}"
     worker_wrapper       = "${file("${path.module}/../../assets/travis-worker/travis-worker-wrapper")}"
+  }
+}
+
+resource "null_resource" "worker_org_validation" {
+  provisioner "local-exec" {
+    command = <<EOF
+exec ${path.module}/../../bin/travis-worker-verify-config \
+  "${base64encode(data.template_file.cloud_config_org.rendered)}"
+EOF
   }
 }
 
@@ -125,4 +145,6 @@ resource "google_compute_instance" "worker_org" {
     "block-project-ssh-keys" = "true"
     "user-data"              = "${data.template_file.cloud_config_org.rendered}"
   }
+
+  depends_on = ["null_resource.worker_org_validation"]
 }
