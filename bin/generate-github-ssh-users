@@ -13,7 +13,7 @@ main() {
   }
 
   : "${GITHUB_ORG:=travis-infrastructure}"
-  : "${GITHUB_TEAM:=blue-ssh}"
+  : "${GITHUB_TEAM:=ssh-access}"
 
   echo "github_users = \"$(
     __github_users "${GITHUB_USERNAME}:${GITHUB_TOKEN}" \
