@@ -27,12 +27,12 @@ terraform {
 
 provider "aws" {}
 
-data "aws_ami" "worker" {
+data "aws_ami" "tfw" {
   most_recent = true
 
   filter {
     name   = "tag:role"
-    values = ["worker"]
+    values = ["tfw"]
   }
 
   filter {
@@ -120,7 +120,7 @@ module "aws_asg_com" {
   security_groups                = "${module.aws_az_1b.workers_com_security_group_id},${module.aws_az_1e.workers_com_security_group_id}"
   site                           = "com"
   syslog_address                 = "${var.syslog_address_com}"
-  worker_ami                     = "${data.aws_ami.worker.id}"
+  worker_ami                     = "${data.aws_ami.tfw.id}"
   worker_asg_max_size            = 3
   worker_asg_min_size            = 0
   worker_asg_namespace           = "Travis/com-staging"
@@ -158,7 +158,7 @@ module "aws_asg_org" {
   security_groups                = "${module.aws_az_1b.workers_org_security_group_id},${module.aws_az_1e.workers_org_security_group_id}"
   site                           = "org"
   syslog_address                 = "${var.syslog_address_org}"
-  worker_ami                     = "${data.aws_ami.worker.id}"
+  worker_ami                     = "${data.aws_ami.tfw.id}"
   worker_asg_max_size            = 3
   worker_asg_min_size            = 0
   worker_asg_namespace           = "Travis/org-staging"

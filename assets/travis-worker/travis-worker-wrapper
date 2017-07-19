@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+set -o errexit
+
+main() {
+  docker stop travis-worker &>/dev/null || true
+  docker rm -f travis-worker &>/dev/null || true
+
+  local run_dir=/var/tmp/travis-run.d
+  mkdir -p "${run_dir}"
+  local env_file="${run_dir}/env"
+  travis-tfw-combined-env travis-worker >"${env_file}"
+  set -o allexport
+  # shellcheck source=/dev/null
+  source "${env_file}"
+
+  if [ -f "${TRAVIS_WORKER_PRESTART_HOOK}" ]; then
+    "${TRAVIS_WORKER_PRESTART_HOOK}"
+  fi
+
+  exec docker run \
+    --rm \
+    --name travis-worker \
+    --hostname "$(hostname)" \
+    --userns host \
+    -v /var/tmp:/var/tmp \
+    -v /var/run:/var/run \
+    --env-file "${env_file}" \
+    "${TRAVIS_WORKER_SELF_IMAGE}" travis-worker
+}
+
+main "$@"

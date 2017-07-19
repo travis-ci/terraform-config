@@ -17,10 +17,11 @@ write_files:
   encoding: b64
   owner: 'root:root'
   path: /etc/docker/daemon-direct-lvm.json
-- content: '${base64encode(cloud_init_bash)}'
+- content: '${base64encode(worker_wrapper)}'
   encoding: b64
-  path: /var/lib/cloud/scripts/per-instance/99-travis-worker-cloud-init
-  permissions: '0750'
+  owner: 'root:root'
+  path: /usr/local/bin/travis-worker-wrapper
+  permissions: '0755'
 - content: '${base64encode(cyclist_url)}'
   encoding: b64
   owner: 'travis:travis'
@@ -51,12 +52,16 @@ write_files:
 - content: '${base64encode(syslog_address)}'
   encoding: b64
   path: /var/tmp/travis-run.d/syslog-address
-# - content: '${base64encode(unregister_netdevice_crontab)}'
-#   encoding: b64
-#   owner: 'root:root'
-#   path: /etc/cron.d/unregister-netdevice
 - content: '${base64encode(check_unregister_netdevice_bash)}'
   encoding: b64
   owner: 'root:root'
   path: /var/tmp/travis-run.d/check-unregister-netdevice
   permissions: '0750'
+- content: '${base64encode(worker_upstart)}'
+  encoding: b64
+  owner: 'root:root'
+  path: /var/tmp/travis-worker.conf
+- content: '${base64encode(worker_service)}'
+  encoding: b64
+  owner: 'root:root'
+  path: /var/tmp/travis-worker.service
