@@ -10,7 +10,7 @@ variable "gce_gcloud_zone" {}
 variable "gce_heroku_org" {}
 
 variable "gce_worker_image" {
-  default = "eco-emissary-99515/travis-worker-1496867326"
+  default = "eco-emissary-99515/tfw-1499625597"
 }
 
 variable "github_users" {}
@@ -27,6 +27,8 @@ variable "travisci_net_external_zone_id" {
 
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
+
+variable "latest_docker_image_worker" {}
 
 terraform {
   backend "s3" {
@@ -66,6 +68,7 @@ module "gce_project_1" {
   worker_account_json_org       = "${file("${path.module}/config/gce-workers-staging-1.json")}"
   worker_config_com             = "${file("${path.module}/config/worker-env-com")}"
   worker_config_org             = "${file("${path.module}/config/worker-env-org")}"
+  worker_docker_self_image      = "${var.latest_docker_image_worker}"
   worker_image                  = "${var.gce_worker_image}"
 
   # instance count must be a multiple of number of zones (currently 2)

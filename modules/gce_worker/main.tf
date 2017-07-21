@@ -31,12 +31,31 @@ data "template_file" "cloud_config_com" {
   template = "${file("${path.module}/cloud-config.yml.tpl")}"
 
   vars {
-    cloud_init_bash  = "${file("${path.module}/cloud-init.bash")}"
-    cloud_init_env   = "${data.template_file.cloud_init_env_com.rendered}"
-    gce_account_json = "${var.account_json_com}"
-    github_users_env = "export GITHUB_USERS='${var.github_users}'"
-    syslog_address   = "${var.syslog_address_com}"
-    worker_config    = "${var.config_com}"
+    cloud_init_bash      = "${file("${path.module}/cloud-init.bash")}"
+    cloud_init_env       = "${data.template_file.cloud_init_env_com.rendered}"
+    docker_env           = "export TRAVIS_DOCKER_DISABLE_DIRECT_LVM=1"
+    gce_account_json     = "${var.account_json_com}"
+    github_users_env     = "export GITHUB_USERS='${var.github_users}'"
+    rsyslog_conf         = "${file("${path.module}/../../assets/rsyslog/rsyslog.conf")}"
+    syslog_address       = "${var.syslog_address_com}"
+    worker_config        = "${var.config_com}"
+    worker_rsyslog_watch = "${file("${path.module}/../../assets/travis-worker/rsyslog-watch-upstart.conf")}"
+    worker_service       = "${file("${path.module}/../../assets/travis-worker/travis-worker.service")}"
+    worker_upstart       = "${file("${path.module}/../../assets/travis-worker/travis-worker.conf")}"
+    worker_wrapper       = "${file("${path.module}/../../assets/travis-worker/travis-worker-wrapper")}"
+  }
+}
+
+resource "null_resource" "worker_com_validation" {
+  triggers {
+    config_signature = "${sha256(data.template_file.cloud_config_com.rendered)}"
+  }
+
+  provisioner "local-exec" {
+    command = <<EOF
+exec ${path.module}/../../bin/travis-worker-verify-config \
+  "${base64encode(data.template_file.cloud_config_com.rendered)}"
+EOF
   }
 }
 
@@ -66,6 +85,8 @@ resource "google_compute_instance" "worker_com" {
     "block-project-ssh-keys" = "true"
     "user-data"              = "${data.template_file.cloud_config_com.rendered}"
   }
+
+  depends_on = ["null_resource.worker_com_validation"]
 }
 
 data "template_file" "cloud_init_env_org" {
@@ -78,12 +99,31 @@ data "template_file" "cloud_config_org" {
   template = "${file("${path.module}/cloud-config.yml.tpl")}"
 
   vars {
-    cloud_init_bash  = "${file("${path.module}/cloud-init.bash")}"
-    cloud_init_env   = "${data.template_file.cloud_init_env_org.rendered}"
-    gce_account_json = "${var.account_json_org}"
-    github_users_env = "export GITHUB_USERS='${var.github_users}'"
-    syslog_address   = "${var.syslog_address_org}"
-    worker_config    = "${var.config_org}"
+    cloud_init_bash      = "${file("${path.module}/cloud-init.bash")}"
+    cloud_init_env       = "${data.template_file.cloud_init_env_org.rendered}"
+    docker_env           = "export TRAVIS_DOCKER_DISABLE_DIRECT_LVM=1"
+    gce_account_json     = "${var.account_json_org}"
+    github_users_env     = "export GITHUB_USERS='${var.github_users}'"
+    rsyslog_conf         = "${file("${path.module}/../../assets/rsyslog/rsyslog.conf")}"
+    syslog_address       = "${var.syslog_address_org}"
+    worker_config        = "${var.config_org}"
+    worker_rsyslog_watch = "${file("${path.module}/../../assets/travis-worker/rsyslog-watch-upstart.conf")}"
+    worker_service       = "${file("${path.module}/../../assets/travis-worker/travis-worker.service")}"
+    worker_upstart       = "${file("${path.module}/../../assets/travis-worker/travis-worker.conf")}"
+    worker_wrapper       = "${file("${path.module}/../../assets/travis-worker/travis-worker-wrapper")}"
+  }
+}
+
+resource "null_resource" "worker_org_validation" {
+  triggers {
+    config_signature = "${sha256(data.template_file.cloud_config_org.rendered)}"
+  }
+
+  provisioner "local-exec" {
+    command = <<EOF
+exec ${path.module}/../../bin/travis-worker-verify-config \
+  "${base64encode(data.template_file.cloud_config_org.rendered)}"
+EOF
   }
 }
 
@@ -113,4 +153,6 @@ resource "google_compute_instance" "worker_org" {
     "block-project-ssh-keys" = "true"
     "user-data"              = "${data.template_file.cloud_config_org.rendered}"
   }
+
+  depends_on = ["null_resource.worker_org_validation"]
 }

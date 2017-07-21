@@ -13,6 +13,15 @@ write_files:
   encoding: b64
   owner: 'travis:travis'
   path: /etc/default/travis-worker-cloud-init
+- content: '${base64encode(docker_env)}'
+  encoding: b64
+  owner: 'root:root'
+  path: /etc/default/docker
+- content: '${base64encode(worker_wrapper)}'
+  encoding: b64
+  owner: 'root:root'
+  path: /usr/local/bin/travis-worker-wrapper
+  permissions: '0755'
 - content: '${base64encode(gce_account_json)}'
   encoding: b64
   owner: 'travis:travis'
@@ -24,3 +33,19 @@ write_files:
 - content: '${base64encode(syslog_address)}'
   encoding: b64
   path: /var/tmp/travis-run.d/syslog-address
+- content: '${base64encode(worker_upstart)}'
+  encoding: b64
+  owner: 'root:root'
+  path: /var/tmp/travis-worker.conf
+- content: '${base64encode(worker_service)}'
+  encoding: b64
+  owner: 'root:root'
+  path: /var/tmp/travis-worker.service
+- content: '${base64encode(worker_rsyslog_watch)}'
+  encoding: b64
+  owner: 'root:root'
+  path: /etc/rsyslog.d/60-travis-worker.conf
+- content: '${base64encode(rsyslog_conf)}'
+  encoding: b64
+  owner: 'root:root'
+  path: /etc/rsyslog.conf

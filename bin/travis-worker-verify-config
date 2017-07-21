@@ -99,12 +99,6 @@ class TravisWorkerConfigVerifier
     assert!(dm_basesize_gigs > 5, msg: 'dm.basesize under 5GB')
   end
 
-  def verify_var_lib_cloud_scripts_per_instance_99_travis_worker_cloud_init!(content)
-    assert_identical_content!(
-      content, 'modules/aws_asg/cloud-init.bash'
-    )
-  end
-
   def verify_var_tmp_travis_run_d_cyclist_url!(content)
     assert!(content.strip !~ /\/$/, msg: 'value contains a trailing slash')
     assert!(content =~ /^https/, msg: 'value protocol is not https')
