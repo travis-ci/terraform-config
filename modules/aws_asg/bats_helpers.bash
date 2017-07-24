@@ -52,9 +52,10 @@ EOF
     iptables \
     sed \
     service \
-    systemctl \
     shutdown \
-    sleep; do
+    sleep \
+    sysctl \
+    systemctl; do
     pushd "${BATS_TMPDIR}/bin" &>/dev/null
     ln -svf mock "${cmd}"
     popd &>/dev/null
