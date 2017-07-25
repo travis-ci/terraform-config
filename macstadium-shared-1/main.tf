@@ -2,6 +2,8 @@ variable "index" {
   default = 1
 }
 
+variable "latest_travis_worker_version" {}
+
 variable "travis_worker_version" {
   default = "v2.11.0"
 }
@@ -285,7 +287,7 @@ module "worker_staging_org_1" {
   host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user    = "${var.ssh_user}"
-  version     = "${var.travis_worker_version}"
+  version     = "${var.latest_travis_worker_version}"
   config_path = "${path.module}/config/travis-worker-staging-org-1"
   env         = "staging-org-1"
   index       = "${var.index}"
@@ -296,7 +298,7 @@ module "worker_staging_org_2" {
   host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user    = "${var.ssh_user}"
-  version     = "${var.travis_worker_version}"
+  version     = "${var.latest_travis_worker_version}"
   config_path = "${path.module}/config/travis-worker-staging-org-2"
   env         = "staging-org-2"
   index       = "${var.index}"
@@ -351,7 +353,7 @@ module "worker_staging_com_1" {
   host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user    = "${var.ssh_user}"
-  version     = "${var.travis_worker_version}"
+  version     = "${var.latest_travis_worker_version}"
   config_path = "${path.module}/config/travis-worker-staging-com-1"
   env         = "staging-com-1"
   index       = "${var.index}"
@@ -362,7 +364,7 @@ module "worker_staging_com_2" {
   host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user    = "${var.ssh_user}"
-  version     = "${var.travis_worker_version}"
+  version     = "${var.latest_travis_worker_version}"
   config_path = "${path.module}/config/travis-worker-staging-com-2"
   env         = "staging-com-2"
   index       = "${var.index}"
