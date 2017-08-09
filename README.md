@@ -87,11 +87,12 @@ make apply
 
 ## Troubleshooting tips
 
-* Verify you have been added to both com and pro Heroku organizations
+* Running `make check` will verify a few common setup requirements.
+* Verify you have been added to both com and pro Heroku organizations.
 * Try passing the `-d` flag to `make` to see which commands are being
-run
+run.
 	* this will show various curl commands (e.g. heroku) which may be
 	silenced (`-fs`); try running these directly without the `-fs`
 	flags to make sure they succeed
 * `terraform console` will allow you to use an interactive console for
-  testing interpolations and looking into the existing state
+  testing interpolations and looking into the existing state.
