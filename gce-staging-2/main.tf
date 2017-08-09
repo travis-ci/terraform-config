@@ -32,10 +32,11 @@ variable "latest_docker_image_worker" {}
 
 terraform {
   backend "s3" {
-    bucket  = "travis-terraform-state"
-    key     = "terraform-config/gce-staging-2.tfstate"
-    region  = "us-east-1"
-    encrypt = "true"
+    bucket         = "travis-terraform-state"
+    key            = "terraform-config/gce-staging-2.tfstate"
+    region         = "us-east-1"
+    encrypt        = "true"
+    dynamodb_table = "travis-terraform-state"
   }
 }
 
