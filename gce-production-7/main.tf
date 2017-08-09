@@ -34,6 +34,7 @@ terraform {
 
 provider "google" {
   project = "travis-ci-prod-7"
+  region  = "us-central1"
 }
 
 provider "aws" {}
