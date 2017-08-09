@@ -1,0 +1,86 @@
+#!/usr/bin/env bash
+set -o errexit
+
+die() {
+  stderr_echo "$@" && exit 1
+}
+
+stderr_echo() {
+  echo >&2 "$@"
+}
+
+check_heroku() {
+  endpoints="
+        travis-pro-staging
+        travis-staging
+    "
+  stderr_echo "Attempting to authenticate with Heroku..."
+  for endpoint in $endpoints; do
+    cmd="curl --silent \
+            --output /dev/null \
+            --write-out '%{http_code}' \
+            -H 'Authorization: Bearer $HEROKU_API_KEY' \
+            -H 'Content-Type: application/json' \
+            -H 'Accept: application/vnd.heroku+json; version=3' \
+            https://api.heroku.com/apps/${endpoint}/config-vars"
+    status_code=$(eval "$cmd")
+
+    if test "$status_code" -eq 200; then
+      stderr_echo " [OK] Heroku: $endpoint"
+    else
+      die "[NOK] Got status code ${status_code} when attempting to authenticate with Heroku (${endpoint})!
+            This is the command I ran to check:
+            $cmd"
+    fi
+  done
+}
+
+DEPENDENCIES="
+  jq
+  terraform
+  trvs
+"
+check_dependencies() {
+  STATUS=0
+  for dependency in $DEPENDENCIES; do
+    if ! command -v "$dependency" >/dev/null; then
+      echo "Could not find dependency $dependency."
+      STATUS=1
+    fi
+  done
+  return $STATUS
+}
+
+check_envvars() {
+  ENVVARS="
+        AWS_ACCESS_KEY
+        AWS_SECRET_KEY
+        AWS_REGION
+        GITHUB_TOKEN
+        GITHUB_USERNAME
+        HEROKU_API_KEY
+        TRAVIS_KEYCHAIN_DIR
+    "
+
+  STATUS=0
+  for envvar in $ENVVARS; do
+
+    # ensure no TF_VAR_* environment variables are present
+    tf_envvar="TF_VAR_${envvar}"
+    [ ! -z "${!tf_envvar}" ] && die "Please unset environment variable ${tf_envvar}"
+
+    if [ -z "${!envvar}" ]; then
+      echo "Please set environment variable $envvar."
+      STATUS=1
+    fi
+  done
+  return $STATUS
+}
+
+main() {
+  check_dependencies || die "Aborting; see errors above." && stderr_echo " [OK] Dependencies"
+  check_envvars || die "Aborting; see errors above." && stderr_echo " [OK] Envvars"
+  check_heroku && stderr_echo " [OK] Heroku"
+}
+
+main "$@"
