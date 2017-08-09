@@ -41,8 +41,8 @@ services:
 running `trvs generate-config -H travis-scheduler-prod` to check)
 * Set all required environment variables (see the list below). This
 can be achieved by either:
-    * Manually sourcing an .env file (like .example.env)
-    * Using [autoenv](https://github.com/kennethreitz/autoenv)
+	* Manually sourcing an .env file (like .example.env)
+	* Using [autoenv](https://github.com/kennethreitz/autoenv)
 	* Fetching them from your own pass vault
 
 #### Required environment variables
@@ -90,8 +90,8 @@ make apply
 * Verify you have been added to both com and pro Heroku organizations
 * Try passing the `-d` flag to `make` to see which commands are being
 run
-    * this will show various curl commands (e.g. heroku) which may be
-    silenced (`-fs`); try running these directly without the `-fs`
-    flags to make sure they succeed
+	* this will show various curl commands (e.g. heroku) which may be
+	silenced (`-fs`); try running these directly without the `-fs`
+	flags to make sure they succeed
 * `terraform console` will allow you to use an interactive console for
   testing interpolations and looking into the existing state
