@@ -56,3 +56,8 @@ graph:
 
 $(ENV_NAME).tfvars:
 	$(TOP)/bin/generate-tfvars $@
+
+
+.PHONY: check
+check:
+	$(TOP)/bin/check-credentials $@
