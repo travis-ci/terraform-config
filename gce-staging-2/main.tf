@@ -41,7 +41,7 @@ terraform {
 
 provider "google" {
   project = "travis-staging-2"
-  region = "us-central1"
+  region  = "us-central1"
 }
 
 provider "aws" {}

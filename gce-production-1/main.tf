@@ -34,7 +34,7 @@ terraform {
 
 provider "google" {
   project = "eco-emissary-99515"
-  region = "us-central1"
+  region  = "us-central1"
 }
 
 provider "aws" {}
