@@ -35,14 +35,31 @@ check_heroku() {
   done
 }
 
+DEPENDENCIES="
+  jq
+  terraform
+  trvs
+"
+check_dependencies() {
+  STATUS=0
+  for dependency in $DEPENDENCIES; do
+    if ! command -v "$dependency" >/dev/null; then
+      echo "Could not find dependency $dependency."
+      STATUS=1
+    fi
+  done
+  return $STATUS
+}
+
 check_envvars() {
   ENVVARS="
-        HEROKU_API_KEY
-        GITHUB_TOKEN
-        GITHUB_USERNAME
         AWS_ACCESS_KEY
         AWS_SECRET_KEY
         AWS_REGION
+        GITHUB_TOKEN
+        GITHUB_USERNAME
+        HEROKU_API_KEY
+        TRAVIS_KEYCHAIN_DIR
     "
 
   STATUS=0
@@ -61,7 +78,8 @@ check_envvars() {
 }
 
 main() {
-  check_envvars && stderr_echo " [OK] Envvars"
+  check_dependencies || die "Aborting; see errors above." && stderr_echo " [OK] Dependencies"
+  check_envvars || die "Aborting; see errors above." && stderr_echo " [OK] Envvars"
   check_heroku && stderr_echo " [OK] Heroku"
 }
 
