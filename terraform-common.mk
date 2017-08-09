@@ -63,4 +63,4 @@ list:
 
 .PHONY: check
 check:
-	$(TOP)/bin/check-credentials $@
+	$(TOP)/bin/pre-flight-checks $@
