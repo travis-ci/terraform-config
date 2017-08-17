@@ -46,6 +46,15 @@
                 "arn:aws:iam::341288657826:user/registry-shared-1",
                 "arn:aws:iam::*:user/cyclist-*"
             ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "dynamodb:*"
+            ],
+            "Resource": [
+                "arn:aws:dynamodb:us-east-1:341288657826:table/travis-terraform-state"
+            ]
         }
     ]
 }

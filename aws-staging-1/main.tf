@@ -18,10 +18,11 @@ variable "syslog_address_org" {}
 
 terraform {
   backend "s3" {
-    bucket  = "travis-terraform-state"
-    key     = "terraform-config/aws-staging-1.tfstate"
-    region  = "us-east-1"
-    encrypt = "true"
+    bucket         = "travis-terraform-state"
+    key            = "terraform-config/aws-staging-1.tfstate"
+    region         = "us-east-1"
+    encrypt        = "true"
+    dynamodb_table = "travis-terraform-state"
   }
 }
 
@@ -47,9 +48,10 @@ data "terraform_remote_state" "vpc" {
   backend = "s3"
 
   config {
-    bucket = "travis-terraform-state"
-    key    = "terraform-config/aws-shared-1.tfstate"
-    region = "us-east-1"
+    bucket         = "travis-terraform-state"
+    key            = "terraform-config/aws-shared-1.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "travis-terraform-state"
   }
 }
 
