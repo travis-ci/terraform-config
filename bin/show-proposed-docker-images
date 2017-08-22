@@ -15,8 +15,8 @@ main() {
     awk "/^latest_docker_image_${stack}/ {
       gsub(/\"/, \"\", \$3);
       print \"${lang} \" \$3
-    }" "${tfvars}" \
-      | sed 's/  *$//'
+    }" "${tfvars}" |
+      sed 's/  *$//'
   done
 }
 
