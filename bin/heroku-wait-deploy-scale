@@ -56,8 +56,8 @@ __heroku_deploy() {
   printf "\nDeploying %s %s to %s\n" \
     "${repo_slug}" "${version}" "${heroku_app}"
 
-  __make_deploy_request "${repo_slug}" "${heroku_app}" "${version}" \
-    | tee "${tmp_dir}/deploy.json"
+  __make_deploy_request "${repo_slug}" "${heroku_app}" "${version}" |
+    tee "${tmp_dir}/deploy.json"
 
   local output_stream_url
   output_stream_url="$(jq -r .output_stream_url <"${tmp_dir}/deploy.json")"

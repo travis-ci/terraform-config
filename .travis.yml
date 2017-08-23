@@ -9,7 +9,7 @@ env:
   global:
   - PATH="${HOME}/bin:${PATH}"
   - SHELLCHECK_URL="https://s3.amazonaws.com/travis-blue-public/binaries/ubuntu/14.04/x86_64/shellcheck-0.4.4.tar.bz2"
-  - SHFMT_URL="https://github.com/mvdan/sh/releases/download/v0.1.0/shfmt_v0.1.0_linux_amd64"
+  - SHFMT_URL="mvdan.cc/sh/cmd/shfmt"
   - TMPDIR="${TMPDIR:-/tmp}"
 before_install:
 - if ! terraform version ; then
@@ -26,10 +26,7 @@ before_install:
 - if ! shellcheck --version ; then
     curl -sSL "${SHELLCHECK_URL}" | tar -C "${HOME}/bin" -xjf - ;
   fi
-- if ! command -v shfmt ; then
-    curl -sSL "${SHFMT_URL}" -o "${HOME}/bin/shfmt" ;
-    chmod +x "${HOME}/bin/shfmt" ;
-  fi
+- go get -u "${SHFMT_URL}" ;
 script:
 - ./runtests --env .example.env
 - git diff --exit-code

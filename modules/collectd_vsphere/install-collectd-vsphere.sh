@@ -7,8 +7,8 @@ if ! getent passwd collectd-vsphere >/dev/null; then
 fi
 
 # add apt source, add gpg key, install necessary dependencies, and install collectd
-echo "deb https://packagecloud.io/librato/librato-collectd/ubuntu/ trusty main" | sudo tee /etc/apt/sources.list.d/librato_librato-collectd.list > /dev/null
-curl https://packagecloud.io/gpg.key 2> /dev/null | sudo apt-key add - #if you have a less reckless solution lmk
+echo "deb https://packagecloud.io/librato/librato-collectd/ubuntu/ trusty main" | sudo tee /etc/apt/sources.list.d/librato_librato-collectd.list >/dev/null
+curl https://packagecloud.io/gpg.key 2>/dev/null | sudo apt-key add - #if you have a less reckless solution lmk
 sudo apt-get update -yqq
 sudo apt-get install -y debian-archive-keyring apt-transport-https
 sudo apt-get install -y liboping0 snmp snmp-mibs-downloader
