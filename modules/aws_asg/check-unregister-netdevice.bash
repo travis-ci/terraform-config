@@ -17,8 +17,8 @@ main() {
   fi
 
   error_count="$(
-    "${DMESG:-dmesg}" \
-      | grep -c 'unregister_netdevice: waiting for lo to become free'
+    "${DMESG:-dmesg}" |
+      grep -c 'unregister_netdevice: waiting for lo to become free'
   )"
 
   if [[ "${error_count}" -gt "${max_err}" ]]; then
@@ -44,8 +44,8 @@ __handle_exceeded_max_unregister_netdevice() {
   local run_d="${1}"
   local error_count="${2}"
 
-  echo "detected unregister_netdevice via dmesg count=${error_count}" \
-    | tee "${run_d}/implode"
+  echo "detected unregister_netdevice via dmesg count=${error_count}" |
+    tee "${run_d}/implode"
   "${DOCKER:-docker}" kill -s INT travis-worker
 }
 

@@ -28,9 +28,12 @@ main() {
 
   echo 'Running shellcheck'
   git grep -l '^#!/usr/bin/env bash' | xargs shellcheck
+  # Temporarily disable shellcheck checks for SC2154 (undefined variable) on /bin/bash files
+  git grep -l '^#!/bin/bash' | xargs shellcheck -e SC2154
 
   echo 'Running shfmt'
   git grep -l '^#!/usr/bin/env bash' | xargs shfmt -i 2 -w
+  git grep -l '^#!/bin/bash' | xargs shfmt -i 2 -w
 
   echo 'Running bats'
   for f in $(git ls-files '*.bats'); do
