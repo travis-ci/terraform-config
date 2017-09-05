@@ -65,6 +65,14 @@ variable "worker_asg_scale_in_cooldown" {
   default = 300
 }
 
+variable "worker_asg_scale_in_evaluation_periods" {
+  default = 2
+}
+
+variable "worker_asg_scale_in_period" {
+  default = 60
+}
+
 variable "worker_asg_scale_in_qty" {
   default = -1
 }
@@ -75,6 +83,14 @@ variable "worker_asg_scale_in_threshold" {
 
 variable "worker_asg_scale_out_cooldown" {
   default = 300
+}
+
+variable "worker_asg_scale_out_evaluation_periods" {
+  default = 2
+}
+
+variable "worker_asg_scale_out_period" {
+  default = 60
 }
 
 variable "worker_asg_scale_out_qty" {
@@ -293,10 +309,10 @@ resource "aws_autoscaling_policy" "workers_remove_capacity" {
 resource "aws_cloudwatch_metric_alarm" "workers_remove_capacity" {
   alarm_name          = "${var.env}-${var.index}-workers-${var.site}-remove-capacity"
   comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 2
+  evaluation_periods  = "${var.worker_asg_scale_in_evaluation_periods}"
   metric_name         = "v1.travis.rabbitmq.consumers.builds.${var.worker_queue}.headroom"
   namespace           = "${var.worker_asg_namespace}"
-  period              = 60
+  period              = "${var.worker_asg_scale_in_period}"
   statistic           = "Maximum"
   threshold           = "${var.worker_asg_scale_in_threshold}"
   alarm_actions       = ["${aws_autoscaling_policy.workers_remove_capacity.arn}"]
@@ -313,10 +329,10 @@ resource "aws_autoscaling_policy" "workers_add_capacity" {
 resource "aws_cloudwatch_metric_alarm" "workers_add_capacity" {
   alarm_name          = "${var.env}-${var.index}-workers-${var.site}-add-capacity"
   comparison_operator = "LessThanThreshold"
-  evaluation_periods  = 2
+  evaluation_periods  = "${var.worker_asg_scale_out_evaluation_periods}"
   metric_name         = "v1.travis.rabbitmq.consumers.builds.${var.worker_queue}.headroom"
   namespace           = "${var.worker_asg_namespace}"
-  period              = 60
+  period              = "${var.worker_asg_scale_out_period}"
   statistic           = "Maximum"
   threshold           = "${var.worker_asg_scale_out_threshold}"
   alarm_actions       = ["${aws_autoscaling_policy.workers_add_capacity.arn}"]

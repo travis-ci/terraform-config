@@ -17,8 +17,8 @@ main() {
 
   echo "github_users = \"$(
     __github_users "${GITHUB_USERNAME}:${GITHUB_TOKEN}" \
-      "${GITHUB_ORG}" "${GITHUB_TEAM}" \
-      | tr "\n" " " | sed 's/  *$//'
+      "${GITHUB_ORG}" "${GITHUB_TEAM}" |
+      tr "\n" " " | sed 's/  *$//'
   )\""
 }
 
@@ -29,14 +29,14 @@ __github_users() {
 
   local team_id
   team_id="$(
-    __ghcurl "${auth}" "/orgs/${org}/teams" \
-      | jq -r ".[]|select(.name==\"${team}\")|.id"
+    __ghcurl "${auth}" "/orgs/${org}/teams" |
+      jq -r ".[]|select(.name==\"${team}\")|.id"
   )"
-  __ghcurl "${auth}" "/teams/${team_id}/members" | jq -r '.[]|.login' \
-    | LC_ALL=C sort \
-    | while read -r login; do
-      __ghcurl "${auth}" "/users/${login}" \
-        | jq -r '[(.name|split(" ")|.[0]|ascii_downcase), .login]|join(":")'
+  __ghcurl "${auth}" "/teams/${team_id}/members" | jq -r '.[]|.login' |
+    LC_ALL=C sort |
+    while read -r login; do
+      __ghcurl "${auth}" "/users/${login}" |
+        jq -r '[(.name|split(" ")|.[0]|ascii_downcase), .login]|join(":")'
     done
 }
 
