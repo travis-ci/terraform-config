@@ -2,17 +2,17 @@
 set -o errexit
 
 main() {
-  terraform show \
-    | awk '/^export.+DOCKER_IMAGE/ {
+  terraform show |
+    awk '/^export.+DOCKER_IMAGE/ {
       gsub(/"/, "", $2);
       gsub(/=/, " ", $2);
       sub(/TRAVIS_WORKER_DOCKER_IMAGE_/, "", $2);
       print $2 " " $3
-    }' \
-    | sed 's/  *$//' \
-    | tr '[:upper:]' '[:lower:]' \
-    | LC_ALL=C sort \
-    | uniq
+    }' |
+    sed 's/  *$//' |
+    tr '[:upper:]' '[:lower:]' |
+    LC_ALL=C sort |
+    uniq
 }
 
 main "$@"
