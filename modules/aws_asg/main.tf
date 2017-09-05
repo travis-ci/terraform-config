@@ -85,7 +85,7 @@ variable "worker_asg_scale_out_cooldown" {
   default = 300
 }
 
-variable "worker_asg_scale_out_evaluation_periods"{
+variable "worker_asg_scale_out_evaluation_periods" {
   default = 2
 }
 
