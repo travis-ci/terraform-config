@@ -34,8 +34,9 @@ terraform {
 }
 
 provider "google" {
-  project = "travis-ci-prod-7"
-  region  = "us-central1"
+  credentials = "${file("config/gce-workers-production-7.json")}"
+  project     = "travis-ci-prod-7"
+  region      = "us-central1"
 }
 
 provider "aws" {}
