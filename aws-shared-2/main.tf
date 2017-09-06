@@ -113,6 +113,10 @@ data "aws_ami" "bastion" {
   owners = ["self"]
 }
 
+variable "registry_ami" {
+	default = "ami-3e405045"
+}
+
 resource "aws_vpc" "main" {
   cidr_block           = "${var.vpc_cidr}"
   enable_dns_hostnames = true
@@ -282,6 +286,25 @@ resource "aws_route53_record" "workers_com_nat" {
   ]
 }
 
+resource "random_id" "registry_http_secret" {
+	byte_length = 16
+}
+
+module "registry" {
+  source                        = "../modules/aws_docker_registry"
+  ami                           = "${var.registry_ami}"
+  env                           = "${var.env}"
+  gateway_id                    = "${aws_internet_gateway.gw.id}"
+  github_users                  = "${var.github_users}"
+  http_secret                   = "${random_id.registry_http_secret.hex}"
+  index                         = "${var.index}"
+  instance_type                 = "c4.xlarge"
+  subnets                       = ["${module.aws_az_1b.public_subnet_id}", "${module.aws_az_1e.public_subnet_id}"]
+  travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
+  vpc_cidr                      = "${var.vpc_cidr}"
+  vpc_id                        = "${aws_vpc.main.id}"
+}
+
 resource "null_resource" "outputs_signature" {
   triggers {
     bastion_security_group_1a_id = "${module.aws_az_1a.bastion_sg_id}"
@@ -293,7 +316,8 @@ resource "null_resource" "outputs_signature" {
     public_subnet_1b_cidr        = "${var.public_subnet_1b_cidr}"
     public_subnet_1c_cidr        = "${var.public_subnet_1c_cidr}"
     public_subnet_1e_cidr        = "${var.public_subnet_1e_cidr}"
-    vpc_id                       = "${aws_vpc.main.id}"
+ 		registry_hostname						 = "${module.registry.hostname}"
+   	vpc_id                       = "${aws_vpc.main.id}"
     workers_com_nat_1a_id        = "${module.aws_az_1a.workers_com_nat_id}"
     workers_com_nat_1b_id        = "${module.aws_az_1b.workers_com_nat_id}"
     workers_com_nat_1c_id        = "${module.aws_az_1c.workers_com_nat_id}"
@@ -339,6 +363,10 @@ output "bastion_security_group_1e_id" {
 
 output "gateway_id" {
   value = "${aws_internet_gateway.gw.id}"
+}
+
+output "registry_hostname" {
+	value = "${module.registry.hostname}"
 }
 
 output "public_subnet_1a_cidr" {
