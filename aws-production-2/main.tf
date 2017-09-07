@@ -23,11 +23,11 @@ variable "worker_ami" {
 }
 
 variable "amethyst_image" {
-  default = "travisci/ci-amethyst:packer-1499451985"
+  default = "travisci/ci-amethyst:packer-1503974220"
 }
 
 variable "garnet_image" {
-  default = "travisci/ci-garnet:packer-1499451976"
+  default = "travisci/ci-garnet:packer-1503972846"
 }
 
 terraform {
