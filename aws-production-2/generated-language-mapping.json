@@ -1,13 +1,13 @@
 {
-  "android": "travisci/ci-amethyst:packer-1499451985",
-  "erlang": "travisci/ci-amethyst:packer-1499451985",
-  "haskell": "travisci/ci-amethyst:packer-1499451985",
-  "perl": "travisci/ci-amethyst:packer-1499451985",
-  "default": "travisci/ci-garnet:packer-1499451976",
-  "go": "travisci/ci-garnet:packer-1499451976",
-  "jvm": "travisci/ci-garnet:packer-1499451976",
-  "node_js": "travisci/ci-garnet:packer-1499451976",
-  "php": "travisci/ci-garnet:packer-1499451976",
-  "python": "travisci/ci-garnet:packer-1499451976",
-  "ruby": "travisci/ci-garnet:packer-1499451976"
+  "android": "travisci/ci-amethyst:packer-1503974220",
+  "erlang": "travisci/ci-amethyst:packer-1503974220",
+  "haskell": "travisci/ci-amethyst:packer-1503974220",
+  "perl": "travisci/ci-amethyst:packer-1503974220",
+  "default": "travisci/ci-garnet:packer-1503972846",
+  "go": "travisci/ci-garnet:packer-1503972846",
+  "jvm": "travisci/ci-garnet:packer-1503972846",
+  "node_js": "travisci/ci-garnet:packer-1503972846",
+  "php": "travisci/ci-garnet:packer-1503972846",
+  "python": "travisci/ci-garnet:packer-1503972846",
+  "ruby": "travisci/ci-garnet:packer-1503972846"
 }
