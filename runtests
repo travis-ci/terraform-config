@@ -5,7 +5,8 @@ set -o pipefail
 
 main() {
   # abort if there are uncommitted local changes
-  git diff-index --quiet HEAD -- || (echo "You have uncommitted changes. Not proceeding, as this script changes some files in place." && exit 1)
+  msg="You have uncommitted changes. Not proceeding, as this script changes some files in place."
+  git diff-index --quiet HEAD -- || (echo "$msg" && exit 1)
 
   if [[ $# -gt 1 && $1 == --env ]]; then
     echo "Running isolated with env ${2}"
