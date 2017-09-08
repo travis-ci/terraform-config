@@ -22,7 +22,8 @@ variable "syslog_address_com" {}
 variable "syslog_address_org" {}
 
 variable "worker_ami" {
-  default = "ami-a38664b5"
+  # tfw 2017-09-05 16-00-17
+  default = "ami-3e405045"
 }
 
 terraform {
