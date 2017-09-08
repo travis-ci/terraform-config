@@ -9,6 +9,26 @@ stderr_echo() {
   echo >&2 "$@"
 }
 
+check_github() {
+  echo "Attempting to authenticate with GitHub..."
+  : "${GITHUB_ORG:=travis-infrastructure}"
+  : "${GITHUB_TEAM:=2420497}"
+
+  auth="${GITHUB_USERNAME}:${GITHUB_TOKEN}"
+  cmd="curl --silent \
+    --output /dev/null \
+    --write-out '%{http_code}' \
+    https://${auth}@api.github.com/teams/${GITHUB_TEAM}/members"
+  status_code=$(eval "$cmd")
+  if test "$status_code" -eq 200; then
+    stderr_echo " [OK] GitHub"
+  else
+    die "[NOK] GitHub: Got status code ${status_code} when attempting to authenticate!
+          This is the command I ran to check:
+          $cmd"
+  fi
+}
+
 check_heroku() {
   endpoints="
         travis-pro-staging
@@ -39,12 +59,15 @@ DEPENDENCIES="
   jq
   terraform
   trvs
+  shfmt
+  shellcheck
+  bats
 "
 check_dependencies() {
   STATUS=0
   for dependency in $DEPENDENCIES; do
     if ! command -v "$dependency" >/dev/null; then
-      echo "Could not find dependency $dependency."
+      echo "[NOK] Could not find dependency $dependency."
       STATUS=1
     fi
   done
@@ -80,6 +103,7 @@ check_envvars() {
 main() {
   check_dependencies || die "Aborting; see errors above." && stderr_echo " [OK] Dependencies"
   check_envvars || die "Aborting; see errors above." && stderr_echo " [OK] Envvars"
+  check_github && stderr_echo " [OK] GitHub"
   check_heroku && stderr_echo " [OK] Heroku"
 }
 
