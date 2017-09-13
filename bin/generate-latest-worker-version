@@ -15,9 +15,9 @@ main() {
   local auth="${GITHUB_USERNAME}:${GITHUB_TOKEN}"
 
   echo "latest_travis_worker_version = \"$(
-    curl -s "https://${auth}@api.github.com/repos/travis-ci/worker/releases" \
-      | jq -r '.[]|.tag_name' \
-      | __semver_max
+    curl -s "https://${auth}@api.github.com/repos/travis-ci/worker/releases" |
+      jq -r '.[]|.tag_name' |
+      __semver_max
   )\""
 }
 
