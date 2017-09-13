@@ -65,6 +65,14 @@ variable "worker_asg_scale_in_cooldown" {
   default = 300
 }
 
+variable "worker_asg_scale_in_evaluation_periods" {
+  default = 2
+}
+
+variable "worker_asg_scale_in_period" {
+  default = 60
+}
+
 variable "worker_asg_scale_in_qty" {
   default = -1
 }
@@ -75,6 +83,14 @@ variable "worker_asg_scale_in_threshold" {
 
 variable "worker_asg_scale_out_cooldown" {
   default = 300
+}
+
+variable "worker_asg_scale_out_evaluation_periods" {
+  default = 2
+}
+
+variable "worker_asg_scale_out_period" {
+  default = 60
 }
 
 variable "worker_asg_scale_out_qty" {
@@ -99,7 +115,7 @@ variable "worker_docker_image_python" {}
 variable "worker_docker_image_ruby" {}
 
 variable "worker_docker_self_image" {
-  default = "travisci/worker:v2.9.2"
+  default = "travisci/worker:v2.9.3"
 }
 
 variable "worker_instance_type" {
@@ -164,7 +180,6 @@ data "template_file" "cloud_config" {
 
   vars {
     check_unregister_netdevice_bash = "${file("${path.module}/check-unregister-netdevice.bash")}"
-    cloud_init_bash                 = "${file("${path.module}/cloud-init.bash")}"
     cloud_init_env                  = "${data.template_file.cloud_init_env.rendered}"
     cyclist_url                     = "${replace(heroku_app.cyclist.web_url, "/\\/$/", "")}"
     docker_daemon_json              = "${data.template_file.docker_daemon_json.rendered}"
@@ -172,11 +187,30 @@ data "template_file" "cloud_config" {
     hostname_tmpl                   = "___INSTANCE_ID___-${var.env}-${var.index}-worker-${var.site}-${var.worker_queue}.travisci.net"
     prestart_hook_bash              = "${file("${path.module}/prestart-hook.bash")}"
     registry_hostname               = "${var.registry_hostname}"
+    rsyslog_conf                    = "${file("${path.module}/../../assets/rsyslog/rsyslog.conf")}"
     start_hook_bash                 = "${file("${path.module}/start-hook.bash")}"
     stop_hook_bash                  = "${file("${path.module}/stop-hook.bash")}"
     syslog_address                  = "${var.syslog_address}"
     unregister_netdevice_crontab    = "${file("${path.module}/unregister-netdevice.crontab")}"
     worker_config                   = "${var.worker_config}"
+    worker_rsyslog_watch            = "${file("${path.module}/../../assets/travis-worker/rsyslog-watch-upstart.conf")}"
+    worker_service                  = "${file("${path.module}/../../assets/travis-worker/travis-worker.service")}"
+    worker_upstart                  = "${file("${path.module}/../../assets/travis-worker/travis-worker.conf")}"
+    worker_wrapper                  = "${file("${path.module}/../../assets/travis-worker/travis-worker-wrapper")}"
+  }
+}
+
+data "template_cloudinit_config" "cloud_config" {
+  part {
+    filename     = "cloud-config"
+    content_type = "text/cloud-config"
+    content      = "${data.template_file.cloud_config.rendered}"
+  }
+
+  part {
+    filename     = "cloud-init"
+    content_type = "text/x-shellscript"
+    content      = "${file("${path.module}/cloud-init.bash")}"
   }
 }
 
@@ -185,7 +219,7 @@ resource "aws_launch_configuration" "workers" {
   image_id          = "${var.worker_ami}"
   instance_type     = "${var.worker_instance_type}"
   security_groups   = ["${split(",", var.security_groups)}"]
-  user_data         = "${data.template_file.cloud_config.rendered}"
+  user_data         = "${data.template_cloudinit_config.cloud_config.rendered}"
   enable_monitoring = true
 
   lifecycle {
@@ -281,10 +315,10 @@ resource "aws_autoscaling_policy" "workers_remove_capacity" {
 resource "aws_cloudwatch_metric_alarm" "workers_remove_capacity" {
   alarm_name          = "${var.env}-${var.index}-workers-${var.site}-remove-capacity"
   comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 2
-  metric_name         = "v1.travis.rabbitmq.consumers.builds.${var.worker_queue}.headroom"
+  evaluation_periods  = "${var.worker_asg_scale_in_evaluation_periods}"
+  metric_name         = "v1.travis.rabbitmq.consumers.${var.env}.builds.${var.worker_queue}.headroom"
   namespace           = "${var.worker_asg_namespace}"
-  period              = 60
+  period              = "${var.worker_asg_scale_in_period}"
   statistic           = "Maximum"
   threshold           = "${var.worker_asg_scale_in_threshold}"
   alarm_actions       = ["${aws_autoscaling_policy.workers_remove_capacity.arn}"]
@@ -307,10 +341,10 @@ resource "aws_autoscaling_policy" "workers_add_capacity" {
 resource "aws_cloudwatch_metric_alarm" "workers_add_capacity" {
   alarm_name          = "${var.env}-${var.index}-workers-${var.site}-add-capacity"
   comparison_operator = "LessThanThreshold"
-  evaluation_periods  = 2
-  metric_name         = "v1.travis.rabbitmq.consumers.builds.${var.worker_queue}.headroom"
+  evaluation_periods  = "${var.worker_asg_scale_out_evaluation_periods}"
+  metric_name         = "v1.travis.rabbitmq.consumers.${var.env}.builds.${var.worker_queue}.headroom"
   namespace           = "${var.worker_asg_namespace}"
-  period              = 60
+  period              = "${var.worker_asg_scale_out_period}"
   statistic           = "Maximum"
   threshold           = "${var.worker_asg_scale_out_threshold}"
   alarm_actions       = ["${aws_autoscaling_policy.workers_add_capacity.arn}"]

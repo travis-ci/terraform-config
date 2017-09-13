@@ -10,7 +10,7 @@ variable "gce_gcloud_zone" {}
 variable "gce_heroku_org" {}
 
 variable "gce_worker_image" {
-  default = "eco-emissary-99515/travis-worker-1480649763"
+  default = "eco-emissary-99515/tfw-1499625597"
 }
 
 variable "github_users" {}
@@ -25,15 +25,18 @@ variable "syslog_address_org" {}
 
 terraform {
   backend "s3" {
-    bucket  = "travis-terraform-state"
-    key     = "terraform-config/gce-production-1.tfstate"
-    region  = "us-east-1"
-    encrypt = "true"
+    bucket         = "travis-terraform-state"
+    key            = "terraform-config/gce-production-1.tfstate"
+    region         = "us-east-1"
+    encrypt        = "true"
+    dynamodb_table = "travis-terraform-state"
   }
 }
 
 provider "google" {
-  project = "eco-emissary-99515"
+  credentials = "${file("config/gce-workers-production-1.json")}"
+  project     = "eco-emissary-99515"
+  region      = "us-central1"
 }
 
 provider "aws" {}
@@ -59,8 +62,8 @@ module "gce_project_1" {
   worker_config_com             = "${file("${path.module}/config/worker-env-com")}"
   worker_config_org             = "${file("${path.module}/config/worker-env-org")}"
   worker_image                  = "${var.gce_worker_image}"
-  worker_instance_count_com     = 6
-  worker_instance_count_org     = 6
+  worker_instance_count_com     = 12
+  worker_instance_count_org     = 12
 
   public_subnet_cidr_range    = "10.10.1.0/24"
   workers_subnet_cidr_range   = "10.10.16.0/22"

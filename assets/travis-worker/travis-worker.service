@@ -1,0 +1,15 @@
+[Unit]
+Description=Travis Worker
+After=docker.service
+Requires=docker.service
+
+[Service]
+ExecStart=/usr/local/bin/travis-worker-wrapper
+ExecStopPost=/bin/sleep 5
+Restart=always
+WorkingDirectory=/
+User=travis
+Group=travis
+
+[Install]
+WantedBy=multi-user.target

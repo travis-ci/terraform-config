@@ -15,14 +15,14 @@ main() {
   trvs generate-config --pro \
     -p TRAVIS_WORKER \
     -f env \
-    "${infra}-workers" "${env_short}" \
-    | sed 's/^/export /' >config/worker-com.env
+    "${infra}-workers" "${env_short}" |
+    sed 's/^/export /' >config/worker-com.env
 
   trvs generate-config \
     -p TRAVIS_WORKER \
     -f env \
-    "${infra}-workers" "${env_short}" \
-    | sed 's/^/export /' >config/worker-org.env
+    "${infra}-workers" "${env_short}" |
+    sed 's/^/export /' >config/worker-org.env
 
   "${top}/bin/heroku-dump-shell-config" \
     "travis-${env_short}" >config/travis-org.env
@@ -67,8 +67,8 @@ main() {
   source config/job-board.env
   local job_board_auth='travis-worker:'"${AUTH_TOKENS%%:*}"
   local job_board_uri="https://${job_board_auth}@${job_board_host}"
-  echo "export TRAVIS_WORKER_JOB_BOARD_URL=${job_board_uri}" \
-    | tee -a config/worker-com-local.env >>config/worker-org-local.env
+  echo "export TRAVIS_WORKER_JOB_BOARD_URL=${job_board_uri}" |
+    tee -a config/worker-com-local.env >>config/worker-org-local.env
 }
 
 main "$@"

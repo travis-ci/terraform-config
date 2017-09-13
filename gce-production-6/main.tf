@@ -10,7 +10,7 @@ variable "gce_gcloud_zone" {}
 variable "gce_heroku_org" {}
 
 variable "gce_worker_image" {
-  default = "eco-emissary-99515/travis-worker-1480649763"
+  default = "eco-emissary-99515/tfw-1499625597"
 }
 
 variable "github_users" {}
@@ -25,15 +25,18 @@ variable "syslog_address_org" {}
 
 terraform {
   backend "s3" {
-    bucket  = "travis-terraform-state"
-    key     = "terraform-config/gce-production-6.tfstate"
-    region  = "us-east-1"
-    encrypt = "true"
+    bucket         = "travis-terraform-state"
+    key            = "terraform-config/gce-production-6.tfstate"
+    region         = "us-east-1"
+    encrypt        = "true"
+    dynamodb_table = "travis-terraform-state"
   }
 }
 
 provider "google" {
-  project = "travis-ci-prod-6"
+  credentials = "${file("config/gce-workers-production-6.json")}"
+  project     = "travis-ci-prod-6"
+  region      = "us-central1"
 }
 
 provider "aws" {}

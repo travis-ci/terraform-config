@@ -28,11 +28,11 @@ __heroku_dump_shell_config() {
   local heroku_app="${1}"
 
   __heroku_curl -fs \
-    "https://api.heroku.com/apps/${heroku_app}/config-vars" \
-    | jq -r ". | to_entries | .[] \
+    "https://api.heroku.com/apps/${heroku_app}/config-vars" |
+    jq -r ". | to_entries | .[] \
       | [\"export \", (.key|ascii_upcase), \"=\", (.value|@sh)] \
-      | join(\"\")" \
-    | LC_ALL=C sort
+      | join(\"\")" |
+    LC_ALL=C sort
 }
 
 __heroku_curl() {

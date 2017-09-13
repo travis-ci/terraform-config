@@ -3,19 +3,28 @@
 aws_asg_setup() {
   export RUNDIR="${BATS_TMPDIR}/run"
   export ETCDIR="${BATS_TMPDIR}/etc"
+  export VARTMP="${BATS_TMPDIR}/var/tmp"
   export MOCKLOG="${BATS_TMPDIR}/logs/mock.log"
 
   mkdir -p \
     "${RUNDIR}" \
+    "${VARTMP}" \
     "${ETCDIR}/rsyslog.d" \
     "${ETCDIR}/default" \
+    "${ETCDIR}/systemd/system" \
+    "${ETCDIR}/init" \
     "${BATS_TMPDIR:?}/bin" \
     "${BATS_TMPDIR}/logs" \
     "${BATS_TMPDIR}/returns"
 
   rm -f "${MOCKLOG}"
 
-  touch "${ETCDIR}/hosts" "${ETCDIR}/hostname" "${MOCKLOG}"
+  touch \
+    "${ETCDIR}/hosts" \
+    "${ETCDIR}/hostname" \
+    "${MOCKLOG}" \
+    "${VARTMP}/travis-worker.service" \
+    "${VARTMP}/travis-worker.conf"
 
   echo "i-${RANDOM}" >"${RUNDIR}/instance-id"
   echo "flibbity-flob-${RANDOM}.example.com" >"${RUNDIR}/registry-hostname"
@@ -36,7 +45,17 @@ echo "\${RANDOM}\${RANDOM}\${RANDOM}"
 EOF
   chmod +x "${BATS_TMPDIR}/bin/mock"
 
-  for cmd in chown dmesg docker iptables sed service shutdown sleep; do
+  for cmd in \
+    chown \
+    dmesg \
+    docker \
+    iptables \
+    sed \
+    service \
+    shutdown \
+    sleep \
+    sysctl \
+    systemctl; do
     pushd "${BATS_TMPDIR}/bin" &>/dev/null
     ln -svf mock "${cmd}"
     popd &>/dev/null

@@ -22,7 +22,8 @@ variable "syslog_address_com" {}
 variable "syslog_address_org" {}
 
 variable "worker_ami" {
-  default = "ami-a38664b5"
+  # tfw 2017-09-05 16-00-17
+  default = "ami-3e405045"
 }
 
 terraform {
@@ -153,14 +154,14 @@ module "aws_asg_com" {
   site                           = "com"
   syslog_address                 = "${var.syslog_address_com}"
   worker_ami                     = "${var.worker_ami}"
-  worker_asg_max_size            = 100
+  worker_asg_max_size            = 2
   worker_asg_min_size            = 1
   worker_asg_namespace           = "Travis/com"
   worker_asg_scale_in_cooldown   = 150
-  worker_asg_scale_in_threshold  = 100
+  worker_asg_scale_in_threshold  = 13
   worker_asg_scale_out_cooldown  = 150
-  worker_asg_scale_out_qty       = 4
-  worker_asg_scale_out_threshold = 60
+  worker_asg_scale_out_qty       = 1
+  worker_asg_scale_out_threshold = 0
   worker_config                  = "${data.template_file.worker_config_com.rendered}"
   worker_docker_image_android    = "quay.io/travisci/travis-android:latest"
   worker_docker_image_default    = "quay.io/travisci/travis-ruby:latest"
@@ -194,14 +195,14 @@ module "aws_asg_org" {
   site                           = "org"
   syslog_address                 = "${var.syslog_address_org}"
   worker_ami                     = "${var.worker_ami}"
-  worker_asg_max_size            = 120
+  worker_asg_max_size            = 2
   worker_asg_min_size            = 1
   worker_asg_namespace           = "Travis/org"
   worker_asg_scale_in_cooldown   = 150
-  worker_asg_scale_in_threshold  = 100
+  worker_asg_scale_in_threshold  = 13
   worker_asg_scale_out_cooldown  = 150
-  worker_asg_scale_out_qty       = 4
-  worker_asg_scale_out_threshold = 60
+  worker_asg_scale_out_qty       = 1
+  worker_asg_scale_out_threshold = 0
   worker_config                  = "${data.template_file.worker_config_org.rendered}"
   worker_docker_image_android    = "quay.io/travisci/travis-android:latest"
   worker_docker_image_default    = "quay.io/travisci/travis-ruby:latest"

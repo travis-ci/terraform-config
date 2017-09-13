@@ -30,6 +30,15 @@ plan: announce .config $(TFVARS) $(TFSTATE)
 		-module-depth=-1 \
 		-out=$(TFPLAN)
 
+.PHONY: destroy
+destroy: announce .config $(TFVARS) $(TFSTATE)
+	terraform plan \
+		-var-file=$(ENV_NAME).tfvars \
+		-var-file=$(TFVARS) \
+		-module-depth=-1 \
+		-destroy \
+		-out=$(TFPLAN)
+
 $(TFSTATE):
 	terraform init
 
@@ -47,3 +56,11 @@ graph:
 
 $(ENV_NAME).tfvars:
 	$(TOP)/bin/generate-tfvars $@
+
+.PHONY: list
+list:
+	 @$(MAKE) -pRrq -f $(lastword $(MAKEFILE_LIST)) : 2>/dev/null | awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | sort | egrep -v -e '^[^[:alnum:]]' -e '^$@$$' | xargs
+
+.PHONY: check
+check:
+	$(TOP)/bin/pre-flight-checks $@
