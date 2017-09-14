@@ -2,6 +2,12 @@ variable "index" {
   default = 1
 }
 
+variable "latest_travis_worker_version" {}
+
+variable "travis_worker_version" {
+  default = "v3.0.0"
+}
+
 variable "travisci_net_external_zone_id" {
   default = "Z2RI61YP4UWSIO"
 }
@@ -40,38 +46,6 @@ variable "jupiter_brain_custom-6_version" {
 
 variable "jupiter_brain_staging_version" {
   default = "v1.0.0-3-g9665e76"
-}
-
-variable "travis_worker_custom-1_version" {
-  default = "v2.9.3"
-}
-
-variable "travis_worker_custom-2_version" {
-  default = "v2.9.3"
-}
-
-variable "travis_worker_custom-3_version" {
-  default = "v2.9.3"
-}
-
-variable "travis_worker_custom-4_version" {
-  default = "v2.9.3"
-}
-
-variable "travis_worker_custom-5_version" {
-  default = "v2.9.3"
-}
-
-variable "travis_worker_custom-6_version" {
-  default = "v2.9.3"
-}
-
-variable "travis_worker_production_version" {
-  default = "v2.9.3"
-}
-
-variable "travis_worker_staging_version" {
-  default = "v2.9.3"
 }
 
 variable "vsphere_janitor_version" {
@@ -292,7 +266,7 @@ module "worker_production_org_1" {
   host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user    = "${var.ssh_user}"
-  version     = "${var.travis_worker_production_version}"
+  version     = "${var.travis_worker_version}"
   config_path = "${path.module}/config/travis-worker-production-org-1"
   env         = "production-org-1"
   index       = "${var.index}"
@@ -303,7 +277,7 @@ module "worker_production_org_2" {
   host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user    = "${var.ssh_user}"
-  version     = "${var.travis_worker_production_version}"
+  version     = "${var.travis_worker_version}"
   config_path = "${path.module}/config/travis-worker-production-org-2"
   env         = "production-org-2"
   index       = "${var.index}"
@@ -314,7 +288,7 @@ module "worker_staging_org_1" {
   host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user    = "${var.ssh_user}"
-  version     = "${var.travis_worker_staging_version}"
+  version     = "${var.latest_travis_worker_version}"
   config_path = "${path.module}/config/travis-worker-staging-org-1"
   env         = "staging-org-1"
   index       = "${var.index}"
@@ -325,7 +299,7 @@ module "worker_staging_org_2" {
   host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user    = "${var.ssh_user}"
-  version     = "${var.travis_worker_staging_version}"
+  version     = "${var.latest_travis_worker_version}"
   config_path = "${path.module}/config/travis-worker-staging-org-2"
   env         = "staging-org-2"
   index       = "${var.index}"
@@ -336,7 +310,7 @@ module "worker_production_com_1" {
   host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user    = "${var.ssh_user}"
-  version     = "${var.travis_worker_production_version}"
+  version     = "${var.travis_worker_version}"
   config_path = "${path.module}/config/travis-worker-production-com-1"
   env         = "production-com-1"
   index       = "${var.index}"
@@ -347,7 +321,7 @@ module "worker_production_com_2" {
   host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user    = "${var.ssh_user}"
-  version     = "${var.travis_worker_production_version}"
+  version     = "${var.travis_worker_version}"
   config_path = "${path.module}/config/travis-worker-production-com-2"
   env         = "production-com-2"
   index       = "${var.index}"
@@ -358,7 +332,7 @@ module "worker_production_com_xserve_1" {
   host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user    = "${var.ssh_user}"
-  version     = "${var.travis_worker_production_version}"
+  version     = "${var.travis_worker_version}"
   config_path = "${path.module}/config/travis-worker-production-com-xserve-1"
   env         = "production-com-xserve-1"
   index       = "${var.index}"
@@ -369,7 +343,7 @@ module "worker_production_com_xserve_2" {
   host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user    = "${var.ssh_user}"
-  version     = "${var.travis_worker_production_version}"
+  version     = "${var.travis_worker_version}"
   config_path = "${path.module}/config/travis-worker-production-com-xserve-2"
   env         = "production-com-xserve-2"
   index       = "${var.index}"
@@ -380,7 +354,7 @@ module "worker_staging_com_1" {
   host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user    = "${var.ssh_user}"
-  version     = "${var.travis_worker_staging_version}"
+  version     = "${var.latest_travis_worker_version}"
   config_path = "${path.module}/config/travis-worker-staging-com-1"
   env         = "staging-com-1"
   index       = "${var.index}"
@@ -391,7 +365,7 @@ module "worker_staging_com_2" {
   host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user    = "${var.ssh_user}"
-  version     = "${var.travis_worker_staging_version}"
+  version     = "${var.latest_travis_worker_version}"
   config_path = "${path.module}/config/travis-worker-staging-com-2"
   env         = "staging-com-2"
   index       = "${var.index}"
@@ -402,7 +376,7 @@ module "worker_custom_1" {
   host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user    = "${var.ssh_user}"
-  version     = "${var.travis_worker_custom-1_version}"
+  version     = "${var.travis_worker_version}"
   config_path = "${path.module}/config/travis-worker-custom-1"
   env         = "custom-1"
   index       = "${var.index}"
@@ -413,7 +387,7 @@ module "worker_custom_2" {
   host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user    = "${var.ssh_user}"
-  version     = "${var.travis_worker_custom-2_version}"
+  version     = "${var.travis_worker_version}"
   config_path = "${path.module}/config/travis-worker-custom-2"
   env         = "custom-2"
   index       = "${var.index}"
@@ -424,7 +398,7 @@ module "worker_custom_3" {
   host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user    = "${var.ssh_user}"
-  version     = "${var.travis_worker_custom-3_version}"
+  version     = "${var.travis_worker_version}"
   config_path = "${path.module}/config/travis-worker-custom-3"
   env         = "custom-3"
   index       = "${var.index}"
@@ -435,7 +409,7 @@ module "worker_custom_4" {
   host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user    = "${var.ssh_user}"
-  version     = "${var.travis_worker_custom-4_version}"
+  version     = "${var.travis_worker_version}"
   config_path = "${path.module}/config/travis-worker-custom-4"
   env         = "custom-4"
   index       = "${var.index}"
@@ -446,7 +420,7 @@ module "worker_custom_5" {
   host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user    = "${var.ssh_user}"
-  version     = "${var.travis_worker_custom-5_version}"
+  version     = "${var.travis_worker_version}"
   config_path = "${path.module}/config/travis-worker-custom-5"
   env         = "custom-5"
   index       = "${var.index}"
@@ -457,7 +431,7 @@ module "worker_custom_6" {
   host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user    = "${var.ssh_user}"
-  version     = "${var.travis_worker_custom-6_version}"
+  version     = "${var.travis_worker_version}"
   config_path = "${path.module}/config/travis-worker-custom-6"
   env         = "custom-6"
   index       = "${var.index}"

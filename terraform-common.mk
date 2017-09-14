@@ -14,8 +14,12 @@ hello: announce
 	@echo "  make plan  - plan your demise"
 	@echo "  make apply - dance with the devil in the pale moonlight"
 
+.PHONY: checkversion
+checkversion:
+	ruby $(TOP)/check_version.rb
+
 .PHONY: announce
-announce:
+announce: checkversion
 	@echo "👋 🎉  This is env=$(ENV_NAME) (short=$(ENV_SHORT) infra=$(INFRA) tail=$(ENV_TAIL))"
 
 .PHONY: apply

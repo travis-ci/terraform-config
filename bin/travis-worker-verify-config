@@ -129,6 +129,9 @@ class TravisWorkerConfigVerifier
     )
   end
 
+  class ValueError < StandardError
+  end
+
   def assert!(condition, msg: '')
     raise ValueError, msg unless condition
   end
