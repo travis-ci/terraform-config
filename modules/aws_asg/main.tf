@@ -335,20 +335,13 @@ resource "aws_autoscaling_policy" "workers_add_capacity" {
   # Headroom is just below THRESHOLD, scale out normally
   step_adjustment {
     scaling_adjustment          = "${var.worker_asg_scale_out_qty}"
-    metric_interval_lower_bound = "${var.worker_asg_scale_out_threshold * -1/3 -1}"
+    metric_interval_lower_bound = "${floor(var.worker_asg_scale_out_threshold/-2.0)}"
   }
 
-  # Headroom is between 1/3 and 1/2 less than THRESHOLD; scale out twice as much
+  # Headroom is less than half of THRESHOLD; scale out twice as much
   step_adjustment {
     scaling_adjustment          = "${var.worker_asg_scale_out_qty * 2}"
-    metric_interval_lower_bound = "${var.worker_asg_scale_out_threshold * -1/2}"
-    metric_interval_upper_bound = "${var.worker_asg_scale_out_threshold * -1/3 -1}"
-  }
-
-  # Headroom is less than half the threshold; scale out three times as much
-  step_adjustment {
-    metric_interval_upper_bound = "${var.worker_asg_scale_out_threshold * -1/2}"
-    scaling_adjustment          = "${var.worker_asg_scale_out_qty * 3}"
+    metric_interval_upper_bound = "${floor(var.worker_asg_scale_out_threshold/-2.0)}"
   }
 }
 
