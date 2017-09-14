@@ -18,6 +18,11 @@ main() {
     __cleanup "${out}"
     exit 1
   fi
+
+  if ! "${top}/bin/generate-latest-worker-version"; then
+    __cleanup "${out}"
+    exit 1
+  fi
 }
 
 __cleanup() {

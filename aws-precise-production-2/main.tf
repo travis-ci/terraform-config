@@ -77,11 +77,11 @@ module "rabbitmq_worker_config_org" {
 
 data "template_file" "worker_config_com" {
   template = <<EOF
-### ${path.module}/config/worker-com-local.env
+### config/worker-com-local.env
 ${file("${path.module}/config/worker-com-local.env")}
-### ${path.module}/config/worker-com.env
+### config/worker-com.env
 ${file("${path.module}/config/worker-com.env")}
-### ${path.module}/worker.env
+### worker.env
 ${file("${path.module}/worker.env")}
 
 export TRAVIS_WORKER_HARD_TIMEOUT=2h
@@ -91,11 +91,11 @@ EOF
 
 data "template_file" "worker_config_org" {
   template = <<EOF
-### ${path.module}/config/worker-org-local.env
+### config/worker-org-local.env
 ${file("${path.module}/config/worker-org-local.env")}
-### ${path.module}/config/worker-org.env
+### config/worker-org.env
 ${file("${path.module}/config/worker-org.env")}
-### ${path.module}/worker.env
+### worker.env
 ${file("${path.module}/worker.env")}
 
 export TRAVIS_WORKER_HARD_TIMEOUT=50m0s
