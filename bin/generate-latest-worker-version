@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+set -o errexit
+
+main() {
+  [[ "${GITHUB_TOKEN}" ]] || {
+    echo "Missing \${GITHUB_TOKEN}" >&2
+    exit 1
+  }
+
+  [[ "${GITHUB_USERNAME}" ]] || {
+    echo "Missing \${GITHUB_USERNAME}" >&2
+    exit 1
+  }
+
+  local auth="${GITHUB_USERNAME}:${GITHUB_TOKEN}"
+
+  echo "latest_travis_worker_version = \"$(
+    curl -s "https://${auth}@api.github.com/repos/travis-ci/worker/releases" |
+      jq -r '.[]|.tag_name' |
+      __semver_max
+  )\""
+}
+
+__semver_max() {
+  local max='v0.0.0'
+  local int_max='1000000000'
+  local int_v
+
+  while read -r v; do
+    int_v="${v/v/}"
+    int_v="${int_v//./ }"
+    int_v="$(echo "${int_v}" | xargs printf '1%03d%03d%03d\n')"
+    if [[ "${int_v}" > "${int_max}" ]]; then
+      max="${v}"
+      int_max="${int_v}"
+    fi
+  done
+
+  echo "${max}"
+}
+
+main "${@}"
