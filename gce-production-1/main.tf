@@ -59,14 +59,34 @@ module "gce_project_1" {
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
   worker_account_json_com       = "${file("${path.module}/config/gce-workers-production-1.json")}"
   worker_account_json_org       = "${file("${path.module}/config/gce-workers-production-1.json")}"
-  worker_config_com             = "${file("${path.module}/config/worker-env-com")}"
-  worker_config_org             = "${file("${path.module}/config/worker-env-org")}"
   worker_image                  = "${var.gce_worker_image}"
   worker_instance_count_com     = 12
-  worker_instance_count_org     = 12
+  worker_instance_count_org     = 16
 
   public_subnet_cidr_range    = "10.10.1.0/24"
   workers_subnet_cidr_range   = "10.10.16.0/22"
   build_org_subnet_cidr_range = "10.10.20.0/22"
   build_com_subnet_cidr_range = "10.10.24.0/22"
+
+  worker_config_com = <<EOF
+### worker.env
+${file("${path.module}/worker.env")}
+### config/worker-env-com
+${file("${path.module}/config/worker-env-com")}
+
+export TRAVIS_WORKER_POOL_SIZE=35
+export TRAVIS_WORKER_GCE_SUBNETWORK=workerscom
+export TRAVIS_WORKER_TRAVIS_SITE=com
+EOF
+
+  worker_config_org = <<EOF
+### worker.env
+${file("${path.module}/worker.env")}
+### config/worker-env-org
+${file("${path.module}/config/worker-env-org")}
+
+export TRAVIS_WORKER_POOL_SIZE=30
+export TRAVIS_WORKER_GCE_SUBNETWORK=buildorg
+export TRAVIS_WORKER_TRAVIS_SITE=org
+EOF
 }
