@@ -306,9 +306,17 @@ resource "aws_autoscaling_policy" "workers_remove_capacity" {
   estimated_instance_warmup = "${var.worker_asg_scale_in_cooldown}"
   metric_aggregation_type   = "Maximum"
 
+  # Headroom is just above scale-in threshold; remove n instances
   step_adjustment {
     scaling_adjustment          = "${var.worker_asg_scale_in_qty}"
     metric_interval_lower_bound = 1.0
+    metric_interval_upper_bound = "${floor(var.worker_asg_scale_in_threshold / 2)}"
+  }
+
+  # Headroom is way above scale-in threshold; remove n * 2 instances
+  step_adjustment {
+    scaling_adjustment          = "${var.worker_asg_scale_in_qty * 2}"
+    metric_interval_lower_bound = "${floor(var.worker_asg_scale_in_threshold / 2)}"
   }
 }
 
