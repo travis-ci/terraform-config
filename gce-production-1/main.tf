@@ -74,8 +74,9 @@ ${file("${path.module}/worker.env")}
 ### config/worker-env-com
 ${file("${path.module}/config/worker-env-com")}
 
-export TRAVIS_WORKER_POOL_SIZE=35
 export TRAVIS_WORKER_GCE_SUBNETWORK=workerscom
+export TRAVIS_WORKER_HARD_TIMEOUT=120m
+export TRAVIS_WORKER_POOL_SIZE=35
 export TRAVIS_WORKER_TRAVIS_SITE=com
 EOF
 
@@ -85,8 +86,10 @@ ${file("${path.module}/worker.env")}
 ### config/worker-env-org
 ${file("${path.module}/config/worker-env-org")}
 
-export TRAVIS_WORKER_POOL_SIZE=30
+export TRAVIS_WORKER_GCE_PUBLIC_IP=true
+export TRAVIS_WORKER_GCE_PUBLIC_IP_CONNECT=false
 export TRAVIS_WORKER_GCE_SUBNETWORK=buildorg
+export TRAVIS_WORKER_POOL_SIZE=30
 export TRAVIS_WORKER_TRAVIS_SITE=org
 EOF
 }
