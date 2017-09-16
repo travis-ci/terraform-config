@@ -69,12 +69,33 @@ module "gce_project_1" {
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
   worker_account_json_com       = "${file("${path.module}/config/gce-workers-staging-1.json")}"
   worker_account_json_org       = "${file("${path.module}/config/gce-workers-staging-1.json")}"
-  worker_config_com             = "${file("${path.module}/config/worker-env-com")}"
-  worker_config_org             = "${file("${path.module}/config/worker-env-org")}"
   worker_docker_self_image      = "${var.latest_docker_image_worker}"
   worker_image                  = "${var.gce_worker_image}"
 
   # instance count must be a multiple of number of zones (currently 2)
   worker_instance_count_com = 2
   worker_instance_count_org = 2
+
+  worker_config_com = <<EOF
+### worker.env
+${file("${path.module}/worker.env")}
+### config/worker-env-com
+${file("${path.module}/config/worker-env-com")}
+
+export TRAVIS_WORKER_GCE_SUBNETWORK=buildcom
+export TRAVIS_WORKER_HARD_TIMEOUT=120m
+export TRAVIS_WORKER_POOL_SIZE=35
+export TRAVIS_WORKER_TRAVIS_SITE=com
+EOF
+
+  worker_config_org = <<EOF
+### worker.env
+${file("${path.module}/worker.env")}
+### config/worker-env-org
+${file("${path.module}/config/worker-env-org")}
+
+export TRAVIS_WORKER_GCE_SUBNETWORK=buildorg
+export TRAVIS_WORKER_POOL_SIZE=30
+export TRAVIS_WORKER_TRAVIS_SITE=org
+EOF
 }
