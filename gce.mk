@@ -6,7 +6,7 @@ default: hello
 CONFIG_FILES := \
 	config/bastion.env \
 	config/gce-workers-$(ENV_SHORT).json \
-	config/worker-com.env
+	config/worker-com.env \
 	config/worker-org.env
 
 .PHONY: .config
