@@ -44,7 +44,7 @@ provider "heroku" {}
 
 module "gce_project_7" {
   source                        = "../modules/gce_project"
-  bastion_config                = "${file("${path.module}/config/bastion-env")}"
+  bastion_config                = "${file("${path.module}/config/bastion.env")}"
   bastion_image                 = "${var.gce_bastion_image}"
   env                           = "${var.env}"
   gcloud_cleanup_account_json   = "${file("${path.module}/config/gce-cleanup-production-7.json")}"
@@ -66,8 +66,8 @@ module "gce_project_7" {
   worker_config_com = <<EOF
 ### worker.env
 ${file("${path.module}/worker.env")}
-### config/worker-env-com
-${file("${path.module}/config/worker-env-com")}
+### config/worker-com.env
+${file("${path.module}/config/worker-com.env")}
 
 export TRAVIS_WORKER_GCE_PUBLIC_IP=true
 export TRAVIS_WORKER_GCE_PUBLIC_IP_CONNECT=false
@@ -80,8 +80,8 @@ EOF
   worker_config_org = <<EOF
 ### worker.env
 ${file("${path.module}/worker.env")}
-### config/worker-env-org
-${file("${path.module}/config/worker-env-org")}
+### config/worker-org.env
+${file("${path.module}/config/worker-org.env")}
 
 export TRAVIS_WORKER_GCE_PUBLIC_IP=true
 export TRAVIS_WORKER_GCE_PUBLIC_IP_CONNECT=false

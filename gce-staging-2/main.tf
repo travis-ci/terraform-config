@@ -52,7 +52,7 @@ provider "heroku" {}
 
 module "gce_project_2" {
   source                        = "../modules/gce_project"
-  bastion_config                = "${file("${path.module}/config/bastion-env")}"
+  bastion_config                = "${file("${path.module}/config/bastion.env")}"
   bastion_image                 = "${var.gce_bastion_image}"
   env                           = "${var.env}"
   github_users                  = "${var.github_users}"
@@ -79,8 +79,8 @@ module "gce_project_2" {
   worker_config_com = <<EOF
 ### worker.env
 ${file("${path.module}/worker.env")}
-### config/worker-env-com
-${file("${path.module}/config/worker-env-com")}
+### config/worker-com.env
+${file("${path.module}/config/worker-com.env")}
 
 export TRAVIS_WORKER_GCE_SUBNETWORK=buildcom
 export TRAVIS_WORKER_HARD_TIMEOUT=120m
@@ -91,8 +91,8 @@ EOF
   worker_config_org = <<EOF
 ### worker.env
 ${file("${path.module}/worker.env")}
-### config/worker-env-org
-${file("${path.module}/config/worker-env-org")}
+### config/worker-org.env
+${file("${path.module}/config/worker-org.env")}
 
 export TRAVIS_WORKER_GCE_SUBNETWORK=buildorg
 export TRAVIS_WORKER_POOL_SIZE=30

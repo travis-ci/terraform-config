@@ -44,7 +44,7 @@ provider "heroku" {}
 
 module "gce_project_1" {
   source                        = "../modules/gce_project"
-  bastion_config                = "${file("${path.module}/config/bastion-env")}"
+  bastion_config                = "${file("${path.module}/config/bastion.env")}"
   bastion_image                 = "${var.gce_bastion_image}"
   env                           = "${var.env}"
   gcloud_cleanup_account_json   = "${file("${path.module}/config/gce-cleanup-production-2.json")}"
