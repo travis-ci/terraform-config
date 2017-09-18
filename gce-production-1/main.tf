@@ -61,7 +61,7 @@ module "gce_project_1" {
   worker_account_json_org       = "${file("${path.module}/config/gce-workers-production-1.json")}"
   worker_image                  = "${var.gce_worker_image}"
   worker_instance_count_com     = 12
-  worker_instance_count_org     = 16
+  worker_instance_count_org     = 40
 
   public_subnet_cidr_range    = "10.10.1.0/24"
   workers_subnet_cidr_range   = "10.10.16.0/22"
@@ -85,7 +85,7 @@ ${file("${path.module}/worker.env")}
 ### config/worker-env-org
 ${file("${path.module}/config/worker-env-org")}
 
-export TRAVIS_WORKER_POOL_SIZE=30
+export TRAVIS_WORKER_POOL_SIZE=15
 export TRAVIS_WORKER_GCE_SUBNETWORK=buildorg
 export TRAVIS_WORKER_TRAVIS_SITE=org
 EOF
