@@ -150,7 +150,7 @@ module "aws_asg_com" {
   worker_asg_scale_in_evaluation_periods = 3
   worker_asg_scale_in_period             = 300
   worker_asg_scale_out_threshold         = 80
-  worker_asg_scale_out_qty               = 4
+  worker_asg_scale_out_qty               = 2
   worker_config                          = "${data.template_file.worker_config_com.rendered}"
   worker_docker_image_android            = "${var.amethyst_image}"
   worker_docker_image_default            = "${var.garnet_image}"
@@ -189,7 +189,7 @@ module "aws_asg_org" {
   worker_asg_scale_in_evaluation_periods = 3
   worker_asg_scale_in_period             = 300
   worker_asg_scale_out_threshold         = 60
-  worker_asg_scale_out_qty               = 4
+  worker_asg_scale_out_qty               = 2
   worker_config                          = "${data.template_file.worker_config_org.rendered}"
   worker_docker_image_android            = "${var.amethyst_image}"
   worker_docker_image_default            = "${var.garnet_image}"
