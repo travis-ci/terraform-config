@@ -4,10 +4,11 @@
 
 workdir="$(pwd)"
 cmd="$(ps -o args= $PPID)"
-git_info="$(cat $1/.git/FETCH_HEAD | tr '\t' ' ')"
-git_diff="$(git diff --name-only ${workdir})"
+git_info=$(tr '\t' ' ' < "$1/.git/FETCH_HEAD")
+git_diff=$(git diff --name-only "${workdir}")
 
 echo "Sending Slack notification... "
+# shellcheck disable=2016 disable=2086
 curl -X POST --data-urlencode \
     'payload={"channel": "#infra-terraform", "username": "terraform-config", "text": "*terraform action /!\\*
     user `'"${USER}"'` ran `'"${cmd}"'` in `'"$(basename ${workdir})"'`
