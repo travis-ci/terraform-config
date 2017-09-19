@@ -1,4 +1,0 @@
-#!/usr/bin/env ruby
-unless RUBY_VERSION > ARGV.first
-  raise StandardError, "Ruby must be >= #{ARGV.first}"
-end
