@@ -27,7 +27,7 @@ main() {
 }
 
 __format_text() {
-cat <<EOF
+  cat <<EOF
 *terraform action* :warning:
   user \`${SLACK_USER:-$USER}\`
     ran \`${1}\`
@@ -36,6 +36,5 @@ cat <<EOF
   any dirty files will be listed below: \`\`\` ${4}\`\`\`
 EOF
 }
-
 
 main "$@"
