@@ -25,6 +25,7 @@ announce: checkversion
 .PHONY: apply
 apply: announce .config $(TFVARS) $(TFSTATE)
 	terraform apply $(TFPLAN)
+	$(TOP)/bin/post-flight $(TOP)
 
 .PHONY: plan
 plan: announce .config $(TFVARS) $(TFSTATE)
@@ -42,6 +43,7 @@ destroy: announce .config $(TFVARS) $(TFSTATE)
 		-module-depth=-1 \
 		-destroy \
 		-out=$(TFPLAN)
+	$(TOP)/bin/post-flight $(TOP)
 
 $(TFSTATE):
 	terraform init
