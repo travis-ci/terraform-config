@@ -8,15 +8,7 @@ write_files:
 - content: '${base64encode(worker_config)}'
   encoding: b64
   owner: 'travis:travis'
-  path: /etc/default/travis-worker-a
-- content: '${base64encode(worker_config)}'
-  encoding: b64
-  owner: 'travis:travis'
-  path: /etc/default/travis-worker-b
-- content: '${base64encode(worker_config)}'
-  encoding: b64
-  owner: 'travis:travis'
-  path: /etc/default/travis-worker-c
+  path: /etc/default/travis-worker
 - content: '${base64encode(cloud_init_env)}'
   encoding: b64
   owner: 'travis:travis'
