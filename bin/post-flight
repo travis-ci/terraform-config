@@ -1,0 +1,16 @@
+#!/bin/bash
+
+[ -z "${SLACK_WEBHOOK}" ] && echo "Please export SLACK_WEBHOOK environment variable" && exit 1
+
+workdir="$(pwd)"
+cmd="$(ps -o args= $PPID)"
+git_info="$(cat $1/.git/FETCH_HEAD | tr '\t' ' ')"
+git_diff="$(git diff --name-only ${workdir})"
+
+echo "Sending Slack notification... "
+curl -X POST --data-urlencode \
+    'payload={"channel": "#infra-terraform", "username": "terraform-config", "text": "*terraform action /!\\*
+    user `'"${USER}"'` ran `'"${cmd}"'` in `'"$(basename ${workdir})"'`
+    on: `'"${git_info}"'`
+    any dirty files will be listed below: ``` '"${git_diff}"'```
+    ","icon_emoji":":computer:"}' "${SLACK_WEBHOOK}"
