@@ -71,8 +71,8 @@ module "gce_project_1" {
   worker_config_com = <<EOF
 ### worker.env
 ${file("${path.module}/worker.env")}
-### config/worker-env-com
-${file("${path.module}/config/worker-env-com")}
+### config/worker-com.env
+${file("${path.module}/config/worker-com.env")}
 
 export TRAVIS_WORKER_GCE_SUBNETWORK=workerscom
 export TRAVIS_WORKER_HARD_TIMEOUT=120m
@@ -83,8 +83,8 @@ EOF
   worker_config_org = <<EOF
 ### worker.env
 ${file("${path.module}/worker.env")}
-### config/worker-env-org
-${file("${path.module}/config/worker-env-org")}
+### config/worker-org.env
+${file("${path.module}/config/worker-org.env")}
 
 export TRAVIS_WORKER_GCE_PUBLIC_IP=true
 export TRAVIS_WORKER_GCE_PUBLIC_IP_CONNECT=false
