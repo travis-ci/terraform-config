@@ -2,12 +2,14 @@
 set -o errexit
 
 main() {
-  docker stop travis-worker &>/dev/null || true
-  docker rm -f travis-worker &>/dev/null || true
+  local name="${1:-travis-worker}"
+
+  docker stop "${name}" &>/dev/null || true
+  docker rm -f "${name}" &>/dev/null || true
 
   local run_dir=/var/tmp/travis-run.d
   mkdir -p "${run_dir}"
-  local env_file="${run_dir}/env"
+  local env_file="${run_dir}/${name}.env"
   travis-tfw-combined-env travis-worker >"${env_file}"
   set -o allexport
   # shellcheck source=/dev/null
@@ -19,7 +21,7 @@ main() {
 
   exec docker run \
     --rm \
-    --name travis-worker \
+    --name "${name}" \
     --hostname "$(hostname)" \
     --userns host \
     -v /var/tmp:/var/tmp \
