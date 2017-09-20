@@ -56,7 +56,7 @@ __mount_docker_volume() {
   sed -i '/xvdb/c\/dev/xvdx	/mnt	auto defaults,nobootwait,comment=cloudconfig 0 2' /etc/fstab
 
   umount /mnt
-  mount /dev/xvdx /mnt
+  mount /dev/xvdx /mnt -o _netdev
 }
 
 __wait_for_docker() {
