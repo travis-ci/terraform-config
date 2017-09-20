@@ -18,6 +18,8 @@ main() {
 
   __set_aio_max_nr
 
+  __mount_docker_volume
+
   chown -R travis:travis "${RUNDIR}"
 
   if [[ -d "${ETCDIR}/systemd/system" ]]; then
@@ -47,6 +49,14 @@ main() {
   dig +short "${registry_hostname}" | while read -r ipv4; do
     iptables -I DOCKER -s "${ipv4}" -j DROP || true
   done
+}
+
+__mount_docker_volume() {
+  # Replace /dev/xvdb with /dev/xvdx and mount it automatically on boot
+  sed -i '/xvdb/c\/dev/xvdx	/mnt	auto defaults,nobootwait,comment=cloudconfig 0 2' /etc/fstab
+
+  umount /mnt
+  mount /dev/xvdx /mnt
 }
 
 __wait_for_docker() {

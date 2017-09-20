@@ -232,6 +232,11 @@ exec ${path.module}/../../bin/travis-worker-verify-config \
   "${base64encode(data.template_file.cloud_config.rendered)}"
 EOF
   }
+
+  ebs_block_device {
+    snapshot_id = "snap-006619af01393e94d"
+    device_name = "/dev/xvdx"
+  }
 }
 
 resource "aws_autoscaling_group" "workers" {
