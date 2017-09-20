@@ -14,5 +14,4 @@ CONFIG_FILES := \
 .PHONY: .config
 .config: $(CONFIG_FILES) $(ENV_NAME).tfvars
 
-$(CONFIG_FILES): .write-config-files
-	cp -v $$TRAVIS_KEYCHAIN_DIR/travis-keychain/gce/*.json config/
+$(CONFIG_FILES): config/.written config/.gce-keys-written
