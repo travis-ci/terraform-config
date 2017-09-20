@@ -146,6 +146,7 @@ export TRAVIS_WORKER_PRESTART_HOOK="/var/tmp/travis-run.d/travis-worker-prestart
 export TRAVIS_WORKER_SELF_IMAGE="${var.worker_docker_self_image}"
 export TRAVIS_WORKER_START_HOOK="/var/tmp/travis-run.d/travis-worker-start-hook"
 export TRAVIS_WORKER_STOP_HOOK="/var/tmp/travis-run.d/travis-worker-stop-hook"
+export TRAVIS_DOCKER_DISABLE_DIRECT_LVM=true
 EOF
 }
 
