@@ -5,6 +5,10 @@ ENV_TAIL ?= $(subst $(INFRA)-,,$(ENV_NAME))
 TFVARS := $(PWD)/terraform.tfvars
 TFSTATE := $(PWD)/.terraform/terraform.tfstate
 TFPLAN := $(PWD)/$(ENV_NAME).tfplan
+TRAVIS_BUILD_COM_HOST ?= build.travis-ci.com
+TRAVIS_BUILD_ORG_HOST ?= build.travis-ci.org
+JOB_BOARD_HOST ?= job-board.travis-ci.com
+AMQP_URL_VARNAME ?= AMQP_URL
 TOP := $(shell git rev-parse --show-toplevel)
 
 .PHONY: hello
@@ -14,12 +18,12 @@ hello: announce
 	@echo "  make plan  - plan your demise"
 	@echo "  make apply - dance with the devil in the pale moonlight"
 
-.PHONY: checkversion
-checkversion:
-	ruby $(TOP)/check_version.rb
+.PHONY: .assert-ruby
+.assert-ruby:
+	@ruby -e "fail 'Ruby >= 2.3 required' unless RUBY_VERSION >= '2.3'"
 
 .PHONY: announce
-announce: checkversion
+announce: .assert-ruby
 	@echo "👋 🎉  This is env=$(ENV_NAME) (short=$(ENV_SHORT) infra=$(INFRA) tail=$(ENV_TAIL))"
 
 .PHONY: apply
@@ -70,3 +74,13 @@ list:
 .PHONY: check
 check:
 	$(TOP)/bin/pre-flight-checks $@
+
+.PHONY: .write-config-files
+.write-config-files:
+	$(TOP)/bin/write-config-files \
+		--infra "$(INFRA)" \
+		--env "$(ENV_SHORT)" \
+		--build-com-host "$(TRAVIS_BUILD_COM_HOST)" \
+		--build-org-host "$(TRAVIS_BUILD_ORG_HOST)" \
+		--job-board-host "$(JOB_BOARD_HOST)" \
+		--amqp-url-varname "$(AMQP_URL_VARNAME)" $(WRITE_CONFIG_OPTS)

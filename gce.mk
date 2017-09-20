@@ -1,5 +1,7 @@
 include $(shell git rev-parse --show-toplevel)/terraform.mk
 
+WRITE_CONFIG_OPTS := --write-bastion --env-tail $(ENV_TAIL)
+
 .PHONY: default
 default: hello
 
@@ -12,12 +14,5 @@ CONFIG_FILES := \
 .PHONY: .config
 .config: $(CONFIG_FILES) $(ENV_NAME).tfvars
 
-$(CONFIG_FILES):
-	mkdir -p config
+$(CONFIG_FILES): .write-config-files
 	cp -v $$TRAVIS_KEYCHAIN_DIR/travis-keychain/gce/*.json config/
-	trvs generate-config -p TRAVIS_WORKER -f env gce-workers $(ENV_TAIL) \
-		| sed 's/^/export /' >config/worker-org.env
-	trvs generate-config --pro -p TRAVIS_WORKER -f env gce-workers $(ENV_TAIL) \
-		| sed 's/^/export /' >config/worker-com.env
-	trvs generate-config --pro -p GCE_BASTION -f env gce-bastion $(ENV_SHORT) \
-		| sed 's/^/export /' >config/bastion.env
