@@ -45,11 +45,13 @@ echo "\${RANDOM}\${RANDOM}\${RANDOM}"
 EOF
   chmod +x "${BATS_TMPDIR}/bin/mock"
 
+  # stub commands for mocking
   for cmd in \
     chown \
     dmesg \
     docker \
     iptables \
+    mount \
     sed \
     service \
     shutdown \
