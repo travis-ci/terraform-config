@@ -55,7 +55,6 @@ __mount_docker_volume() {
   # Replace /dev/xvdb with /dev/xvdx and mount it automatically on boot
   sed -i '/xvdb/c\/dev/xvdx	/mnt	auto defaults,nobootwait,comment=cloudconfig 0 2' /etc/fstab
 
-  umount /mnt
   mount /dev/xvdx /mnt -o _netdev
 }
 

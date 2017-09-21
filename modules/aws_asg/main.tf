@@ -153,7 +153,7 @@ EOF
 data "template_file" "docker_daemon_json" {
   template = <<EOF
 {
-  "graph": "/mnt/docker",
+  "data-root": "/mnt/docker",
   "hosts": [
     "tcp://127.0.0.1:4243",
     "unix:///var/run/docker.sock"
@@ -164,13 +164,7 @@ data "template_file" "docker_daemon_json" {
   ],
   ${var.registry_hostname != "" ?
     "\"registry-mirrors\": [\"http://${var.registry_hostname}\"]," : ""}
-  "storage-driver": "devicemapper",
-  "storage-opts": [
-    "dm.basesize=${var.docker_storage_dm_basesize}",
-    "dm.datadev=/dev/direct-lvm/data",
-    "dm.metadatadev=/dev/direct-lvm/metadata",
-    "dm.fs=xfs"
-  ],
+  "storage-driver": "overlay2",
   "userns-remap": "default"
 }
 EOF
@@ -235,7 +229,8 @@ EOF
   }
 
   ebs_block_device {
-    snapshot_id = "snap-006619af01393e94d"
+    # overlay2 snapshot
+    snapshot_id = "snap-0489998e67447aa02"
     device_name = "/dev/xvdx"
   }
 }
