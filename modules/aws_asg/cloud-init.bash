@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 # vim:filetype=sh
+# Testing note #
+# Commands used in this file must also be stubbed in modules/aws_asg/bats_helpers.bash
+
 set -o errexit
 set -o pipefail
 shopt -s nullglob
