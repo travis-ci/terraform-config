@@ -73,6 +73,7 @@ ${file("${path.module}/config/worker-com.env")}
 ${file("${path.module}/worker.env")}
 
 export TRAVIS_WORKER_TRAVIS_SITE=com
+export TRAVIS_DOCKER_DISABLE_DIRECT_LVM=1
 EOF
 }
 
@@ -86,6 +87,7 @@ ${file("${path.module}/config/worker-org.env")}
 ${file("${path.module}/worker.env")}
 
 export TRAVIS_WORKER_TRAVIS_SITE=org
+export TRAVIS_DOCKER_DISABLE_DIRECT_LVM=1
 EOF
 }
 
