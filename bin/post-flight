@@ -44,7 +44,7 @@ EOF
 }
 
 __git_branch_at_commit() {
-  printf "%s @ %s" "$(git rev-parse --abbrev-ref HEAD)" "$(git log --oneline -1)"
+  printf "%s @ %s" "$(git rev-parse --abbrev-ref HEAD)" "$(git log --format='%h' -1)"
 }
 
 __git_diff_names() {
