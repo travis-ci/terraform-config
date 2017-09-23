@@ -15,11 +15,6 @@ write_files:
   owner: 'root:root'
   path: /usr/local/bin/travis-worker-wrapper
   permissions: '0755'
-- content: '${base64encode(tfw_combined_env)}'
-  encoding: b64
-  owner: 'root:root'
-  path: /usr/local/bin/travis-tfw-combined-env
-  permissions: '0755'
 - content: '${base64encode(prestart_hook_bash)}'
   encoding: b64
   #owner: 'travis:travis'

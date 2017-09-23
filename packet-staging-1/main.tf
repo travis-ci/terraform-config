@@ -64,7 +64,18 @@ data "template_file" "cloud_config" {
 }
 
 resource "packet_device" "worker-01" {
+  #hostname         = "worker-01.packet-ams1.travisci.net"
   hostname         = "worker-01"
+  plan             = "baremetal_0"
+  facility         = "ams1"
+  operating_system = "ubuntu_14_04"
+  billing_cycle    = "hourly"
+  project_id       = "${var.packet_staging_1_project_id}"
+  user_data        = "${data.template_file.cloud_config.rendered}"
+}
+
+resource "packet_device" "worker-02" {
+  hostname         = "worker-02.packet-ams1.travisci.net"
   plan             = "baremetal_0"
   facility         = "ams1"
   operating_system = "ubuntu_14_04"
