@@ -75,8 +75,7 @@ list:
 check:
 	$(TOP)/bin/pre-flight-checks $@
 
-.PHONY: .write-config-files
-.write-config-files:
+config/.written:
 	$(TOP)/bin/write-config-files \
 		--infra "$(INFRA)" \
 		--env "$(ENV_SHORT)" \
@@ -84,3 +83,7 @@ check:
 		--build-org-host "$(TRAVIS_BUILD_ORG_HOST)" \
 		--job-board-host "$(JOB_BOARD_HOST)" \
 		--amqp-url-varname "$(AMQP_URL_VARNAME)" $(WRITE_CONFIG_OPTS)
+
+config/.gce-keys-written:
+	cp -v $$TRAVIS_KEYCHAIN_DIR/travis-keychain/gce/*.json config/
+	date -u >$@

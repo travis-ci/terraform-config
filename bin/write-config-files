@@ -2,6 +2,7 @@
 
 require 'fileutils'
 require 'optparse'
+require 'time'
 
 def main(argv: ARGV)
   opts = parse_argv(argv)
@@ -85,6 +86,9 @@ def main(argv: ARGV)
     { opts[:amqp_url_varname] => env[opts[:amqp_url_varname]] },
     "#{top}/bin/env-url-to-parts #{opts[:amqp_url_varname]} config/ org"
   )
+
+  fwrite('config/.written', Time.now.utc.iso8601 + "\n")
+  0
 end
 
 def parse_argv(argv)
