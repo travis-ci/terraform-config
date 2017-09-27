@@ -28,7 +28,7 @@ __format_text() {
   cat <<EOF
 *terraform action* :warning:
   ${user} ran \`${cmd}\` in \`$(basename "${dir}")\`
-  on branch: \`$(__git_branch)\`$(__format_dirty_files)
+  on branch @ commit: \`$(__git_branch_at_commit)\`$(__format_dirty_files)
 EOF
 }
 
@@ -43,8 +43,8 @@ EOF
   fi
 }
 
-__git_branch() {
-  git rev-parse --abbrev-ref HEAD
+__git_branch_at_commit() {
+  printf "%s @ %s" "$(git rev-parse --abbrev-ref HEAD)" "$(git log --format='%h' -1)"
 }
 
 __git_diff_names() {
