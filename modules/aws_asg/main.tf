@@ -118,6 +118,10 @@ variable "worker_docker_self_image" {
   default = "travisci/worker:v3.0.2"
 }
 
+#variable "worker_docker_images_snapshot" {
+#default = "${data.aws_ebs_snapshot.ebs_volume}"
+#}
+
 variable "worker_instance_type" {
   default = "c3.2xlarge"
 }
@@ -230,8 +234,18 @@ EOF
 
   ebs_block_device {
     # overlay2 snapshot
-    snapshot_id = "snap-0489998e67447aa02"
+    snapshot_id = "${data.aws_ebs_snapshot.ebs_volume.id}"
     device_name = "/dev/xvdx"
+  }
+}
+
+data "aws_ebs_snapshot" "ebs_volume" {
+  most_recent = true
+  owners      = ["self"]
+
+  filter {
+    name   = "tag:role"
+    values = ["docker-images"]
   }
 }
 
