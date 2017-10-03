@@ -63,11 +63,6 @@ module "gce_project_1" {
   worker_instance_count_com     = 0
   worker_instance_count_org     = 12
 
-  public_subnet_cidr_range    = "10.10.1.0/24"
-  workers_subnet_cidr_range   = "10.10.16.0/22"
-  build_org_subnet_cidr_range = "10.10.20.0/22"
-  build_com_subnet_cidr_range = "10.10.24.0/22"
-
   worker_config_com = <<EOF
 ### worker.env
 ${file("${path.module}/worker.env")}

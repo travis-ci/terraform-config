@@ -50,12 +50,12 @@ variable "workers_subnet_cidr_range" {
   default = "10.10.4.0/22"
 }
 
-variable "build_org_subnet_cidr_range" {
-  default = "10.11.0.0/16"
+variable "jobs_org_subnet_cidr_range" {
+  default = "10.20.0.0/16"
 }
 
-variable "build_com_subnet_cidr_range" {
-  default = "10.12.0.0/16"
+variable "jobs_com_subnet_cidr_range" {
+  default = "10.30.0.0/16"
 }
 
 variable "zone_count" {
@@ -93,18 +93,18 @@ resource "google_compute_subnetwork" "workers" {
   project = "${var.project}"
 }
 
-resource "google_compute_subnetwork" "build_org" {
-  name          = "buildorg"
-  ip_cidr_range = "${var.build_org_subnet_cidr_range}"
+resource "google_compute_subnetwork" "jobs_org" {
+  name          = "jobs-org"
+  ip_cidr_range = "${var.jobs_org_subnet_cidr_range}"
   network       = "${google_compute_network.main.self_link}"
   region        = "us-central1"
 
   project = "${var.project}"
 }
 
-resource "google_compute_subnetwork" "build_com" {
-  name          = "buildcom"
-  ip_cidr_range = "${var.build_com_subnet_cidr_range}"
+resource "google_compute_subnetwork" "jobs_com" {
+  name          = "jobs-com"
+  ip_cidr_range = "${var.jobs_com_subnet_cidr_range}"
   network       = "${google_compute_network.main.self_link}"
   region        = "us-central1"
 
@@ -167,8 +167,8 @@ resource "google_compute_firewall" "allow_build_nat" {
   network = "${google_compute_network.main.name}"
 
   source_ranges = [
-    "${google_compute_subnetwork.build_org.ip_cidr_range}",
-    "${google_compute_subnetwork.build_com.ip_cidr_range}",
+    "${google_compute_subnetwork.jobs_org.ip_cidr_range}",
+    "${google_compute_subnetwork.jobs_com.ip_cidr_range}",
   ]
 
   target_tags = ["nat"]
