@@ -74,7 +74,7 @@ module "gce_project_2" {
 
   # instance count must be a multiple of number of zones (currently 2)
   worker_instance_count_com = 0
-  worker_instance_count_org = 2
+  worker_instance_count_org = 4
 
   worker_config_com = <<EOF
 ### worker.env
