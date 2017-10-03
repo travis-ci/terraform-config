@@ -240,10 +240,13 @@ resource "google_compute_instance" "bastion-b" {
   tags         = ["bastion", "${var.env}"]
   project      = "${var.project}"
 
-  disk {
+  boot_disk {
     auto_delete = true
-    image       = "${var.bastion_image}"
-    type        = "pd-ssd"
+
+    initialize_params {
+      image = "${var.bastion_image}"
+      type  = "pd-ssd"
+    }
   }
 
   network_interface {
