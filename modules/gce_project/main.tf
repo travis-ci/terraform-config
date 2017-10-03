@@ -58,6 +58,14 @@ variable "jobs_com_subnet_cidr_range" {
   default = "10.30.0.0/16"
 }
 
+variable "build_com_subnet_cidr_range" {
+  default = "10.10.12.0/22"
+}
+
+variable "build_org_subnet_cidr_range" {
+  default = "10.10.8.0/22"
+}
+
 variable "zone_count" {
   default = "4"
 }
@@ -105,7 +113,7 @@ resource "google_compute_subnetwork" "jobs_org" {
 # TODO: remove this legacy subnetwork when no longer in use
 resource "google_compute_subnetwork" "build_org" {
   name          = "buildorg"
-  ip_cidr_range = "10.10.8.0/22"
+  ip_cidr_range = "${var.build_org_subnet_cidr_range}"
   network       = "${google_compute_network.main.self_link}"
   region        = "us-central1"
 
@@ -124,7 +132,7 @@ resource "google_compute_subnetwork" "jobs_com" {
 # TODO: remove this legacy subnetwork when no longer in use
 resource "google_compute_subnetwork" "build_com" {
   name          = "buildcom"
-  ip_cidr_range = "10.10.12.0/22"
+  ip_cidr_range = "${var.build_com_subnet_cidr_range}"
   network       = "${google_compute_network.main.self_link}"
   region        = "us-central1"
 
