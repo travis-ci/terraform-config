@@ -162,8 +162,8 @@ resource "google_compute_firewall" "allow_internal" {
   }
 }
 
-resource "google_compute_firewall" "allow_build_nat" {
-  name    = "allow-build-nat"
+resource "google_compute_firewall" "allow_jobs_nat" {
+  name    = "allow-jobs-nat"
   network = "${google_compute_network.main.name}"
 
   source_ranges = [
