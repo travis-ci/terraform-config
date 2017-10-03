@@ -115,7 +115,7 @@ variable "worker_docker_image_python" {}
 variable "worker_docker_image_ruby" {}
 
 variable "worker_docker_self_image" {
-  default = "travisci/worker:v3.0.2"
+  default = "travisci/worker:v2.11.0"
 }
 
 variable "worker_instance_type" {
