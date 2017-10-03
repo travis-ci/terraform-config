@@ -102,9 +102,29 @@ resource "google_compute_subnetwork" "jobs_org" {
   project = "${var.project}"
 }
 
+# TODO: remove this legacy subnetwork when no longer in use
+resource "google_compute_subnetwork" "build_org" {
+  name          = "buildorg"
+  ip_cidr_range = "10.10.8.0/22"
+  network       = "${google_compute_network.main.self_link}"
+  region        = "us-central1"
+
+  project = "${var.project}"
+}
+
 resource "google_compute_subnetwork" "jobs_com" {
   name          = "jobs-com"
   ip_cidr_range = "${var.jobs_com_subnet_cidr_range}"
+  network       = "${google_compute_network.main.self_link}"
+  region        = "us-central1"
+
+  project = "${var.project}"
+}
+
+# TODO: remove this legacy subnetwork when no longer in use
+resource "google_compute_subnetwork" "build_com" {
+  name          = "buildcom"
+  ip_cidr_range = "10.10.12.0/22"
   network       = "${google_compute_network.main.self_link}"
   region        = "us-central1"
 
