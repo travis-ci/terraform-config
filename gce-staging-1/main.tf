@@ -72,9 +72,8 @@ module "gce_project_1" {
   worker_docker_self_image      = "${var.latest_docker_image_worker}"
   worker_image                  = "${var.gce_worker_image}"
 
-  # instance count must be a multiple of number of zones (currently 2)
-  worker_instance_count_com = 2
-  worker_instance_count_org = 2
+  worker_instance_count_com = 4
+  worker_instance_count_org = 4
 
   worker_config_com = <<EOF
 ### worker.env
