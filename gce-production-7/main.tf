@@ -60,7 +60,7 @@ module "gce_project_7" {
   worker_account_json_com       = "${file("${path.module}/config/gce-workers-production-7.json")}"
   worker_account_json_org       = "${file("${path.module}/config/gce-workers-production-7.json")}"
   worker_image                  = "${var.gce_worker_image}"
-  worker_instance_count_com     = 12
+  worker_instance_count_com     = 0
   worker_instance_count_org     = 0
 
   worker_config_com = <<EOF
