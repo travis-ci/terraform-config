@@ -41,8 +41,8 @@ main() {
 
 __rand_gce_zone() {
   local zones idx
-  zones=( ${1//,/ } )
-  idx=$(( RANDOM % ${#zones[@]} ))
+  zones=(${1//,/ })
+  idx=$((RANDOM % ${#zones[@]}))
   echo "${zones[idx]}"
 }
 
