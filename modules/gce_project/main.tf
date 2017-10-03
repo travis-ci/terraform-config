@@ -59,7 +59,7 @@ variable "build_com_subnet_cidr_range" {
 }
 
 variable "zone_count" {
-  default = "2"
+  default = "4"
 }
 
 resource "google_compute_network" "main" {
@@ -260,6 +260,29 @@ resource "google_compute_instance" "bastion-b" {
   }
 }
 
+module "gce_worker_a" {
+  source = "../gce_worker"
+
+  account_json_com         = "${var.worker_account_json_com}"
+  account_json_org         = "${var.worker_account_json_org}"
+  config_com               = "${var.worker_config_com}"
+  config_org               = "${var.worker_config_org}"
+  env                      = "${var.env}"
+  github_users             = "${var.github_users}"
+  index                    = "${var.index}"
+  instance_count_com       = "${var.worker_instance_count_com / var.zone_count}"
+  instance_count_org       = "${var.worker_instance_count_org / var.zone_count}"
+  machine_type             = "g1-small"
+  project                  = "${var.project}"
+  subnetwork_workers       = "${google_compute_subnetwork.workers.name}"
+  syslog_address_com       = "${var.syslog_address_com}"
+  syslog_address_org       = "${var.syslog_address_org}"
+  worker_docker_self_image = "${var.worker_docker_self_image}"
+  worker_image             = "${var.worker_image}"
+  zone                     = "us-central1-a"
+  zone_suffix              = "a"
+}
+
 module "gce_worker_b" {
   source = "../gce_worker"
 
@@ -304,6 +327,29 @@ module "gce_worker_c" {
   worker_image             = "${var.worker_image}"
   zone                     = "us-central1-c"
   zone_suffix              = "c"
+}
+
+module "gce_worker_f" {
+  source = "../gce_worker"
+
+  account_json_com         = "${var.worker_account_json_com}"
+  account_json_org         = "${var.worker_account_json_org}"
+  config_com               = "${var.worker_config_com}"
+  config_org               = "${var.worker_config_org}"
+  env                      = "${var.env}"
+  github_users             = "${var.github_users}"
+  index                    = "${var.index}"
+  instance_count_com       = "${var.worker_instance_count_com / var.zone_count}"
+  instance_count_org       = "${var.worker_instance_count_org / var.zone_count}"
+  machine_type             = "g1-small"
+  project                  = "${var.project}"
+  subnetwork_workers       = "${google_compute_subnetwork.workers.name}"
+  syslog_address_com       = "${var.syslog_address_com}"
+  syslog_address_org       = "${var.syslog_address_org}"
+  worker_docker_self_image = "${var.worker_docker_self_image}"
+  worker_image             = "${var.worker_image}"
+  zone                     = "us-central1-f"
+  zone_suffix              = "f"
 }
 
 resource "heroku_app" "gcloud_cleanup" {
