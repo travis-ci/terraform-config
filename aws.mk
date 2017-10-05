@@ -18,7 +18,7 @@ CONFIG_FILES := \
 .PHONY: .config
 .config: $(CONFIG_FILES) $(ENV_NAME).tfvars
 
-$(CONFIG_FILES): .write-config-files
+$(CONFIG_FILES): config/.written
 
 .PHONY: diff-docker-images
 diff-docker-images:

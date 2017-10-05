@@ -2,6 +2,7 @@
 
 require 'fileutils'
 require 'optparse'
+require 'time'
 
 def main(argv: ARGV)
   opts = parse_argv(argv)
@@ -27,7 +28,10 @@ def main(argv: ARGV)
   if opts[:write_bastion]
     fwrite(
       'config/bastion.env',
-      trvs_gen("#{opts[:infra]}-bastion", opts[:env_short], pro: true)
+      trvs_gen(
+        "#{opts[:infra]}-bastion", opts[:env_short],
+        pro: true, prefix: "#{opts[:infra].upcase}_BASTION"
+      )
     )
   end
 
@@ -85,6 +89,9 @@ def main(argv: ARGV)
     { opts[:amqp_url_varname] => env[opts[:amqp_url_varname]] },
     "#{top}/bin/env-url-to-parts #{opts[:amqp_url_varname]} config/ org"
   )
+
+  fwrite('config/.written', Time.now.utc.iso8601 + "\n")
+  0
 end
 
 def parse_argv(argv)
@@ -148,11 +155,11 @@ def heroku_dump_shell_config(app)
   %x[#{top}/bin/heroku-dump-shell-config #{app}]
 end
 
-def trvs_gen(app, env, pro: false)
+def trvs_gen(app, env, pro: false, prefix: 'TRAVIS_WORKER')
   command = %W[
     trvs generate-config
     #{pro ? '--pro' : ''}
-    -p TRAVIS_WORKER
+    -p #{prefix}
     -f env
     #{app} #{env}
   ]

@@ -67,10 +67,13 @@ resource "google_compute_instance" "worker_com" {
   tags         = ["worker", "${var.env}", "com"]
   project      = "${var.project}"
 
-  disk {
+  boot_disk {
     auto_delete = true
-    image       = "${var.worker_image}"
-    type        = "pd-ssd"
+
+    initialize_params {
+      image = "${var.worker_image}"
+      type  = "pd-ssd"
+    }
   }
 
   network_interface {
@@ -87,6 +90,10 @@ resource "google_compute_instance" "worker_com" {
   }
 
   depends_on = ["null_resource.worker_com_validation"]
+
+  lifecycle {
+    ignore_changes = ["disk", "boot_disk"]
+  }
 }
 
 data "template_file" "cloud_init_env_org" {
@@ -135,10 +142,13 @@ resource "google_compute_instance" "worker_org" {
   tags         = ["worker", "${var.env}", "org"]
   project      = "${var.project}"
 
-  disk {
+  boot_disk {
     auto_delete = true
-    image       = "${var.worker_image}"
-    type        = "pd-ssd"
+
+    initialize_params {
+      image = "${var.worker_image}"
+      type  = "pd-ssd"
+    }
   }
 
   network_interface {
@@ -155,4 +165,8 @@ resource "google_compute_instance" "worker_org" {
   }
 
   depends_on = ["null_resource.worker_org_validation"]
+
+  lifecycle {
+    ignore_changes = ["disk", "boot_disk"]
+  }
 }
