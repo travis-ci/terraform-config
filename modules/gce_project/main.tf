@@ -76,7 +76,7 @@ resource "google_compute_network" "main" {
 }
 
 output "gce_network" {
-  value = "${google_compute_network.main.name}"
+  value = "${google_compute_network.main.self_link}"
 }
 
 resource "google_compute_subnetwork" "public" {
@@ -89,7 +89,7 @@ resource "google_compute_subnetwork" "public" {
 }
 
 output "gce_subnetwork_public" {
-  value = "${google_compute_subnetwork.public.name}"
+  value = "${google_compute_subnetwork.public.self_link}"
 }
 
 resource "google_compute_subnetwork" "workers" {
@@ -305,7 +305,7 @@ module "gce_worker_a" {
   instance_count_org       = "${var.worker_instance_count_org / var.zone_count}"
   machine_type             = "g1-small"
   project                  = "${var.project}"
-  subnetwork_workers       = "${google_compute_subnetwork.workers.name}"
+  subnetwork_workers       = "${google_compute_subnetwork.workers.self_link}"
   syslog_address_com       = "${var.syslog_address_com}"
   syslog_address_org       = "${var.syslog_address_org}"
   worker_docker_self_image = "${var.worker_docker_self_image}"
@@ -328,7 +328,7 @@ module "gce_worker_b" {
   instance_count_org       = "${var.worker_instance_count_org / var.zone_count}"
   machine_type             = "g1-small"
   project                  = "${var.project}"
-  subnetwork_workers       = "${google_compute_subnetwork.workers.name}"
+  subnetwork_workers       = "${google_compute_subnetwork.workers.self_link}"
   syslog_address_com       = "${var.syslog_address_com}"
   syslog_address_org       = "${var.syslog_address_org}"
   worker_docker_self_image = "${var.worker_docker_self_image}"
@@ -351,7 +351,7 @@ module "gce_worker_c" {
   instance_count_org       = "${var.worker_instance_count_org / var.zone_count}"
   machine_type             = "g1-small"
   project                  = "${var.project}"
-  subnetwork_workers       = "${google_compute_subnetwork.workers.name}"
+  subnetwork_workers       = "${google_compute_subnetwork.workers.self_link}"
   syslog_address_com       = "${var.syslog_address_com}"
   syslog_address_org       = "${var.syslog_address_org}"
   worker_docker_self_image = "${var.worker_docker_self_image}"
@@ -374,7 +374,7 @@ module "gce_worker_f" {
   instance_count_org       = "${var.worker_instance_count_org / var.zone_count}"
   machine_type             = "g1-small"
   project                  = "${var.project}"
-  subnetwork_workers       = "${google_compute_subnetwork.workers.name}"
+  subnetwork_workers       = "${google_compute_subnetwork.workers.self_link}"
   syslog_address_com       = "${var.syslog_address_com}"
   syslog_address_org       = "${var.syslog_address_org}"
   worker_docker_self_image = "${var.worker_docker_self_image}"
