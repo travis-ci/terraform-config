@@ -35,7 +35,7 @@ variable "worker_config_com" {}
 variable "worker_config_org" {}
 
 variable "worker_docker_self_image" {
-  default = "travisci/worker:v3.0.2"
+  default = "travisci/worker:v2.11.0"
 }
 
 variable "worker_image" {}
@@ -50,16 +50,24 @@ variable "workers_subnet_cidr_range" {
   default = "10.10.4.0/22"
 }
 
-variable "build_org_subnet_cidr_range" {
-  default = "10.10.8.0/22"
+variable "jobs_org_subnet_cidr_range" {
+  default = "10.20.0.0/16"
+}
+
+variable "jobs_com_subnet_cidr_range" {
+  default = "10.30.0.0/16"
 }
 
 variable "build_com_subnet_cidr_range" {
   default = "10.10.12.0/22"
 }
 
+variable "build_org_subnet_cidr_range" {
+  default = "10.10.8.0/22"
+}
+
 variable "zone_count" {
-  default = "2"
+  default = "4"
 }
 
 resource "google_compute_network" "main" {
@@ -68,7 +76,7 @@ resource "google_compute_network" "main" {
 }
 
 output "gce_network" {
-  value = "${google_compute_network.main.name}"
+  value = "${google_compute_network.main.self_link}"
 }
 
 resource "google_compute_subnetwork" "public" {
@@ -81,7 +89,7 @@ resource "google_compute_subnetwork" "public" {
 }
 
 output "gce_subnetwork_public" {
-  value = "${google_compute_subnetwork.public.name}"
+  value = "${google_compute_subnetwork.public.self_link}"
 }
 
 resource "google_compute_subnetwork" "workers" {
@@ -93,6 +101,16 @@ resource "google_compute_subnetwork" "workers" {
   project = "${var.project}"
 }
 
+resource "google_compute_subnetwork" "jobs_org" {
+  name          = "jobs-org"
+  ip_cidr_range = "${var.jobs_org_subnet_cidr_range}"
+  network       = "${google_compute_network.main.self_link}"
+  region        = "us-central1"
+
+  project = "${var.project}"
+}
+
+# TODO: remove this legacy subnetwork when no longer in use
 resource "google_compute_subnetwork" "build_org" {
   name          = "buildorg"
   ip_cidr_range = "${var.build_org_subnet_cidr_range}"
@@ -102,6 +120,16 @@ resource "google_compute_subnetwork" "build_org" {
   project = "${var.project}"
 }
 
+resource "google_compute_subnetwork" "jobs_com" {
+  name          = "jobs-com"
+  ip_cidr_range = "${var.jobs_com_subnet_cidr_range}"
+  network       = "${google_compute_network.main.self_link}"
+  region        = "us-central1"
+
+  project = "${var.project}"
+}
+
+# TODO: remove this legacy subnetwork when no longer in use
 resource "google_compute_subnetwork" "build_com" {
   name          = "buildcom"
   ip_cidr_range = "${var.build_com_subnet_cidr_range}"
@@ -162,13 +190,13 @@ resource "google_compute_firewall" "allow_internal" {
   }
 }
 
-resource "google_compute_firewall" "allow_build_nat" {
-  name    = "allow-build-nat"
+resource "google_compute_firewall" "allow_jobs_nat" {
+  name    = "allow-jobs-nat"
   network = "${google_compute_network.main.name}"
 
   source_ranges = [
-    "${google_compute_subnetwork.build_org.ip_cidr_range}",
-    "${google_compute_subnetwork.build_com.ip_cidr_range}",
+    "${google_compute_subnetwork.jobs_org.ip_cidr_range}",
+    "${google_compute_subnetwork.jobs_com.ip_cidr_range}",
   ]
 
   target_tags = ["nat"]
@@ -240,10 +268,13 @@ resource "google_compute_instance" "bastion-b" {
   tags         = ["bastion", "${var.env}"]
   project      = "${var.project}"
 
-  disk {
+  boot_disk {
     auto_delete = true
-    image       = "${var.bastion_image}"
-    type        = "pd-ssd"
+
+    initialize_params {
+      image = "${var.bastion_image}"
+      type  = "pd-ssd"
+    }
   }
 
   network_interface {
@@ -260,6 +291,29 @@ resource "google_compute_instance" "bastion-b" {
   }
 }
 
+module "gce_worker_a" {
+  source = "../gce_worker"
+
+  account_json_com         = "${var.worker_account_json_com}"
+  account_json_org         = "${var.worker_account_json_org}"
+  config_com               = "${var.worker_config_com}"
+  config_org               = "${var.worker_config_org}"
+  env                      = "${var.env}"
+  github_users             = "${var.github_users}"
+  index                    = "${var.index}"
+  instance_count_com       = "${var.worker_instance_count_com / var.zone_count}"
+  instance_count_org       = "${var.worker_instance_count_org / var.zone_count}"
+  machine_type             = "g1-small"
+  project                  = "${var.project}"
+  subnetwork_workers       = "${google_compute_subnetwork.workers.self_link}"
+  syslog_address_com       = "${var.syslog_address_com}"
+  syslog_address_org       = "${var.syslog_address_org}"
+  worker_docker_self_image = "${var.worker_docker_self_image}"
+  worker_image             = "${var.worker_image}"
+  zone                     = "us-central1-a"
+  zone_suffix              = "a"
+}
+
 module "gce_worker_b" {
   source = "../gce_worker"
 
@@ -274,7 +328,7 @@ module "gce_worker_b" {
   instance_count_org       = "${var.worker_instance_count_org / var.zone_count}"
   machine_type             = "g1-small"
   project                  = "${var.project}"
-  subnetwork_workers       = "${google_compute_subnetwork.workers.name}"
+  subnetwork_workers       = "${google_compute_subnetwork.workers.self_link}"
   syslog_address_com       = "${var.syslog_address_com}"
   syslog_address_org       = "${var.syslog_address_org}"
   worker_docker_self_image = "${var.worker_docker_self_image}"
@@ -297,13 +351,36 @@ module "gce_worker_c" {
   instance_count_org       = "${var.worker_instance_count_org / var.zone_count}"
   machine_type             = "g1-small"
   project                  = "${var.project}"
-  subnetwork_workers       = "${google_compute_subnetwork.workers.name}"
+  subnetwork_workers       = "${google_compute_subnetwork.workers.self_link}"
   syslog_address_com       = "${var.syslog_address_com}"
   syslog_address_org       = "${var.syslog_address_org}"
   worker_docker_self_image = "${var.worker_docker_self_image}"
   worker_image             = "${var.worker_image}"
   zone                     = "us-central1-c"
   zone_suffix              = "c"
+}
+
+module "gce_worker_f" {
+  source = "../gce_worker"
+
+  account_json_com         = "${var.worker_account_json_com}"
+  account_json_org         = "${var.worker_account_json_org}"
+  config_com               = "${var.worker_config_com}"
+  config_org               = "${var.worker_config_org}"
+  env                      = "${var.env}"
+  github_users             = "${var.github_users}"
+  index                    = "${var.index}"
+  instance_count_com       = "${var.worker_instance_count_com / var.zone_count}"
+  instance_count_org       = "${var.worker_instance_count_org / var.zone_count}"
+  machine_type             = "g1-small"
+  project                  = "${var.project}"
+  subnetwork_workers       = "${google_compute_subnetwork.workers.self_link}"
+  syslog_address_com       = "${var.syslog_address_com}"
+  syslog_address_org       = "${var.syslog_address_org}"
+  worker_docker_self_image = "${var.worker_docker_self_image}"
+  worker_image             = "${var.worker_image}"
+  zone                     = "us-central1-f"
+  zone_suffix              = "f"
 }
 
 resource "heroku_app" "gcloud_cleanup" {

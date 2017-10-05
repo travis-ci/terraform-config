@@ -11,9 +11,18 @@ main() {
   mkdir -p "${run_dir}"
   local env_file="${run_dir}/${name}.env"
   travis-tfw-combined-env travis-worker >"${env_file}"
+
   set -o allexport
   # shellcheck source=/dev/null
   source "${env_file}"
+
+  if [ -n "${TRAVIS_WORKER_GCE_ZONES}" ]; then
+    local gce_zone
+    gce_zone="$(__rand_gce_zone "${TRAVIS_WORKER_GCE_ZONES}")"
+    if [ -n "${gce_zone}" ]; then
+      echo "TRAVIS_WORKER_GCE_ZONE=${gce_zone}" >>"${env_file}"
+    fi
+  fi
 
   if [ -f "${TRAVIS_WORKER_PRESTART_HOOK}" ]; then
     "${TRAVIS_WORKER_PRESTART_HOOK}"
@@ -28,6 +37,13 @@ main() {
     -v /var/run:/var/run \
     --env-file "${env_file}" \
     "${TRAVIS_WORKER_SELF_IMAGE}" travis-worker
+}
+
+__rand_gce_zone() {
+  local zones idx
+  zones=(${1//,/ })
+  idx=$((RANDOM % ${#zones[@]}))
+  echo "${zones[idx]}"
 }
 
 main "$@"
