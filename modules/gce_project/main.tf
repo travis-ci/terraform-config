@@ -71,8 +71,9 @@ variable "zone_count" {
 }
 
 resource "google_compute_network" "main" {
-  name    = "main"
-  project = "${var.project}"
+  name                    = "main"
+  project                 = "${var.project}"
+  auto_create_subnetworks = "false"
 }
 
 output "gce_network" {
