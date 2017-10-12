@@ -35,7 +35,7 @@ variable "worker_config_com" {}
 variable "worker_config_org" {}
 
 variable "worker_docker_self_image" {
-  default = "travisci/worker:v2.11.0"
+  default = "travisci/worker:v3.1.0"
 }
 
 variable "worker_image" {}
@@ -71,8 +71,9 @@ variable "zone_count" {
 }
 
 resource "google_compute_network" "main" {
-  name    = "main"
-  project = "${var.project}"
+  name                    = "main"
+  project                 = "${var.project}"
+  auto_create_subnetworks = "false"
 }
 
 output "gce_network" {
