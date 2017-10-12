@@ -3,23 +3,13 @@ resource "vsphere_folder" "base_vms" {
   datacenter = "${var.datacenter}"
 }
 
-resource "vsphere_folder" "datacore1_base_vms" {
-  path       = "DATACORE 1 Base VMs"
+resource "vsphere_folder" "datacore_1_base_vms" {
+  path       = "Pod ${var.index} Base VMs"
   datacenter = "${var.datacenter}"
 }
 
-resource "vsphere_folder" "datacore2_base_vms" {
-  path       = "DATACORE 2 Base VMs"
-  datacenter = "${var.datacenter}"
-}
-
-resource "vsphere_folder" "datacore3_base_vms" {
-  path       = "DATACORE 3 Base VMs"
-  datacenter = "${var.datacenter}"
-}
-
-resource "vsphere_folder" "datacore4_base_vms" {
-  path       = "DATACORE 4 Base VMs"
+resource "vsphere_folder" "datacore_2_base_vms" {
+  path       = "Pod ${var.index} Base VMs"
   datacenter = "${var.datacenter}"
 }
 
