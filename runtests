@@ -31,8 +31,7 @@ main() {
   done
 
   echo 'Running shellcheck'
-  # Note: shellcheck checks for SC2154 (undefined variable) are disabled by '-e SC2154' below
-  git grep -El '^#!/.+\b(bash|sh)\b' | xargs shellcheck -e SC2154
+  git grep -El '^#!/.+\b(bash|sh)\b' | xargs shellcheck
 
   echo 'Running shfmt'
   git grep -El '^#!/.+\b(bash|sh)\b' | xargs shfmt -i 2 -w

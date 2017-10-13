@@ -21,8 +21,6 @@ main() {
   fi
 
   if [[ -d "${ETCDIR}/init" ]]; then
-    cp -v "${VARTMP}/travis-worker.conf" \
-      "${ETCDIR}/init/travis-worker.conf"
     for worker_suffix in ${WORKER_SUFFIXES}; do
       cp -v "${VARTMP}/travis-worker.conf" \
         "${ETCDIR}/init/travis-worker-${worker_suffix}.conf"

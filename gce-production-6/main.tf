@@ -60,7 +60,7 @@ module "gce_project_6" {
   worker_account_json_com       = "${file("${path.module}/config/gce-workers-production-6.json")}"
   worker_account_json_org       = "${file("${path.module}/config/gce-workers-production-6.json")}"
   worker_image                  = "${var.gce_worker_image}"
-  worker_instance_count_com     = 10
+  worker_instance_count_com     = 12
   worker_instance_count_org     = 0
 
   worker_config_com = <<EOF
@@ -71,7 +71,7 @@ ${file("${path.module}/config/worker-com.env")}
 
 export TRAVIS_WORKER_GCE_PUBLIC_IP=true
 export TRAVIS_WORKER_GCE_PUBLIC_IP_CONNECT=false
-export TRAVIS_WORKER_GCE_SUBNETWORK=workerscom
+export TRAVIS_WORKER_GCE_SUBNETWORK=jobs-com
 export TRAVIS_WORKER_HARD_TIMEOUT=120m
 export TRAVIS_WORKER_POOL_SIZE=35
 export TRAVIS_WORKER_TRAVIS_SITE=com
@@ -85,7 +85,7 @@ ${file("${path.module}/config/worker-org.env")}
 
 export TRAVIS_WORKER_GCE_PUBLIC_IP=true
 export TRAVIS_WORKER_GCE_PUBLIC_IP_CONNECT=false
-export TRAVIS_WORKER_GCE_SUBNETWORK=buildorg
+export TRAVIS_WORKER_GCE_SUBNETWORK=jobs-org
 export TRAVIS_WORKER_POOL_SIZE=30
 export TRAVIS_WORKER_TRAVIS_SITE=org
 EOF
