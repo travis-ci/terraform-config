@@ -72,6 +72,7 @@ ${file("${path.module}/config/worker-com.env")}
 export TRAVIS_WORKER_GCE_PUBLIC_IP=true
 export TRAVIS_WORKER_GCE_PUBLIC_IP_CONNECT=false
 export TRAVIS_WORKER_GCE_SUBNETWORK=jobs-com
+export TRAVIS_WORKER_GCE_SITE=com
 export TRAVIS_WORKER_HARD_TIMEOUT=120m
 export TRAVIS_WORKER_POOL_SIZE=35
 export TRAVIS_WORKER_TRAVIS_SITE=com
@@ -86,6 +87,7 @@ ${file("${path.module}/config/worker-org.env")}
 export TRAVIS_WORKER_GCE_PUBLIC_IP=true
 export TRAVIS_WORKER_GCE_PUBLIC_IP_CONNECT=false
 export TRAVIS_WORKER_GCE_SUBNETWORK=jobs-org
+export TRAVIS_WORKER_GCE_SITE=org
 export TRAVIS_WORKER_POOL_SIZE=30
 export TRAVIS_WORKER_TRAVIS_SITE=org
 EOF
