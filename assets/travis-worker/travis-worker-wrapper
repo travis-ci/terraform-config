@@ -10,7 +10,7 @@ main() {
   local run_dir=/var/tmp/travis-run.d
   mkdir -p "${run_dir}"
   local env_file="${run_dir}/${name}.env"
-  travis-tfw-combined-env travis-worker >"${env_file}"
+  travis-combined-env travis-worker "${env_file}"
 
   set -o allexport
   # shellcheck source=/dev/null
