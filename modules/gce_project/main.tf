@@ -70,6 +70,11 @@ variable "zone_count" {
   default = "4"
 }
 
+variable "deny_target_ip_ranges" {
+  type = "list"
+  default = []
+}
+
 resource "google_compute_network" "main" {
   name                    = "main"
   project                 = "${var.project}"
@@ -214,6 +219,31 @@ resource "google_compute_firewall" "allow_jobs_nat" {
 
   allow {
     protocol = "udp"
+  }
+}
+
+resource "google_compute_firewall" "deny_target_ip" {
+  name          = "deny-target-ip"
+  network       = "${google_compute_network.main.name}"
+
+  direction          = "EGRESS"
+  destination_ranges = ["${var.deny_target_ip_ranges}"]
+
+  project = "${var.project}"
+
+  # highest priority
+  priority = "0"
+
+  deny {
+    protocol = "tcp"
+  }
+
+  deny {
+    protocol = "udp"
+  }
+
+  deny {
+    protocol = "icmp"
   }
 }
 
