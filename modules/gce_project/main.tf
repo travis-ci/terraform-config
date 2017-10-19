@@ -71,7 +71,7 @@ variable "zone_count" {
 }
 
 variable "deny_target_ip_ranges" {
-  type = "list"
+  type    = "list"
   default = []
 }
 
@@ -223,8 +223,8 @@ resource "google_compute_firewall" "allow_jobs_nat" {
 }
 
 resource "google_compute_firewall" "deny_target_ip" {
-  name          = "deny-target-ip"
-  network       = "${google_compute_network.main.name}"
+  name    = "deny-target-ip"
+  network = "${google_compute_network.main.name}"
 
   direction          = "EGRESS"
   destination_ranges = ["${var.deny_target_ip_ranges}"]
