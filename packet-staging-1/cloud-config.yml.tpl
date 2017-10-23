@@ -33,4 +33,5 @@ write_files:
 runcmd:
 - [curl, -sL, -o, /usr/local/bin/travis-tfw-combined-env, 'https://raw.githubusercontent.com/travis-ci/packer-templates/master/cookbooks/travis_tfw/files/default/travis-tfw-combined-env']
 - [chmod, '0755', /usr/local/bin/travis-tfw-combined-env]
+- [ln, -s, /usr/local/bin/travis-tfw-combined-env, /usr/local/bin/travis-combined-env]
 - [/var/tmp/cloud-init.bash]
