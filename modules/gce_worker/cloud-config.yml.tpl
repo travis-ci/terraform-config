@@ -22,6 +22,10 @@ write_files:
   owner: 'root:root'
   path: /usr/local/bin/travis-worker-wrapper
   permissions: '0755'
+- content: '${base64encode(file("${assets}/bits/travis-combined-env"))}'
+  encoding: b64
+  owner: 'root:root'
+  path: /usr/local/bin/travis-combined-env
 - content: '${base64encode(gce_account_json)}'
   encoding: b64
   owner: 'travis:travis'
