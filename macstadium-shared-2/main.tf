@@ -5,7 +5,7 @@ variable "index" {
 variable "latest_travis_worker_version" {}
 
 variable "travis_worker_version" {
-  default = "v3.2.0"
+  default = "v3.2.1"
 }
 
 variable "travisci_net_external_zone_id" {
