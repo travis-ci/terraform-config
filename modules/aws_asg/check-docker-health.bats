@@ -23,7 +23,6 @@ run_check_docker_health() {
 EOF
   echo 'docker appears to be unhealthy' >"${RUNDIR}/implode.confirm"
   run run_check_docker_health
-  KILL_COMMAND="${BATS_TMPDIR}/bin/kill_mocked"
 
   assert_cmd 'shutdown -P now.+imploding because docker appears to be unhealthy'
   assert_cmd 'sleep 0.1'
@@ -104,7 +103,6 @@ EOF
 EOF
 
   run run_check_docker_health
-  cat /tmp/logs/mock.log
   assert_cmd "kill_mocked -INT 42"
 
   [ -f "${RUNDIR}/implode" ]
