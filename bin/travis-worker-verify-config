@@ -81,7 +81,7 @@ class TravisWorkerConfigVerifier
 
   def verify_etc_cron_d_check_docker_health!(content)
     assert_identical_content!(
-      content, 'modules/aws_asg/check-docker-health.crontab'
+      content, 'modules/aws_asg/check-docker-health-crontab'
     )
   end
 
