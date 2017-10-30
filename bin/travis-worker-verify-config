@@ -1,4 +1,7 @@
 #!/usr/bin/env ruby
+# This executable is run via null resource provisioner
+# but you can run it directly, too
+
 require 'base64'
 require 'json'
 require 'pathname'
