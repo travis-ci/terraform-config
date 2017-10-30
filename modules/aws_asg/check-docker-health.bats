@@ -103,7 +103,7 @@ EOF
 EOF
 
   run run_check_docker_health
-  assert_cmd "kill_mocked -INT 42"
+  assert_cmd "kill_mocked -TERM 42"
 
   [ -f "${RUNDIR}/implode" ]
   [ "${status}" -eq 86 ]

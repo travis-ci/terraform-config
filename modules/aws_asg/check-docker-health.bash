@@ -34,6 +34,12 @@ main() {
     __handle_unresponsive_docker "${run_d}"
     __die imploding 86
   fi
+
+  if [ -e "${run_d}/implode" ]; then
+    logger "docker no longer seems unhealthy; canceling implosion."
+    rm "${run_d}/implode"
+  fi
+
   __die noop 0
 }
 
