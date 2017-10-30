@@ -3,6 +3,10 @@ variable "bastion_image" {}
 variable "env" {}
 variable "gcloud_cleanup_account_json" {}
 
+variable "gcloud_cleanup_instance_filters" {
+  default = "name eq ^(testing-gce|travis-job).*"
+}
+
 variable "gcloud_cleanup_instance_max_age" {
   default = "3h"
 }
@@ -35,7 +39,7 @@ variable "worker_config_com" {}
 variable "worker_config_org" {}
 
 variable "worker_docker_self_image" {
-  default = "travisci/worker:v3.1.0"
+  default = "travisci/worker:v3.2.2"
 }
 
 variable "worker_image" {}
@@ -426,6 +430,7 @@ resource "heroku_app" "gcloud_cleanup" {
     BUILDPACK_URL                   = "https://github.com/travis-ci/heroku-buildpack-makey-go"
     GCLOUD_CLEANUP_ACCOUNT_JSON     = "${var.gcloud_cleanup_account_json}"
     GCLOUD_CLEANUP_ENTITIES         = "instances"
+    GCLOUD_CLEANUP_INSTANCE_FILTERS = "${var.gcloud_cleanup_instance_filters}"
     GCLOUD_CLEANUP_INSTANCE_MAX_AGE = "${var.gcloud_cleanup_instance_max_age}"
     GCLOUD_CLEANUP_JOB_BOARD_URL    = "${var.gcloud_cleanup_job_board_url}"
     GCLOUD_CLEANUP_LOOP_SLEEP       = "${var.gcloud_cleanup_loop_sleep}"
