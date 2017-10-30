@@ -4,7 +4,7 @@ variable "env" {}
 variable "gcloud_cleanup_account_json" {}
 
 variable "gcloud_cleanup_instance_filters" {
-  default = "name eq ^travis-job-.*,name eq ^testing-gce-.*"
+  default = "name eq testing-gce OR travis-job"
 }
 
 variable "gcloud_cleanup_instance_max_age" {
