@@ -59,7 +59,7 @@ __handle_unresponsive_docker() {
   sleep "${post_sleep}"
 
   if [ -e "${run_d}/implode" ]; then
-    "${KILL_COMMAND}" -INT "$(pidof travis-worker)" || restart travis-worker
+    "${KILL_COMMAND}" -TERM "$(pidof travis-worker)" || restart travis-worker
   else
     logger "${run_d}/implode not found, not imploding?"
     __die noop 0
