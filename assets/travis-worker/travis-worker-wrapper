@@ -42,7 +42,7 @@ main() {
 
 __fetch_gce_zone() {
   curl -sSL \
-    "http://metadata.google.internal/computeMetadata/v1/instance/zone?recursive=true" \
+    "http://metadata.google.internal/computeMetadata/v1/instance/zone" \
     -H "Metadata-Flavor: Google" |
     awk -F/ '{ print $NF }'
 }
