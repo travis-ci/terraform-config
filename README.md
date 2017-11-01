@@ -56,6 +56,7 @@ repos
 * AWS_REGION
 * HEROKU_API_KEY
 * TF_VAR_ssh_user
+* SLACK_WEBHOOK (can be retrieved via `trvs generate-config -n -f env terraform-config -p '' terraform_common`)
 
 #### Notes
 
