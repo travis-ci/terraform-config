@@ -31,18 +31,14 @@ data "template_file" "cloud_config_com" {
   template = "${file("${path.module}/cloud-config.yml.tpl")}"
 
   vars {
-    cloud_init_bash      = "${file("${path.module}/cloud-init.bash")}"
-    cloud_init_env       = "${data.template_file.cloud_init_env_com.rendered}"
-    docker_env           = "export TRAVIS_DOCKER_DISABLE_DIRECT_LVM=1"
-    gce_account_json     = "${var.account_json_com}"
-    github_users_env     = "export GITHUB_USERS='${var.github_users}'"
-    rsyslog_conf         = "${file("${path.module}/../../assets/rsyslog/rsyslog.conf")}"
-    syslog_address       = "${var.syslog_address_com}"
-    worker_config        = "${var.config_com}"
-    worker_rsyslog_watch = "${file("${path.module}/../../assets/travis-worker/rsyslog-watch-upstart.conf")}"
-    worker_service       = "${file("${path.module}/../../assets/travis-worker/travis-worker.service")}"
-    worker_upstart       = "${file("${path.module}/../../assets/travis-worker/travis-worker.conf")}"
-    worker_wrapper       = "${file("${path.module}/../../assets/travis-worker/travis-worker-wrapper")}"
+    assets           = "${path.module}/../../assets"
+    cloud_init_env   = "${data.template_file.cloud_init_env_com.rendered}"
+    docker_env       = "export TRAVIS_DOCKER_DISABLE_DIRECT_LVM=1"
+    gce_account_json = "${var.account_json_com}"
+    github_users_env = "export GITHUB_USERS='${var.github_users}'"
+    here             = "${path.module}"
+    syslog_address   = "${var.syslog_address_com}"
+    worker_config    = "${var.config_com}"
   }
 }
 
@@ -67,10 +63,13 @@ resource "google_compute_instance" "worker_com" {
   tags         = ["worker", "${var.env}", "com"]
   project      = "${var.project}"
 
-  disk {
+  boot_disk {
     auto_delete = true
-    image       = "${var.worker_image}"
-    type        = "pd-ssd"
+
+    initialize_params {
+      image = "${var.worker_image}"
+      type  = "pd-ssd"
+    }
   }
 
   network_interface {
@@ -87,6 +86,10 @@ resource "google_compute_instance" "worker_com" {
   }
 
   depends_on = ["null_resource.worker_com_validation"]
+
+  lifecycle {
+    ignore_changes = ["disk", "boot_disk"]
+  }
 }
 
 data "template_file" "cloud_init_env_org" {
@@ -99,18 +102,14 @@ data "template_file" "cloud_config_org" {
   template = "${file("${path.module}/cloud-config.yml.tpl")}"
 
   vars {
-    cloud_init_bash      = "${file("${path.module}/cloud-init.bash")}"
-    cloud_init_env       = "${data.template_file.cloud_init_env_org.rendered}"
-    docker_env           = "export TRAVIS_DOCKER_DISABLE_DIRECT_LVM=1"
-    gce_account_json     = "${var.account_json_org}"
-    github_users_env     = "export GITHUB_USERS='${var.github_users}'"
-    rsyslog_conf         = "${file("${path.module}/../../assets/rsyslog/rsyslog.conf")}"
-    syslog_address       = "${var.syslog_address_org}"
-    worker_config        = "${var.config_org}"
-    worker_rsyslog_watch = "${file("${path.module}/../../assets/travis-worker/rsyslog-watch-upstart.conf")}"
-    worker_service       = "${file("${path.module}/../../assets/travis-worker/travis-worker.service")}"
-    worker_upstart       = "${file("${path.module}/../../assets/travis-worker/travis-worker.conf")}"
-    worker_wrapper       = "${file("${path.module}/../../assets/travis-worker/travis-worker-wrapper")}"
+    assets           = "${path.module}/../../assets"
+    cloud_init_env   = "${data.template_file.cloud_init_env_org.rendered}"
+    docker_env       = "export TRAVIS_DOCKER_DISABLE_DIRECT_LVM=1"
+    gce_account_json = "${var.account_json_org}"
+    github_users_env = "export GITHUB_USERS='${var.github_users}'"
+    here             = "${path.module}"
+    syslog_address   = "${var.syslog_address_org}"
+    worker_config    = "${var.config_org}"
   }
 }
 
@@ -135,10 +134,13 @@ resource "google_compute_instance" "worker_org" {
   tags         = ["worker", "${var.env}", "org"]
   project      = "${var.project}"
 
-  disk {
+  boot_disk {
     auto_delete = true
-    image       = "${var.worker_image}"
-    type        = "pd-ssd"
+
+    initialize_params {
+      image = "${var.worker_image}"
+      type  = "pd-ssd"
+    }
   }
 
   network_interface {
@@ -155,4 +157,8 @@ resource "google_compute_instance" "worker_org" {
   }
 
   depends_on = ["null_resource.worker_org_validation"]
+
+  lifecycle {
+    ignore_changes = ["disk", "boot_disk"]
+  }
 }

@@ -54,7 +54,7 @@ end
 def fancy_sorted(tags)
   tags.sort do |a, b|
     if a =~ /^packer/ && b =~ /^packer/
-      Integer(a.split('-').last) <=> Integer(b.split('-').last)
+      Integer(a.split('-')[1]) <=> Integer(b.split('-')[1])
     elsif a =~ /^v\d/ && b =~ /^v\d/
       vers2int(a) <=> vers2int(b)
     else

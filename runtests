@@ -4,6 +4,12 @@ set -o errexit
 set -o pipefail
 
 main() {
+  # abort if there are uncommitted local changes
+  if [[ "${*}" =~ --force ]]; then
+    msg="You have uncommitted changes. Not proceeding, as this script changes some files in place. (Use --force to override)"
+    git diff-index --quiet HEAD -- || (echo "$msg" && exit 1)
+  fi
+
   if [[ $# -gt 1 && $1 == --env ]]; then
     echo "Running isolated with env ${2}"
     exec env -i \
@@ -27,13 +33,10 @@ main() {
   done
 
   echo 'Running shellcheck'
-  git grep -l '^#!/usr/bin/env bash' | xargs shellcheck
-  # Temporarily disable shellcheck checks for SC2154 (undefined variable) on /bin/bash files
-  git grep -l '^#!/bin/bash' | xargs shellcheck -e SC2154
+  git grep -El '^#!/.+\b(bash|sh)\b' | xargs shellcheck
 
   echo 'Running shfmt'
-  git grep -l '^#!/usr/bin/env bash' | xargs shfmt -i 2 -w
-  git grep -l '^#!/bin/bash' | xargs shfmt -i 2 -w
+  git grep -El '^#!/.+\b(bash|sh)\b' | xargs shfmt -i 2 -w
 
   echo 'Running bats'
   for f in $(git ls-files '*.bats'); do

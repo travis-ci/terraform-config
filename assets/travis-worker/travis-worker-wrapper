@@ -2,16 +2,28 @@
 set -o errexit
 
 main() {
-  docker stop travis-worker &>/dev/null || true
-  docker rm -f travis-worker &>/dev/null || true
+  local name="${1:-travis-worker}"
+
+  docker stop "${name}" &>/dev/null || true
+  docker rm -f "${name}" &>/dev/null || true
 
   local run_dir=/var/tmp/travis-run.d
   mkdir -p "${run_dir}"
-  local env_file="${run_dir}/env"
-  travis-tfw-combined-env travis-worker >"${env_file}"
+  local env_file="${run_dir}/${name}.env"
+  travis-combined-env travis-worker "${env_file}"
+
   set -o allexport
   # shellcheck source=/dev/null
   source "${env_file}"
+
+  if [[ "${TRAVIS_WORKER_PROVIDER_NAME}" == gce ]]; then
+    local gce_zone
+    gce_zone="$(__fetch_gce_zone)"
+    if [ -z "${gce_zone}" ]; then
+      gce_zone=us-central1-b
+    fi
+    echo "TRAVIS_WORKER_GCE_ZONE=${gce_zone}" >>"${env_file}"
+  fi
 
   if [ -f "${TRAVIS_WORKER_PRESTART_HOOK}" ]; then
     "${TRAVIS_WORKER_PRESTART_HOOK}"
@@ -19,13 +31,20 @@ main() {
 
   exec docker run \
     --rm \
-    --name travis-worker \
+    --name "${name}" \
     --hostname "$(hostname)" \
     --userns host \
     -v /var/tmp:/var/tmp \
     -v /var/run:/var/run \
     --env-file "${env_file}" \
     "${TRAVIS_WORKER_SELF_IMAGE}" travis-worker
+}
+
+__fetch_gce_zone() {
+  curl -sSL \
+    "http://metadata.google.internal/computeMetadata/v1/instance/zone" \
+    -H "Metadata-Flavor: Google" |
+    awk -F/ '{ print $NF }'
 }
 
 main "$@"

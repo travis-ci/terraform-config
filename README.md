@@ -56,6 +56,7 @@ repos
 * AWS_REGION
 * HEROKU_API_KEY
 * TF_VAR_ssh_user
+* SLACK_WEBHOOK (can be retrieved via `trvs generate-config -n -f env terraform-config -p '' terraform_common`)
 
 #### Notes
 
@@ -96,3 +97,6 @@ run.
 	flags to make sure they succeed
 * `terraform console` will allow you to use an interactive console for
   testing interpolations and looking into the existing state.
+* Terraform state errors may be due to insufficient AWS permissions.  See the
+  [`.example-aws-iam-policy.json`](./.example-aws-iam-policy.json) for example
+minimum permissions.

@@ -10,3 +10,4 @@ local-development-0/local-development-0.tfstate
 macstadium-*/config/
 tfstate
 debug.tmp
+crash.log

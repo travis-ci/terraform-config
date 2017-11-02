@@ -118,5 +118,5 @@ $(CONFIG_FILES):
 		| sed 's/^/export /' >config/collectd-vsphere-common
 
 $(ENV_NAME).tfvars:
-	$(TOP)/bin/generate-tfvars >$@
+	$(TOP)/bin/generate-tfvars $@
 	trvs generate-config -f hcl collectd-vsphere common-$(INDEX) >> $@

@@ -1,10 +1,6 @@
 SHELL := bash
 
 TOP := $(shell git rev-parse --show-toplevel)
-TRAVIS_BUILD_COM_HOST ?= build.travis-ci.com
-TRAVIS_BUILD_ORG_HOST ?= build.travis-ci.org
-JOB_BOARD_HOST ?= job-board.travis-ci.com
-AMQP_URL_VARNAME ?= AMQP_URL
 
 include $(TOP)/terraform.mk
 
@@ -22,14 +18,7 @@ CONFIG_FILES := \
 .PHONY: .config
 .config: $(CONFIG_FILES) $(ENV_NAME).tfvars
 
-$(CONFIG_FILES):
-	$(TOP)/bin/write-aws-config-files \
-		"$(INFRA)" \
-		"$(ENV_SHORT)" \
-		"$(TRAVIS_BUILD_COM_HOST)" \
-		"$(TRAVIS_BUILD_ORG_HOST)" \
-		"$(JOB_BOARD_HOST)" \
-		"$(AMQP_URL_VARNAME)"
+$(CONFIG_FILES): config/.written
 
 .PHONY: diff-docker-images
 diff-docker-images:

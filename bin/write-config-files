@@ -1,0 +1,188 @@
+#!/usr/bin/env ruby
+
+require 'fileutils'
+require 'optparse'
+require 'time'
+
+def main(argv: ARGV)
+  opts = parse_argv(argv)
+  FileUtils.mkdir_p('config')
+
+  fwrite(
+    'config/worker-com.env',
+    trvs_gen(
+      "#{opts[:infra]}-workers",
+      opts[:env_tail].empty? ? opts[:env_short] : opts[:env_tail],
+      pro: true
+    )
+  )
+
+  fwrite(
+    'config/worker-org.env',
+    trvs_gen(
+      "#{opts[:infra]}-workers",
+      opts[:env_tail].empty? ? opts[:env_short] : opts[:env_tail],
+    )
+  )
+
+  if opts[:write_bastion]
+    fwrite(
+      'config/bastion.env',
+      trvs_gen(
+        "#{opts[:infra]}-bastion", opts[:env_short],
+        pro: true, prefix: "#{opts[:infra].upcase}_BASTION"
+      )
+    )
+  end
+
+  {
+    'config/travis-org.env' => "travis-#{opts[:env_short]}",
+    'config/travis-build-org.env' => "travis-build-#{opts[:env_short]}",
+    'config/travis-com.env' => "travis-pro-#{opts[:env_short]}",
+    'config/travis-build-com.env' => "travis-pro-build-#{opts[:env_short]}",
+    'config/job-board.env' => "job-board-#{opts[:env_short]}"
+  }.each do |outfile, app|
+    fwrite(outfile, heroku_dump_shell_config(app))
+  end
+
+
+  env = source_env('config/job-board.env')
+  job_board_auth = "travis-worker:#{env['AUTH_TOKENS'].split(':').first}"
+  job_board_uri = "https://#{job_board_auth}@#{opts[:job_board_host]}"
+
+  env = source_env('config/travis-build-com.env')
+  env.merge!(source_env('config/travis-com.env'))
+
+  com_build_auth = env['API_TOKEN'].split(',').first
+  com_build_uri = "https://#{com_build_auth}@#{opts[:build_com_host]}/script"
+
+  fwrite(
+    'config/worker-com-local.env',
+    <<~EOF
+      export TRAVIS_WORKER_AMQP_URI=#{env[opts[:amqp_url_varname]]}
+      export TRAVIS_WORKER_BUILD_API_URI=#{com_build_uri}
+      export TRAVIS_WORKER_JOB_BOARD_URL=#{job_board_uri}
+    EOF
+  )
+
+  system(
+    { opts[:amqp_url_varname] => env[opts[:amqp_url_varname]] },
+    "#{top}/bin/env-url-to-parts #{opts[:amqp_url_varname]} config/ com"
+  )
+
+  env = source_env('config/travis-build-org.env')
+  env.merge!(source_env('config/travis-org.env'))
+
+  org_build_auth = env['API_TOKEN'].split(',').first
+  org_build_uri = "https://#{org_build_auth}@#{opts[:build_org_host]}/script"
+
+  fwrite(
+    'config/worker-org-local.env',
+    <<~EOF
+      export TRAVIS_WORKER_AMQP_URI=#{env[opts[:amqp_url_varname]]}
+      export TRAVIS_WORKER_BUILD_API_URI=#{org_build_uri}
+      export TRAVIS_WORKER_JOB_BOARD_URL=#{job_board_uri}
+    EOF
+  )
+
+  system(
+    { opts[:amqp_url_varname] => env[opts[:amqp_url_varname]] },
+    "#{top}/bin/env-url-to-parts #{opts[:amqp_url_varname]} config/ org"
+  )
+
+  fwrite('config/.written', Time.now.utc.iso8601 + "\n")
+  0
+end
+
+def parse_argv(argv)
+  opts = {
+    infra: '',
+    env_short: '',
+    env_tail: '',
+    build_com_host: '',
+    build_org_host: '',
+    job_board_host: '',
+    amqp_url_varname: '',
+    write_bastion: false
+  }
+
+  OptionParser.new do |o|
+    o.on('--infra=INFRA') do |v|
+      opts[:infra] = v.strip
+    end
+
+    o.on('--env=ENV') do |v|
+      opts[:env_short] = v.strip
+    end
+
+    o.on('--env-tail=ENV_TAIL') do |v|
+      opts[:env_tail] = v.strip
+    end
+
+    o.on('--build-com-host=HOST') do |v|
+      opts[:build_com_host] = v.strip
+    end
+
+    o.on('--build-org-host=HOST') do |v|
+      opts[:build_org_host] = v.strip
+    end
+
+    o.on('--job-board-host=HOST') do |v|
+      opts[:job_board_host] = v.strip
+    end
+
+    o.on('--amqp-url-varname=HOST') do |v|
+      opts[:amqp_url_varname] = v.strip
+    end
+
+    o.on('--write-bastion') do
+      opts[:write_bastion] = true
+    end
+  end.parse(argv)
+
+  opts
+end
+
+def prog
+  @prog ||= File.basename($PROGRAM_NAME)
+end
+
+def top
+  @top ||= `git rev-parse --show-toplevel`.strip
+end
+
+def heroku_dump_shell_config(app)
+  %x[#{top}/bin/heroku-dump-shell-config #{app}]
+end
+
+def trvs_gen(app, env, pro: false, prefix: 'TRAVIS_WORKER')
+  command = %W[
+    trvs generate-config
+    #{pro ? '--pro' : ''}
+    -p #{prefix}
+    -f env
+    #{app} #{env}
+  ]
+  output = `#{command.join(' ')}`
+  output.split(/\n/).map { |l| "export #{l}" }.join("\n")
+end
+
+def source_env(filename)
+  out = {}
+
+  File.read(filename).split(/\n/).map(&:strip).each do |line|
+    line.sub!(/^export /, '')
+    key, value = line.split('=', 2)
+    value = value.sub(/^['"]/, '').sub(/['"]$/, '')
+    out[key] = value
+  end
+
+  out
+end
+
+def fwrite(outfile, content)
+  $stderr.puts "#{prog}: writing #{outfile.inspect}"
+  File.write(outfile, content)
+end
+
+exit(main(argv: ARGV)) if $PROGRAM_NAME == __FILE__

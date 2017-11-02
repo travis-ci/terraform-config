@@ -22,7 +22,8 @@ variable "syslog_address_com" {}
 variable "syslog_address_org" {}
 
 variable "worker_ami" {
-  default = "ami-a38664b5"
+  # tfw 2017-09-05 16-00-17
+  default = "ami-3e405045"
 }
 
 terraform {
@@ -76,11 +77,11 @@ module "rabbitmq_worker_config_org" {
 
 data "template_file" "worker_config_com" {
   template = <<EOF
-### ${path.module}/config/worker-com-local.env
+### config/worker-com-local.env
 ${file("${path.module}/config/worker-com-local.env")}
-### ${path.module}/config/worker-com.env
+### config/worker-com.env
 ${file("${path.module}/config/worker-com.env")}
-### ${path.module}/worker.env
+### worker.env
 ${file("${path.module}/worker.env")}
 
 export TRAVIS_WORKER_HARD_TIMEOUT=2h
@@ -90,11 +91,11 @@ EOF
 
 data "template_file" "worker_config_org" {
   template = <<EOF
-### ${path.module}/config/worker-org-local.env
+### config/worker-org-local.env
 ${file("${path.module}/config/worker-org-local.env")}
-### ${path.module}/config/worker-org.env
+### config/worker-org.env
 ${file("${path.module}/config/worker-org.env")}
-### ${path.module}/worker.env
+### worker.env
 ${file("${path.module}/worker.env")}
 
 export TRAVIS_WORKER_HARD_TIMEOUT=50m0s
@@ -153,14 +154,14 @@ module "aws_asg_com" {
   site                           = "com"
   syslog_address                 = "${var.syslog_address_com}"
   worker_ami                     = "${var.worker_ami}"
-  worker_asg_max_size            = 100
+  worker_asg_max_size            = 2
   worker_asg_min_size            = 1
   worker_asg_namespace           = "Travis/com"
   worker_asg_scale_in_cooldown   = 150
-  worker_asg_scale_in_threshold  = 100
+  worker_asg_scale_in_threshold  = 13
   worker_asg_scale_out_cooldown  = 150
-  worker_asg_scale_out_qty       = 4
-  worker_asg_scale_out_threshold = 60
+  worker_asg_scale_out_qty       = 1
+  worker_asg_scale_out_threshold = 0
   worker_config                  = "${data.template_file.worker_config_com.rendered}"
   worker_docker_image_android    = "quay.io/travisci/travis-android:latest"
   worker_docker_image_default    = "quay.io/travisci/travis-ruby:latest"
@@ -194,14 +195,14 @@ module "aws_asg_org" {
   site                           = "org"
   syslog_address                 = "${var.syslog_address_org}"
   worker_ami                     = "${var.worker_ami}"
-  worker_asg_max_size            = 120
+  worker_asg_max_size            = 2
   worker_asg_min_size            = 1
   worker_asg_namespace           = "Travis/org"
   worker_asg_scale_in_cooldown   = 150
-  worker_asg_scale_in_threshold  = 100
+  worker_asg_scale_in_threshold  = 13
   worker_asg_scale_out_cooldown  = 150
-  worker_asg_scale_out_qty       = 4
-  worker_asg_scale_out_threshold = 60
+  worker_asg_scale_out_qty       = 1
+  worker_asg_scale_out_threshold = 0
   worker_config                  = "${data.template_file.worker_config_org.rendered}"
   worker_docker_image_android    = "quay.io/travisci/travis-android:latest"
   worker_docker_image_default    = "quay.io/travisci/travis-ruby:latest"

@@ -18,16 +18,16 @@ variable "syslog_address_com" {}
 variable "syslog_address_org" {}
 
 variable "worker_ami" {
-  # tfw 2017-07-09 18-39-17
-  default = "ami-f67474e0"
+  # tfw 2017-09-05 16-00-17
+  default = "ami-dddb77a7"
 }
 
 variable "amethyst_image" {
-  default = "travisci/ci-amethyst:packer-1499451985"
+  default = "quay.io/travisci/ci-amethyst:packer-1503974220"
 }
 
 variable "garnet_image" {
-  default = "travisci/ci-garnet:packer-1499451976"
+  default = "quay.io/travisci/ci-garnet:packer-1503972846"
 }
 
 terraform {
@@ -83,11 +83,11 @@ module "rabbitmq_worker_config_org" {
 
 data "template_file" "worker_config_com" {
   template = <<EOF
-### ${path.module}/config/worker-com-local.env
+### config/worker-com-local.env
 ${file("${path.module}/config/worker-com-local.env")}
-### ${path.module}/config/worker-com.env
+### config/worker-com.env
 ${file("${path.module}/config/worker-com.env")}
-### ${path.module}/worker.env
+### worker.env
 ${file("${path.module}/worker.env")}
 
 export TRAVIS_WORKER_AMQP_URI=${module.rabbitmq_worker_config_com.uri}
@@ -98,11 +98,11 @@ EOF
 
 data "template_file" "worker_config_org" {
   template = <<EOF
-### ${path.module}/config/worker-org-local.env
+### config/worker-org-local.env
 ${file("${path.module}/config/worker-org-local.env")}
-### ${path.module}/config/worker-org.env
+### config/worker-org.env
 ${file("${path.module}/config/worker-org.env")}
-### ${path.module}/worker.env
+### worker.env
 ${file("${path.module}/worker.env")}
 
 export TRAVIS_WORKER_AMQP_URI=${module.rabbitmq_worker_config_org.uri}
@@ -111,10 +111,28 @@ export TRAVIS_WORKER_TRAVIS_SITE=org
 EOF
 }
 
+module "aws_az_1a" {
+  source                    = "../modules/aws_workers_az"
+  az                        = "1a"
+  bastion_security_group_id = "${data.terraform_remote_state.vpc.bastion_security_group_1a_id}"
+  env                       = "${var.env}"
+  index                     = "${var.index}"
+  vpc_id                    = "${data.terraform_remote_state.vpc.vpc_id}"
+}
+
 module "aws_az_1b" {
   source                    = "../modules/aws_workers_az"
   az                        = "1b"
   bastion_security_group_id = "${data.terraform_remote_state.vpc.bastion_security_group_1b_id}"
+  env                       = "${var.env}"
+  index                     = "${var.index}"
+  vpc_id                    = "${data.terraform_remote_state.vpc.vpc_id}"
+}
+
+module "aws_az_1c" {
+  source                    = "../modules/aws_workers_az"
+  az                        = "1c"
+  bastion_security_group_id = "${data.terraform_remote_state.vpc.bastion_security_group_1c_id}"
   env                       = "${var.env}"
   index                     = "${var.index}"
   vpc_id                    = "${data.terraform_remote_state.vpc.vpc_id}"
@@ -139,7 +157,7 @@ module "aws_asg_com" {
   github_users                           = "${var.github_users}"
   heroku_org                             = "${var.aws_heroku_org}"
   index                                  = "${var.index}"
-  security_groups                        = "${module.aws_az_1b.workers_com_security_group_id},${module.aws_az_1e.workers_com_security_group_id}"
+  security_groups                        = "${module.aws_az_1a.workers_com_security_group_id},${module.aws_az_1b.workers_com_security_group_id},${module.aws_az_1c.workers_com_security_group_id},${module.aws_az_1e.workers_com_security_group_id}"
   site                                   = "com"
   syslog_address                         = "${var.syslog_address_com}"
   worker_ami                             = "${var.worker_ami}"
@@ -150,7 +168,7 @@ module "aws_asg_com" {
   worker_asg_scale_in_evaluation_periods = 3
   worker_asg_scale_in_period             = 300
   worker_asg_scale_out_threshold         = 80
-  worker_asg_scale_out_qty               = 6
+  worker_asg_scale_out_qty               = 2
   worker_config                          = "${data.template_file.worker_config_com.rendered}"
   worker_docker_image_android            = "${var.amethyst_image}"
   worker_docker_image_default            = "${var.garnet_image}"
@@ -165,7 +183,7 @@ module "aws_asg_com" {
   worker_docker_image_ruby               = "${var.garnet_image}"
   worker_instance_type                   = "c3.8xlarge"
   worker_queue                           = "ec2"
-  worker_subnets                         = "${data.terraform_remote_state.vpc.workers_com_subnet_1b_id},${data.terraform_remote_state.vpc.workers_com_subnet_1e_id}"
+  worker_subnets                         = "${data.terraform_remote_state.vpc.workers_com_subnet_1a_id},${data.terraform_remote_state.vpc.workers_com_subnet_1b_id},${data.terraform_remote_state.vpc.workers_com_subnet_1c_id},${data.terraform_remote_state.vpc.workers_com_subnet_1e_id}"
 }
 
 module "aws_asg_org" {
@@ -189,7 +207,7 @@ module "aws_asg_org" {
   worker_asg_scale_in_evaluation_periods = 3
   worker_asg_scale_in_period             = 300
   worker_asg_scale_out_threshold         = 60
-  worker_asg_scale_out_qty               = 6
+  worker_asg_scale_out_qty               = 2
   worker_config                          = "${data.template_file.worker_config_org.rendered}"
   worker_docker_image_android            = "${var.amethyst_image}"
   worker_docker_image_default            = "${var.garnet_image}"
@@ -235,9 +253,9 @@ resource "random_id" "cyclist_token_cs50" {
 
 data "template_file" "worker_config_cs50" {
   template = <<EOF
-### ${path.module}/config/worker-com-local.env
+### config/worker-com-local.env
 ${file("${path.module}/config/worker-com-local.env")}
-### ${path.module}/config/worker-com.env
+### config/worker-com.env
 ${file("${path.module}/config/worker-com.env")}
 
 export TRAVIS_WORKER_AMQP_URI=${module.rabbitmq_worker_config_com.uri}
@@ -249,7 +267,7 @@ export TRAVIS_WORKER_POOL_SIZE=4
 export TRAVIS_WORKER_PPROF_PORT=6060
 export TRAVIS_WORKER_PROVIDER_NAME=docker
 export TRAVIS_WORKER_QUEUE_NAME=builds.cs50
-export TRAVIS_WORKER_QUEUE_TYPE=amqp,http
+export TRAVIS_WORKER_QUEUE_TYPE=amqp
 export TRAVIS_WORKER_TRAVIS_SITE=com
 EOF
 }

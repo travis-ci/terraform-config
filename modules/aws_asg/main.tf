@@ -115,7 +115,7 @@ variable "worker_docker_image_python" {}
 variable "worker_docker_image_ruby" {}
 
 variable "worker_docker_self_image" {
-  default = "travisci/worker:v2.9.3"
+  default = "travisci/worker:v3.3.1"
 }
 
 variable "worker_instance_type" {
@@ -179,24 +179,16 @@ data "template_file" "cloud_config" {
   template = "${file("${path.module}/cloud-config.yml.tpl")}"
 
   vars {
-    check_unregister_netdevice_bash = "${file("${path.module}/check-unregister-netdevice.bash")}"
-    cloud_init_env                  = "${data.template_file.cloud_init_env.rendered}"
-    cyclist_url                     = "${replace(heroku_app.cyclist.web_url, "/\\/$/", "")}"
-    docker_daemon_json              = "${data.template_file.docker_daemon_json.rendered}"
-    github_users_env                = "export GITHUB_USERS='${var.github_users}'"
-    hostname_tmpl                   = "___INSTANCE_ID___-${var.env}-${var.index}-worker-${var.site}-${var.worker_queue}.travisci.net"
-    prestart_hook_bash              = "${file("${path.module}/prestart-hook.bash")}"
-    registry_hostname               = "${var.registry_hostname}"
-    rsyslog_conf                    = "${file("${path.module}/../../assets/rsyslog/rsyslog.conf")}"
-    start_hook_bash                 = "${file("${path.module}/start-hook.bash")}"
-    stop_hook_bash                  = "${file("${path.module}/stop-hook.bash")}"
-    syslog_address                  = "${var.syslog_address}"
-    unregister_netdevice_crontab    = "${file("${path.module}/unregister-netdevice.crontab")}"
-    worker_config                   = "${var.worker_config}"
-    worker_rsyslog_watch            = "${file("${path.module}/../../assets/travis-worker/rsyslog-watch-upstart.conf")}"
-    worker_service                  = "${file("${path.module}/../../assets/travis-worker/travis-worker.service")}"
-    worker_upstart                  = "${file("${path.module}/../../assets/travis-worker/travis-worker.conf")}"
-    worker_wrapper                  = "${file("${path.module}/../../assets/travis-worker/travis-worker-wrapper")}"
+    assets             = "${path.module}/../../assets"
+    cloud_init_env     = "${data.template_file.cloud_init_env.rendered}"
+    cyclist_url        = "${replace(heroku_app.cyclist.web_url, "/\\/$/", "")}"
+    docker_daemon_json = "${data.template_file.docker_daemon_json.rendered}"
+    github_users_env   = "export GITHUB_USERS='${var.github_users}'"
+    here               = "${path.module}"
+    hostname_tmpl      = "___INSTANCE_ID___-${var.env}-${var.index}-worker-${var.site}-${var.worker_queue}.travisci.net"
+    registry_hostname  = "${var.registry_hostname}"
+    syslog_address     = "${var.syslog_address}"
+    worker_config      = "${var.worker_config}"
   }
 }
 
@@ -299,18 +291,32 @@ resource "aws_autoscaling_group" "workers" {
 }
 
 resource "aws_autoscaling_policy" "workers_remove_capacity" {
-  name                   = "${var.env}-${var.index}-workers-${var.site}-remove-capacity"
-  scaling_adjustment     = "${var.worker_asg_scale_in_qty}"
-  adjustment_type        = "ChangeInCapacity"
-  cooldown               = "${var.worker_asg_scale_in_cooldown}"
-  autoscaling_group_name = "${aws_autoscaling_group.workers.name}"
+  name                      = "${var.env}-${var.index}-workers-${var.site}-remove-capacity"
+  adjustment_type           = "ChangeInCapacity"
+  policy_type               = "StepScaling"
+  autoscaling_group_name    = "${aws_autoscaling_group.workers.name}"
+  estimated_instance_warmup = "${var.worker_asg_scale_in_cooldown}"
+  metric_aggregation_type   = "Maximum"
+
+  # Headroom is just above scale-in threshold; remove n instances
+  step_adjustment {
+    scaling_adjustment          = "${var.worker_asg_scale_in_qty}"
+    metric_interval_lower_bound = 1.0
+    metric_interval_upper_bound = "${ceil(var.worker_asg_scale_in_threshold / 2)}"
+  }
+
+  # Headroom is way above scale-in threshold; remove n * 2 instances
+  step_adjustment {
+    scaling_adjustment          = "${var.worker_asg_scale_in_qty * 2}"
+    metric_interval_lower_bound = "${ceil(var.worker_asg_scale_in_threshold / 2)}"
+  }
 }
 
 resource "aws_cloudwatch_metric_alarm" "workers_remove_capacity" {
   alarm_name          = "${var.env}-${var.index}-workers-${var.site}-remove-capacity"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = "${var.worker_asg_scale_in_evaluation_periods}"
-  metric_name         = "v1.travis.rabbitmq.consumers.builds.${var.worker_queue}.headroom"
+  metric_name         = "v1.travis.rabbitmq.consumers.${var.env}.builds.${var.worker_queue}.headroom"
   namespace           = "${var.worker_asg_namespace}"
   period              = "${var.worker_asg_scale_in_period}"
   statistic           = "Maximum"
@@ -319,18 +325,38 @@ resource "aws_cloudwatch_metric_alarm" "workers_remove_capacity" {
 }
 
 resource "aws_autoscaling_policy" "workers_add_capacity" {
-  name                   = "${var.env}-${var.index}-workers-${var.site}-add-capacity"
-  scaling_adjustment     = "${var.worker_asg_scale_out_qty}"
-  adjustment_type        = "ChangeInCapacity"
-  cooldown               = "${var.worker_asg_scale_out_cooldown}"
-  autoscaling_group_name = "${aws_autoscaling_group.workers.name}"
+  name                      = "${var.env}-${var.index}-workers-${var.site}-add-capacity"
+  adjustment_type           = "ChangeInCapacity"
+  policy_type               = "StepScaling"
+  autoscaling_group_name    = "${aws_autoscaling_group.workers.name}"
+  estimated_instance_warmup = "${var.worker_asg_scale_out_cooldown}"
+  metric_aggregation_type   = "Maximum"
+
+  # Headroom is just below THRESHOLD, scale out normally
+  step_adjustment {
+    scaling_adjustment          = "${var.worker_asg_scale_out_qty}"
+    metric_interval_lower_bound = "${floor(var.worker_asg_scale_out_threshold/-2.0)}"
+  }
+
+  # Headroom is less than half of THRESHOLD; scale out twice as much
+  step_adjustment {
+    scaling_adjustment          = "${var.worker_asg_scale_out_qty * 2}"
+    metric_interval_upper_bound = "${floor(var.worker_asg_scale_out_threshold/-2.0)}"
+    metric_interval_lower_bound = "${floor(var.worker_asg_scale_out_threshold/-1.0)}"
+  }
+
+  # Headroom is 0; scale out three times as much
+  step_adjustment {
+    scaling_adjustment          = "${var.worker_asg_scale_out_qty * 3}"
+    metric_interval_upper_bound = "${floor(var.worker_asg_scale_out_threshold/-1.0)}"
+  }
 }
 
 resource "aws_cloudwatch_metric_alarm" "workers_add_capacity" {
   alarm_name          = "${var.env}-${var.index}-workers-${var.site}-add-capacity"
   comparison_operator = "LessThanThreshold"
   evaluation_periods  = "${var.worker_asg_scale_out_evaluation_periods}"
-  metric_name         = "v1.travis.rabbitmq.consumers.builds.${var.worker_queue}.headroom"
+  metric_name         = "v1.travis.rabbitmq.consumers.${var.env}.builds.${var.worker_queue}.headroom"
   namespace           = "${var.worker_asg_namespace}"
   period              = "${var.worker_asg_scale_out_period}"
   statistic           = "Maximum"

@@ -17,10 +17,15 @@ write_files:
   encoding: b64
   owner: 'root:root'
   path: /etc/docker/daemon-direct-lvm.json
-- content: '${base64encode(worker_wrapper)}'
+- content: '${base64encode(file("${assets}/travis-worker/travis-worker-wrapper"))}'
   encoding: b64
   owner: 'root:root'
   path: /usr/local/bin/travis-worker-wrapper
+  permissions: '0755'
+- content: '${base64encode(file("${assets}/bits/travis-combined-env"))}'
+  encoding: b64
+  owner: 'root:root'
+  path: /usr/local/bin/travis-combined-env
   permissions: '0755'
 - content: '${base64encode(cyclist_url)}'
   encoding: b64
@@ -34,17 +39,17 @@ write_files:
   encoding: b64
   owner: 'travis:travis'
   path: /var/tmp/travis-run.d/registry-hostname
-- content: '${base64encode(prestart_hook_bash)}'
+- content: '${base64encode(file("${here}/prestart-hook.bash"))}'
   encoding: b64
   owner: 'travis:travis'
   path: /var/tmp/travis-run.d/travis-worker-prestart-hook
   permissions: '0750'
-- content: '${base64encode(start_hook_bash)}'
+- content: '${base64encode(file("${here}/start-hook.bash"))}'
   encoding: b64
   owner: 'travis:travis'
   path: /var/tmp/travis-run.d/travis-worker-start-hook
   permissions: '0750'
-- content: '${base64encode(stop_hook_bash)}'
+- content: '${base64encode(file("${here}/stop-hook.bash"))}'
   encoding: b64
   owner: 'travis:travis'
   path: /var/tmp/travis-run.d/travis-worker-stop-hook
@@ -52,24 +57,34 @@ write_files:
 - content: '${base64encode(syslog_address)}'
   encoding: b64
   path: /var/tmp/travis-run.d/syslog-address
-- content: '${base64encode(check_unregister_netdevice_bash)}'
+- content: '${base64encode(file("${here}/check-unregister-netdevice.bash"))}'
   encoding: b64
   owner: 'root:root'
   path: /var/tmp/travis-run.d/check-unregister-netdevice
   permissions: '0750'
-- content: '${base64encode(worker_upstart)}'
+- content: '${base64encode(file("${assets}/travis-worker/travis-worker.conf"))}'
   encoding: b64
   owner: 'root:root'
   path: /var/tmp/travis-worker.conf
-- content: '${base64encode(worker_service)}'
+- content: '${base64encode(file("${here}/check-docker-health.bash"))}'
+  encoding: b64
+  owner: 'root:root'
+  path: /var/tmp/travis-run.d/check-docker-health
+  permissions: '0750'
+- content: '${base64encode(file("${here}/check-docker-health-crontab"))}'
+  encoding: b64
+  owner: 'root:root'
+  path: /etc/cron.d/check-docker-health-crontab
+  permissions: '0644'
+- content: '${base64encode(file("${assets}/travis-worker/travis-worker.service"))}'
   encoding: b64
   owner: 'root:root'
   path: /var/tmp/travis-worker.service
-- content: '${base64encode(worker_rsyslog_watch)}'
+- content: '${base64encode(file("${assets}/travis-worker/rsyslog-watch-upstart.conf"))}'
   encoding: b64
   owner: 'root:root'
   path: /etc/rsyslog.d/60-travis-worker.conf
-- content: '${base64encode(rsyslog_conf)}'
+- content: '${base64encode(file("${assets}/rsyslog/rsyslog.conf"))}'
   encoding: b64
   owner: 'root:root'
   path: /etc/rsyslog.conf

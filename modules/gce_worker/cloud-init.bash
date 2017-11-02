@@ -8,22 +8,29 @@ main() {
   : "${ETCDIR:=/etc}"
   : "${VARTMP:=/var/tmp}"
   : "${RUNDIR:=/var/tmp/travis-run.d}"
+  : "${WORKER_SUFFIXES:=a b c}"
 
   chown -R travis:travis "${RUNDIR}"
 
   if [[ -d "${ETCDIR}/systemd/system" ]]; then
-    cp -v "${VARTMP}/travis-worker.service" \
-      "${ETCDIR}/systemd/system/travis-worker.service"
-    systemctl enable travis-worker || true
+    for worker_suffix in ${WORKER_SUFFIXES}; do
+      cp -v "${VARTMP}/travis-worker.service" \
+        "${ETCDIR}/systemd/system/travis-worker-${worker_suffix}.service"
+      systemctl enable "travis-worker-${worker_suffix}" || true
+    done
   fi
 
   if [[ -d "${ETCDIR}/init" ]]; then
-    cp -v "${VARTMP}/travis-worker.conf" \
-      "${ETCDIR}/init/travis-worker.conf"
+    for worker_suffix in ${WORKER_SUFFIXES}; do
+      cp -v "${VARTMP}/travis-worker.conf" \
+        "${ETCDIR}/init/travis-worker-${worker_suffix}.conf"
+    done
   fi
 
-  service travis-worker stop || true
-  service travis-worker start || true
+  for worker_suffix in ${WORKER_SUFFIXES}; do
+    service "travis-worker-${worker_suffix}" stop || true
+    service "travis-worker-${worker_suffix}" start || true
+  done
 
   __wait_for_docker
 }
