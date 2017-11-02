@@ -1,3 +1,5 @@
+variable "deny_target_ip_ranges" {}
+
 variable "env" {
   default = "production"
 }
@@ -47,6 +49,7 @@ module "gce_project_1" {
   bastion_config                = "${file("${path.module}/config/bastion.env")}"
   bastion_image                 = "${var.gce_bastion_image}"
   env                           = "${var.env}"
+  deny_target_ip_ranges         = ["${split(",", var.deny_target_ip_ranges)}"]
   gcloud_cleanup_account_json   = "${file("${path.module}/config/gce-cleanup-production-4.json")}"
   gcloud_cleanup_job_board_url  = "${var.job_board_url}"
   gcloud_zone                   = "${var.gce_gcloud_zone}"
