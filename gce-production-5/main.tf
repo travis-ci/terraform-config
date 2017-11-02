@@ -26,7 +26,7 @@ variable "syslog_address_org" {}
 terraform {
   backend "s3" {
     bucket         = "travis-terraform-state"
-    key            = "terraform-config/gce-production-2.tfstate"
+    key            = "terraform-config/gce-production-5.tfstate"
     region         = "us-east-1"
     encrypt        = "true"
     dynamodb_table = "travis-terraform-state"
@@ -34,8 +34,8 @@ terraform {
 }
 
 provider "google" {
-  credentials = "${file("config/gce-workers-production-2.json")}"
-  project     = "travis-ci-prod-2"
+  credentials = "${file("config/gce-workers-production-5.json")}"
+  project     = "travis-ci-prod-5"
   region      = "us-central1"
 }
 
@@ -47,23 +47,23 @@ module "gce_project_1" {
   bastion_config                = "${file("${path.module}/config/bastion.env")}"
   bastion_image                 = "${var.gce_bastion_image}"
   env                           = "${var.env}"
-  gcloud_cleanup_account_json   = "${file("${path.module}/config/gce-cleanup-production-2.json")}"
+  gcloud_cleanup_account_json   = "${file("${path.module}/config/gce-cleanup-production-5.json")}"
   gcloud_cleanup_job_board_url  = "${var.job_board_url}"
   gcloud_zone                   = "${var.gce_gcloud_zone}"
   github_users                  = "${var.github_users}"
   heroku_org                    = "${var.gce_heroku_org}"
-  index                         = "2"
-  project                       = "travis-ci-prod-2"
+  index                         = "5"
+  project                       = "travis-ci-prod-5"
   syslog_address_com            = "${var.syslog_address_com}"
   syslog_address_org            = "${var.syslog_address_org}"
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
-  worker_account_json_com       = "${file("${path.module}/config/gce-workers-production-2.json")}"
-  worker_account_json_org       = "${file("${path.module}/config/gce-workers-production-2.json")}"
+  worker_account_json_com       = "${file("${path.module}/config/gce-workers-production-5.json")}"
+  worker_account_json_org       = "${file("${path.module}/config/gce-workers-production-5.json")}"
   worker_image                  = "${var.gce_worker_image}"
-  worker_instance_count_com     = 4
-  worker_instance_count_org     = 4
+  worker_instance_count_com     = 0
+  worker_instance_count_org     = 8
 
-  build_com_subnet_cidr_range = "10.99.99.0/24"
+  build_com_subnet_cidr_range = "10.10.24.0/22"
   build_org_subnet_cidr_range = "10.10.20.0/22"
   public_subnet_cidr_range    = "10.10.1.0/24"
   workers_subnet_cidr_range   = "10.10.16.0/22"
@@ -76,6 +76,7 @@ ${file("${path.module}/config/worker-com.env")}
 
 export TRAVIS_WORKER_GCE_SUBNETWORK=jobs-com
 export TRAVIS_WORKER_HARD_TIMEOUT=120m
+export TRAVIS_WORKER_POOL_SIZE=35
 export TRAVIS_WORKER_TRAVIS_SITE=com
 EOF
 
@@ -85,7 +86,10 @@ ${file("${path.module}/worker.env")}
 ### config/worker-org.env
 ${file("${path.module}/config/worker-org.env")}
 
+export TRAVIS_WORKER_GCE_PUBLIC_IP=true
+export TRAVIS_WORKER_GCE_PUBLIC_IP_CONNECT=false
 export TRAVIS_WORKER_GCE_SUBNETWORK=jobs-org
+export TRAVIS_WORKER_POOL_SIZE=30
 export TRAVIS_WORKER_TRAVIS_SITE=org
 EOF
 }

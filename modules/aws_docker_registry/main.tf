@@ -76,20 +76,14 @@ resource "aws_iam_user_policy" "registry" {
     {
       "Effect": "Allow",
       "Action": [
-        "s3:ListBucket",
-        "s3:GetBucketLocation",
-        "s3:ListBucketMultipartUploads"
+        "s3:*"
       ],
       "Resource": "${aws_s3_bucket.registry_images.arn}"
     },
     {
       "Effect": "Allow",
       "Action": [
-        "s3:PutObject",
-        "s3:GetObject",
-        "s3:DeleteObject",
-        "s3:ListMultipartUploadParts",
-        "s3:AbortMultipartUpload"
+        "s3:*"
       ],
       "Resource": "${aws_s3_bucket.registry_images.arn}/*"
     }

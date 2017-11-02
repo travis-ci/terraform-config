@@ -19,15 +19,15 @@ variable "syslog_address_org" {}
 
 variable "worker_ami" {
   # tfw 2017-09-05 16-00-17
-  default = "ami-3e405045"
+  default = "ami-dddb77a7"
 }
 
 variable "amethyst_image" {
-  default = "travisci/ci-amethyst:packer-1503974220"
+  default = "quay.io/travisci/ci-amethyst:packer-1503974220"
 }
 
 variable "garnet_image" {
-  default = "travisci/ci-garnet:packer-1503972846"
+  default = "quay.io/travisci/ci-garnet:packer-1503972846"
 }
 
 terraform {
@@ -157,6 +157,7 @@ module "aws_asg_com" {
   github_users                           = "${var.github_users}"
   heroku_org                             = "${var.aws_heroku_org}"
   index                                  = "${var.index}"
+  registry_hostname                      = "${data.terraform_remote_state.vpc.registry_hostname}"
   security_groups                        = "${module.aws_az_1a.workers_com_security_group_id},${module.aws_az_1b.workers_com_security_group_id},${module.aws_az_1c.workers_com_security_group_id},${module.aws_az_1e.workers_com_security_group_id}"
   site                                   = "com"
   syslog_address                         = "${var.syslog_address_com}"
@@ -196,6 +197,7 @@ module "aws_asg_org" {
   github_users                           = "${var.github_users}"
   heroku_org                             = "${var.aws_heroku_org}"
   index                                  = "${var.index}"
+  registry_hostname                      = "${data.terraform_remote_state.vpc.registry_hostname}"
   security_groups                        = "${module.aws_az_1b.workers_org_security_group_id},${module.aws_az_1e.workers_org_security_group_id}"
   site                                   = "org"
   syslog_address                         = "${var.syslog_address_org}"

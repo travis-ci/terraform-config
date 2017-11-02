@@ -66,6 +66,16 @@ write_files:
   encoding: b64
   owner: 'root:root'
   path: /var/tmp/travis-worker.conf
+- content: '${base64encode(file("${here}/check-docker-health.bash"))}'
+  encoding: b64
+  owner: 'root:root'
+  path: /var/tmp/travis-run.d/check-docker-health
+  permissions: '0750'
+- content: '${base64encode(file("${here}/check-docker-health-crontab"))}'
+  encoding: b64
+  owner: 'root:root'
+  path: /etc/cron.d/check-docker-health-crontab
+  permissions: '0644'
 - content: '${base64encode(file("${assets}/travis-worker/travis-worker.service"))}'
   encoding: b64
   owner: 'root:root'
