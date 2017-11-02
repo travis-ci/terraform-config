@@ -30,6 +30,8 @@ variable "syslog_address_org" {}
 
 variable "latest_docker_image_worker" {}
 
+variable "deny_target_ip_ranges" {}
+
 terraform {
   backend "s3" {
     bucket         = "travis-terraform-state"
@@ -73,6 +75,8 @@ module "gce_project_1" {
 
   worker_instance_count_com = 4
   worker_instance_count_org = 4
+
+  deny_target_ip_ranges = ["${split(",", var.deny_target_ip_ranges)}"]
 
   worker_config_com = <<EOF
 ### worker.env
