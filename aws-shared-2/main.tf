@@ -114,7 +114,8 @@ data "aws_ami" "bastion" {
 }
 
 variable "registry_ami" {
-	default = "ami-3e405045"
+  # tfw 2017-09-05 16-00-17
+  default = "ami-dddb77a7"
 }
 
 resource "aws_vpc" "main" {
@@ -287,7 +288,7 @@ resource "aws_route53_record" "workers_com_nat" {
 }
 
 resource "random_id" "registry_http_secret" {
-	byte_length = 16
+  byte_length = 16
 }
 
 module "registry" {
@@ -316,8 +317,8 @@ resource "null_resource" "outputs_signature" {
     public_subnet_1b_cidr        = "${var.public_subnet_1b_cidr}"
     public_subnet_1c_cidr        = "${var.public_subnet_1c_cidr}"
     public_subnet_1e_cidr        = "${var.public_subnet_1e_cidr}"
- 		registry_hostname						 = "${module.registry.hostname}"
-   	vpc_id                       = "${aws_vpc.main.id}"
+    registry_hostname            = "${module.registry.hostname}"
+    vpc_id                       = "${aws_vpc.main.id}"
     workers_com_nat_1a_id        = "${module.aws_az_1a.workers_com_nat_id}"
     workers_com_nat_1b_id        = "${module.aws_az_1b.workers_com_nat_id}"
     workers_com_nat_1c_id        = "${module.aws_az_1c.workers_com_nat_id}"
@@ -366,7 +367,7 @@ output "gateway_id" {
 }
 
 output "registry_hostname" {
-	value = "${module.registry.hostname}"
+  value = "${module.registry.hostname}"
 }
 
 output "public_subnet_1a_cidr" {
