@@ -61,7 +61,7 @@ module "gce_project_1" {
   worker_account_json_org       = "${file("${path.module}/config/gce-workers-production-5.json")}"
   worker_image                  = "${var.gce_worker_image}"
   worker_instance_count_com     = 0
-  worker_instance_count_org     = 12
+  worker_instance_count_org     = 8
 
   build_com_subnet_cidr_range = "10.10.24.0/22"
   build_org_subnet_cidr_range = "10.10.20.0/22"
