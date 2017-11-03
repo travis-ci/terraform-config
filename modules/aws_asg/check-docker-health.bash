@@ -2,7 +2,7 @@
 set -o errexit
 set -o pipefail
 
-# Sometimes, the docker service will be running, but certain commands (docker ps) will hang indefinitely.
+# Sometimes, the docker service will be running, but certain commands (docker info) will hang indefinitely.
 # This script detects this behavior and implodes the instance when it occurs.
 
 main() {
@@ -28,7 +28,7 @@ main() {
   fi
 
   logger "Checking docker health..."
-  result=$(timeout "${sleep_time}"s docker ps) || true
+  result=$(timeout "${sleep_time}"s docker info) || true
 
   if [ -z "${result}" ]; then
     __handle_unresponsive_docker "${run_d}"
