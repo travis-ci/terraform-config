@@ -57,20 +57,26 @@ __handle_implode_confirm() {
 __handle_unresponsive_docker() {
   local run_d="${1}"
   msg="docker appears to be unhealthy"
-  echo "$msg" |
-    tee "${run_d}/implode"
+  echo "$msg" | tee "${run_d}/implode"
   logger "$msg"
 
   logger "Sleeping ${post_sleep}"
   sleep "${post_sleep}"
 
-  if [ -e "${run_d}/implode" ]; then
-    "${KILL_COMMAND}" -TERM "$(pidof travis-worker)" || restart travis-worker
-  else
+  if [ ! -e "${run_d}/implode" ]; then
     logger "${run_d}/implode not found, not imploding?"
     __die noop 0
   fi
 
+  pid="$(pidof travis-worker)"
+  if [ -z "$pid" ]; then
+    msg="No PID found for travis-worker, and docker is unhealthy; imploding via cron"
+    echo "$msg" | tee "${run_d}/implode.confirm"
+    logger "$msg"
+  else
+    logger "Running '${KILL_COMMAND} -TERM $pid' to kill travis-worker."
+    "${KILL_COMMAND}" -TERM "$pid"
+  fi
 }
 
 __die() {
