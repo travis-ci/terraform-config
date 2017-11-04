@@ -170,7 +170,8 @@ data "template_file" "docker_daemon_json" {
     "dm.metadatadev=/dev/direct-lvm/metadata",
     "dm.fs=xfs"
   ],
-  "userns-remap": "default"
+  "userns-remap": "default",
+  "debug": true
 }
 EOF
 }
