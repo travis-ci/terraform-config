@@ -27,7 +27,7 @@ main() {
 
   if [[ ! "${TRAVIS_WORKER_LIBRATO_SOURCE}" ]]; then
     local librato_source
-    librato_source="$(__build_librato_source "${name}")"
+    librato_source="$(__build_librato_source "$(hostname)" "${name}")"
     echo "TRAVIS_WORKER_LIBRATO_SOURCE=${librato_source}" >>"${env_file}"
   fi
 
@@ -54,14 +54,15 @@ __fetch_gce_zone() {
 }
 
 __build_librato_source() {
-  local name="${1}"
+  local host_name="${1}"
+  local name="${2}"
 
   if [[ "${name}" == "travis-worker" ]]; then
-    hostname
+    echo "${host_name}"
     return
   fi
 
-  echo "$(hostname)-${name##*-}"
+  echo "${host_name}-${name/travis-worker-/}"
 }
 
 main "$@"
