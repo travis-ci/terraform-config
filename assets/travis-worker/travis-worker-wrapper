@@ -25,6 +25,12 @@ main() {
     echo "TRAVIS_WORKER_GCE_ZONE=${gce_zone}" >>"${env_file}"
   fi
 
+  if [[ ! "${TRAVIS_WORKER_LIBRATO_SOURCE}" ]]; then
+    local librato_source
+    librato_source="$(__build_librato_source "${name}")"
+    echo "TRAVIS_WORKER_LIBRATO_SOURCE=${librato_source}" >>"${env_file}"
+  fi
+
   if [ -f "${TRAVIS_WORKER_PRESTART_HOOK}" ]; then
     "${TRAVIS_WORKER_PRESTART_HOOK}"
   fi
@@ -45,6 +51,17 @@ __fetch_gce_zone() {
     "http://metadata.google.internal/computeMetadata/v1/instance/zone" \
     -H "Metadata-Flavor: Google" |
     awk -F/ '{ print $NF }'
+}
+
+__build_librato_source() {
+  local name="${1}"
+
+  if [[ "${name}" == "travis-worker" ]]; then
+    hostname
+    return
+  fi
+
+  echo "$(hostname)-${name##*-}"
 }
 
 main "$@"
