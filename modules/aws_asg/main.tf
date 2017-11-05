@@ -152,7 +152,7 @@ EOF
 data "template_file" "docker_daemon_json" {
   template = <<EOF
 {
-  "graph": "/mnt/docker",
+  "data-root": "/mnt/docker",
   "hosts": [
     "tcp://127.0.0.1:4243",
     "unix:///var/run/docker.sock"
@@ -170,7 +170,8 @@ data "template_file" "docker_daemon_json" {
     "dm.metadatadev=/dev/direct-lvm/metadata",
     "dm.fs=xfs"
   ],
-  "userns-remap": "default"
+  "userns-remap": "default",
+  "debug": true
 }
 EOF
 }
