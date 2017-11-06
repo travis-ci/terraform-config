@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -o pipefail
+set -o errexit
 
 # Sometimes, the docker service will be running, but certain commands (docker info) will hang indefinitely.
 # This script detects this behavior and implodes the instance when it occurs.
@@ -15,7 +16,7 @@ main() {
   : "${KILL_COMMAND:=kill}"
 
   if [[ -f "${run_d}/implode.confirm" ]]; then
-    __handle_implode_confirm "${run_d}" "${pre_implosion_sleep}"
+    __handle_implode_confirm "${run_d}"
     __die imploded 42
   fi
 
@@ -30,7 +31,7 @@ main() {
   result=$(timeout "${sleep_time}"s docker info) || true
 
   if [ -z "${result}" ]; then
-    __handle_unresponsive_docker "${run_d}"
+    __handle_unresponsive_docker "${run_d}" "${pre_implosion_sleep}"
     __die imploding 86
   fi
 
@@ -44,7 +45,6 @@ main() {
 
 __handle_implode_confirm() {
   local run_d="${1}"
-  local pre_implosion_sleep="${2}"
 
   local reason
   reason="$(cat "${run_d}/implode.confirm" 2>/dev/null)"
@@ -54,6 +54,8 @@ __handle_implode_confirm() {
 
 __handle_unresponsive_docker() {
   local run_d="${1}"
+  local pre_implosion_sleep="${2}"
+
   msg="docker appears to be unhealthy, initiating implosion"
   echo "$msg" >"${run_d}/implode"
   logger "$msg"
@@ -66,7 +68,7 @@ __handle_unresponsive_docker() {
     __die noop 0
   fi
 
-  pid="$(pidof travis-worker)"
+  pid="$(pidof travis-worker)" || true
   if [ -z "$pid" ]; then
     msg="No PID found for travis-worker, and docker is unhealthy; imploding via cron"
     echo "$msg" >"${run_d}/implode.confirm"
