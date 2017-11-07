@@ -87,7 +87,7 @@ variable "vsphere_ip" {}
 terraform {
   backend "s3" {
     bucket         = "travis-terraform-state"
-    key            = "terraform-config/macstadium-shared-1.tfstate"
+    key            = "terraform-config/macstadium-shared-1-terraform-v0.9.11.tfstate"
     region         = "us-east-1"
     encrypt        = "true"
     dynamodb_table = "travis-terraform-state"
