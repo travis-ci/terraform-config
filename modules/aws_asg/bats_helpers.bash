@@ -5,6 +5,7 @@ aws_asg_setup() {
   export ETCDIR="${BATS_TMPDIR}/etc"
   export VARTMP="${BATS_TMPDIR}/var/tmp"
   export MOCKLOG="${BATS_TMPDIR}/logs/mock.log"
+  export KILL_COMMAND="${BATS_TMPDIR}/bin/kill_mocked"
 
   mkdir -p \
     "${RUNDIR}" \
@@ -46,16 +47,22 @@ EOF
   chmod +x "${BATS_TMPDIR}/bin/mock"
 
   for cmd in \
+    awk \
     chown \
     dmesg \
+    date \
     docker \
     iptables \
+    kill_mocked \
+    logger \
+    pidof \
     sed \
     service \
     shutdown \
     sleep \
     sysctl \
-    systemctl; do
+    systemctl \
+    timeout; do
     pushd "${BATS_TMPDIR}/bin" &>/dev/null
     ln -svf mock "${cmd}"
     popd &>/dev/null

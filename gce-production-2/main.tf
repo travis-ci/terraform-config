@@ -23,6 +23,8 @@ variable "travisci_net_external_zone_id" {
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
 
+variable "deny_target_ip_ranges" {}
+
 terraform {
   backend "s3" {
     bucket         = "travis-terraform-state"
@@ -46,6 +48,7 @@ module "gce_project_1" {
   source                        = "../modules/gce_project"
   bastion_config                = "${file("${path.module}/config/bastion.env")}"
   bastion_image                 = "${var.gce_bastion_image}"
+  deny_target_ip_ranges         = ["${split(",", var.deny_target_ip_ranges)}"]
   env                           = "${var.env}"
   gcloud_cleanup_account_json   = "${file("${path.module}/config/gce-cleanup-production-2.json")}"
   gcloud_cleanup_job_board_url  = "${var.job_board_url}"
@@ -60,8 +63,8 @@ module "gce_project_1" {
   worker_account_json_com       = "${file("${path.module}/config/gce-workers-production-2.json")}"
   worker_account_json_org       = "${file("${path.module}/config/gce-workers-production-2.json")}"
   worker_image                  = "${var.gce_worker_image}"
-  worker_instance_count_com     = 12
-  worker_instance_count_org     = 12
+  worker_instance_count_com     = 4
+  worker_instance_count_org     = 4
 
   build_com_subnet_cidr_range = "10.99.99.0/24"
   build_org_subnet_cidr_range = "10.10.20.0/22"
@@ -76,7 +79,6 @@ ${file("${path.module}/config/worker-com.env")}
 
 export TRAVIS_WORKER_GCE_SUBNETWORK=jobs-com
 export TRAVIS_WORKER_HARD_TIMEOUT=120m
-export TRAVIS_WORKER_POOL_SIZE=18
 export TRAVIS_WORKER_TRAVIS_SITE=com
 EOF
 
@@ -86,10 +88,7 @@ ${file("${path.module}/worker.env")}
 ### config/worker-org.env
 ${file("${path.module}/config/worker-org.env")}
 
-export TRAVIS_WORKER_GCE_PUBLIC_IP=true
-export TRAVIS_WORKER_GCE_PUBLIC_IP_CONNECT=false
 export TRAVIS_WORKER_GCE_SUBNETWORK=jobs-org
-export TRAVIS_WORKER_POOL_SIZE=15
 export TRAVIS_WORKER_TRAVIS_SITE=org
 EOF
 }

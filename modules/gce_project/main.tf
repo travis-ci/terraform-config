@@ -3,6 +3,10 @@ variable "bastion_image" {}
 variable "env" {}
 variable "gcloud_cleanup_account_json" {}
 
+variable "gcloud_cleanup_instance_filters" {
+  default = "name eq ^(testing-gce|travis-job).*"
+}
+
 variable "gcloud_cleanup_instance_max_age" {
   default = "3h"
 }
@@ -35,7 +39,7 @@ variable "worker_config_com" {}
 variable "worker_config_org" {}
 
 variable "worker_docker_self_image" {
-  default = "travisci/worker:v3.1.0"
+  default = "travisci/worker:v3.3.1"
 }
 
 variable "worker_image" {}
@@ -68,6 +72,11 @@ variable "build_org_subnet_cidr_range" {
 
 variable "zone_count" {
   default = "4"
+}
+
+variable "deny_target_ip_ranges" {
+  type    = "list"
+  default = []
 }
 
 resource "google_compute_network" "main" {
@@ -214,6 +223,31 @@ resource "google_compute_firewall" "allow_jobs_nat" {
 
   allow {
     protocol = "udp"
+  }
+}
+
+resource "google_compute_firewall" "deny_target_ip" {
+  name    = "deny-target-ip"
+  network = "${google_compute_network.main.name}"
+
+  direction          = "EGRESS"
+  destination_ranges = ["${var.deny_target_ip_ranges}"]
+
+  project = "${var.project}"
+
+  # highest priority
+  priority = "0"
+
+  deny {
+    protocol = "tcp"
+  }
+
+  deny {
+    protocol = "udp"
+  }
+
+  deny {
+    protocol = "icmp"
   }
 }
 
@@ -396,6 +430,7 @@ resource "heroku_app" "gcloud_cleanup" {
     BUILDPACK_URL                   = "https://github.com/travis-ci/heroku-buildpack-makey-go"
     GCLOUD_CLEANUP_ACCOUNT_JSON     = "${var.gcloud_cleanup_account_json}"
     GCLOUD_CLEANUP_ENTITIES         = "instances"
+    GCLOUD_CLEANUP_INSTANCE_FILTERS = "${var.gcloud_cleanup_instance_filters}"
     GCLOUD_CLEANUP_INSTANCE_MAX_AGE = "${var.gcloud_cleanup_instance_max_age}"
     GCLOUD_CLEANUP_JOB_BOARD_URL    = "${var.gcloud_cleanup_job_board_url}"
     GCLOUD_CLEANUP_LOOP_SLEEP       = "${var.gcloud_cleanup_loop_sleep}"

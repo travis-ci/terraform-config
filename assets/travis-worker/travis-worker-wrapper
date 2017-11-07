@@ -16,12 +16,13 @@ main() {
   # shellcheck source=/dev/null
   source "${env_file}"
 
-  if [ -n "${TRAVIS_WORKER_GCE_ZONES}" ]; then
+  if [[ "${TRAVIS_WORKER_PROVIDER_NAME}" == gce ]]; then
     local gce_zone
-    gce_zone="$(__rand_gce_zone "${TRAVIS_WORKER_GCE_ZONES}")"
-    if [ -n "${gce_zone}" ]; then
-      echo "TRAVIS_WORKER_GCE_ZONE=${gce_zone}" >>"${env_file}"
+    gce_zone="$(__fetch_gce_zone)"
+    if [ -z "${gce_zone}" ]; then
+      gce_zone=us-central1-b
     fi
+    echo "TRAVIS_WORKER_GCE_ZONE=${gce_zone}" >>"${env_file}"
   fi
 
   if [ -f "${TRAVIS_WORKER_PRESTART_HOOK}" ]; then
@@ -39,11 +40,11 @@ main() {
     "${TRAVIS_WORKER_SELF_IMAGE}" travis-worker
 }
 
-__rand_gce_zone() {
-  local zones idx
-  zones=(${1//,/ })
-  idx=$((RANDOM % ${#zones[@]}))
-  echo "${zones[idx]}"
+__fetch_gce_zone() {
+  curl -sSL \
+    "http://metadata.google.internal/computeMetadata/v1/instance/zone" \
+    -H "Metadata-Flavor: Google" |
+    awk -F/ '{ print $NF }'
 }
 
 main "$@"

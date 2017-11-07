@@ -18,8 +18,8 @@ variable "syslog_address_com" {}
 variable "syslog_address_org" {}
 
 variable "worker_ami" {
-  # tfw 2017-09-05 16-00-17
-  default = "ami-3e405045"
+  # tfw 2017-11-06 16-12-17
+  default = "ami-a43c8dde"
 }
 
 variable "amethyst_image" {
@@ -157,6 +157,7 @@ module "aws_asg_com" {
   github_users                           = "${var.github_users}"
   heroku_org                             = "${var.aws_heroku_org}"
   index                                  = "${var.index}"
+  registry_hostname                      = "${data.terraform_remote_state.vpc.registry_hostname}"
   security_groups                        = "${module.aws_az_1a.workers_com_security_group_id},${module.aws_az_1b.workers_com_security_group_id},${module.aws_az_1c.workers_com_security_group_id},${module.aws_az_1e.workers_com_security_group_id}"
   site                                   = "com"
   syslog_address                         = "${var.syslog_address_com}"
@@ -196,6 +197,7 @@ module "aws_asg_org" {
   github_users                           = "${var.github_users}"
   heroku_org                             = "${var.aws_heroku_org}"
   index                                  = "${var.index}"
+  registry_hostname                      = "${data.terraform_remote_state.vpc.registry_hostname}"
   security_groups                        = "${module.aws_az_1b.workers_org_security_group_id},${module.aws_az_1e.workers_org_security_group_id}"
   site                                   = "org"
   syslog_address                         = "${var.syslog_address_org}"

@@ -30,6 +30,8 @@ variable "syslog_address_org" {}
 
 variable "latest_docker_image_worker" {}
 
+variable "deny_target_ip_ranges" {}
+
 terraform {
   backend "s3" {
     bucket         = "travis-terraform-state"
@@ -47,7 +49,6 @@ provider "google" {
 }
 
 provider "aws" {}
-
 provider "heroku" {}
 
 module "gce_project_1" {
@@ -75,6 +76,8 @@ module "gce_project_1" {
   worker_instance_count_com = 4
   worker_instance_count_org = 4
 
+  deny_target_ip_ranges = ["${split(",", var.deny_target_ip_ranges)}"]
+
   worker_config_com = <<EOF
 ### worker.env
 ${file("${path.module}/worker.env")}
@@ -83,7 +86,6 @@ ${file("${path.module}/config/worker-com.env")}
 
 export TRAVIS_WORKER_GCE_SUBNETWORK=jobs-com
 export TRAVIS_WORKER_HARD_TIMEOUT=120m
-export TRAVIS_WORKER_POOL_SIZE=35
 export TRAVIS_WORKER_TRAVIS_SITE=com
 EOF
 
@@ -94,7 +96,6 @@ ${file("${path.module}/worker.env")}
 ${file("${path.module}/config/worker-org.env")}
 
 export TRAVIS_WORKER_GCE_SUBNETWORK=jobs-org
-export TRAVIS_WORKER_POOL_SIZE=30
 export TRAVIS_WORKER_TRAVIS_SITE=org
 EOF
 }
