@@ -10,5 +10,5 @@ gce-*/config/
 graph.png
 local-development-0/local-development-0.tfstate
 macstadium-*/config/
-packet-*/config/
+container-based-benchmarking/*/config/
 tfstate
