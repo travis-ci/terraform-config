@@ -65,8 +65,8 @@ __wait_for_docker() {
 __set_aio_max_nr() {
   # NOTE: we do this mostly to ensure file IO chatty services like mysql will
   # play nicely with others, such as when multiple containers are running mysql,
-  # which is the default on precise + trusty.  The value we set here is 16^5,
-  # which is one power higher than the default of 16^4 :sparkles:.
+  # which is the default on trusty.  The value we set here is 16^5, which is one
+  # power higher than the default of 16^4 :sparkles:.
   sysctl -w fs.aio-max-nr=1048576
 }
 
