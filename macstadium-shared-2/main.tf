@@ -32,10 +32,6 @@ variable "jupiter_brain_custom-2_version" {
   default = "v0.2.0-58-gce0b45a"
 }
 
-variable "jupiter_brain_custom-3_version" {
-  default = "v0.2.0-58-gce0b45a"
-}
-
 variable "jupiter_brain_custom-4_version" {
   default = "v0.2.0-58-gce0b45a"
 }
@@ -87,7 +83,7 @@ variable "vsphere_ip" {}
 terraform {
   backend "s3" {
     bucket         = "travis-terraform-state"
-    key            = "terraform-config/macstadium-shared-2.tfstate"
+    key            = "terraform-config/macstadium-shared-2-terraform-v0.9.11.tfstate"
     region         = "us-east-1"
     encrypt        = "true"
     dynamodb_table = "travis-terraform-state"
@@ -207,18 +203,6 @@ module "jupiter_brain_custom_2" {
   env            = "custom-2"
   index          = "${var.index}"
   port_suffix    = 6
-}
-
-module "jupiter_brain_custom_3" {
-  source         = "../modules/jupiter_brain_bluegreen"
-  host_id        = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_ip_address = "${module.macstadium_infrastructure.wjb_ip}"
-  ssh_user       = "${var.ssh_user}"
-  version        = "${var.jupiter_brain_custom-3_version}"
-  config_path    = "${path.module}/config/jupiter-brain-custom-3-env"
-  env            = "custom-3"
-  index          = "${var.index}"
-  port_suffix    = 7
 }
 
 module "jupiter_brain_custom_4" {
@@ -377,17 +361,6 @@ module "worker_custom_2" {
   index       = "${var.index}"
 }
 
-module "worker_custom_3" {
-  source      = "../modules/macstadium_go_worker"
-  host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
-  ssh_user    = "${var.ssh_user}"
-  version     = "${var.travis_worker_version}"
-  config_path = "${path.module}/config/travis-worker-custom-3"
-  env         = "custom-3"
-  index       = "${var.index}"
-}
-
 module "worker_custom_4" {
   source      = "../modules/macstadium_go_worker"
   host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
@@ -451,17 +424,6 @@ module "vsphere_janitor_custom_2" {
   version     = "${var.vsphere_janitor_version}"
   config_path = "${path.module}/config/vsphere-janitor-custom-2"
   env         = "custom-2"
-  index       = "${var.index}"
-}
-
-module "vsphere_janitor_custom_3" {
-  source      = "../modules/vsphere_janitor"
-  host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
-  ssh_user    = "${var.ssh_user}"
-  version     = "${var.vsphere_janitor_version}"
-  config_path = "${path.module}/config/vsphere-janitor-custom-3"
-  env         = "custom-3"
   index       = "${var.index}"
 }
 
@@ -564,12 +526,6 @@ module "haproxy" {
       frontend_port      = "8086"
       backend_port_blue  = "9086"
       backend_port_green = "10086"
-    },
-    {
-      name               = "jupiter-brain-custom-3"
-      frontend_port      = "8087"
-      backend_port_blue  = "9087"
-      backend_port_green = "10087"
     },
     {
       name               = "jupiter-brain-custom-4"
