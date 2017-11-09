@@ -25,7 +25,6 @@ EOF
   run run_check_docker_health
 
   assert_cmd 'shutdown -P now.+imploding because docker appears to be unhealthy'
-  assert_cmd 'sleep 0.1'
   [ "${status}" -eq 42 ]
   assert_cmd "logger time=20171030T153252  prog=check-docker-health.bash status=imploded"
 }
