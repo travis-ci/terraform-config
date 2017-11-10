@@ -49,6 +49,7 @@ __handle_implode_confirm() {
   local reason
   reason="$(cat "${run_d}/implode.confirm" 2>/dev/null)"
   : "${reason:=not sure why}"
+  logger "imploding due to unhealthy docker; shutting down now!"
   "${SHUTDOWN:-/sbin/shutdown}" -P now "imploding because ${reason}"
 }
 
@@ -56,8 +57,11 @@ __handle_unresponsive_docker() {
   local run_d="${1}"
   local pre_implosion_sleep="${2}"
 
-  msg="docker appears to be unhealthy, initiating implosion"
-  echo "$msg" >"${run_d}/implode"
+  msg="docker is still unhealthy, implosion will continue"
+  if [ ! -e "${run_d}/implode" ]; then
+    msg="docker appears to be unhealthy, initiating implosion"
+    echo "$msg" >"${run_d}/implode"
+  fi
   logger "$msg"
 
   logger "Sleeping ${pre_implosion_sleep}"
@@ -70,7 +74,7 @@ __handle_unresponsive_docker() {
 
   pid="$(pidof travis-worker)" || true
   if [ -z "$pid" ]; then
-    msg="No PID found for travis-worker, and docker is unhealthy; imploding via cron"
+    msg="No PID found for travis-worker, and docker is unhealthy; confirming implosion via cron"
     echo "$msg" >"${run_d}/implode.confirm"
     logger "$msg"
   else
