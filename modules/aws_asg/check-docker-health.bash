@@ -37,7 +37,7 @@ main() {
 
   if [ -e "${run_d}/implode" ]; then
     logger "docker no longer seems unhealthy; canceling implosion."
-    rm "${run_d}/implode"
+    mv "${run_d}/implode" "${run_d}/implode.canceled.$(date --iso-8601=minutes)"
   fi
 
   __die noop 0
