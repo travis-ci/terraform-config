@@ -74,7 +74,7 @@ write_files:
 - content: '${base64encode(file("${here}/check-docker-health-crontab"))}'
   encoding: b64
   owner: 'root:root'
-  path: /etc/cron.d/check-docker-health-crontab
+  path: /etc/cron.d/check-docker-health-crontab.disabled
   permissions: '0644'
 - content: '${base64encode(file("${assets}/travis-worker/travis-worker.service"))}'
   encoding: b64
