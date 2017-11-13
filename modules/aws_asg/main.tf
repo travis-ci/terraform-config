@@ -176,6 +176,23 @@ data "template_file" "docker_daemon_json" {
 EOF
 }
 
+data "template_file" "systemd_docker" {
+  template = <<EOF
+[Unit]
+Description=Docker Application Container Engine
+Documentation=https://docs.docker.com
+After=network-online.target docker.socket firewalld.service
+Wants=network-online.target
+Requires=docker.socket
+
+[Service]
+ExecStart=/usr/bin/dockerd --config-file /etc/docker/daemon-direct-lvm.json
+[Install]
+WantedBy=multi-user.target
+
+EOF
+}
+
 data "template_file" "cloud_config" {
   template = "${file("${path.module}/cloud-config.yml.tpl")}"
 
