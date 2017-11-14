@@ -1,7 +1,7 @@
 variable "latest_docker_image_amethyst" {}
 variable "latest_docker_image_garnet" {}
 variable "latest_docker_image_worker" {}
-variable "packet_staging_1_project_id" {}
+variable "packet_bench_1_project_id" {}
 
 variable "worker_docker_self_image" {
   default = "travisci/worker:v3.0.2"
@@ -58,18 +58,18 @@ data "template_file" "cloud_config" {
     cloud_init_env     = "${data.template_file.cloud_init_env.rendered}"
     prestart_hook_bash = "${file("${path.module}/prestart-hook.bash")}"
     worker_config      = "${data.template_file.worker_config_org.rendered}"
-    worker_upstart     = "${file("${path.module}/../assets/travis-worker/travis-worker.conf")}"
-    worker_wrapper     = "${file("${path.module}/../assets/travis-worker/travis-worker-wrapper")}"
+    worker_upstart     = "${file("${path.module}/../../assets/travis-worker/travis-worker.conf")}"
+    worker_wrapper     = "${file("${path.module}/../../assets/travis-worker/travis-worker-wrapper")}"
   }
 }
 
 resource "packet_device" "worker" {
-  count            = 2
+  count            = 3
   hostname         = "${format("worker-%02d.packet-ewr1.travisci.net", count.index + 1)}"
   plan             = "baremetal_2"
   facility         = "ewr1"
   operating_system = "ubuntu_14_04"
   billing_cycle    = "hourly"
-  project_id       = "${var.packet_staging_1_project_id}"
+  project_id       = "${var.packet_bench_1_project_id}"
   user_data        = "${data.template_file.cloud_config.rendered}"
 }
