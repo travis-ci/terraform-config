@@ -73,7 +73,7 @@ EOF
       "DEBIAN_FRONTEND=noninteractive sudo apt-get -y install haproxy",
       "sudo mv /tmp/haproxy.cfg /etc/haproxy/haproxy.cfg",
       "echo ENABLED=1 | sudo tee /etc/default/haproxy",
-      "sudo /etc/init.d/haproxy start",
+      "sudo service haproxy start",
     ]
   }
 }
