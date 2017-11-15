@@ -115,7 +115,7 @@ variable "worker_docker_image_python" {}
 variable "worker_docker_image_ruby" {}
 
 variable "worker_docker_self_image" {
-  default = "travisci/worker:v3.3.1"
+  default = "travisci/worker:v3.4.0"
 }
 
 variable "worker_instance_type" {
@@ -472,7 +472,7 @@ resource "aws_autoscaling_lifecycle_hook" "workers_terminating" {
 }
 
 resource "heroku_app" "cyclist" {
-  name   = "cyclist-${replace(var.env, "precise-production", "precise-prod")}-${var.index}-${var.site}"
+  name   = "cyclist-${var.env}-${var.index}-${var.site}"
   region = "us"
 
   organization {

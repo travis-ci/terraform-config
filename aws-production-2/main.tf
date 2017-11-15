@@ -18,8 +18,8 @@ variable "syslog_address_com" {}
 variable "syslog_address_org" {}
 
 variable "worker_ami" {
-  # tfw 2017-11-06 16-12-17
-  default = "ami-a43c8dde"
+  # tfw 2017-11-07 01-42-17
+  default = "ami-0e823274"
 }
 
 variable "amethyst_image" {
@@ -93,6 +93,7 @@ ${file("${path.module}/worker.env")}
 export TRAVIS_WORKER_AMQP_URI=${module.rabbitmq_worker_config_com.uri}
 export TRAVIS_WORKER_HARD_TIMEOUT=2h
 export TRAVIS_WORKER_TRAVIS_SITE=com
+export TRAVIS_WORKER_DOCKER_INSPECT_INTERVAL=1000ms
 EOF
 }
 
@@ -108,6 +109,7 @@ ${file("${path.module}/worker.env")}
 export TRAVIS_WORKER_AMQP_URI=${module.rabbitmq_worker_config_org.uri}
 export TRAVIS_WORKER_HARD_TIMEOUT=50m0s
 export TRAVIS_WORKER_TRAVIS_SITE=org
+export TRAVIS_WORKER_DOCKER_INSPECT_INTERVAL=1000ms
 EOF
 }
 
