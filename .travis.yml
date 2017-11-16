@@ -12,7 +12,7 @@ env:
   - SHFMT_URL="mvdan.cc/sh/cmd/shfmt"
   - TMPDIR="${TMPDIR:-/tmp}"
 before_install:
-+- if ! terraform version ; then
+- if terraform version ; then
     pushd "${TMPDIR}" ;
     curl -sSL
       -o terraform.zip
@@ -22,7 +22,7 @@ before_install:
     chmod +x "${HOME}/bin/terraform" ;
     popd ;
     terraform version ;
-+  fi
+  fi
 - if ! shellcheck --version ; then
     curl -sSL "${SHELLCHECK_URL}" | tar -C "${HOME}/bin" -xjf - ;
   fi
