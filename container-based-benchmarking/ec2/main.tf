@@ -100,12 +100,12 @@ resource "aws_instance" "bench-instance" {
   ebs_block_device {
     device_name = "/dev/xvdc"
     volume_type = "io1"
-    volume_size = "250"
-    iops        = "750"
+    volume_size = "400"
+    iops        = "20000"
   }
 
   tags {
-    Name = "${format("bench-instance-%02d", count.index + 1)}"
+    Name = "${format("bench-c5-instance-%02d", count.index + 1)}"
   }
 }
 
