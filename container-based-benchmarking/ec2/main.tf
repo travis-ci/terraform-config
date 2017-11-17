@@ -10,6 +10,16 @@ variable "worker_docker_self_image" {
   default = "travisci/worker:v3.4.0"
 }
 
+terraform {
+  backend "s3" {
+    bucket         = "travis-terraform-state"
+    key            = "terraform-config/container-based-benchmarking-ec2.tfstate"
+    region         = "us-east-1"
+    encrypt        = "true"
+    dynamodb_table = "travis-terraform-state"
+  }
+}
+
 data "template_file" "cloud_init_env" {
   template = <<EOF
 export TRAVIS_WORKER_DOCKER_IMAGE_ANDROID=""
@@ -80,7 +90,7 @@ data "template_cloudinit_config" "cloud_config" {
 }
 
 resource "aws_instance" "bench-instance" {
-  count                  = 4
+  count                  = 2
   instance_type          = "c5.9xlarge"
   user_data              = "${data.template_cloudinit_config.cloud_config.rendered}"
   ami                    = "ami-a43c8dde"
@@ -90,8 +100,8 @@ resource "aws_instance" "bench-instance" {
   ebs_block_device {
     device_name = "/dev/xvdc"
     volume_type = "io1"
-    volume_size = "750"
-    iops        = "2250"
+    volume_size = "250"
+    iops        = "750"
   }
 
   tags {
