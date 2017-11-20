@@ -5,7 +5,7 @@ def percentile(values, percentile)
   values_sorted = values.sort
   k = (percentile*(values_sorted.length-1)+1).floor - 1
   f = (percentile*(values_sorted.length-1)+1).modulo(1)
-  return values_sorted[k] + (f * (values_sorted[k+1] - values_sorted[k]))
+  values_sorted[k] + (f * (values_sorted[k+1] - values_sorted[k]))
 end
 
 def job_durations(group: 'ec2-bench00',
@@ -27,7 +27,9 @@ end
 def job_duration_percentiles(group: 'ec2-bench00', pct: [0.5, 0.9, 0.95, 0.99],
                              repo: 'travis-repos/chirp-org-production')
   values = job_durations(group: group)
-  pct.map { |p| [p, percentile(values, p)] }.to_h.merge(group: group)
+  pct.map { |p| [p, percentile(values, p)] }.to_h.merge(
+    group: group, n: values.count
+  )
 end
 
 def job_states(repo: 'travis-repos/chirp-org-production')
