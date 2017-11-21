@@ -1,5 +1,5 @@
 resource "vsphere_virtual_machine" "wjb-staging" {
-  name       = "wjb-${var.index}"
+  name       = "wjb-staging-${var.index}"
   folder     = "${vsphere_folder.internal_vms.path}"
   vcpu       = 4
   memory     = 4096
