@@ -71,10 +71,10 @@ resource "null_resource" "worker" {
   }
 }
 
-output "wjb_ip" {
+output "wjb-staging_ip" {
   value = "${vsphere_virtual_machine.wjb-staging.network_interface.0.ipv4_address}"
 }
 
-output "wjb_uuid" {
+output "wjb-staging_uuid" {
   value = "${vsphere_virtual_machine.wjb-staging.uuid}"
 }
