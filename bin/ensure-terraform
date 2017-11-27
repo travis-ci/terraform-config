@@ -26,6 +26,10 @@ main() {
     exit 1
   fi
 
+  if [[ -x "${tf}" ]]; then
+    exit 0
+  fi
+
   local tf_version_clean="${tf_version#v}"
   local tf_url="${TF_DOWNLOAD_SERVER}"
   tf_url="${tf_url}/terraform/${tf_version_clean}"
