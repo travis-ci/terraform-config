@@ -11,24 +11,18 @@ main() {
   fi
 
   : "${TF_INSTALL_MISSING:=1}"
-  : "${TF_INSTALLATION_PREFIX:=${HOME}/bin}"
+  : "${TF_INSTALLATION_PREFIX:=${HOME}/.cache/travis-terraform-config}"
   : "${TF_DOWNLOAD_SERVER:=https://releases.hashicorp.com}"
   : "${TMPDIR:=/tmp}"
 
-  local tf_current='???'
-  local tf="${TF_INSTALLATION_PREFIX}/terraform"
+  mkdir -p "${TF_INSTALLATION_PREFIX}"
+  local tf="${TF_INSTALLATION_PREFIX}/terraform-${tf_version}"
 
-  if [[ -x "${tf}" ]]; then
-    local tf_current
-    tf_current="$( ("${tf}" version || true) | head -n1 | cut -d ' ' -f 2)"
-  fi
-
-  if [[ "${tf_current}" == "${tf_version}" ]]; then
-    exit 0
-  fi
-
-  if [[ "${TF_INSTALL_MISSING}" == 0 ]]; then
-    echo "Terraform ${tf_version} required (current=${tf_current})" >&2
+  if [[ ! -x "${tf}" && "${TF_INSTALL_MISSING}" == 0 ]]; then
+    echo "===> Terraform ${tf_version} required."
+    echo "     Run this:"
+    echo "     ${0} ${tf_version}"
+    echo
     exit 1
   fi
 
@@ -43,7 +37,7 @@ main() {
   mv -v terraform "${tf}"
   chmod +x "${tf}"
   popd &>/dev/null
-  terraform version
+  "${tf}" version
 }
 
 main "$@"

@@ -5,6 +5,7 @@ sudo: required
 cache:
   directories:
   - "${HOME}/bin"
+  - "${HOME}/.cache/travis-terraform-config"
 env:
   global:
   - PATH="${HOME}/bin:${PATH}"
@@ -12,7 +13,10 @@ env:
   - SHFMT_URL="mvdan.cc/sh/cmd/shfmt"
   - TMPDIR="${TMPDIR:-/tmp}"
 before_install:
-- ./bin/ensure-terraform "$(make -f terraform-common.mk .echo-tf-version)"
+- git ls-files '*/Makefile' | xargs -n 1 make .echo-tf-version -f 2>/dev/null | sort | uniq |
+  while read -r tf_version;
+    do ./bin/ensure-terraform "${tf_version}";
+  done
 - if [[ ! -x "${HOME}/bin/shellcheck" ]]; then
     curl -sSL "${SHELLCHECK_URL}" | tar -C "${HOME}/bin" -xjf -;
   fi
