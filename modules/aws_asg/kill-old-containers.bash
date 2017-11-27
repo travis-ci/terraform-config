@@ -12,6 +12,7 @@ __die() {
 }
 
 main() {
+  local worker_cid cids
   worker_cid=$(docker inspect travis-worker --format '{{ .Id }}')
   cids=$(docker ps -q --filter before="$worker_cid")
 
