@@ -10,8 +10,9 @@ TRAVIS_BUILD_ORG_HOST ?= build.travis-ci.org
 JOB_BOARD_HOST ?= job-board.travis-ci.com
 AMQP_URL_VARNAME ?= AMQP_URL
 TOP := $(shell git rev-parse --show-toplevel)
-PROD_TF_VERSION := v0.9.11
-LOCAL_TF_VERSION := $(shell terraform --version | head -n1 | cut -d ' ' -f 2)
+
+PROD_TF_VERSION := v0.11.0
+TERRAFORM := $(HOME)/.cache/travis-terraform-config/terraform-$(PROD_TF_VERSION)
 
 .PHONY: hello
 hello: announce
@@ -24,12 +25,17 @@ hello: announce
 .assert-ruby:
 	@ruby -e "fail 'Ruby >= 2.3 required' unless RUBY_VERSION >= '2.3'"
 
+.PHONY: .echo-tf-version
+.echo-tf-version:
+	@echo $(PROD_TF_VERSION)
+
+.PHONY: .echo-tf
+.echo-tf:
+	@echo $(TERRAFORM)
+
 .PHONY: .assert-tf-version
 .assert-tf-version:
-	@if [ $(PROD_TF_VERSION) != $(LOCAL_TF_VERSION) ]; then \
-		echo "You must be running Terraform version $(PROD_TF_VERSION).";\
-		exit 1;\
-	fi
+	@TF_INSTALL_MISSING=0 $(TOP)/bin/ensure-terraform $(PROD_TF_VERSION)
 
 .PHONY: announce
 announce: .assert-ruby .assert-tf-version
@@ -37,12 +43,12 @@ announce: .assert-ruby .assert-tf-version
 
 .PHONY: apply
 apply: announce .config $(TFVARS) $(TFSTATE)
-	terraform apply $(TFPLAN)
+	$(TERRAFORM) apply $(TFPLAN)
 	$(TOP)/bin/post-flight $(TOP)
 
 .PHONY: plan
 plan: announce .config $(TFVARS) $(TFSTATE)
-	terraform plan \
+	$(TERRAFORM) plan \
 		-var-file=$(ENV_NAME).tfvars \
 		-var-file=$(TFVARS) \
 		-module-depth=-1 \
@@ -50,7 +56,7 @@ plan: announce .config $(TFVARS) $(TFSTATE)
 
 .PHONY: destroy
 destroy: announce .config $(TFVARS) $(TFSTATE)
-	terraform plan \
+	$(TERRAFORM) plan \
 		-var-file=$(ENV_NAME).tfvars \
 		-var-file=$(TFVARS) \
 		-module-depth=-1 \
@@ -59,7 +65,7 @@ destroy: announce .config $(TFVARS) $(TFSTATE)
 	$(TOP)/bin/post-flight $(TOP)
 
 $(TFSTATE):
-	terraform init
+	$(TERRAFORM) init
 
 .PHONY: clean
 clean: announce
@@ -71,7 +77,7 @@ distclean: clean
 
 .PHONY: graph
 graph:
-	terraform graph -draw-cycles | dot -Tpng > graph.png
+	$(TERRAFORM) graph -draw-cycles | dot -Tpng > graph.png
 
 $(ENV_NAME).tfvars:
 	$(TOP)/bin/generate-tfvars $@

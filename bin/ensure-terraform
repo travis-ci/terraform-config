@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+set -o errexit
+set -o pipefail
+
+main() {
+  local tf_version="${1}"
+
+  if [[ ! "${tf_version}" ]]; then
+    echo "Usage: $(basename "${0}") <terraform-version>" >&2
+    exit 1
+  fi
+
+  : "${TF_INSTALL_MISSING:=1}"
+  : "${TF_INSTALLATION_PREFIX:=${HOME}/.cache/travis-terraform-config}"
+  : "${TF_DOWNLOAD_SERVER:=https://releases.hashicorp.com}"
+  : "${TMPDIR:=/tmp}"
+
+  mkdir -p "${TF_INSTALLATION_PREFIX}"
+  local tf="${TF_INSTALLATION_PREFIX}/terraform-${tf_version}"
+
+  if [[ ! -x "${tf}" && "${TF_INSTALL_MISSING}" == 0 ]]; then
+    echo "===> Terraform ${tf_version} required."
+    echo "     Run this:"
+    echo "     ${0} ${tf_version}"
+    echo
+    exit 1
+  fi
+
+  local tf_version_clean="${tf_version#v}"
+  local tf_url="${TF_DOWNLOAD_SERVER}"
+  tf_url="${tf_url}/terraform/${tf_version_clean}"
+  tf_url="${tf_url}/terraform_${tf_version_clean}_linux_amd64.zip"
+
+  pushd "${TMPDIR}" &>/dev/null
+  curl -sSL -o terraform.zip "${tf_url}"
+  unzip terraform.zip
+  mv -v terraform "${tf}"
+  chmod +x "${tf}"
+  popd &>/dev/null
+  "${tf}" version
+}
+
+main "$@"
