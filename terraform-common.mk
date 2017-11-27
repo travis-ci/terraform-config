@@ -11,7 +11,6 @@ JOB_BOARD_HOST ?= job-board.travis-ci.com
 AMQP_URL_VARNAME ?= AMQP_URL
 TOP := $(shell git rev-parse --show-toplevel)
 PROD_TF_VERSION := v0.9.11
-LOCAL_TF_VERSION := $(shell terraform --version | head -n1 | cut -d ' ' -f 2)
 
 .PHONY: hello
 hello: announce
@@ -24,12 +23,13 @@ hello: announce
 .assert-ruby:
 	@ruby -e "fail 'Ruby >= 2.3 required' unless RUBY_VERSION >= '2.3'"
 
+.PHONY: .echo-tf-version
+.echo-tf-version:
+	@echo $(PROD_TF_VERSION)
+
 .PHONY: .assert-tf-version
 .assert-tf-version:
-	@if [ $(PROD_TF_VERSION) != $(LOCAL_TF_VERSION) ]; then \
-		echo "You must be running Terraform version $(PROD_TF_VERSION).";\
-		exit 1;\
-	fi
+	@TF_INSTALL_MISSING=0 $(TOP)/bin/ensure-terraform $(PROD_TF_VERSION)
 
 .PHONY: announce
 announce: .assert-ruby .assert-tf-version
