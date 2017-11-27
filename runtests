@@ -10,6 +10,9 @@ main() {
     git diff-index --quiet HEAD -- || (echo "$msg" && exit 1)
   fi
 
+  local terraform
+  terraform="$(make -f terraform-common.mk .echo-tf)"
+
   if [[ $# -gt 1 && $1 == --env ]]; then
     echo "Running isolated with env ${2}"
     exec env -i \
@@ -46,12 +49,22 @@ main() {
 
   for d in $(git ls-files '*.tf' | xargs -n1 dirname | LC_ALL=C sort | uniq); do
     echo -en "${d} "
-    terraform validate "${d}"
+    if [[ -f "${d}/Makefile" ]]; then
+      terraform="$(make -f "${d}/Makefile" .echo-tf)"
+    else
+      terraform="$(make -f terraform-common.mk .echo-tf)"
+    fi
+    if [[ -f "${d}/.terraform-validate-flags" ]]; then
+      # shellcheck disable=SC2046
+      "${terraform}" validate $(cat "${d}/.terraform-validate-flags") "${d}"
+    else
+      "${terraform}" validate -check-variables=false "${d}"
+    fi
     echo "✓"
   done
 
   echo 'Running terraform fmt'
-  terraform fmt
+  "${terraform}" fmt
 }
 
 main "$@"
