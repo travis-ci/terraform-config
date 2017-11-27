@@ -1,5 +1,5 @@
 language: bash
-rvm: 2.4.1
+rvm: 2.4.2
 dist: trusty
 sudo: required
 cache:
@@ -12,21 +12,11 @@ env:
   - SHFMT_URL="mvdan.cc/sh/cmd/shfmt"
   - TMPDIR="${TMPDIR:-/tmp}"
 before_install:
-- if ! terraform version ; then
-    pushd "${TMPDIR}" ;
-    curl -sSL
-      -o terraform.zip
-      "https://releases.hashicorp.com/terraform/0.9.11/terraform_0.9.11_linux_amd64.zip" ;
-    unzip terraform.zip ;
-    mv -v terraform "${HOME}/bin/terraform" ;
-    chmod +x "${HOME}/bin/terraform" ;
-    popd ;
-    terraform version ;
+- ./bin/ensure-terraform "$(make -f terraform-common.mk .echo-tf-version)"
+- if [[ ! -x "${HOME}/bin/shellcheck" ]]; then
+    curl -sSL "${SHELLCHECK_URL}" | tar -C "${HOME}/bin" -xjf -;
   fi
-- if ! shellcheck --version ; then
-    curl -sSL "${SHELLCHECK_URL}" | tar -C "${HOME}/bin" -xjf - ;
-  fi
-- go get -u "${SHFMT_URL}" ;
+- go get -u "${SHFMT_URL}"
 script:
 - ./runtests --env .example.env
 - git diff --exit-code
