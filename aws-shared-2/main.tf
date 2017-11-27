@@ -12,20 +12,20 @@ variable "index" {
   default = 2
 }
 
-variable "public_subnet_1a_cidr" {
-  default = "10.12.10.0/24"
-}
-
 variable "public_subnet_1b_cidr" {
   default = "10.12.1.0/24"
 }
 
-variable "public_subnet_1c_cidr" {
-  default = "10.12.7.0/24"
+variable "public_subnet_1b2_cidr" {
+  default = "10.12.10.0/24"
 }
 
 variable "public_subnet_1e_cidr" {
   default = "10.12.4.0/24"
+}
+
+variable "public_subnet_1e2_cidr" {
+  default = "10.12.7.0/24"
 }
 
 variable "syslog_address_com" {}
@@ -38,36 +38,36 @@ variable "vpc_cidr" {
   default = "10.12.0.0/16"
 }
 
-variable "workers_com_subnet_1a_cidr" {
-  default = "10.12.12.0/24"
-}
-
 variable "workers_com_subnet_1b_cidr" {
   default = "10.12.3.0/24"
 }
 
-variable "workers_com_subnet_1c_cidr" {
-  default = "10.12.8.0/24"
+variable "workers_com_subnet_1b2_cidr" {
+  default = "10.12.12.0/24"
 }
 
 variable "workers_com_subnet_1e_cidr" {
   default = "10.12.5.0/24"
 }
 
-variable "workers_org_subnet_1a_cidr" {
-  default = "10.12.11.0/24"
+variable "workers_com_subnet_1e2_cidr" {
+  default = "10.12.8.0/24"
 }
 
 variable "workers_org_subnet_1b_cidr" {
   default = "10.12.2.0/24"
 }
 
-variable "workers_org_subnet_1c_cidr" {
-  default = "10.12.9.0/24"
+variable "workers_org_subnet_1b2_cidr" {
+  default = "10.12.11.0/24"
 }
 
 variable "workers_org_subnet_1e_cidr" {
   default = "10.12.6.0/24"
+}
+
+variable "workers_org_subnet_1e2_cidr" {
+  default = "10.12.9.0/24"
 }
 
 terraform {
@@ -141,18 +141,18 @@ resource "aws_vpc_endpoint" "s3" {
   service_name = "com.amazonaws.us-east-1.s3"
 
   route_table_ids = [
-    "${module.aws_az_1a.route_table_id}",
-    "${module.aws_az_1a.workers_com_route_table_id}",
-    "${module.aws_az_1a.workers_org_route_table_id}",
     "${module.aws_az_1b.route_table_id}",
     "${module.aws_az_1b.workers_com_route_table_id}",
     "${module.aws_az_1b.workers_org_route_table_id}",
-    "${module.aws_az_1c.route_table_id}",
-    "${module.aws_az_1c.workers_com_route_table_id}",
-    "${module.aws_az_1c.workers_org_route_table_id}",
+    "${module.aws_az_1b2.route_table_id}",
+    "${module.aws_az_1b2.workers_com_route_table_id}",
+    "${module.aws_az_1b2.workers_org_route_table_id}",
     "${module.aws_az_1e.route_table_id}",
     "${module.aws_az_1e.workers_com_route_table_id}",
     "${module.aws_az_1e.workers_org_route_table_id}",
+    "${module.aws_az_1e2.route_table_id}",
+    "${module.aws_az_1e2.workers_com_route_table_id}",
+    "${module.aws_az_1e2.workers_org_route_table_id}",
   ]
 
   policy = <<EOF
@@ -169,28 +169,6 @@ resource "aws_vpc_endpoint" "s3" {
   ]
 }
 EOF
-}
-
-module "aws_az_1a" {
-  source                        = "../modules/aws_az"
-  az                            = "1a"
-  duo_api_hostname              = "${var.duo_api_hostname}"
-  duo_integration_key           = "${var.duo_integration_key}"
-  duo_secret_key                = "${var.duo_secret_key}"
-  bastion_ami                   = "${data.aws_ami.bastion.id}"
-  env                           = "${var.env}"
-  gateway_id                    = "${aws_internet_gateway.gw.id}"
-  github_users                  = "${var.github_users}"
-  index                         = "${var.index}"
-  nat_ami                       = "${data.aws_ami.nat.id}"
-  nat_instance_type             = "c3.8xlarge"
-  public_subnet_cidr            = "${var.public_subnet_1a_cidr}"
-  syslog_address                = "${var.syslog_address_com}"
-  travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
-  vpc_cidr                      = "${var.vpc_cidr}"
-  vpc_id                        = "${aws_vpc.main.id}"
-  workers_com_subnet_cidr       = "${var.workers_com_subnet_1a_cidr}"
-  workers_org_subnet_cidr       = "${var.workers_org_subnet_1a_cidr}"
 }
 
 module "aws_az_1b" {
@@ -215,9 +193,9 @@ module "aws_az_1b" {
   workers_org_subnet_cidr       = "${var.workers_org_subnet_1b_cidr}"
 }
 
-module "aws_az_1c" {
+module "aws_az_1b2" {
   source                        = "../modules/aws_az"
-  az                            = "1c"
+  az                            = "1b"
   duo_api_hostname              = "${var.duo_api_hostname}"
   duo_integration_key           = "${var.duo_integration_key}"
   duo_secret_key                = "${var.duo_secret_key}"
@@ -228,13 +206,13 @@ module "aws_az_1c" {
   index                         = "${var.index}"
   nat_ami                       = "${data.aws_ami.nat.id}"
   nat_instance_type             = "c3.8xlarge"
-  public_subnet_cidr            = "${var.public_subnet_1c_cidr}"
+  public_subnet_cidr            = "${var.public_subnet_1b2_cidr}"
   syslog_address                = "${var.syslog_address_com}"
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
   vpc_cidr                      = "${var.vpc_cidr}"
   vpc_id                        = "${aws_vpc.main.id}"
-  workers_com_subnet_cidr       = "${var.workers_com_subnet_1c_cidr}"
-  workers_org_subnet_cidr       = "${var.workers_org_subnet_1c_cidr}"
+  workers_com_subnet_cidr       = "${var.workers_com_subnet_1b2_cidr}"
+  workers_org_subnet_cidr       = "${var.workers_org_subnet_1b2_cidr}"
 }
 
 module "aws_az_1e" {
@@ -259,6 +237,28 @@ module "aws_az_1e" {
   workers_org_subnet_cidr       = "${var.workers_org_subnet_1e_cidr}"
 }
 
+module "aws_az_1e2" {
+  source                        = "../modules/aws_az"
+  az                            = "1e"
+  duo_api_hostname              = "${var.duo_api_hostname}"
+  duo_integration_key           = "${var.duo_integration_key}"
+  duo_secret_key                = "${var.duo_secret_key}"
+  bastion_ami                   = "${data.aws_ami.bastion.id}"
+  env                           = "${var.env}"
+  gateway_id                    = "${aws_internet_gateway.gw.id}"
+  github_users                  = "${var.github_users}"
+  index                         = "${var.index}"
+  nat_ami                       = "${data.aws_ami.nat.id}"
+  nat_instance_type             = "c3.8xlarge"
+  public_subnet_cidr            = "${var.public_subnet_1e2_cidr}"
+  syslog_address                = "${var.syslog_address_com}"
+  travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
+  vpc_cidr                      = "${var.vpc_cidr}"
+  vpc_id                        = "${aws_vpc.main.id}"
+  workers_com_subnet_cidr       = "${var.workers_com_subnet_1e2_cidr}"
+  workers_org_subnet_cidr       = "${var.workers_org_subnet_1e2_cidr}"
+}
+
 resource "aws_route53_record" "workers_org_nat" {
   zone_id = "${var.travisci_net_external_zone_id}"
   name    = "workers-nat-org-${var.env}-${var.index}.aws-us-east-1.travisci.net"
@@ -266,10 +266,10 @@ resource "aws_route53_record" "workers_org_nat" {
   ttl     = 300
 
   records = [
-    "${module.aws_az_1a.workers_org_nat_eip}",
     "${module.aws_az_1b.workers_org_nat_eip}",
-    "${module.aws_az_1c.workers_org_nat_eip}",
+    "${module.aws_az_1b2.workers_org_nat_eip}",
     "${module.aws_az_1e.workers_org_nat_eip}",
+    "${module.aws_az_1e2.workers_org_nat_eip}",
   ]
 }
 
@@ -280,10 +280,10 @@ resource "aws_route53_record" "workers_com_nat" {
   ttl     = 300
 
   records = [
-    "${module.aws_az_1a.workers_com_nat_eip}",
     "${module.aws_az_1b.workers_com_nat_eip}",
-    "${module.aws_az_1c.workers_com_nat_eip}",
+    "${module.aws_az_1b2.workers_com_nat_eip}",
     "${module.aws_az_1e.workers_com_nat_eip}",
+    "${module.aws_az_1e2.workers_com_nat_eip}",
   ]
 }
 
@@ -308,58 +308,58 @@ module "registry" {
 
 resource "null_resource" "outputs_signature" {
   triggers {
-    bastion_security_group_1a_id = "${module.aws_az_1a.bastion_sg_id}"
+    bastion_security_group_1b2_id = "${module.aws_az_1b2.bastion_sg_id}"
     bastion_security_group_1b_id = "${module.aws_az_1b.bastion_sg_id}"
-    bastion_security_group_1c_id = "${module.aws_az_1c.bastion_sg_id}"
+    bastion_security_group_1e2_id = "${module.aws_az_1e2.bastion_sg_id}"
     bastion_security_group_1e_id = "${module.aws_az_1e.bastion_sg_id}"
     gateway_id                   = "${aws_internet_gateway.gw.id}"
-    public_subnet_1a_cidr        = "${var.public_subnet_1a_cidr}"
+    public_subnet_1b2_cidr        = "${var.public_subnet_1b2_cidr}"
     public_subnet_1b_cidr        = "${var.public_subnet_1b_cidr}"
-    public_subnet_1c_cidr        = "${var.public_subnet_1c_cidr}"
+    public_subnet_1e2_cidr        = "${var.public_subnet_1e2_cidr}"
     public_subnet_1e_cidr        = "${var.public_subnet_1e_cidr}"
     registry_hostname            = "${module.registry.hostname}"
     vpc_id                       = "${aws_vpc.main.id}"
-    workers_com_nat_1a_id        = "${module.aws_az_1a.workers_com_nat_id}"
+    workers_com_nat_1b2_id        = "${module.aws_az_1b2.workers_com_nat_id}"
     workers_com_nat_1b_id        = "${module.aws_az_1b.workers_com_nat_id}"
-    workers_com_nat_1c_id        = "${module.aws_az_1c.workers_com_nat_id}"
+    workers_com_nat_1e2_id        = "${module.aws_az_1e2.workers_com_nat_id}"
     workers_com_nat_1e_id        = "${module.aws_az_1e.workers_com_nat_id}"
-    workers_com_subnet_1a_cidr   = "${var.workers_com_subnet_1a_cidr}"
-    workers_com_subnet_1a_id     = "${module.aws_az_1a.workers_com_subnet_id}"
+    workers_com_subnet_1b2_cidr   = "${var.workers_com_subnet_1b2_cidr}"
+    workers_com_subnet_1b2_id     = "${module.aws_az_1b2.workers_com_subnet_id}"
     workers_com_subnet_1b_cidr   = "${var.workers_com_subnet_1b_cidr}"
     workers_com_subnet_1b_id     = "${module.aws_az_1b.workers_com_subnet_id}"
-    workers_com_subnet_1c_cidr   = "${var.workers_com_subnet_1c_cidr}"
-    workers_com_subnet_1c_id     = "${module.aws_az_1c.workers_com_subnet_id}"
+    workers_com_subnet_1e2_cidr   = "${var.workers_com_subnet_1e2_cidr}"
+    workers_com_subnet_1e2_id     = "${module.aws_az_1e2.workers_com_subnet_id}"
     workers_com_subnet_1e_cidr   = "${var.workers_com_subnet_1e_cidr}"
     workers_com_subnet_1e_id     = "${module.aws_az_1e.workers_com_subnet_id}"
-    workers_org_nat_1a_id        = "${module.aws_az_1a.workers_org_nat_id}"
+    workers_org_nat_1b2_id        = "${module.aws_az_1b2.workers_org_nat_id}"
     workers_org_nat_1b_id        = "${module.aws_az_1b.workers_org_nat_id}"
-    workers_org_nat_1c_id        = "${module.aws_az_1c.workers_org_nat_id}"
+    workers_org_nat_1e2_id        = "${module.aws_az_1e2.workers_org_nat_id}"
     workers_org_nat_1e_id        = "${module.aws_az_1e.workers_org_nat_id}"
-    workers_org_subnet_1a_cidr   = "${var.workers_org_subnet_1a_cidr}"
-    workers_org_subnet_1a_id     = "${module.aws_az_1a.workers_org_subnet_id}"
+    workers_org_subnet_1b2_cidr   = "${var.workers_org_subnet_1b2_cidr}"
+    workers_org_subnet_1b2_id     = "${module.aws_az_1b2.workers_org_subnet_id}"
     workers_org_subnet_1b_cidr   = "${var.workers_org_subnet_1b_cidr}"
     workers_org_subnet_1b_id     = "${module.aws_az_1b.workers_org_subnet_id}"
-    workers_org_subnet_1c_cidr   = "${var.workers_org_subnet_1c_cidr}"
-    workers_org_subnet_1c_id     = "${module.aws_az_1c.workers_org_subnet_id}"
+    workers_org_subnet_1e2_cidr   = "${var.workers_org_subnet_1e2_cidr}"
+    workers_org_subnet_1e2_id     = "${module.aws_az_1e2.workers_org_subnet_id}"
     workers_org_subnet_1e_cidr   = "${var.workers_org_subnet_1e_cidr}"
     workers_org_subnet_1e_id     = "${module.aws_az_1e.workers_org_subnet_id}"
   }
-}
-
-output "bastion_security_group_1a_id" {
-  value = "${module.aws_az_1a.bastion_sg_id}"
 }
 
 output "bastion_security_group_1b_id" {
   value = "${module.aws_az_1b.bastion_sg_id}"
 }
 
-output "bastion_security_group_1c_id" {
-  value = "${module.aws_az_1c.bastion_sg_id}"
+output "bastion_security_group_1b2_id" {
+  value = "${module.aws_az_1b2.bastion_sg_id}"
 }
 
 output "bastion_security_group_1e_id" {
   value = "${module.aws_az_1e.bastion_sg_id}"
+}
+
+output "bastion_security_group_1e2_id" {
+  value = "${module.aws_az_1e2.bastion_sg_id}"
 }
 
 output "gateway_id" {
@@ -370,48 +370,40 @@ output "registry_hostname" {
   value = "${module.registry.hostname}"
 }
 
-output "public_subnet_1a_cidr" {
-  value = "${var.public_subnet_1a_cidr}"
-}
-
 output "public_subnet_1b_cidr" {
   value = "${var.public_subnet_1b_cidr}"
 }
 
-output "public_subnet_1c_cidr" {
-  value = "${var.public_subnet_1c_cidr}"
+output "public_subnet_1b2_cidr" {
+  value = "${var.public_subnet_1b2_cidr}"
 }
 
 output "public_subnet_1e_cidr" {
   value = "${var.public_subnet_1e_cidr}"
 }
 
-output "vpc_id" {
-  value = "${aws_vpc.main.id}"
+output "public_subnet_1e2_cidr" {
+  value = "${var.public_subnet_1e2_cidr}"
 }
 
-output "workers_com_nat_1a_id" {
-  value = "${module.aws_az_1a.workers_com_nat_id}"
+output "vpc_id" {
+  value = "${aws_vpc.main.id}"
 }
 
 output "workers_com_nat_1b_id" {
   value = "${module.aws_az_1b.workers_com_nat_id}"
 }
 
-output "workers_com_nat_1c_id" {
-  value = "${module.aws_az_1c.workers_com_nat_id}"
+output "workers_com_nat_1b2_id" {
+  value = "${module.aws_az_1b2.workers_com_nat_id}"
 }
 
 output "workers_com_nat_1e_id" {
   value = "${module.aws_az_1e.workers_com_nat_id}"
 }
 
-output "workers_com_subnet_1a_cidr" {
-  value = "${var.workers_com_subnet_1a_cidr}"
-}
-
-output "workers_com_subnet_1a_id" {
-  value = "${module.aws_az_1a.workers_com_subnet_id}"
+output "workers_com_nat_1e2_id" {
+  value = "${module.aws_az_1e2.workers_com_nat_id}"
 }
 
 output "workers_com_subnet_1b_cidr" {
@@ -422,12 +414,12 @@ output "workers_com_subnet_1b_id" {
   value = "${module.aws_az_1b.workers_com_subnet_id}"
 }
 
-output "workers_com_subnet_1c_cidr" {
-  value = "${var.workers_com_subnet_1c_cidr}"
+output "workers_com_subnet_1b2_cidr" {
+  value = "${var.workers_com_subnet_1b2_cidr}"
 }
 
-output "workers_com_subnet_1c_id" {
-  value = "${module.aws_az_1c.workers_com_subnet_id}"
+output "workers_com_subnet_1b2_id" {
+  value = "${module.aws_az_1b2.workers_com_subnet_id}"
 }
 
 output "workers_com_subnet_1e_cidr" {
@@ -438,28 +430,28 @@ output "workers_com_subnet_1e_id" {
   value = "${module.aws_az_1e.workers_com_subnet_id}"
 }
 
-output "workers_org_nat_1a_id" {
-  value = "${module.aws_az_1a.workers_org_nat_id}"
+output "workers_com_subnet_1e2_cidr" {
+  value = "${var.workers_com_subnet_1e2_cidr}"
+}
+
+output "workers_com_subnet_1e2_id" {
+  value = "${module.aws_az_1e2.workers_com_subnet_id}"
 }
 
 output "workers_org_nat_1b_id" {
   value = "${module.aws_az_1b.workers_org_nat_id}"
 }
 
-output "workers_org_nat_1c_id" {
-  value = "${module.aws_az_1c.workers_org_nat_id}"
+output "workers_org_nat_1b2_id" {
+  value = "${module.aws_az_1b2.workers_org_nat_id}"
 }
 
 output "workers_org_nat_1e_id" {
   value = "${module.aws_az_1e.workers_org_nat_id}"
 }
 
-output "workers_org_subnet_1a_cidr" {
-  value = "${var.workers_org_subnet_1a_cidr}"
-}
-
-output "workers_org_subnet_1a_id" {
-  value = "${module.aws_az_1a.workers_org_subnet_id}"
+output "workers_org_nat_1e2_id" {
+  value = "${module.aws_az_1e2.workers_org_nat_id}"
 }
 
 output "workers_org_subnet_1b_cidr" {
@@ -470,12 +462,12 @@ output "workers_org_subnet_1b_id" {
   value = "${module.aws_az_1b.workers_org_subnet_id}"
 }
 
-output "workers_org_subnet_1c_cidr" {
-  value = "${var.workers_org_subnet_1c_cidr}"
+output "workers_org_subnet_1b2_cidr" {
+  value = "${var.workers_org_subnet_1b2_cidr}"
 }
 
-output "workers_org_subnet_1c_id" {
-  value = "${module.aws_az_1c.workers_org_subnet_id}"
+output "workers_org_subnet_1b2_id" {
+  value = "${module.aws_az_1b2.workers_org_subnet_id}"
 }
 
 output "workers_org_subnet_1e_cidr" {
@@ -484,4 +476,12 @@ output "workers_org_subnet_1e_cidr" {
 
 output "workers_org_subnet_1e_id" {
   value = "${module.aws_az_1e.workers_org_subnet_id}"
+}
+
+output "workers_org_subnet_1e2_cidr" {
+  value = "${var.workers_org_subnet_1e2_cidr}"
+}
+
+output "workers_org_subnet_1e2_id" {
+  value = "${module.aws_az_1e2.workers_org_subnet_id}"
 }
