@@ -50,6 +50,14 @@ apply: announce .config $(TFVARS) $(TFSTATE)
 init: announce
 	$(TERRAFORM) init
 
+.PHONY: show
+show: announce
+	$(TERRAFORM) show
+
+.PHONY: console
+console: announce
+	$(TERRAFORM) console
+
 .PHONY: plan
 plan: announce .config $(TFVARS) $(TFSTATE)
 	$(TERRAFORM) plan \
