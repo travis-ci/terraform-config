@@ -113,15 +113,6 @@ export TRAVIS_WORKER_DOCKER_INSPECT_INTERVAL=1000ms
 EOF
 }
 
-module "aws_az_1a" {
-  source                    = "../modules/aws_workers_az"
-  az                        = "1a"
-  bastion_security_group_id = "${data.terraform_remote_state.vpc.bastion_security_group_1a_id}"
-  env                       = "${var.env}"
-  index                     = "${var.index}"
-  vpc_id                    = "${data.terraform_remote_state.vpc.vpc_id}"
-}
-
 module "aws_az_1b" {
   source                    = "../modules/aws_workers_az"
   az                        = "1b"
@@ -131,10 +122,10 @@ module "aws_az_1b" {
   vpc_id                    = "${data.terraform_remote_state.vpc.vpc_id}"
 }
 
-module "aws_az_1c" {
+module "aws_az_1b2" {
   source                    = "../modules/aws_workers_az"
-  az                        = "1c"
-  bastion_security_group_id = "${data.terraform_remote_state.vpc.bastion_security_group_1c_id}"
+  az                        = "1b"
+  bastion_security_group_id = "${data.terraform_remote_state.vpc.bastion_security_group_1b2_id}"
   env                       = "${var.env}"
   index                     = "${var.index}"
   vpc_id                    = "${data.terraform_remote_state.vpc.vpc_id}"
@@ -144,6 +135,15 @@ module "aws_az_1e" {
   source                    = "../modules/aws_workers_az"
   az                        = "1e"
   bastion_security_group_id = "${data.terraform_remote_state.vpc.bastion_security_group_1e_id}"
+  env                       = "${var.env}"
+  index                     = "${var.index}"
+  vpc_id                    = "${data.terraform_remote_state.vpc.vpc_id}"
+}
+
+module "aws_az_1e2" {
+  source                    = "../modules/aws_workers_az"
+  az                        = "1e"
+  bastion_security_group_id = "${data.terraform_remote_state.vpc.bastion_security_group_1e2_id}"
   env                       = "${var.env}"
   index                     = "${var.index}"
   vpc_id                    = "${data.terraform_remote_state.vpc.vpc_id}"
@@ -160,7 +160,7 @@ module "aws_asg_com" {
   heroku_org                             = "${var.aws_heroku_org}"
   index                                  = "${var.index}"
   registry_hostname                      = "${data.terraform_remote_state.vpc.registry_hostname}"
-  security_groups                        = "${module.aws_az_1a.workers_com_security_group_id},${module.aws_az_1b.workers_com_security_group_id},${module.aws_az_1c.workers_com_security_group_id},${module.aws_az_1e.workers_com_security_group_id}"
+  security_groups                        = "${module.aws_az_1b2.workers_com_security_group_id},${module.aws_az_1b.workers_com_security_group_id},${module.aws_az_1e2.workers_com_security_group_id},${module.aws_az_1e.workers_com_security_group_id}"
   site                                   = "com"
   syslog_address                         = "${var.syslog_address_com}"
   worker_ami                             = "${var.worker_ami}"
@@ -186,7 +186,7 @@ module "aws_asg_com" {
   worker_docker_image_ruby               = "${var.garnet_image}"
   worker_instance_type                   = "c3.8xlarge"
   worker_queue                           = "ec2"
-  worker_subnets                         = "${data.terraform_remote_state.vpc.workers_com_subnet_1a_id},${data.terraform_remote_state.vpc.workers_com_subnet_1b_id},${data.terraform_remote_state.vpc.workers_com_subnet_1c_id},${data.terraform_remote_state.vpc.workers_com_subnet_1e_id}"
+  worker_subnets                         = "${data.terraform_remote_state.vpc.workers_com_subnet_1b2_id},${data.terraform_remote_state.vpc.workers_com_subnet_1b_id},${data.terraform_remote_state.vpc.workers_com_subnet_1e2_id},${data.terraform_remote_state.vpc.workers_com_subnet_1e_id}"
 }
 
 module "aws_asg_org" {
