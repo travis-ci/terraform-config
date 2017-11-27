@@ -46,6 +46,10 @@ apply: announce .config $(TFVARS) $(TFSTATE)
 	$(TERRAFORM) apply $(TFPLAN)
 	$(TOP)/bin/post-flight $(TOP)
 
+.PHONY: init
+init: announce
+	$(TERRAFORM) init
+
 .PHONY: plan
 plan: announce .config $(TFVARS) $(TFSTATE)
 	$(TERRAFORM) plan \
