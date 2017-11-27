@@ -12,9 +12,8 @@ __die() {
 }
 
 main() {
-  local worker_cid cids
-  worker_cid=$(docker inspect travis-worker --format '{{ .Id }}')
-  cids=$(docker ps -q --filter before="$worker_cid")
+  local worker_cid=$(docker inspect travis-worker --format '{{ .Id }}')
+  local cids=$(docker ps -q --filter before="$worker_cid")
 
   if [ -z "$cids" ]; then
     __die noop 0 0
