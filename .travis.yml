@@ -16,7 +16,7 @@ before_install:
     pushd "${TMPDIR}" ;
     curl -sSL
       -o terraform.zip
-      "https://releases.hashicorp.com/terraform/0.9.0/terraform_0.9.0_linux_amd64.zip" ;
+      "https://releases.hashicorp.com/terraform/0.9.11/terraform_0.9.11_linux_amd64.zip" ;
     unzip terraform.zip ;
     mv -v terraform "${HOME}/bin/terraform" ;
     chmod +x "${HOME}/bin/terraform" ;
