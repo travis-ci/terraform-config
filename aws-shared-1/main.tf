@@ -274,7 +274,7 @@ module "registry" {
   http_secret                   = "${random_id.registry_http_secret.hex}"
   index                         = "${var.index}"
   instance_type                 = "t2.micro"
-  subnets                       = ["${module.aws_az_1b.public_subnet_id}", "${module.aws_az_1b2.public_subnet_id}"]
+  subnets                       = ["${module.aws_az_1b.public_subnet_id}"]
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
   vpc_cidr                      = "${var.vpc_cidr}"
   vpc_id                        = "${aws_vpc.main.id}"
