@@ -177,7 +177,7 @@ resource "aws_autoscaling_group" "registry" {
   tag {
     key                 = "Name"
     value               = "${var.env}-${var.index}-registry-asg"
-    propagate_at_launch = false
+    propagate_at_launch = true
   }
 }
 
