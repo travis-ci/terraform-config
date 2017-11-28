@@ -1,135 +1,16 @@
 variable "az" {}
 variable "az_group" {}
-variable "bastion_ami" {}
-
-variable "bastion_instance_type" {
-  default = "t2.micro"
-}
-
-variable "duo_api_hostname" {}
-variable "duo_integration_key" {}
-variable "duo_secret_key" {}
 variable "env" {}
 variable "gateway_id" {}
-
-variable "github_users" {
-  default = ""
-}
-
 variable "index" {}
 variable "nat_ami" {}
 variable "nat_instance_type" {}
-variable "public_subnet_cidr" {}
-variable "syslog_address" {}
+variable "public_subnet_id" {}
 variable "travisci_net_external_zone_id" {}
 variable "vpc_cidr" {}
 variable "vpc_id" {}
 variable "workers_com_subnet_cidr" {}
 variable "workers_org_subnet_cidr" {}
-
-resource "aws_subnet" "public" {
-  vpc_id                  = "${var.vpc_id}"
-  cidr_block              = "${var.public_subnet_cidr}"
-  availability_zone       = "us-east-${var.az}"
-  map_public_ip_on_launch = true
-
-  tags = {
-    Name = "${var.env}-${var.index}-public-${var.az_group}"
-  }
-}
-
-resource "aws_route_table" "public" {
-  vpc_id = "${var.vpc_id}"
-
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = "${var.gateway_id}"
-  }
-
-  tags = {
-    Name = "${var.env}-${var.index}-public-${var.az_group}"
-  }
-}
-
-resource "aws_route_table_association" "public" {
-  subnet_id      = "${aws_subnet.public.id}"
-  route_table_id = "${aws_route_table.public.id}"
-}
-
-resource "aws_security_group" "bastion" {
-  name        = "${var.env}-${var.index}-bastion-${var.az_group}"
-  description = "Security Group for bastion server for VPC"
-  vpc_id      = "${var.vpc_id}"
-
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "${var.env}-${var.index}-bastion-${var.az_group}"
-  }
-}
-
-data "template_file" "duo_config" {
-  template = <<EOF
-# Written by cloud-init :heart:
-[duo]
-ikey = ${var.duo_integration_key}
-skey = ${var.duo_secret_key}
-host = ${var.duo_api_hostname}
-failmode = secure
-EOF
-}
-
-data "template_file" "bastion_cloud_config" {
-  template = "${file("${path.module}/bastion-cloud-config.yml.tpl")}"
-
-  vars {
-    github_users_env = "export GITHUB_USERS='${var.github_users}'"
-    hostname_tmpl    = "bastion-${var.env}-${var.index}.aws-us-east-${var.az_group}.travisci.net"
-    syslog_address   = "${var.syslog_address}"
-    duo_config       = "${data.template_file.duo_config.rendered}"
-  }
-}
-
-resource "aws_instance" "bastion" {
-  ami           = "${var.bastion_ami}"
-  instance_type = "${var.bastion_instance_type}"
-  subnet_id     = "${aws_subnet.public.id}"
-
-  vpc_security_group_ids = [
-    "${aws_security_group.bastion.id}",
-  ]
-
-  tags = {
-    Name = "${var.env}-${var.index}-bastion-${var.az_group}"
-  }
-
-  user_data = "${data.template_file.bastion_cloud_config.rendered}"
-}
-
-resource "aws_eip" "bastion" {
-  instance = "${aws_instance.bastion.id}"
-  vpc      = true
-}
-
-resource "aws_route53_record" "bastion" {
-  zone_id = "${var.travisci_net_external_zone_id}"
-  name    = "bastion-${var.env}-${var.index}.aws-us-east-${var.az_group}.travisci.net"
-  type    = "A"
-  ttl     = 300
-  records = ["${aws_eip.bastion.public_ip}"]
-}
 
 module "workers_org" {
   source            = "./workers"
@@ -140,7 +21,7 @@ module "workers_org" {
   index             = "${var.index}"
   nat_ami           = "${var.nat_ami}"
   nat_instance_type = "${var.nat_instance_type}"
-  public_subnet_id  = "${aws_subnet.public.id}"
+  public_subnet_id  = "${var.public_subnet_id}"
   site              = "org"
   vpc_cidr          = "${var.vpc_cidr}"
   vpc_id            = "${var.vpc_id}"
@@ -155,7 +36,7 @@ module "workers_com" {
   index             = "${var.index}"
   nat_ami           = "${var.nat_ami}"
   nat_instance_type = "${var.nat_instance_type}"
-  public_subnet_id  = "${aws_subnet.public.id}"
+  public_subnet_id  = "${var.public_subnet_id}"
   site              = "com"
   vpc_cidr          = "${var.vpc_cidr}"
   vpc_id            = "${var.vpc_id}"
@@ -175,26 +56,6 @@ resource "aws_route53_record" "workers_com_nat" {
   type    = "A"
   ttl     = 300
   records = ["${module.workers_com.nat_eip}"]
-}
-
-output "bastion_eip" {
-  value = "${aws_eip.bastion.public_ip}"
-}
-
-output "bastion_id" {
-  value = "${aws_instance.bastion.id}"
-}
-
-output "bastion_sg_id" {
-  value = "${aws_security_group.bastion.id}"
-}
-
-output "public_subnet_id" {
-  value = "${aws_subnet.public.id}"
-}
-
-output "route_table_id" {
-  value = "${aws_route_table.public.id}"
 }
 
 output "workers_com_nat_eip" {
