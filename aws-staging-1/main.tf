@@ -103,7 +103,7 @@ module "aws_az_1b" {
 module "aws_az_1b2" {
   source                    = "../modules/aws_workers_az"
   az_group                  = "1b2"
-  bastion_security_group_id = "${data.terraform_remote_state.vpc.bastion_security_group_1b2_id}"
+  bastion_security_group_id = "${data.terraform_remote_state.vpc.bastion_security_group_1b_id}"
   env                       = "${var.env}"
   index                     = "${var.index}"
   vpc_id                    = "${data.terraform_remote_state.vpc.vpc_id}"
