@@ -46,7 +46,10 @@ variable "registry_hostname" {
   default = ""
 }
 
-variable "security_groups" {}
+variable "security_groups" {
+  type = "list"
+}
+
 variable "site" {}
 variable "syslog_address" {}
 variable "worker_ami" {}
@@ -123,7 +126,10 @@ variable "worker_instance_type" {
 }
 
 variable "worker_queue" {}
-variable "worker_subnets" {}
+
+variable "worker_subnets" {
+  type = "list"
+}
 
 data "template_file" "cloud_init_env" {
   template = <<EOF
@@ -211,7 +217,7 @@ resource "aws_launch_configuration" "workers" {
   name_prefix       = "${var.env}-${var.index}-workers-${var.site}-"
   image_id          = "${var.worker_ami}"
   instance_type     = "${var.worker_instance_type}"
-  security_groups   = ["${split(",", var.security_groups)}"]
+  security_groups   = ["${var.security_groups}"]
   user_data         = "${data.template_cloudinit_config.cloud_config.rendered}"
   enable_monitoring = true
 
@@ -235,7 +241,7 @@ resource "aws_autoscaling_group" "workers" {
   launch_configuration      = "${aws_launch_configuration.workers.name}"
   max_size                  = "${var.worker_asg_max_size}"
   min_size                  = "${var.worker_asg_min_size}"
-  vpc_zone_identifier       = ["${split(",", var.worker_subnets)}"]
+  vpc_zone_identifier       = ["${var.worker_subnets}"]
 
   termination_policies = [
     "OldestLaunchConfiguration",
