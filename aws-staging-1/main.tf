@@ -93,7 +93,7 @@ EOF
 
 module "aws_az_1b" {
   source                    = "../modules/aws_workers_az"
-  az                        = "1b"
+  az_group                  = "1b"
   bastion_security_group_id = "${data.terraform_remote_state.vpc.bastion_security_group_1b_id}"
   env                       = "${var.env}"
   index                     = "${var.index}"
@@ -102,7 +102,7 @@ module "aws_az_1b" {
 
 module "aws_az_1b2" {
   source                    = "../modules/aws_workers_az"
-  az                        = "1b2"
+  az_group                  = "1b2"
   bastion_security_group_id = "${data.terraform_remote_state.vpc.bastion_security_group_1b2_id}"
   env                       = "${var.env}"
   index                     = "${var.index}"

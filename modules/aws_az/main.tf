@@ -1,4 +1,5 @@
 variable "az" {}
+variable "az_group" {}
 variable "bastion_ami" {}
 
 variable "bastion_instance_type" {
@@ -33,7 +34,7 @@ resource "aws_subnet" "public" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "${var.env}-${var.index}-public-${var.az}"
+    Name = "${var.env}-${var.index}-public-${var.az_group}"
   }
 }
 
@@ -46,7 +47,7 @@ resource "aws_route_table" "public" {
   }
 
   tags = {
-    Name = "${var.env}-${var.index}-public-${var.az}"
+    Name = "${var.env}-${var.index}-public-${var.az_group}"
   }
 }
 
@@ -56,7 +57,7 @@ resource "aws_route_table_association" "public" {
 }
 
 resource "aws_security_group" "bastion" {
-  name        = "${var.env}-${var.index}-bastion-${var.az}"
+  name        = "${var.env}-${var.index}-bastion-${var.az_group}"
   description = "Security Group for bastion server for VPC"
   vpc_id      = "${var.vpc_id}"
 
@@ -75,7 +76,7 @@ resource "aws_security_group" "bastion" {
   }
 
   tags = {
-    Name = "${var.env}-${var.index}-bastion-${var.az}"
+    Name = "${var.env}-${var.index}-bastion-${var.az_group}"
   }
 }
 
@@ -95,7 +96,7 @@ data "template_file" "bastion_cloud_config" {
 
   vars {
     github_users_env = "export GITHUB_USERS='${var.github_users}'"
-    hostname_tmpl    = "bastion-${var.env}-${var.index}.aws-us-east-${var.az}.travisci.net"
+    hostname_tmpl    = "bastion-${var.env}-${var.index}.aws-us-east-${var.az_group}.travisci.net"
     syslog_address   = "${var.syslog_address}"
     duo_config       = "${data.template_file.duo_config.rendered}"
   }
@@ -111,7 +112,7 @@ resource "aws_instance" "bastion" {
   ]
 
   tags = {
-    Name = "${var.env}-${var.index}-bastion-${var.az}"
+    Name = "${var.env}-${var.index}-bastion-${var.az_group}"
   }
 
   user_data = "${data.template_file.bastion_cloud_config.rendered}"
@@ -124,7 +125,7 @@ resource "aws_eip" "bastion" {
 
 resource "aws_route53_record" "bastion" {
   zone_id = "${var.travisci_net_external_zone_id}"
-  name    = "bastion-${var.env}-${var.index}.aws-us-east-${var.az}.travisci.net"
+  name    = "bastion-${var.env}-${var.index}.aws-us-east-${var.az_group}.travisci.net"
   type    = "A"
   ttl     = 300
   records = ["${aws_eip.bastion.public_ip}"]
@@ -133,6 +134,7 @@ resource "aws_route53_record" "bastion" {
 module "workers_org" {
   source            = "./workers"
   az                = "${var.az}"
+  az_group          = "${var.az_group}"
   cidr_block        = "${var.workers_org_subnet_cidr}"
   env               = "${var.env}"
   index             = "${var.index}"
@@ -147,6 +149,7 @@ module "workers_org" {
 module "workers_com" {
   source            = "./workers"
   az                = "${var.az}"
+  az_group          = "${var.az_group}"
   cidr_block        = "${var.workers_com_subnet_cidr}"
   env               = "${var.env}"
   index             = "${var.index}"
@@ -160,7 +163,7 @@ module "workers_com" {
 
 resource "aws_route53_record" "workers_org_nat" {
   zone_id = "${var.travisci_net_external_zone_id}"
-  name    = "workers-nat-org-${var.env}-${var.index}.aws-us-east-${var.az}.travisci.net"
+  name    = "workers-nat-org-${var.env}-${var.index}.aws-us-east-${var.az_group}.travisci.net"
   type    = "A"
   ttl     = 300
   records = ["${module.workers_org.nat_eip}"]
@@ -168,7 +171,7 @@ resource "aws_route53_record" "workers_org_nat" {
 
 resource "aws_route53_record" "workers_com_nat" {
   zone_id = "${var.travisci_net_external_zone_id}"
-  name    = "workers-nat-com-${var.env}-${var.index}.aws-us-east-${var.az}.travisci.net"
+  name    = "workers-nat-com-${var.env}-${var.index}.aws-us-east-${var.az_group}.travisci.net"
   type    = "A"
   ttl     = 300
   records = ["${module.workers_com.nat_eip}"]

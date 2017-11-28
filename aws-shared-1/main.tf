@@ -196,6 +196,7 @@ resource "aws_route_table_association" "packer_build" {
 module "aws_az_1b" {
   source                        = "../modules/aws_az"
   az                            = "1b"
+  az_group                      = "1b"
   bastion_ami                   = "${data.aws_ami.bastion.id}"
   bastion_instance_type         = "t2.nano"
   duo_api_hostname              = "${var.duo_api_hostname}"
@@ -219,6 +220,7 @@ module "aws_az_1b" {
 module "aws_az_1b2" {
   source                        = "../modules/aws_az"
   az                            = "1b"
+  az_group                      = "1b2"
   bastion_ami                   = "${data.aws_ami.bastion.id}"
   bastion_instance_type         = "t2.nano"
   duo_api_hostname              = "${var.duo_api_hostname}"

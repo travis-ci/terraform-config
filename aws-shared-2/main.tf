@@ -174,6 +174,7 @@ EOF
 module "aws_az_1b" {
   source                        = "../modules/aws_az"
   az                            = "1b"
+  az_group                      = "1b"
   duo_api_hostname              = "${var.duo_api_hostname}"
   duo_integration_key           = "${var.duo_integration_key}"
   duo_secret_key                = "${var.duo_secret_key}"
@@ -196,6 +197,7 @@ module "aws_az_1b" {
 module "aws_az_1b2" {
   source                        = "../modules/aws_az"
   az                            = "1b"
+  az_group                      = "1b2"
   duo_api_hostname              = "${var.duo_api_hostname}"
   duo_integration_key           = "${var.duo_integration_key}"
   duo_secret_key                = "${var.duo_secret_key}"
@@ -218,6 +220,7 @@ module "aws_az_1b2" {
 module "aws_az_1e" {
   source                        = "../modules/aws_az"
   az                            = "1e"
+  az_group                      = "1e"
   duo_api_hostname              = "${var.duo_api_hostname}"
   duo_integration_key           = "${var.duo_integration_key}"
   duo_secret_key                = "${var.duo_secret_key}"
@@ -240,6 +243,7 @@ module "aws_az_1e" {
 module "aws_az_1e2" {
   source                        = "../modules/aws_az"
   az                            = "1e"
+  az_group                      = "1e2"
   duo_api_hostname              = "${var.duo_api_hostname}"
   duo_integration_key           = "${var.duo_integration_key}"
   duo_secret_key                = "${var.duo_secret_key}"

@@ -1,11 +1,11 @@
-variable "az" {}
+variable "az_group" {}
 variable "bastion_security_group_id" {}
 variable "env" {}
 variable "index" {}
 variable "vpc_id" {}
 
 resource "aws_security_group" "workers_com" {
-  name        = "${var.env}-${var.index}-workers-com-nat-${var.az}"
+  name        = "${var.env}-${var.index}-workers-com-nat-${var.az_group}"
   description = "NAT Security Group for Workers VPC"
   vpc_id      = "${var.vpc_id}"
 
@@ -25,7 +25,7 @@ resource "aws_security_group" "workers_com" {
 }
 
 resource "aws_security_group" "workers_org" {
-  name        = "${var.env}-${var.index}-workers-org-nat-${var.az}"
+  name        = "${var.env}-${var.index}-workers-org-nat-${var.az_group}"
   description = "NAT Security Group for Workers VPC"
   vpc_id      = "${var.vpc_id}"
 
