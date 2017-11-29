@@ -28,6 +28,10 @@ terraform {
 
 provider "aws" {}
 
+provider "heroku" {
+  version = "0.1.0"
+}
+
 data "aws_ami" "tfw" {
   most_recent = true
 

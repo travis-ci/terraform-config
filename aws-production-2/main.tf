@@ -42,6 +42,10 @@ terraform {
 
 provider "aws" {}
 
+provider "heroku" {
+  version = "0.1.0"
+}
+
 data "terraform_remote_state" "vpc" {
   backend = "s3"
 
