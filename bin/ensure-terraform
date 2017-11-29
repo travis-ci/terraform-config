@@ -35,6 +35,10 @@ main() {
   tf_url="${tf_url}/terraform/${tf_version_clean}"
   tf_url="${tf_url}/terraform_${tf_version_clean}_linux_amd64.zip"
 
+  echo "===> Ensuring Terraform ${tf_version} is present."
+  echo "     URL: ${tf_url}"
+  echo
+
   pushd "${TMPDIR}" &>/dev/null
   curl -sSL -o terraform.zip "${tf_url}"
   unzip terraform.zip
