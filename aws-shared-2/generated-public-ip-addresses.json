@@ -1,0 +1,36 @@
+{
+  "ips_by_host": [
+    {
+      "host": "workers-nat-com-shared-2.aws-us-east-1.travisci.net",
+      "ips": [
+        "34.234.4.53",
+        "52.45.220.64",
+        "54.208.31.17",
+        "52.54.40.118"
+      ]
+    },
+    {
+      "host": "workers-nat-org-shared-2.aws-us-east-1.travisci.net",
+      "ips": [
+        "52.3.55.28",
+        "34.233.56.198",
+        "52.54.31.11",
+        "52.45.185.117"
+      ]
+    }
+  ],
+  "hosts": [
+    "workers-nat-com-shared-2.aws-us-east-1.travisci.net",
+    "workers-nat-org-shared-2.aws-us-east-1.travisci.net"
+  ],
+  "ips": [
+    "34.234.4.53",
+    "52.45.220.64",
+    "54.208.31.17",
+    "52.54.40.118",
+    "52.3.55.28",
+    "34.233.56.198",
+    "52.54.31.11",
+    "52.45.185.117"
+  ]
+}
