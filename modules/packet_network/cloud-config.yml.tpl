@@ -19,7 +19,7 @@ write_files:
   encoding: b64
   permissions: '0755'
   path: /var/tmp/travis-cloud-init.bash
-- content: '${base64encode(file("${assets}/tfw/bootstrap.bash"))}'
+- content: '${base64encode(file("${assets}/travis-tfw-bootstrap.bash"))}'
   encoding: b64
   permissions: '0755'
   path: /var/tmp/travis-tfw-bootstrap.bash
