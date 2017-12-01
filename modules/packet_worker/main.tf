@@ -1,5 +1,3 @@
-variable "bastion_ip" {}
-
 variable "billing_cycle" {
   default = "hourly"
 }
@@ -17,6 +15,7 @@ variable "server_plan" {
 }
 
 variable "site" {}
+variable "syslog_address" {}
 variable "worker_config" {}
 variable "worker_docker_image_android" {}
 variable "worker_docker_image_default" {}
@@ -54,7 +53,6 @@ EOF
 
 data "template_file" "network_env" {
   template = <<EOF
-export TRAVIS_NETWORK_BASTION_IP=${var.bastion_ip}
 export TRAVIS_NETWORK_NAT_IP=${var.nat_ip}
 EOF
 }
@@ -67,6 +65,7 @@ data "template_file" "cloud_config" {
     cloud_init_env = "${data.template_file.cloud_init_env.rendered}"
     here           = "${path.module}"
     network_env    = "${data.template_file.network_env.rendered}"
+    syslog_address = "${var.syslog_address}"
     worker_config  = "${var.worker_config}"
   }
 }

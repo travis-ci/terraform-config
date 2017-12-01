@@ -15,7 +15,7 @@ variable "index" {
 variable "latest_docker_image_amethyst" {}
 variable "latest_docker_image_garnet" {}
 variable "latest_docker_image_worker" {}
-variable "packet_staging_1_project_id" {}
+variable "project_id" {}
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
 
@@ -47,8 +47,10 @@ module "packet_network_ewr1" {
   duo_secret_key      = "${var.duo_secret_key}"
   env                 = "${var.env}"
   facility            = "ewr1"
-github_users = "${var.github_users}"
+  github_users        = "${var.github_users}"
   index               = "${var.index}"
+  project_id          = "${var.project_id}"
+  syslog_address      = "${var.syslog_address_com}"
 }
 
 data "template_file" "worker_config_com" {
@@ -78,34 +80,58 @@ EOF
 }
 
 module "packet_workers_com" {
-  source         = "../modules/packet_worker"
-  env            = "${var.env}"
-  facility       = "${module.packet_network_ewr1.facility}"
-  index          = "${var.index}"
-  network_config = "${data.template_file.network_config.rendered}"
-  nat_ip         = "${module.packet_network_ewr1.nat_ip}"
-  worker_config  = "${data.template_file.worker_config_com.rendered}"
-  server_count   = 1
-  site           = "com"
-  project_id     = "${var.packet_staging_1_project_id}"
+  source                      = "../modules/packet_worker"
+  env                         = "${var.env}"
+  facility                    = "${module.packet_network_ewr1.facility}"
+  index                       = "${var.index}"
+  nat_ip                      = "${module.packet_network_ewr1.nat_ip}"
+  worker_config               = "${data.template_file.worker_config_com.rendered}"
+  worker_docker_image_android = "${var.latest_docker_image_amethyst}"
+  worker_docker_image_default = "${var.latest_docker_image_garnet}"
+  worker_docker_image_erlang  = "${var.latest_docker_image_amethyst}"
+  worker_docker_image_go      = "${var.latest_docker_image_garnet}"
+  worker_docker_image_haskell = "${var.latest_docker_image_amethyst}"
+  worker_docker_image_jvm     = "${var.latest_docker_image_garnet}"
+  worker_docker_image_node_js = "${var.latest_docker_image_garnet}"
+  worker_docker_image_perl    = "${var.latest_docker_image_amethyst}"
+  worker_docker_image_php     = "${var.latest_docker_image_garnet}"
+  worker_docker_image_python  = "${var.latest_docker_image_garnet}"
+  worker_docker_image_ruby    = "${var.latest_docker_image_garnet}"
+  worker_docker_self_image    = "${var.latest_docker_image_worker}"
+  server_count                = 1
+  syslog_address              = "${var.syslog_address_com}"
+  site                        = "com"
+  project_id                  = "${var.project_id}"
 }
 
 module "packet_workers_org" {
-  source         = "../modules/packet_worker"
-  env            = "${var.env}"
-  facility       = "${module.packet_network_ewr1.facility}"
-  index          = "${var.index}"
-  network_config = "${data.template_file.network_config.rendered}"
-  nat_ip         = "${module.packet_network_ewr1.nat_ip}"
-  worker_config  = "${data.template_file.worker_config_org.rendered}"
-  server_count   = 1
-  site           = "org"
-  project_id     = "${var.packet_staging_1_project_id}"
+  source                      = "../modules/packet_worker"
+  env                         = "${var.env}"
+  facility                    = "${module.packet_network_ewr1.facility}"
+  index                       = "${var.index}"
+  nat_ip                      = "${module.packet_network_ewr1.nat_ip}"
+  worker_config               = "${data.template_file.worker_config_org.rendered}"
+  worker_docker_image_android = "${var.latest_docker_image_amethyst}"
+  worker_docker_image_default = "${var.latest_docker_image_garnet}"
+  worker_docker_image_erlang  = "${var.latest_docker_image_amethyst}"
+  worker_docker_image_go      = "${var.latest_docker_image_garnet}"
+  worker_docker_image_haskell = "${var.latest_docker_image_amethyst}"
+  worker_docker_image_jvm     = "${var.latest_docker_image_garnet}"
+  worker_docker_image_node_js = "${var.latest_docker_image_garnet}"
+  worker_docker_image_perl    = "${var.latest_docker_image_amethyst}"
+  worker_docker_image_php     = "${var.latest_docker_image_garnet}"
+  worker_docker_image_python  = "${var.latest_docker_image_garnet}"
+  worker_docker_image_ruby    = "${var.latest_docker_image_garnet}"
+  worker_docker_self_image    = "${var.latest_docker_image_worker}"
+  server_count                = 1
+  syslog_address              = "${var.syslog_address_org}"
+  site                        = "org"
+  project_id                  = "${var.project_id}"
 }
 
-resource "aws_route53_record" "workers_nat" {
+resource "aws_route53_record" "nat" {
   zone_id = "${var.travisci_net_external_zone_id}"
-  name    = "workers-nat-${var.env}-${var.index}.packet-ewr1.travisci.net"
+  name    = "nat-${var.env}-${var.index}.packet-ewr1.travisci.net"
   type    = "A"
   ttl     = 300
 

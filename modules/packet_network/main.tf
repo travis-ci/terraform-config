@@ -7,10 +7,11 @@ variable "duo_integration_key" {}
 variable "duo_secret_key" {}
 variable "env" {}
 variable "facility" {}
+variable "github_users" {}
 variable "index" {}
 
 variable "nat_util_server_plan" {
-  default = "baremetal_1e"
+  default = "baremetal_2"
 }
 
 variable "project_id" {}
@@ -31,18 +32,18 @@ data "template_file" "cloud_config" {
   template = "${file("${path.module}/cloud-config.yml.tpl")}"
 
   vars {
-    assets         = "${path.module}/../../assets"
-    github_users_env   = "export GITHUB_USERS='${var.github_users}'"
-    here           = "${path.module}"
-    syslog_address = "${var.syslog_address}"
-    duo_config     = "${data.template_file.duo_config.rendered}"
+    assets           = "${path.module}/../../assets"
+    github_users_env = "export GITHUB_USERS='${var.github_users}'"
+    here             = "${path.module}"
+    syslog_address   = "${var.syslog_address}"
+    duo_config       = "${data.template_file.duo_config.rendered}"
   }
 }
 
 resource "packet_device" "nat_util" {
   billing_cycle    = "${var.billing_cycle}"
   facility         = "${var.facility}"
-  hostname         = "${var.env}-${var-index}-nat"
+  hostname         = "${var.env}-${var.index}-nat"
   operating_system = "ubuntu_16_04"
   plan             = "${var.nat_util_server_plan}"
   project_id       = "${var.project_id}"
