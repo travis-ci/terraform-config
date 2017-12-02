@@ -21,7 +21,7 @@ __setup_travis_user() {
 }
 
 __install_packages() {
-  return
+  apt-get install -yqq iptables-persistent
 }
 
 __setup_sysctl() {
@@ -31,11 +31,28 @@ __setup_sysctl() {
   # which is one power higher than the default of 16^4 :sparkles:.
   sysctl -w fs.aio-max-nr=1048576
 
-  sysctl
+  sysctl -w net.ipv4.ip_forward=1
 }
 
 __setup_iptables() {
-  return
+  local pub_iface priv_iface
+  pub_iface="$(__find_public_interface)"
+  priv_iface="$(__find_private_interface)"
+
+  iptables -t nat -A POSTROUTING -o "${pub_iface}" -j MASQUERADE
+  iptables -A FORWARD -i "${pub_iface}" -o "${priv_iface}" \
+    -m state --state RELATED,ESTABLISHED -j ACCEPT
+  iptables -A FORWARD -i "${priv_iface}" -o "${pub_iface}" -j ACCEPT
+}
+
+__find_private_interface() {
+  # FIXME: dynamically do
+  echo eth1
+}
+
+__find_public_interface() {
+  # FIXME: dynamically do
+  echo eth0
 }
 
 main "$@"
