@@ -5,6 +5,7 @@
 .env
 .ruby-version
 .terraform/
+assets/*.tar.bz2
 aws-*/config/
 crash.log
 debug.tmp

@@ -14,16 +14,17 @@ write_files:
   path: /var/tmp/duo.conf
 - content: '${base64encode(syslog_address)}'
   encoding: b64
-  path: /var/tmp/syslog-address
+  path: /var/tmp/travis-run.d/syslog-address
 - content: '${base64encode(file("${here}/cloud-init.bash"))}'
   encoding: b64
   permissions: '0755'
   path: /var/tmp/travis-cloud-init.bash
-- content: '${base64encode(file("${assets}/travis-tfw-bootstrap.bash"))}'
+- content: '${base64encode(file("${assets}/tfw.tar.bz2"))}'
   encoding: b64
-  permissions: '0755'
-  path: /var/tmp/travis-tfw-bootstrap.bash
+  permissions: '0644'
+  path: /var/tmp/tfw.tar.bz2
 
 runcmd:
-- [/var/tmp/tfw-bootstrap.bash]
-- [/var/tmp/cloud-init.bash]
+- [tar, --no-same-permissions, --strip-components=1, -C, /, -xvf, /var/tmp/tfw.tar.bz2]
+- [bash, /var/tmp/travis-tfw-bootstrap.bash]
+- [bash, /var/tmp/cloud-init.bash]

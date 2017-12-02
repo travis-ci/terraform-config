@@ -61,42 +61,11 @@ __setup_internal_base_apt() {
     chmod 0755 "${d}"
   done
 
-  cat >/etc/apt/apt.conf.d/10recommends <<EOF
-APT::Install-Recommends "0";
-APT::Install-Suggests "0";
-EOF
-
   apt-get install -yqq apt-transport-https
 }
 
 __setup_internal_base_openssh() {
   apt-get install -yqq openssh-client openssh-server
-
-  cat >/etc/ssh/ssh_config <<EOF
-Host 10.*
-  StrictHostKeyChecking no
-  UserKnownHostsFile /dev/null
-EOF
-
-  cat >/etc/ssh/sshd_config <<EOF
-AllowTcpForwarding no
-ChallengeResponseAuthentication no
-Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr
-HostKey /etc/ssh/ssh_host_ed25519_key
-HostKey /etc/ssh/ssh_host_rsa_key
-KexAlgorithms curve25519-sha256@libssh.org,diffie-hellman-group-exchange-sha256
-ListenAddress 0.0.0.0:22
-ListenAddress [::]:22
-MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-ripemd160-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,hmac-ripemd160,umac-128@openssh.com
-PasswordAuthentication no
-PermitRootLogin no
-Protocol 2
-PubkeyAuthentication yes
-
-Match Host *
-  PasswordAuthentication no
-  PubkeyAuthentication yes
-EOF
 }
 
 __setup_internal_base_papertrail() {
@@ -109,14 +78,7 @@ __setup_internal_base_papertrail() {
   local working_dir="${VAR_SPOOL}/rsyslog"
   local papertrail_ca="${ETC_DIR}/papertrail-bundle.pem"
   local papertrail_ca_url='https://papertrailapp.com/tools/papertrail-bundle.pem'
-  local papertrail_addr
 
-  if [[ ! -f "${VAR_TMP}/syslog-address" ]]; then
-    logger 'No syslog address found; skipping rsyslog+papertrail setup'
-    return
-  fi
-
-  papertrail_addr="$(cat "${VAR_TMP}/syslog-address")"
   curl -sSL -o "${papertrail_ca}" "${papertrail_ca_url}"
   chmod 0444 "${papertrail_ca}"
 
@@ -130,46 +92,6 @@ __setup_internal_base_papertrail() {
   mkdir -p "${working_dir}"
   chown -R root:adm "${working_dir}"
   chmod 0700 "${working_dir}"
-
-  cat >"${rsyslog_d}/50-default.conf" <<EOF
-auth,authpriv.* -${VAR_LOG}/auth.log
-*.*;auth,authpriv.none -${VAR_LOG}/syslog
-daemon.* -${VAR_LOG}/daemon.log
-kern.* -${VAR_LOG}/kern.log
-mail.* -${VAR_LOG}/mail.log
-user.* -${VAR_LOG}/user.log
-mail.info -${VAR_LOG}/mail.info
-mail.warn -${VAR_LOG}/mail.warn
-mail.err -${VAR_LOG}/mail.err
-news.crit -${VAR_LOG}/news/news.crit
-news.err -${VAR_LOG}/news/news.err
-news.notice -${VAR_LOG}/news/news.notice
-*.=debug;auth,authpriv.none;news.none;mail.none -${VAR_LOG}/debug
-*.=info;*.=notice;*.=warn;auth,authpriv.none;cron,daemon.none;mail,news.none -${VAR_LOG}/messages
-*.emerg :omusrmsg:*
-EOF
-
-  cat >"${rsyslog_d}/65-papertrail.conf" <<EOF
-\$DefaultNetstreamDriverCAFile ${papertrail_ca}
-\$DefaultNetstreamDriver gtls
-\$ActionSendStreamDriverMode 1
-\$ActionSendStreamDriverAuthMode x509/name
-\$ActionSendStreamDriverPermittedPeer *.papertrailapp.com
-\$ActionResumeRetryCount -1
-\$ActionResumeInterval 10
-\$ActionQueueType LinkedList
-\$ActionQueueMaxDiskSpace 1G
-\$ActionQueueFileName papertrailqueue
-\$ActionQueueSize 100000
-\$ActionQueueDiscardMark 97500
-\$ActionQueueHighWaterMark 80000
-\$ActionQueueCheckpointInterval 100
-\$ActionQueueSaveOnShutdown on
-\$ActionQueueTimeoutEnqueue 10
-\$ActionQueueDiscardSeverity 0
-
-*.* @@${papertrail_addr}
-EOF
 
   chown root:adm "${rsyslog_conf}" "${rsyslog_d}/"*.conf
   chmod 0644 "${rsyslog_conf}" "${rsyslog_d}/"*.conf
@@ -185,12 +107,6 @@ __setup_internal_base_sudo() {
 
   apt-get install -yqq sudo
 
-  cat >"${sudoers}" <<EOF
-Defaults !lecture,tty_tickets,!fqdn
-root ALL=(ALL) ALL
-#includedir ${ETC_DIR}/sudoers.d
-EOF
-
   chown root:root "${sudoers}"
   chmod 0440 "${sudoers}"
 
@@ -198,9 +114,6 @@ EOF
   chown root:root "${sudoers_d}"
   chmod 0750 "${sudoers_d}"
 
-  cat >"${sudoers_d}/90-group-sudo" <<EOF
-%sudo ALL=(ALL) NOPASSWD:ALL
-EOF
   chown root:root "${sudoers_d}/90-group-sudo"
   chmod 0440 "${sudoers_d}/90-group-sudo"
 }
@@ -227,7 +140,8 @@ __setup_internal_base_cloudcfg() {
     00-disable-travis-sudo \
     10-configure-fail2ban-ssh \
     10-generate-ssh-host-keys \
-    10-set-hostname-from-template; do
+    10-set-hostname-from-template \
+    50-update-rsyslog-papertrail-config; do
     curl -sSL -o "${cloud_scripts_per_boot}/${f}"
     chown root:root "${cloud_scripts_per_boot}/${f}"
     chmod 0755 "${cloud_scripts_per_boot}/${f}"
