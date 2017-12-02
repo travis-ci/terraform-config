@@ -368,6 +368,22 @@ module "registry" {
   vpc_id                        = "${aws_vpc.main.id}"
 }
 
+resource "null_resource" "public_ip_addresses_json" {
+  triggers {
+    workers_com_nat_id = "${aws_route53_record.workers_com_nat.id}"
+    workers_org_nat_id = "${aws_route53_record.workers_org_nat.id}"
+  }
+
+  provisioner "local-exec" {
+    command = <<EOF
+exec ${path.module}/../bin/format-public-ip-addresses \
+    ${aws_route53_record.workers_com_nat.fqdn} \
+    ${aws_route53_record.workers_org_nat.fqdn} \
+    >${path.module}/generated-public-ip-addresses.json
+EOF
+  }
+}
+
 resource "null_resource" "outputs_signature" {
   triggers {
     bastion_security_group_1b_id = "${module.aws_bastion_1b.sg_id}"
