@@ -3,11 +3,9 @@ set -o errexit
 shopt -s nullglob
 
 main() {
-  : "${DUO_CONF:=/var/tmp/duo.conf}"
   : "${PACKER_BUILDER_TYPE:=packet}"
   : "${PACKER_TEMPLATES_BASE_URL:=https://raw.githubusercontent.com/travis-ci/packer-templates}"
   : "${PACKER_TEMPLATES_BRANCH:=master}"
-  : "${RUN_DIR:=/var/tmp/travis-run.d}"
   : "${TMPDIR:=/tmp}"
 
   export DEBIAN_FRONTEND=noninteractive
@@ -33,20 +31,16 @@ main() {
     /usr/local/bin/travis-combined-env
 
   logger 'Setting up internal base'
-  __setup_internal_base "${RUN_DIR}"
-
-  if [[ -f "${DUO_CONF}" ]]; then
-    __setup_duo "${DUO_CONF}"
-  fi
+  __setup_internal_base
 }
 
 __setup_internal_base() {
-  local run_dir="${1}"
+  : "${RUN_DIR:=/var/tmp/travis-run.d}"
 
-  mkdir -p "${run_dir}"
-  chown -R travis:travis "${run_dir}"
+  mkdir -p "${RUN_DIR}"
+  chown -R travis:travis "${RUN_DIR}"
 
-  for substep in apt openssh papertrail sudo packages cloudcfg; do
+  for substep in apt openssh papertrail sudo packages cloudcfg duo; do
     logger "msg=\"setting up internal base\" substep=\"${substep}\""
     "__setup_internal_base_${substep}"
   done
@@ -174,7 +168,7 @@ EOF
 \$ActionQueueTimeoutEnqueue 10
 \$ActionQueueDiscardSeverity 0
 
-*.* @@${papertrail_host}:${papertrail_port}
+*.* @@${papertrail_addr}
 EOF
 
   chown root:adm "${rsyslog_conf}" "${rsyslog_d}/"*.conf
@@ -219,7 +213,6 @@ __setup_internal_base_cloudcfg() {
   : "${ETC_DIR:=/etc}"
   : "${VAR_LIB:=/var/lib}"
   local cloud_d="${ETC_DIR}/cloud"
-  local cloud_cfg="${cloud_d}/cloud.cfg"
   local cloud_scripts_per_boot="${VAR_LIB}/cloud/scripts/per-boot"
   local script_base_url
   script_base_url='https://raw.githubusercontent.com/travis-ci'
@@ -231,19 +224,25 @@ __setup_internal_base_cloudcfg() {
   chmod 0755 "${cloud_d}"
 
   for f in 00-create-users \
-           00-disable-travis-sudo \
-           10-configure-fail2ban-ssh \
-           10-generate-ssh-host-keys \
-           10-set-hostname-from-template; do
+    00-disable-travis-sudo \
+    10-configure-fail2ban-ssh \
+    10-generate-ssh-host-keys \
+    10-set-hostname-from-template; do
     curl -sSL -o "${cloud_scripts_per_boot}/${f}"
     chown root:root "${cloud_scripts_per_boot}/${f}"
     chmod 0755 "${cloud_scripts_per_boot}/${f}"
   done
 }
 
-__setup_duo() {
+__setup_internal_base_duo() {
+  : "${DUO_CONF:=/var/tmp/duo.conf}"
+
+  if [[ ! -f "${DUO_CONF}" ]]; then
+    logger 'No duo conf found; skipping duo setup'
+    return
+  fi
+
   : "${ETC_DIR:=/etc}"
-  local conf="${1}"
   local pam_d="${ETC_DIR}/pam.d"
   local conf_base_url
   conf_base_url='https://raw.githubusercontent.com/travis-ci'
@@ -258,20 +257,19 @@ __setup_duo() {
   apt-get update -yqq
   apt-get install -y duo-unix
 
-
-  for pam_conf in sshd common-auth; do
-    curl -sSL -o "${pam_d}/${pam_conf}" \
-      "${conf_base_url}/pam.d-${pam_conf}.conf.erb"
-    chmod 0600 "${pam_d}/${pam_conf}"
+  for conf in sshd common-auth; do
+    curl -sSL -o "${pam_d}/${conf}" \
+      "${conf_base_url}/pam.d-${conf}.conf.erb"
+    chmod 0600 "${pam_d}/${conf}"
   done
 
   chown -R sshd:root "${pam_d}"
 
   local duo_conf_dest
 
-  for duo_conf in pam login; do
-    duo_conf_dest="${ETC_DIR}/duo/${duo_conf}_duo.conf"
-    cp -v "${conf}" "${duo_conf_dest}"
+  for conf in pam login; do
+    duo_conf_dest="${ETC_DIR}/duo/${conf}_duo.conf"
+    cp -v "${DUO_CONF}" "${duo_conf_dest}"
     chown root:root "${duo_conf_dest}"
     chmod 0600 "${duo_conf_dest}"
   done
