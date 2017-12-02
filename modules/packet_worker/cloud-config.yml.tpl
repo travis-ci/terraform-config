@@ -32,11 +32,12 @@ write_files:
   encoding: b64
   permissions: '0755'
   path: /var/tmp/travis-cloud-init.bash
-- content: '${base64encode(file("${assets}/travis-tfw-bootstrap.bash"))}'
+- content: '${base64encode(file("${assets}/tfw.tar.bz2"))}'
   encoding: b64
-  permissions: '0755'
-  path: /var/tmp/travis-tfw-bootstrap.bash
+  permissions: '0644'
+  path: /var/tmp/tfw.tar.bz2
 
 runcmd:
-- [/var/tmp/travis-tfw-bootstrap.bash]
-- [/var/tmp/travis-cloud-init.bash]
+- [tar, --no-same-permissions, --strip-components=1, -C, /, -xvf, /var/tmp/tfw.tar.bz2]
+- [bash, /var/tmp/travis-tfw-bootstrap.bash]
+- [bash, /var/tmp/cloud-init.bash]
