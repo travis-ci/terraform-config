@@ -9,7 +9,6 @@ ExecStopPost=/bin/sleep 5
 Restart=always
 WorkingDirectory=/
 User=travis
-Group=travis
 
 [Install]
 WantedBy=multi-user.target

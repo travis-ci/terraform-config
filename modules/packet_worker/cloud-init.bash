@@ -9,12 +9,15 @@ main() {
   : "${VARTMP:=/var/tmp}"
   : "${RUNDIR:=/var/tmp/travis-run.d}"
 
-  if ! docker version; then
+  if ! docker version 2>/dev/null; then
     __install_docker
   fi
 
   if ! getent passwd travis; then
     useradd travis
+  fi
+
+  groups travis | if ! grep -q docker; then
     usermod -a -G docker travis
   fi
 
@@ -26,11 +29,6 @@ main() {
     cp -v "${VARTMP}/travis-worker.service" \
       "${ETCDIR}/systemd/system/travis-worker.service"
     systemctl enable travis-worker || true
-  fi
-
-  if [[ -d "${ETCDIR}/init" ]]; then
-    cp -v "${VARTMP}/travis-worker.conf" \
-      "${ETCDIR}/init/travis-worker.conf"
   fi
 
   service travis-worker stop || true

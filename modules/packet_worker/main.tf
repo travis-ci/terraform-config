@@ -2,6 +2,10 @@ variable "billing_cycle" {
   default = "hourly"
 }
 
+variable "docker_storage_dm_basesize" {
+  default = "19G"
+}
+
 variable "env" {}
 variable "facility" {}
 variable "index" {}
@@ -57,16 +61,38 @@ export TRAVIS_NETWORK_NAT_IP=${var.nat_ip}
 EOF
 }
 
+data "template_file" "docker_daemon_json" {
+  template = <<EOF
+{
+  "data-root": "/mnt/docker",
+  "hosts": [
+    "tcp://127.0.0.1:4243",
+    "unix:///var/run/docker.sock"
+  ],
+  "icc": false,
+  "storage-driver": "devicemapper",
+  "storage-opts": [
+    "dm.basesize=${var.docker_storage_dm_basesize}",
+    "dm.datadev=/dev/direct-lvm/data",
+    "dm.metadatadev=/dev/direct-lvm/metadata",
+    "dm.fs=xfs"
+  ],
+  "userns-remap": "default"
+}
+EOF
+}
+
 data "template_file" "cloud_config" {
   template = "${file("${path.module}/cloud-config.yml.tpl")}"
 
   vars {
-    assets         = "${path.module}/../../assets"
-    cloud_init_env = "${data.template_file.cloud_init_env.rendered}"
-    here           = "${path.module}"
-    network_env    = "${data.template_file.network_env.rendered}"
-    syslog_address = "${var.syslog_address}"
-    worker_config  = "${var.worker_config}"
+    assets             = "${path.module}/../../assets"
+    cloud_init_env     = "${data.template_file.cloud_init_env.rendered}"
+    docker_daemon_json = "${data.template_file.docker_daemon_json.rendered}"
+    here               = "${path.module}"
+    network_env        = "${data.template_file.network_env.rendered}"
+    syslog_address     = "${var.syslog_address}"
+    worker_config      = "${var.worker_config}"
   }
 }
 

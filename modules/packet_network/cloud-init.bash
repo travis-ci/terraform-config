@@ -35,6 +35,7 @@ __setup_sysctl() {
 }
 
 __setup_iptables() {
+  # FIXME: how to do this with a bonded interface?
   local pub_iface priv_iface
   pub_iface="$(__find_public_interface)"
   priv_iface="$(__find_private_interface)"
@@ -47,12 +48,12 @@ __setup_iptables() {
 
 __find_private_interface() {
   # FIXME: dynamically do
-  echo eth1
+  echo bond0
 }
 
 __find_public_interface() {
   # FIXME: dynamically do
-  echo eth0
+  echo bond0
 }
 
 main "$@"

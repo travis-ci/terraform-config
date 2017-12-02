@@ -14,11 +14,19 @@ main() {
   apt-get update -yqq
   apt-get install -yqq curl software-properties-common
 
-  local bootstrap_url="${PACKER_TEMPLATES_BASE_URL}/${PACKER_TEMPLATES_BRANCH}"
-  bootstrap_url="${bootstrap_url}/packer-scripts/pre-chef-bootstrap"
+  __setup_sudo
 
-  curl -sSL -o "${TMPDIR}/pre-chef-bootstrap.bash" "${bootstrap_url}"
-  "${TMPDIR}/pre-chef-bootstrap.bash"
+  if [[ ! -f "${TMPDIR}/travis-pre-chef-bootstrap.done" ]]; then
+    if [[ ! -f "${TMPDIR}/pre-chef-bootstrap.bash" ]]; then
+      local bootstrap_url="${PACKER_TEMPLATES_BASE_URL}/${PACKER_TEMPLATES_BRANCH}"
+      bootstrap_url="${bootstrap_url}/packer-scripts/pre-chef-bootstrap"
+
+      curl -sSL -o "${TMPDIR}/pre-chef-bootstrap.bash" "${bootstrap_url}"
+    fi
+
+    bash "${TMPDIR}/pre-chef-bootstrap.bash"
+    date -u >"${TMPDIR}/travis-pre-chef-bootstrap.done"
+  fi
 
   local tfwce_url="${PACKER_TEMPLATES_BASE_URL}/${PACKER_TEMPLATES_BRANCH}"
   tfwce_url="${tfwce_url}/cookbooks/travis_tfw/files"
@@ -26,7 +34,7 @@ main() {
 
   curl -sSL -o /usr/local/bin/travis-tfw-combined-env "${tfwce_url}"
   chmod 0755 /usr/local/bin/travis-tfw-combined-env
-  ln -s \
+  ln -svf \
     /usr/local/bin/travis-tfw-combined-env \
     /usr/local/bin/travis-combined-env
 
@@ -40,7 +48,7 @@ __setup_internal_base() {
   mkdir -p "${RUN_DIR}"
   chown -R travis:travis "${RUN_DIR}"
 
-  for substep in apt openssh papertrail sudo packages cloudcfg duo; do
+  for substep in apt openssh papertrail packages cloudcfg duo; do
     logger "msg=\"setting up internal base\" substep=\"${substep}\""
     "__setup_internal_base_${substep}"
   done
@@ -100,8 +108,8 @@ __setup_internal_base_papertrail() {
   service rsyslog restart
 }
 
-__setup_internal_base_sudo() {
-  : "${ETC_DIR}/sudoers"
+__setup_sudo() {
+  : "${ETC_DIR:=/etc}"
   local sudoers="${ETC_DIR}/sudoers"
   local sudoers_d="${ETC_DIR}/sudoers.d"
 
@@ -142,7 +150,7 @@ __setup_internal_base_cloudcfg() {
     10-generate-ssh-host-keys \
     10-set-hostname-from-template \
     50-update-rsyslog-papertrail-config; do
-    curl -sSL -o "${cloud_scripts_per_boot}/${f}"
+    curl -sSL -o "${cloud_scripts_per_boot}/${f}" "${script_base_url}/${f}"
     chown root:root "${cloud_scripts_per_boot}/${f}"
     chmod 0755 "${cloud_scripts_per_boot}/${f}"
   done
