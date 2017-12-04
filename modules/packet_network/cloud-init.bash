@@ -4,10 +4,14 @@ set -o errexit
 set -o pipefail
 
 main() {
+  : "${RUNDIR:=/var/tmp/travis-run.d}"
+
   __setup_travis_user
   __install_packages
   __setup_sysctl
   __setup_iptables
+
+  hostname >"${RUNDIR}/instance-hostname.tmpl"
 }
 
 __setup_travis_user() {

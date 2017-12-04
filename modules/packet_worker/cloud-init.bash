@@ -34,6 +34,18 @@ main() {
   service travis-worker stop || true
   service travis-worker start || true
 
+  hostname >"${RUNDIR}/instance-hostname.tmpl"
+
+  if [[ -s "${ETCDIR}/default/travis-network" ]]; then
+    # shellcheck source=/dev/null
+    source "${ETCDIR}/default/travis-network"
+  fi
+
+  if [[ "${TRAVIS_NETWORK_NAT_IP}" ]]; then
+    # FIXME: halp
+    : something with iptables maybe
+  fi
+
   __wait_for_docker
 }
 

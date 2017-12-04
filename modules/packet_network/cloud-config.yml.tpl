@@ -30,3 +30,4 @@ runcmd:
 - [tar, --no-same-permissions, --strip-components=1, -C, /, -xvf, /var/tmp/tfw.tar.bz2]
 - [bash, /var/tmp/travis-tfw-bootstrap.bash]
 - [bash, /var/tmp/cloud-init.bash]
+- [run-parts, /var/lib/cloud/scripts/per-boot]

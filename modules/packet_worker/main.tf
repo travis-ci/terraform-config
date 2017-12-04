@@ -8,6 +8,7 @@ variable "docker_storage_dm_basesize" {
 
 variable "env" {}
 variable "facility" {}
+variable "github_users" {}
 variable "index" {}
 
 variable "project_id" {}
@@ -89,6 +90,7 @@ data "template_file" "cloud_config" {
     assets             = "${path.module}/../../assets"
     cloud_init_env     = "${data.template_file.cloud_init_env.rendered}"
     docker_daemon_json = "${data.template_file.docker_daemon_json.rendered}"
+    github_users_env   = "export GITHUB_USERS='${var.github_users}'"
     here               = "${path.module}"
     network_env        = "${data.template_file.network_env.rendered}"
     syslog_address     = "${var.syslog_address}"

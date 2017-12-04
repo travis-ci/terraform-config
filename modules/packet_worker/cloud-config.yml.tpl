@@ -2,12 +2,18 @@
 # vim:filetype=yaml
 
 write_files:
+- content: '${base64encode(github_users_env)}'
+  encoding: b64
+  path: /etc/default/github-users
 - content: '${base64encode(worker_config)}'
   encoding: b64
   path: /etc/default/travis-worker
 - content: '${base64encode(cloud_init_env)}'
   encoding: b64
   path: /etc/default/travis-worker-cloud-init
+- content: '${base64encode(network_env)}'
+  encoding: b64
+  path: /etc/default/travis-network
 - content: '${base64encode(docker_daemon_json)}'
   encoding: b64
   path: /etc/docker/daemon-direct-lvm.json
@@ -43,3 +49,4 @@ runcmd:
 - [tar, --no-same-permissions, --strip-components=1, -C, /, -xvf, /var/tmp/tfw.tar.bz2]
 - [bash, /var/tmp/travis-tfw-bootstrap.bash]
 - [bash, /var/tmp/cloud-init.bash]
+- [run-parts, /var/lib/cloud/scripts/per-boot]
