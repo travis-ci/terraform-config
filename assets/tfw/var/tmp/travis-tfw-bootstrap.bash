@@ -172,8 +172,8 @@ __setup_internal_base_duo() {
   local pam_d="${ETC_DIR}/pam.d"
   local conf_base_url
   conf_base_url='https://raw.githubusercontent.com/travis-ci'
-  conf_base_url="${conf_base_url}/packer-templates/master/cookbooks"
-  conf_base_url="${conf_base_url}/travis_internal_base/templates/default"
+  conf_base_url="${conf_base_url}/travis-cookbooks/master/cookbooks"
+  conf_base_url="${conf_base_url}/travis_duo/templates/default"
   local dist
   dist="$(lsb_release -sc)"
 
