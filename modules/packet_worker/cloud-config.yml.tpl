@@ -48,5 +48,5 @@ runcmd:
 - [apt-get, install, -yqq, bzip2]
 - [tar, --no-same-permissions, --strip-components=1, -C, /, -xvf, /var/tmp/tfw.tar.bz2]
 - [bash, /var/tmp/travis-tfw-bootstrap.bash]
-- [bash, /var/tmp/cloud-init.bash]
+- [bash, /var/tmp/travis-cloud-init.bash]
 - [run-parts, /var/lib/cloud/scripts/per-boot]

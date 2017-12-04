@@ -4,6 +4,10 @@ set -o errexit
 set -o pipefail
 
 main() {
+  if [[ ! "${QUIET}" ]]; then
+    set -o xtrace
+  fi
+
   : "${RUNDIR:=/var/tmp/travis-run.d}"
 
   __setup_travis_user
@@ -46,13 +50,13 @@ __setup_iptables() {
 
   iptables -t nat -A POSTROUTING -o "${pub_iface}" -j MASQUERADE
   iptables -A FORWARD -i "${pub_iface}" -o "${priv_iface}" \
-    -m state --state RELATED,ESTABLISHED -j ACCEPT
+    -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
   iptables -A FORWARD -i "${priv_iface}" -o "${pub_iface}" -j ACCEPT
 }
 
 __find_private_interface() {
   # FIXME: dynamically do
-  echo bond0
+  echo bond0:0
 }
 
 __find_public_interface() {

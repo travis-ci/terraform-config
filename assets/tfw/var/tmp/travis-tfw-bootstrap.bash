@@ -3,6 +3,10 @@ set -o errexit
 shopt -s nullglob
 
 main() {
+  if [[ ! "${QUIET}" ]]; then
+    set -o xtrace
+  fi
+
   : "${PACKER_BUILDER_TYPE:=packet}"
   : "${PACKER_TEMPLATES_BASE_URL:=https://raw.githubusercontent.com/travis-ci/packer-templates}"
   : "${PACKER_TEMPLATES_BRANCH:=master}"
