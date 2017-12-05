@@ -61,6 +61,26 @@ resource "packet_ip_attachment" "nat" {
   cidr_notation = "${cidrhost(packet_reserved_ip_block.ips.cidr_notation, 0)}/32"
 }
 
+resource "null_resource" "nat_post_provisioning_todo" {
+  triggers {
+    nat_public_ip = "${cidrhost(packet_ip_attachment.nat.cidr_notation, 0)}"
+  }
+
+  provisioner "local-exec" {
+    command = <<EOF
+cat <<EOCAT
+TODO: finish configuring the nat with something like
+
+    ip addr add ${cidrhost(packet_ip_attachment.nat.cidr_notation, 0)} dev bond0
+    ip route delete default
+    ip route add default via ${cidrhost(packet_ip_attachment.nat.cidr_notation, 0)} dev bond0
+    curl icanhazip.com  # <=== should be ${cidrhost(packet_ip_attachment.nat.cidr_notation, 0)}
+
+EOCAT
+EOF
+  }
+}
+
 output "nat_ip" {
   value = "${packet_device.nat.access_private_ipv4}"
 }
