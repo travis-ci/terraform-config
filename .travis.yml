@@ -9,7 +9,7 @@ cache:
 env:
   global:
   - PATH="${HOME}/bin:${PATH}"
-  - SHELLCHECK_URL="https://s3.amazonaws.com/travis-blue-public/binaries/ubuntu/14.04/x86_64/shellcheck-0.4.4.tar.bz2"
+  - SHELLCHECK_URL="https://s3.amazonaws.com/travis-blue-public/binaries/ubuntu/14.04/x86_64/shellcheck-v0.4.6.linux.x86_64.tar.xz"
   - SHFMT_URL="mvdan.cc/sh/cmd/shfmt"
   - TMPDIR="${TMPDIR:-/tmp}"
 before_install:
