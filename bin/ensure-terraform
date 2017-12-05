@@ -10,7 +10,7 @@ main() {
     exit 1
   fi
 
-  if uname -a | grep Darwin ; then local arch="darwin" ; else local arch="linux" ; fi
+  if uname -a | grep Darwin; then local arch="darwin"; else local arch="linux"; fi
 
   : "${TF_INSTALL_MISSING:=1}"
   : "${TF_INSTALLATION_PREFIX:=${HOME}/.cache/travis-terraform-config}"
