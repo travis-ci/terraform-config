@@ -199,6 +199,9 @@ __setup_internal_base_duo() {
     chown root:root "${duo_conf_dest}"
     chmod 0600 "${duo_conf_dest}"
   done
+
+  mkdir -p /lib/security
+  ln -svf /lib64/security/pam_duo.so /lib/security/pam_duo.so
 }
 
 main "$@"
