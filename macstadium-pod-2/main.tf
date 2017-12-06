@@ -107,7 +107,7 @@ module "macstadium_infrastructure" {
   vanilla_image                 = "${var.macstadium_vanilla_image}"
   datacenter                    = "TravisCI - Cluster_2"
   cluster                       = "main_macpro"
-  datastore                     = "EMC-VMAX-1"
+  datastore                     = "Datacore1_1"
   internal_network_label        = "dvPortGroup-Internal"
   management_network_label      = "dvPortGroup-Mgmt"
   jobs_network_label            = "dvPortGroup-Jobs2"
