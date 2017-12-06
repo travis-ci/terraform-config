@@ -58,7 +58,7 @@ resource "packet_reserved_ip_block" "ips" {
 
 resource "packet_ip_attachment" "nat" {
   device_id     = "${packet_device.nat.id}"
-  cidr_notation = "${cidrhost(packet_reserved_ip_block.ips.cidr_notation, 0)}/32"
+  cidr_notation = "${packet_reserved_ip_block.ips.cidr_notation}"
 }
 
 resource "null_resource" "nat_post_provisioning_todo" {
