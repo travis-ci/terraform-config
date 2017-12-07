@@ -157,18 +157,6 @@ module "jupiter_brain_production_com" {
   port_suffix    = 3
 }
 
-module "jupiter_brain_production_com_xserve" {
-  source         = "../modules/jupiter_brain_bluegreen"
-  host_id        = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_ip_address = "${module.macstadium_infrastructure.wjb_ip}"
-  ssh_user       = "${var.ssh_user}"
-  version        = "${var.jupiter_brain_production_version}"
-  config_path    = "${path.module}/config/jupiter-brain-production-com-xserve-env"
-  env            = "production-com-xserve"
-  index          = "${var.index}"
-  port_suffix    = 10
-}
-
 module "jupiter_brain_staging_com" {
   source         = "../modules/jupiter_brain_bluegreen"
   host_id        = "${module.macstadium_infrastructure.wjb_uuid}"
@@ -314,28 +302,6 @@ module "worker_production_com_2" {
   version     = "${var.travis_worker_version}"
   config_path = "${path.module}/config/travis-worker-production-com-2"
   env         = "production-com-2"
-  index       = "${var.index}"
-}
-
-module "worker_production_com_xserve_1" {
-  source      = "../modules/macstadium_go_worker"
-  host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
-  ssh_user    = "${var.ssh_user}"
-  version     = "${var.travis_worker_version}"
-  config_path = "${path.module}/config/travis-worker-production-com-xserve-1"
-  env         = "production-com-xserve-1"
-  index       = "${var.index}"
-}
-
-module "worker_production_com_xserve_2" {
-  source      = "../modules/macstadium_go_worker"
-  host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
-  ssh_user    = "${var.ssh_user}"
-  version     = "${var.travis_worker_version}"
-  config_path = "${path.module}/config/travis-worker-production-com-xserve-2"
-  env         = "production-com-xserve-2"
   index       = "${var.index}"
 }
 
@@ -538,12 +504,6 @@ module "haproxy" {
       frontend_port      = "8089"
       backend_port_blue  = "9089"
       backend_port_green = "10089"
-    },
-    {
-      name               = "jupiter-brain-production-com-xserve"
-      frontend_port      = "8090"
-      backend_port_blue  = "9090"
-      backend_port_green = "10090"
     },
   ]
 }
