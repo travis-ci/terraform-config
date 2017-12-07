@@ -46,6 +46,7 @@ data "template_file" "librato_conf" {
 
   vars {
     host  = "wjb-${var.index}"
+    host  = "wjb-staging-${var.index}"
     email = "${var.librato_email}"
     token = "${var.librato_token}"
   }
