@@ -65,7 +65,7 @@ __find_private_interface() {
 __find_public_interface() {
   local iface=bond0
   iface="$(ip -o addr show | grep -vE 'inet (172|127|10|192)\.' | grep -v inet6 |
-             awk '{ print $2 }' | grep -v '^lo$' | head -n 1)"
+    awk '{ print $2 }' | grep -v '^lo$' | head -n 1)"
   echo "${iface:-bond0}"
 }
 

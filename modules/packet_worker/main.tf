@@ -1,4 +1,5 @@
 variable "bastion_ip" {}
+
 variable "billing_cycle" {
   default = "hourly"
 }
