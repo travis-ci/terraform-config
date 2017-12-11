@@ -5,6 +5,9 @@ write_files:
 - content: '${base64encode(github_users_env)}'
   encoding: b64
   path: /etc/default/github-users
+- content: '${base64encode(network_env)}'
+  encoding: b64
+  path: /etc/default/travis-network
 - content: '${base64encode(file("${assets}/rsyslog/rsyslog.conf"))}'
   encoding: b64
   path: /etc/rsyslog.conf

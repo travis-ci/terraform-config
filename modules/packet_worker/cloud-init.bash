@@ -42,8 +42,8 @@ main() {
   fi
 
   if [[ "${TRAVIS_NETWORK_NAT_IP}" ]]; then
-    # FIXME: halp
-    : something with iptables maybe
+    ip route del default
+    ip route add default via "${TRAVIS_NETWORK_NAT_IP}"
   fi
 
   __wait_for_docker

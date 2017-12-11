@@ -1,3 +1,4 @@
+variable "bastion_ip" {}
 variable "billing_cycle" {
   default = "hourly"
 }
@@ -13,6 +14,7 @@ variable "index" {}
 
 variable "project_id" {}
 variable "nat_ip" {}
+variable "nat_public_ip" {}
 variable "server_count" {}
 
 variable "server_plan" {
@@ -59,6 +61,7 @@ EOF
 data "template_file" "network_env" {
   template = <<EOF
 export TRAVIS_NETWORK_NAT_IP=${var.nat_ip}
+export TRAVIS_NETWORK_ELASTIC_IP=${var.nat_public_ip}
 EOF
 }
 
@@ -98,6 +101,11 @@ data "template_file" "cloud_config" {
   }
 }
 
+resource "local_file" "user_data_dump" {
+  filename = "${path.module}/../../tmp/packet-${var.env}-${var.index}-worker-user-data.yml"
+  content  = "${data.template_file.cloud_config.rendered}"
+}
+
 resource "packet_device" "worker" {
   count            = "${var.server_count}"
   billing_cycle    = "${var.billing_cycle}"
@@ -107,4 +115,25 @@ resource "packet_device" "worker" {
   plan             = "${var.server_plan}"
   project_id       = "${var.project_id}"
   user_data        = "${data.template_file.cloud_config.rendered}"
+}
+
+resource "null_resource" "user_data_copy" {
+  triggers {
+    user_data_sha1 = "${sha1(data.template_file.cloud_config.rendered)}"
+  }
+
+  depends_on = ["packet_device.worker", "local_file.user_data_dump"]
+
+  provisioner "file" {
+    source      = "${local_file.user_data_dump.filename}"
+    destination = "/var/tmp/user-data.yml"
+  }
+
+  connection {
+    type         = "ssh"
+    user         = "root"
+    host         = "${packet_device.worker.access_private_ipv4}"
+    bastion_host = "${var.bastion_ip}"
+    bastion_user = "root"
+  }
 }

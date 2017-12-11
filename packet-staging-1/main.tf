@@ -81,11 +81,17 @@ EOF
 
 module "packet_workers_com" {
   source                      = "../modules/packet_worker"
+  bastion_ip                  = "${module.packet_network_sjc1.nat_maint_ip}"
   env                         = "${var.env}"
   facility                    = "${module.packet_network_sjc1.facility}"
   github_users                = "${var.github_users}"
   index                       = "${var.index}"
   nat_ip                      = "${module.packet_network_sjc1.nat_ip}"
+  nat_public_ip               = "${module.packet_network_sjc1.nat_public_ip}"
+  project_id                  = "${var.project_id}"
+  server_count                = 1
+  site                        = "com"
+  syslog_address              = "${var.syslog_address_com}"
   worker_config               = "${data.template_file.worker_config_com.rendered}"
   worker_docker_image_android = "${var.latest_docker_image_amethyst}"
   worker_docker_image_default = "${var.latest_docker_image_garnet}"
@@ -99,19 +105,21 @@ module "packet_workers_com" {
   worker_docker_image_python  = "${var.latest_docker_image_garnet}"
   worker_docker_image_ruby    = "${var.latest_docker_image_garnet}"
   worker_docker_self_image    = "${var.latest_docker_image_worker}"
-  server_count                = 1
-  syslog_address              = "${var.syslog_address_com}"
-  site                        = "com"
-  project_id                  = "${var.project_id}"
 }
 
 module "packet_workers_org" {
   source                      = "../modules/packet_worker"
+  bastion_ip                  = "${module.packet_network_sjc1.nat_maint_ip}"
   env                         = "${var.env}"
   facility                    = "${module.packet_network_sjc1.facility}"
   github_users                = "${var.github_users}"
   index                       = "${var.index}"
   nat_ip                      = "${module.packet_network_sjc1.nat_ip}"
+  nat_public_ip               = "${module.packet_network_sjc1.nat_public_ip}"
+  project_id                  = "${var.project_id}"
+  server_count                = 1
+  site                        = "org"
+  syslog_address              = "${var.syslog_address_org}"
   worker_config               = "${data.template_file.worker_config_org.rendered}"
   worker_docker_image_android = "${var.latest_docker_image_amethyst}"
   worker_docker_image_default = "${var.latest_docker_image_garnet}"
@@ -125,10 +133,6 @@ module "packet_workers_org" {
   worker_docker_image_python  = "${var.latest_docker_image_garnet}"
   worker_docker_image_ruby    = "${var.latest_docker_image_garnet}"
   worker_docker_self_image    = "${var.latest_docker_image_worker}"
-  server_count                = 1
-  syslog_address              = "${var.syslog_address_org}"
-  site                        = "org"
-  project_id                  = "${var.project_id}"
 }
 
 resource "aws_route53_record" "nat" {
