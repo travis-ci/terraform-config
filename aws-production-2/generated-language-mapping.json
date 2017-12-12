@@ -9,6 +9,5 @@
   "node_js": "travisci/ci-garnet:packer-1512502276-986baf0",
   "php": "travisci/ci-garnet:packer-1512502276-986baf0",
   "python": "travisci/ci-garnet:packer-1512502276-986baf0",
-  "ruby": "travisci/ci-garnet:packer-1512502276-986baf0",
-  "generic": "travisci/ci-garnet:packer-1512502276-986baf0"
+  "ruby": "travisci/ci-garnet:packer-1512502276-986baf0"
 }
