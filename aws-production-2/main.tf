@@ -19,7 +19,10 @@ variable "syslog_address_org" {}
 
 variable "worker_ami" {
   # tfw 2017-11-13 19-14-17
-  default = "ami-c778fdbd"
+  #default = "ami-c778fdbd"
+  # FIXME: use the xenial-based one above as was already applied via
+  # travis-infrastructure/terraform-config#294
+  default = "ami-0e823274"
 }
 
 variable "amethyst_image" {
