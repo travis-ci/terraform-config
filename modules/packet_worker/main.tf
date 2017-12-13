@@ -63,6 +63,7 @@ data "template_file" "network_env" {
   template = <<EOF
 export TRAVIS_NETWORK_NAT_IP=${var.nat_ip}
 export TRAVIS_NETWORK_ELASTIC_IP=${var.nat_public_ip}
+export TRAVIS_NETWORK_VLAN_GATEWAY=10.10.${var.index}.1
 EOF
 }
 
@@ -103,7 +104,7 @@ data "template_file" "cloud_config" {
 }
 
 resource "local_file" "user_data_dump" {
-  filename = "${path.module}/../../tmp/packet-${var.env}-${var.index}-worker-user-data.yml"
+  filename = "${path.module}/../../tmp/packet-${var.env}-${var.index}-worker-${var.site}-user-data.yml"
   content  = "${data.template_file.cloud_config.rendered}"
 }
 
@@ -148,10 +149,8 @@ resource "null_resource" "user_data_copy" {
   }
 
   connection {
-    type         = "ssh"
-    user         = "root"
-    host         = "${packet_device.worker.access_private_ipv4}"
-    bastion_host = "${var.bastion_ip}"
-    bastion_user = "root"
+    type = "ssh"
+    user = "root"
+    host = "${packet_device.worker.access_public_ipv4}"
   }
 }

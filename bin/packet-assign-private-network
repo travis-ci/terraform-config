@@ -56,7 +56,7 @@ class PacketPrivateNetworkAssigner
 
   def ensure_vlan(network_name, facility_id)
     vlan_id = fetch_vlan(network_name, facility_id)
-    return vlan_id unless vlan_id.empty?
+    return vlan_id unless vlan_id.nil?
     create_vlan(network_name, facility_id)
   end
 

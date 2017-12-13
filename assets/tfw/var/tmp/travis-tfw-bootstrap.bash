@@ -52,7 +52,7 @@ __setup_internal_base() {
   mkdir -p "${RUN_DIR}"
   chown -R travis:travis "${RUN_DIR}"
 
-  for substep in apt openssh papertrail packages cloudcfg duo; do
+  for substep in apt openssh papertrail packages cloudcfg duo privnet; do
     logger "msg=\"setting up internal base\" substep=\"${substep}\""
     "__setup_internal_base_${substep}"
   done
@@ -202,6 +202,67 @@ __setup_internal_base_duo() {
 
   mkdir -p /lib/security
   ln -svf /lib64/security/pam_duo.so /lib/security/pam_duo.so
+}
+
+__setup_internal_base_privnet() {
+  : "${ETC_DIR:=/etc}"
+  : "${TMPDIR:=/var/tmp}"
+  local conf="${ETC_DIR}/network/interfaces"
+  local tnconf="${ETC_DIR}/default/travis-network"
+  local tmpconf="${TMPDIR}/network-interfaces.tmp"
+
+  if [[ ! -f "${conf}" ]]; then
+    logger 'no network interfaces config found; skipping net setup'
+    return
+  fi
+
+  if ! grep -q '^  *bond-slaves' "${conf}"; then
+    logger 'no bond-slaves detected; skipping net setup'
+    return
+  fi
+
+  if [[ -f "${tnconf}" ]]; then
+    # shellcheck source=/dev/null
+    source "${tnconf}"
+  fi
+
+  : "${TRAVIS_NETWORK_VLAN_INTERFACE:=enp2s0d1}"
+  : "${TRAVIS_NETWORK_VLAN_NETMASK:=255.255.255.0}"
+  : "${TRAVIS_NETWORK_VLAN_IP:=192.168.1.$(echo $((RANDOM % 254)))}"
+  : "${TRAVIS_NETWORK_VLAN_GATEWAY:=}"
+
+  if ! grep -q 'TRAVIS_NETWORK_VLAN_IP' "${tnconf}"; then
+    echo "export TRAVIS_NETWORK_VLAN_IP=${TRAVIS_NETWORK_VLAN_IP}" >>"${tnconf}"
+  fi
+
+  cat "${conf}" | awk "
+  {
+    if (\$0 ~ /bond-slaves/) {
+      sub(/${TRAVIS_NETWORK_VLAN_INTERFACE}/, \"\", \$0);
+      print \$0;
+    } else if (\$0 ~ /iface ${TRAVIS_NETWORK_VLAN_INTERFACE}/) {
+      sub(/manual/ \"static\", \$0);
+      print \$0;
+      getline;
+      getline;
+      print \"    address ${TRAVIS_NETWORK_VLAN_IP}\"
+      print \"    netmask ${TRAVIS_NETWORK_VLAN_NETMASK}\"
+      if (\"${TRAVIS_NETWORK_VLAN_GATEWAY}\" != \"\") {
+        print \"    gateway ${TRAVIS_NETWORK_VLAN_GATEWAY}\"
+      }
+    } else {
+      print \$0;
+    }
+  }
+  " >"${tmpconf}"
+
+  diff -u \
+    --label "a/${conf}" "${conf}" \
+    --label "b/${conf}" "${tmpconf}" || true
+
+  cp -v "${tmpconf}" "${conf}"
+  ifdown "${TRAVIS_NETWORK_VLAN_INTERFACE}" || true
+  ifup "${TRAVIS_NETWORK_VLAN_INTERFACE}" || true
 }
 
 main "$@"
