@@ -68,6 +68,23 @@ resource "packet_device" "nat" {
   user_data        = "${data.template_file.cloud_config.rendered}"
 }
 
+resource "null_resource" "assign_private_network" {
+  triggers {
+    user_data_sha1 = "${sha1(data.template_file.cloud_config.rendered)}"
+  }
+
+  depends_on = ["packet_device.nat"]
+
+  provisioner "local-exec" {
+    command = <<EOF
+exec ${path.module}/../../bin/packet-assign-private-network \
+    --project-id=${var.project_id} \
+    --device-id=${packet_device.nat.id} \
+    --facility-id=${var.facility}
+EOF
+  }
+}
+
 resource "null_resource" "user_data_copy" {
   triggers {
     user_data_sha1 = "${sha1(data.template_file.cloud_config.rendered)}"
