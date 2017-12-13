@@ -1,0 +1,222 @@
+#!/usr/bin/env ruby
+
+require 'json'
+require 'net/http'
+require 'net/https'
+require 'optparse'
+require 'uri'
+
+def main(argv: ARGV)
+  options = parse_options!(argv: argv)
+  ppna = PacketPrivateNetworkAssigner.new(
+    options.fetch(:auth_token),
+    options.fetch(:project_id),
+    debug_http: options.fetch(:debug_http)
+  )
+
+  vlan_id = ppna.ensure_vlan(
+    *options.values_at(:network_name, :facility_id)
+  )
+
+  ppna.remove_from_bond(
+    *options.values_at(:device_id, :device_interface_alias)
+  )
+
+  ppna.attach_to_vlan(
+    *options.values_at(:device_id, :device_interface_alias),
+    vlan_id
+  )
+
+  $stdout.puts <<~EOF
+    ===> Attached
+         project_id: #{options.fetch(:project_id)}
+         device_id: #{options.fetch(:device_id)}
+         port: #{options.fetch(:device_interface_alias)}
+         vlan: #{options.fetch(:network_name)}
+         facility: #{options.fetch(:facility_id)}
+  EOF
+
+  0
+end
+
+class PacketPrivateNetworkAssigner
+  def initialize(auth_token, project_id, packet_api_hostname: 'api.packet.net',
+                 debug_http: false)
+    @auth_token = auth_token
+    @debug_http = debug_http
+    @packet_api_hostname = packet_api_hostname
+    @project_id = project_id
+  end
+
+  attr_reader :auth_token, :debug_http, :packet_api_hostname, :project_id
+  private :auth_token
+  private :debug_http
+  private :packet_api_hostname
+  private :project_id
+
+  def ensure_vlan(network_name, facility_id)
+    vlan_id = fetch_vlan(network_name, facility_id)
+    return vlan_id unless vlan_id.empty?
+    create_vlan(network_name, facility_id)
+  end
+
+  def remove_from_bond(device_id, device_interface_alias)
+    port = fetch_port(device_id, device_interface_alias)
+    fail "no port for interface #{device_interface_alias}" if port.nil?
+    disbond_port(port.fetch('id')) if port.fetch('data').fetch('bonded')
+  end
+
+  def attach_to_vlan(device_id, device_interface_alias, vlan_id)
+    port = fetch_port(device_id, device_interface_alias)
+    fail "no port for interface #{device_interface_alias}" if port.nil?
+    return if port.fetch('virtual_networks').include?(
+      'href' => "/virtual-networks/#{vlan_id}"
+    )
+    conn = packet_http_conn
+    req = Net::HTTP::Post.new(
+      "/ports/#{port.fetch('id')}/assign?vnid=#{vlan_id}"
+    )
+    req['Accept'] = 'application/json'
+    req['X-Auth-Token'] = auth_token
+    response = conn.request(req)
+    assert_status!(200, response.code)
+  end
+
+  private def fetch_vlan(network_name, facility_id)
+    conn = packet_http_conn
+    req = Net::HTTP::Get.new("/projects/#{project_id}/virtual-networks")
+    req['Accept'] = 'application/json'
+    req['X-Auth-Token'] = auth_token
+    response = conn.request(req)
+    assert_status!(200, response.code)
+    found = JSON.parse(response.body).fetch('virtual_networks').find do |vlan|
+      vlan['description'] == network_name &&
+        vlan['facility_code'] == facility_id
+    end
+    return nil if found.nil?
+    found.fetch('id')
+  end
+
+  private def create_vlan(network_name, facility_id)
+    conn = packet_http_conn
+    req = Net::HTTP::Post.new("/projects/#{project_id}/virtual-networks")
+    req.body = JSON.dump(
+      description: network_name,
+      facility_id: facility_id
+    )
+    req['Accept'] = 'application/json'
+    req['Content-Type'] = 'application/json;charset=utf-8'
+    req['X-Auth-Token'] = auth_token
+    response = conn.request(req)
+    assert_status!(201, response.code)
+    JSON.parse(response.body).fetch('id')
+  end
+
+  private def fetch_port(device_id, device_interface_alias)
+    conn = packet_http_conn
+    req = Net::HTTP::Get.new("/devices/#{device_id}")
+    req['Accept'] = 'application/json'
+    req['X-Auth-Token'] = auth_token
+    response = conn.request(req)
+    assert_status!(200, response.code)
+    JSON.parse(response.body).fetch('network_ports').find do |port|
+      port['name'] == device_interface_alias
+    end
+  end
+
+  private def disbond_port(port_id)
+    conn = packet_http_conn
+    req = Net::HTTP::Post.new("/ports/#{port_id}/disbond")
+    req['Accept'] = 'application/json'
+    req['X-Auth-Token'] = auth_token
+    response = conn.request(req)
+    assert_status!(200, response.code)
+  end
+
+  private def packet_http_conn
+    conn = Net::HTTP.new(packet_api_hostname, 443)
+    conn.use_ssl = true
+    conn.verify_mode = OpenSSL::SSL::VERIFY_PEER
+    conn.set_debug_output($stderr) if debug_http
+    conn
+  end
+
+  private def assert_status!(expected, actual)
+    fail "borked status code #{actual}" if Integer(actual) != Integer(expected)
+  end
+end
+
+def parse_options!(argv: ARGV)
+  options = {
+    auth_token: ENV['PACKET_AUTH_TOKEN'],
+    debug_http: %w[yes on true 1].include?(
+      ENV.fetch('PACKET_DEBUG_HTTP', 'no').downcase
+    ),
+    device_id: ENV['PACKET_DEVICE_ID'],
+    # device_interface: ENV.fetch('PACKET_DEVICE_INTERFACE', 'enp2s0d1'),
+    device_interface_alias: ENV.fetch('PACKET_DEVICE_INTERFACE_ALIAS', 'eth1'),
+    facility_id: ENV.fetch('PACKET_PRIVATE_NETWORK_FACILITY', 'sjc1'),
+    network_name: ENV.fetch('PACKET_PRIVATE_NETWORK_NAME', 'private'),
+    project_id: ENV['PACKET_PROJECT_ID']
+  }
+
+  OptionParser.new do |opts|
+    opts.banner = <<~EOF
+      Usage: #{File.basename($PROGRAM_NAME)} [options]
+    EOF
+
+    opts.on(
+      '-A', '--auth-token=PACKET_AUTH_TOKEN',
+      'Packet auth token [REQUIRED]'
+    ) { |v| options[:auth_token] = v.strip }
+
+    opts.on(
+      '-p', '--project-id=PACKET_PROJECT_ID',
+      'Packet project ID (uuid) [REQUIRED]'
+    ) { |v| options[:project_id] = v.strip }
+
+    opts.on(
+      '-d', '--device-id=PACKET_DEVICE_ID',
+      'Packet device id [REQUIRED]'
+    ) { |v| options[:device_id] = v.strip }
+
+    opts.on(
+      '-n', '--network-name=PACKET_NETWORK_NAME',
+      "Packet private network name (default=#{options[:network_name]})"
+    ) { |v| options[:network_name] = v.strip }
+
+    opts.on(
+      '-f', '--facility-id=PACKET_FACILITY_ID',
+      "Packet facility id (default=#{options[:facility_id]})"
+    ) { |v| options[:facility_id] = v.strip }
+
+    # opts.on(
+    #   '-i', '--device-interface=PACKET_DEVICE_INTERFACE',
+    #   "Packet device interface (default=#{options[:device_interface]})"
+    # ) { |v| options[:device_interface] = v.strip }
+
+    opts.on(
+      '-a', '--device-interface-alias=PACKET_DEVICE_INTERFACE_ALIAS',
+      "Packet device interface alias " +
+      "(default=#{options[:device_interface_alias]})"
+    ) { |v| options[:device_interface_alias] = v.strip }
+
+    opts.on(
+      '--debug-http', 'Log HTTP stuff to stderr'
+    ) { |v| options[:debug_http] = true }
+  end.parse!(argv)
+
+  {
+    'auth-token' => 'PACKET_AUTH_TOKEN',
+    'device-id' => 'PACKET_DEVICE_ID',
+    'project-id' => 'PACKET_PROJECT_ID'
+  }.each do |c, e|
+    if options[c.gsub('-', '_').to_sym].to_s.empty?
+      fail "Missing option --#{c} ($#{e})"
+    end
+  end
+
+  options
+end
+
+exit(main) if $PROGRAM_NAME == __FILE__
