@@ -228,14 +228,14 @@ __setup_internal_base_privnet() {
 
   : "${TRAVIS_NETWORK_VLAN_INTERFACE:=enp2s0d1}"
   : "${TRAVIS_NETWORK_VLAN_NETMASK:=255.255.255.0}"
-  : "${TRAVIS_NETWORK_VLAN_IP:=192.168.1.$(echo $((RANDOM % 254)))}"
+  : "${TRAVIS_NETWORK_VLAN_IP:=192.168.1.$((RANDOM % 254))}"
   : "${TRAVIS_NETWORK_VLAN_GATEWAY:=}"
 
   if ! grep -q 'TRAVIS_NETWORK_VLAN_IP' "${tnconf}"; then
     echo "export TRAVIS_NETWORK_VLAN_IP=${TRAVIS_NETWORK_VLAN_IP}" >>"${tnconf}"
   fi
 
-  cat "${conf}" | awk "
+  awk "
   {
     if (\$0 ~ /bond-slaves/) {
       sub(/${TRAVIS_NETWORK_VLAN_INTERFACE}/, \"\", \$0);
@@ -254,7 +254,7 @@ __setup_internal_base_privnet() {
       print \$0;
     }
   }
-  " >"${tmpconf}"
+  " <"${conf}" >"${tmpconf}"
 
   diff -u \
     --label "a/${conf}" "${conf}" \
