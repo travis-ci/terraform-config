@@ -19,15 +19,18 @@ variable "syslog_address_org" {}
 
 variable "worker_ami" {
   # tfw 2017-11-13 19-14-17
-  default = "ami-c778fdbd"
+  #default = "ami-c778fdbd"
+  # FIXME: use the xenial-based one above as was already applied via
+  # travis-infrastructure/terraform-config#294
+  default = "ami-0e823274"
 }
 
 variable "amethyst_image" {
-  default = "travisci/ci-amethyst:packer-1503974220"
+  default = "travisci/ci-amethyst:packer-1512508255-986baf0"
 }
 
 variable "garnet_image" {
-  default = "travisci/ci-garnet:packer-1503972846"
+  default = "travisci/ci-garnet:packer-1512502276-986baf0"
 }
 
 terraform {
