@@ -18,8 +18,6 @@ main() {
   apt-get update -yqq
   apt-get install -yqq curl software-properties-common
 
-  __setup_sudo
-
   if [[ ! -f "${TMPDIR}/travis-pre-chef-bootstrap.done" ]]; then
     if [[ ! -f "${TMPDIR}/pre-chef-bootstrap.bash" ]]; then
       local bootstrap_url="${PACKER_TEMPLATES_BASE_URL}/${PACKER_TEMPLATES_BRANCH}"
@@ -52,7 +50,18 @@ __setup_internal_base() {
   mkdir -p "${RUNDIR}"
   chown -R travis:travis "${RUNDIR}"
 
-  for substep in apt openssh papertrail packages cloudcfg duo privnet; do
+  for substep in \
+    sudo \
+    apt \
+    packages \
+    instance_metadata \
+    hostname \
+    openssh \
+    papertrail \
+    cloudcfg \
+    librato \
+    duo \
+    privnet; do
     logger "msg=\"setting up internal base\" substep=\"${substep}\""
     "__setup_internal_base_${substep}"
   done
@@ -112,7 +121,7 @@ __setup_internal_base_papertrail() {
   service rsyslog restart
 }
 
-__setup_sudo() {
+__setup_internal_base_sudo() {
   : "${ETCDIR:=/etc}"
   local sudoers="${ETCDIR}/sudoers"
   local sudoers_d="${ETCDIR}/sudoers.d"
@@ -130,15 +139,59 @@ __setup_sudo() {
   chmod 0440 "${sudoers_d}/90-group-sudo"
 }
 
+__setup_internal_base_instance_metadata() {
+  : "${ETCDIR:=/etc}"
+  : "${RUNDIR:=/var/tmp/travis-run.d}"
+
+  local inst_conf="${ETCDIR}/default/travis-instance-local"
+  if [[ -f "${inst_conf}" ]]; then
+    logger "found ${inst_conf}; skipping metadata setup"
+    return
+  fi
+
+  local instance_id=notset
+  local instance_ipv4='127.0.0.1'
+  local ec2_metadata='http://169.254.169.254/latest/meta-data'
+  local packet_metadata='https://metadata.packet.net/metadata'
+
+  if curl --connect-timeout 3 -sfSL \
+    "${ec2_metadata}/instance-id" &>/dev/null; then
+    curl -sSL "${ec2_metadata}/instance-id" >"${RUNDIR}/instance-id"
+    instance_id="$(cat "${RUNDIR}/instance-id")"
+    instance_id="${instance_id:0:9}"
+
+    curl -sSL "${ec2_metadata}/local-ipv4" \
+      >"${RUNDIR}/instance-ipv4"
+    instance_ipv4="$(cat "${RUNDIR}/instance-ipv4")"
+  fi
+
+  if curl --connect-timeout 3 -sfSL "${packet_metadata}" &>/dev/null; then
+    curl -sSL "${packet_metadata}" >"${RUNDIR}/metadata.json"
+    instance_id="$(jq -r .id <"${RUNDIR}/metadata.json" | cut -d- -f 1)"
+
+    instance_ipv4="$(
+      jq -r ".network.addresses | .[] | \
+        select(.address_family==4 and .public==false) | \
+        .address" <"${RUNDIR}/metadata.json"
+    )"
+  fi
+
+  cat >"${inst_conf}" <<EOF
+# generated $(date -u)
+export TRAVIS_INSTANCE_ID=${instance_id}
+export TRAVIS_INSTANCE_IPV4=${instance_ipv4}
+EOF
+}
+
 __setup_internal_base_packages() {
-  apt-get install -yqq \
-    fail2ban \
-    iptables-persistent \
-    jq \
-    libpam-cap \
-    pssh \
-    whois \
-    zsh
+  for key in autosave_v{4,6}; do
+    echo "iptables-persistent iptables-persistent/${key} boolean true" |
+      debconf-set-selections
+  done
+
+  apt-get install -yqq fail2ban
+  apt-get install -yqq iptables-persistent
+  apt-get install -yqq jq libpam-cap pssh whois zsh
 }
 
 __setup_internal_base_cloudcfg() {
@@ -212,6 +265,61 @@ __setup_internal_base_duo() {
   ln -svf /lib64/security/pam_duo.so /lib/security/pam_duo.so
 }
 
+__setup_internal_base_librato() {
+  : "${ETCDIR:=/etc}"
+  : "${OPTDIR:=/opt}"
+
+  eval "$(travis-tfw-combined-env librato)"
+
+  if [[ ! "${LIBRATO_EMAIL}" || ! "${LIBRATO_TOKEN}" ]]; then
+    logger 'no librato creds found; skipping librato installation'
+    return
+  fi
+
+  local apt_list="${ETCDIR}/apt/sources.list.d/librato_librato-collectd.list"
+  if [[ -f "${apt_list}" ]]; then
+    logger "found ${apt_list}; skipping librato installation"
+    return
+  fi
+
+  apt-get update -yqq
+  apt-get install -yqq debian-archive-keyring
+  apt-get install -yqq apt-transport-https
+
+  local dist
+  dist="$(lsb_release -sc)"
+  cat >"${apt_list}" <<EOF
+deb https://packagecloud.io/librato/librato-collectd/ubuntu/ ${dist} main
+EOF
+
+  curl -s https://packagecloud.io/gpg.key 2>/dev/null | apt-key add -
+
+  cat >"${ETCDIR}/apt/preferences.d/librato-collectd" <<EOF
+Package: collectd collectd-core
+Pin: release l=librato-collectd
+Pin-Priority: 1001
+EOF
+
+  apt-get update -yqq
+  apt-get install -yqq collectd
+
+  cat >"${OPTDIR}/collectd/etc/collectd.conf.d/librato.conf" <<EOF
+LoadPlugin write_http
+Hostname "$(__full_hostname)"
+<Plugin write_http>
+  <Node "librato">
+    URL "https://collectd.librato.com/v1/measurements"
+    Format "JSON"
+    BufferSize 8192
+    User "${LIBRATO_EMAIL}"
+    Password "${LIBRATO_TOKEN}"
+  </Node>
+</Plugin>
+EOF
+
+  service collectd restart
+}
+
 __setup_internal_base_privnet() {
   : "${ETCDIR:=/etc}"
   : "${TMPDIR:=/var/tmp}"
@@ -230,10 +338,9 @@ __setup_internal_base_privnet() {
     return
   fi
 
-  local infra_index=1
-  if [[ -f "${RUNDIR}/instance-hostname.tmpl" ]]; then
-    infra_index="$(cut -d- -f3 <"${RUNDIR}/instance-hostname.tmpl")"
-  fi
+  eval "$(travis-tfw-combined-env travis-instance)"
+
+  : "${TRAVIS_INSTANCE_INFRA_INDEX:=1}"
 
   if [[ ! -f "${ETCDIR}/default/travis-network-local" ]]; then
     local vlan_last_octet vlan_ip
@@ -244,7 +351,7 @@ __setup_internal_base_privnet() {
       print $4
     }'
     )"
-    vlan_ip="10.10.${infra_index}.${vlan_last_octet}"
+    vlan_ip="10.10.${TRAVIS_INSTANCE_INFRA_INDEX}.${vlan_last_octet}"
     echo "export TRAVIS_NETWORK_VLAN_IP=${vlan_ip}" |
       tee "${ETCDIR}/default/travis-network-local"
   fi
@@ -291,6 +398,79 @@ __setup_internal_base_privnet() {
   cp -v "${tmpconf}" "${conf}"
   ifdown "${TRAVIS_NETWORK_VLAN_INTERFACE}" || true
   ifup "${TRAVIS_NETWORK_VLAN_INTERFACE}" || true
+}
+
+__setup_internal_base_hostname() {
+  : "${ETCDIR:=/etc}"
+  : "${TMPDIR:=/var/tmp}"
+
+  local hosts_file="${ETCDIR}/hosts"
+  local hostname_file="${ETCDIR}/hostname"
+  local hosts_tmp="${TMPDIR}/etc-hosts.tmp"
+  local instance_hostname
+  instance_hostname="$(__full_hostname)"
+  local gen_comment='# generated via travis-tfw-bootstrap'
+
+  echo "${instance_hostname}" >"${hostname_file}"
+  hostname -F "${hostname_file}"
+
+  if grep -q "${gen_comment}" "${hosts_file}"; then
+    logger "found generated comment in ${hosts_file}; skipping"
+    return
+  fi
+
+  cat "${hosts_file}" >"${hosts_tmp}"
+  echo "${gen_comment} $(date -u)" >>"${hosts_tmp}"
+
+  ip -o addr | awk '/inet / { sub(/\/.*/, "", $4); print $4 }' | sort |
+    while read -r ipaddr; do
+      echo "${ipaddr} ${instance_hostname%%.*} ${instance_hostname}" \
+        >>"${hosts_tmp}"
+    done
+
+  diff -u \
+    --label "a/${hosts_file}" "${hosts_file}" \
+    --label "b/${hosts_file}" "${hosts_tmp}" || true
+
+  mv -v "${hosts_tmp}" "${hosts_file}"
+}
+
+__full_hostname() {
+  : "${RUNDIR:=/var/tmp/travis-run.d}"
+
+  local default_hostname
+  default_hostname="$(uname -n)"
+
+  eval "$(travis-tfw-combined-env travis-instance)"
+
+  : "${TRAVIS_INSTANCE_ID:=notset}"
+
+  local hntmpl="${RUNDIR}/instance-hostname.tmpl"
+  if [[ -f "${hntmpl}" ]]; then
+    logger "found ${hntmpl}; using that instead of generating hostname"
+    sed "s/___INSTANCE_ID___/${TRAVIS_INSTANCE_ID}/g" "${hntmpl}"
+    return
+  fi
+
+  if [[ ! "${TRAVIS_INSTANCE_ID}" || ! "${TRAVIS_INSTANCE_INFRA_NAME}" ]]; then
+    logger 'no instance id or infra name found; skipping generated hostname'
+    echo "${default_hostname}"
+    return
+  fi
+
+  : "${TRAVIS_INSTANCE_INFRA_INDEX:=1}"
+  : "${TRAVIS_INSTANCE_INFRA_ENV:=notset}"
+  : "${TRAVIS_INSTANCE_ROLE:=notset}"
+  : "${TRAVIS_INSTANCE_INFRA_NAME:=notset}"
+  : "${TRAVIS_INSTANCE_INFRA_REGION:=xyz0}"
+  : "${TRAVIS_INSTANCE_ID:=notset}"
+
+  local full_hostname="${TRAVIS_INSTANCE_ID}-${TRAVIS_INSTANCE_INFRA_ENV}"
+  full_hostname="${full_hostname}-${TRAVIS_INSTANCE_INFRA_INDEX}"
+  full_hostname="${full_hostname}-${TRAVIS_INSTANCE_ROLE}"
+  full_hostname="${full_hostname}.${TRAVIS_INSTANCE_INFRA_NAME}"
+  full_hostname="${full_hostname}-${TRAVIS_INSTANCE_INFRA_REGION}"
+  echo "${full_hostname}.travisci.net"
 }
 
 main "$@"

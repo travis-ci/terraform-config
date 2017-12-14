@@ -15,8 +15,6 @@ main() {
   __setup_sysctl
   __setup_networking
   __setup_duo
-
-  hostname >"${RUNDIR}/instance-hostname.tmpl"
 }
 
 __setup_travis_user() {
