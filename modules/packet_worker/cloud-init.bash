@@ -5,16 +5,24 @@ set -o pipefail
 shopt -s nullglob
 
 main() {
+  if [[ ! "${QUIET}" ]]; then
+    set -o xtrace
+  fi
+
   : "${ETCDIR:=/etc}"
   : "${VARTMP:=/var/tmp}"
+  : "${DEV:=/dev}"
   : "${RUNDIR:=/var/tmp/travis-run.d}"
 
-  if ! docker version; then
+  if ! docker version 2>/dev/null; then
     __install_docker
   fi
 
   if ! getent passwd travis; then
     useradd travis
+  fi
+
+  groups travis | if ! grep -q docker; then
     usermod -a -G docker travis
   fi
 
@@ -22,13 +30,31 @@ main() {
 
   chown -R travis:travis "${RUNDIR}"
 
-  if [[ -d "${ETCDIR}/init" ]]; then
-    cp -v "${VARTMP}/travis-worker.conf" \
-      "${ETCDIR}/init/travis-worker.conf"
+  if [[ -d "${ETCDIR}/systemd/system" ]]; then
+    cp -v "${VARTMP}/travis-worker.service" \
+      "${ETCDIR}/systemd/system/travis-worker.service"
+    systemctl enable travis-worker || true
+  fi
+
+  if [[ ! -e "${DEV}/md0" ]]; then
+    mdadm --create "${DEV}/md0" --level=0 --raid-devices=4 \
+      "${DEV}/sdc" "${DEV}/sdd" "${DEV}/sde" "${DEV}/sdf"
   fi
 
   service travis-worker stop || true
   service travis-worker start || true
+
+  echo "___INSTANCE_ID___-$(hostname)" >"${RUNDIR}/instance-hostname.tmpl"
+
+  eval "$(travis-tfw-combined-env travis-network)"
+
+  if [[ "${TRAVIS_NETWORK_VLAN_GATEWAY}" ]]; then
+    ip route | if ! grep -q "^default via ${TRAVIS_NETWORK_VLAN_GATEWAY}"; then
+      ip route del default || true
+      sleep 5
+      ip route add default via "${TRAVIS_NETWORK_VLAN_GATEWAY}" || true
+    fi
+  fi
 
   __wait_for_docker
 }
