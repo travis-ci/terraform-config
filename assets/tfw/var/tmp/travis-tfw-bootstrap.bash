@@ -15,6 +15,11 @@ main() {
   export DEBIAN_FRONTEND=noninteractive
   export PACKER_BUILDER_TYPE
 
+  for key in autosave_v{4,6}; do
+    echo "iptables-persistent iptables-persistent/${key} boolean true" |
+      debconf-set-selections
+  done
+
   apt-get update -yqq
   apt-get install -yqq curl software-properties-common
 
@@ -184,11 +189,6 @@ EOF
 }
 
 __setup_internal_base_packages() {
-  for key in autosave_v{4,6}; do
-    echo "iptables-persistent iptables-persistent/${key} boolean true" |
-      debconf-set-selections
-  done
-
   apt-get install -yqq fail2ban
   apt-get install -yqq iptables-persistent
   apt-get install -yqq jq libpam-cap pssh whois zsh
