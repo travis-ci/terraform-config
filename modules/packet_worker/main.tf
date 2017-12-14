@@ -136,21 +136,30 @@ EOF
   }
 }
 
-resource "null_resource" "user_data_copy" {
-  triggers {
-    user_data_sha1 = "${sha1(data.template_file.cloud_config.rendered)}"
-  }
+# resource "null_resource" "user_data_copy" {
+#   triggers {
+#     user_data_sha1 = "${sha1(data.template_file.cloud_config.rendered)}"
+#   }
+#
+#   depends_on = ["packet_device.worker", "local_file.user_data_dump"]
+#
+#   provisioner "file" {
+#     source      = "${local_file.user_data_dump.filename}"
+#     destination = "/var/lib/cloud/instance/user-data.txt"
+#   }
+#
+#   provisioner "remote-exec" {
+#     inline = [
+#       "cloud-init modules --mode init",
+#       "cloud-init modules --mode config",
+#       "cloud-init modules --mode final",
+#     ]
+#   }
+#
+#   connection {
+#     type = "ssh"
+#     user = "root"
+#     host = "${packet_device.worker.access_public_ipv4}"
+#   }
+# }
 
-  depends_on = ["packet_device.worker", "local_file.user_data_dump"]
-
-  provisioner "file" {
-    source      = "${local_file.user_data_dump.filename}"
-    destination = "/var/tmp/user-data.yml"
-  }
-
-  connection {
-    type = "ssh"
-    user = "root"
-    host = "${packet_device.worker.access_public_ipv4}"
-  }
-}

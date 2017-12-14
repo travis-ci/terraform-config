@@ -47,10 +47,10 @@ main() {
 }
 
 __setup_internal_base() {
-  : "${RUN_DIR:=/var/tmp/travis-run.d}"
+  : "${RUNDIR:=/var/tmp/travis-run.d}"
 
-  mkdir -p "${RUN_DIR}"
-  chown -R travis:travis "${RUN_DIR}"
+  mkdir -p "${RUNDIR}"
+  chown -R travis:travis "${RUNDIR}"
 
   for substep in apt openssh papertrail packages cloudcfg duo privnet; do
     logger "msg=\"setting up internal base\" substep=\"${substep}\""
@@ -81,14 +81,14 @@ __setup_internal_base_openssh() {
 }
 
 __setup_internal_base_papertrail() {
-  : "${ETC_DIR:=/etc}"
+  : "${ETCDIR:=/etc}"
   : "${VAR_SPOOL:=/var/spool}"
   : "${VAR_LOG:=/var/log}"
   : "${VAR_TMP:=/var/tmp}"
-  local rsyslog_d="${ETC_DIR}/rsyslog.d"
-  local rsyslog_conf="${ETC_DIR}/rsyslog.conf"
+  local rsyslog_d="${ETCDIR}/rsyslog.d"
+  local rsyslog_conf="${ETCDIR}/rsyslog.conf"
   local working_dir="${VAR_SPOOL}/rsyslog"
-  local papertrail_ca="${ETC_DIR}/papertrail-bundle.pem"
+  local papertrail_ca="${ETCDIR}/papertrail-bundle.pem"
   local papertrail_ca_url='https://papertrailapp.com/tools/papertrail-bundle.pem'
 
   curl -sSL -o "${papertrail_ca}" "${papertrail_ca_url}"
@@ -113,9 +113,9 @@ __setup_internal_base_papertrail() {
 }
 
 __setup_sudo() {
-  : "${ETC_DIR:=/etc}"
-  local sudoers="${ETC_DIR}/sudoers"
-  local sudoers_d="${ETC_DIR}/sudoers.d"
+  : "${ETCDIR:=/etc}"
+  local sudoers="${ETCDIR}/sudoers"
+  local sudoers_d="${ETCDIR}/sudoers.d"
 
   apt-get install -yqq sudo
 
@@ -131,14 +131,21 @@ __setup_sudo() {
 }
 
 __setup_internal_base_packages() {
-  apt-get install -yqq fail2ban iptables-persistent whois zsh pssh
+  apt-get install -yqq \
+    fail2ban \
+    iptables-persistent \
+    jq \
+    libpam-cap \
+    pssh \
+    whois \
+    zsh
 }
 
 __setup_internal_base_cloudcfg() {
-  : "${ETC_DIR:=/etc}"
-  : "${VAR_LIB:=/var/lib}"
-  local cloud_d="${ETC_DIR}/cloud"
-  local cloud_scripts_per_boot="${VAR_LIB}/cloud/scripts/per-boot"
+  : "${ETCDIR:=/etc}"
+  : "${VARLIBDIR:=/var/lib}"
+  local cloud_d="${ETCDIR}/cloud"
+  local cloud_scripts_per_boot="${VARLIBDIR}/cloud/scripts/per-boot"
   local script_base_url
   script_base_url='https://raw.githubusercontent.com/travis-ci'
   script_base_url="${script_base_url}/packer-templates/master/cookbooks"
@@ -152,7 +159,6 @@ __setup_internal_base_cloudcfg() {
     00-disable-travis-sudo \
     10-configure-fail2ban-ssh \
     10-generate-ssh-host-keys \
-    10-set-hostname-from-template \
     50-update-rsyslog-papertrail-config; do
     curl -sSL -o "${cloud_scripts_per_boot}/${f}" "${script_base_url}/${f}"
     chown root:root "${cloud_scripts_per_boot}/${f}"
@@ -168,8 +174,8 @@ __setup_internal_base_duo() {
     return
   fi
 
-  : "${ETC_DIR:=/etc}"
-  local pam_d="${ETC_DIR}/pam.d"
+  : "${ETCDIR:=/etc}"
+  local pam_d="${ETCDIR}/pam.d"
   local conf_base_url
   conf_base_url='https://raw.githubusercontent.com/travis-ci'
   conf_base_url="${conf_base_url}/travis-cookbooks/master/cookbooks"
@@ -194,21 +200,24 @@ __setup_internal_base_duo() {
   local duo_conf_dest
 
   for conf in pam login; do
-    duo_conf_dest="${ETC_DIR}/duo/${conf}_duo.conf"
+    duo_conf_dest="${ETCDIR}/duo/${conf}_duo.conf"
     cp -v "${DUO_CONF}" "${duo_conf_dest}"
     chown root:root "${duo_conf_dest}"
     chmod 0600 "${duo_conf_dest}"
   done
+
+  chown -R sshd:root "${ETCDIR}/duo"
 
   mkdir -p /lib/security
   ln -svf /lib64/security/pam_duo.so /lib/security/pam_duo.so
 }
 
 __setup_internal_base_privnet() {
-  : "${ETC_DIR:=/etc}"
+  : "${ETCDIR:=/etc}"
   : "${TMPDIR:=/var/tmp}"
-  local conf="${ETC_DIR}/network/interfaces"
-  local tnconf="${ETC_DIR}/default/travis-network"
+  : "${RUNDIR:=/var/tmp/travis-run.d}"
+
+  local conf="${ETCDIR}/network/interfaces"
   local tmpconf="${TMPDIR}/network-interfaces.tmp"
 
   if [[ ! -f "${conf}" ]]; then
@@ -221,18 +230,36 @@ __setup_internal_base_privnet() {
     return
   fi
 
-  if [[ -f "${tnconf}" ]]; then
-    # shellcheck source=/dev/null
-    source "${tnconf}"
+  local infra_index=1
+  if [[ -f "${RUNDIR}/instance-hostname.tmpl" ]]; then
+    infra_index="$(cut -d- -f3 <"${RUNDIR}/instance-hostname.tmpl")"
   fi
+
+  if [[ ! -f "${ETCDIR}/default/travis-network-local" ]]; then
+    local vlan_last_octet vlan_ip
+    vlan_last_octet="$(
+      ip -o addr | awk '/inet 10\.[^1][^0]/ {
+      sub(/\/.*/, "", $4);
+      sub(/.*\./, "", $4);
+      print $4
+    }'
+    )"
+    vlan_ip="10.10.${infra_index}.${vlan_last_octet}"
+    echo "export TRAVIS_NETWORK_VLAN_IP=${vlan_ip}" |
+      tee "${ETCDIR}/default/travis-network-local"
+  fi
+
+  eval "$(travis-tfw-combined-env travis-network)"
 
   : "${TRAVIS_NETWORK_VLAN_INTERFACE:=enp2s0d1}"
   : "${TRAVIS_NETWORK_VLAN_NETMASK:=255.255.255.0}"
-  : "${TRAVIS_NETWORK_VLAN_IP:=192.168.1.$((RANDOM % 254))}"
+  : "${TRAVIS_NETWORK_VLAN_IP:=10.10.1.$((RANDOM % 254))}"
   : "${TRAVIS_NETWORK_VLAN_GATEWAY:=}"
 
-  if ! grep -q 'TRAVIS_NETWORK_VLAN_IP' "${tnconf}"; then
-    echo "export TRAVIS_NETWORK_VLAN_IP=${TRAVIS_NETWORK_VLAN_IP}" >>"${tnconf}"
+  if ! grep -q 'TRAVIS_NETWORK_VLAN_IP' \
+    "${ETCDIR}/default/travis-network-local"; then
+    echo "export TRAVIS_NETWORK_VLAN_IP=${TRAVIS_NETWORK_VLAN_IP}" |
+      tee -a "${ETCDIR}/default/travis-network-local"
   fi
 
   awk "
@@ -241,8 +268,9 @@ __setup_internal_base_privnet() {
       sub(/${TRAVIS_NETWORK_VLAN_INTERFACE}/, \"\", \$0);
       print \$0;
     } else if (\$0 ~ /iface ${TRAVIS_NETWORK_VLAN_INTERFACE}/) {
-      sub(/manual/ \"static\", \$0);
+      sub(/manual/, \"static\", \$0);
       print \$0;
+      getline;
       getline;
       getline;
       print \"    address ${TRAVIS_NETWORK_VLAN_IP}\"

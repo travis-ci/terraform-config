@@ -14,6 +14,7 @@ main() {
   __install_packages
   __setup_sysctl
   __setup_networking
+  __setup_duo
 
   hostname >"${RUNDIR}/instance-hostname.tmpl"
 }
@@ -47,18 +48,31 @@ __setup_networking() {
   elastic_ip="$(__find_elastic_ip)"
 
   if [[ -n "${elastic_ip}" ]]; then
-    ip address add "${elastic_ip}/32" dev lo
-    iptables -t nat -A POSTROUTING -o "${pub_iface}" -j SNAT --to "${elastic_ip}"
+    if ip address add "${elastic_ip}/32" dev lo; then
+      iptables -t nat -A POSTROUTING -o "${pub_iface}" -j SNAT --to "${elastic_ip}"
+    fi
   fi
-  iptables -t nat -A POSTROUTING -o "${pub_iface}" -j MASQUERADE
-  iptables -A FORWARD -i "${pub_iface}" -o "${priv_iface}" \
-    -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
-  iptables -A FORWARD -i "${priv_iface}" -o "${pub_iface}" -j ACCEPT
+
+  iptables -t nat -S POSTROUTING | if ! grep -q MASQUERADE; then
+    iptables -t nat -A POSTROUTING -o "${pub_iface}" -j MASQUERADE
+  fi
+
+  iptables -S FORWARD | if ! grep -q conntrack; then
+    iptables -A FORWARD -i "${pub_iface}" -o "${priv_iface}" \
+      -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+  fi
+
+  iptables -S FORWARD | if ! grep -q "i ${priv_iface} -o ${pub_iface}"; then
+    iptables -A FORWARD -i "${priv_iface}" -o "${pub_iface}" -j ACCEPT
+  fi
 }
 
 __find_private_interface() {
   local iface=enp2s0d1
-  iface="$(ip -o addr show | grep 'inet 192' | awk '{ print $2 }')"
+  iface="$(
+    ip -o addr show | grep -E 'inet 10\.' |
+      awk '{ print $2 }' | head -n 1
+  )"
   echo "${iface:-enp2s0d1}"
 }
 
@@ -70,15 +84,24 @@ __find_public_interface() {
 }
 
 __find_elastic_ip() {
-  # FIXME: inject this from somewhere?
-  local elastic_ip
-  if [[ -f /etc/default/travis-network ]]; then
-    # shellcheck source=/dev/null
-    source /etc/default/travis-network
-    elastic_ip="${TRAVIS_NETWORK_ELASTIC_IP}"
+  eval "$(travis-tfw-combined-env travis-network)"
+  echo "${TRAVIS_NETWORK_ELASTIC_IP}"
+}
+
+__setup_duo() {
+  : "${ETCDIR:=/etc}"
+  if [[ ! -f "${ETCDIR}/duo/login_duo.conf" ]]; then
+    logger 'No login_duo.conf found; skipping duo setup'
+    return
   fi
 
-  echo "${elastic_ip}"
+  if grep -qE 'ForceCommand.*login_duo' "${ETCDIR}/ssh/sshd_config"; then
+    logger 'sshd already condigured with login_duo'
+    return
+  fi
+
+  echo 'ForceCommand /usr/sbin/login_duo' >>"${ETCDIR}/ssh/sshd_config"
+  service sshd restart
 }
 
 main "$@"
