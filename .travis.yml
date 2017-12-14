@@ -9,19 +9,8 @@ cache:
 env:
   global:
   - PATH="${HOME}/bin:${PATH}"
-  - SHELLCHECK_URL="https://s3.amazonaws.com/travis-blue-public/binaries/ubuntu/14.04/x86_64/shellcheck-v0.4.6.linux.x86_64.tar.xz"
-  - SHFMT_URL="mvdan.cc/sh/cmd/shfmt"
   - TMPDIR="${TMPDIR:-/tmp}"
-before_install:
-- git ls-files '*/Makefile' | xargs -n 1 make .echo-tf-version -f 2>/dev/null | sort | uniq |
-  while read -r tf_version;
-    do ./bin/ensure-terraform "${tf_version}";
-  done
-- if [[ ! -x "${HOME}/bin/shellcheck" ]]; then
-    curl -sSL "${SHELLCHECK_URL}" | tar -C "${HOME}/bin" -xjf -;
-  fi
-- go get -u "${SHFMT_URL}"
+before_install: make deps
 script:
-- ./runtests --env .example.env
-- git diff --exit-code
-- git diff --cached --exit-code
+- make test
+- make assert-clean
