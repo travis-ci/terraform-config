@@ -67,6 +67,16 @@ export TRAVIS_NETWORK_VLAN_GATEWAY=10.10.${var.index}.1
 EOF
 }
 
+data "template_file" "instance_env" {
+  template = <<EOF
+export TRAVIS_INSTANCE_INFRA_ENV=${var.env}
+export TRAVIS_INSTANCE_INFRA_INDEX=${var.index}
+export TRAVIS_INSTANCE_INFRA_NAME=packet
+export TRAVIS_INSTANCE_INFRA_REGION=${var.facility}
+export TRAVIS_INSTANCE_ROLE=worker
+EOF
+}
+
 data "template_file" "docker_daemon_json" {
   template = <<EOF
 {
@@ -97,6 +107,7 @@ data "template_file" "cloud_config" {
     docker_daemon_json = "${data.template_file.docker_daemon_json.rendered}"
     github_users_env   = "export GITHUB_USERS='${var.github_users}'"
     here               = "${path.module}"
+    instance_env       = "${data.template_file.instance_env.rendered}"
     network_env        = "${data.template_file.network_env.rendered}"
     syslog_address     = "${var.syslog_address}"
     worker_config      = "${var.worker_config}"

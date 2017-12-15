@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -o errexit
+
+main() {
+  DOCKERD=/usr/bin/dockerd
+  DOCKER_OPTS=
+
+  for filename in docker-chef docker-cloud-init docker docker-local; do
+    if [[ -f "/etc/default/${filename}" ]]; then
+      # shellcheck source=/dev/null
+      source "/etc/default/${filename}"
+    fi
+  done
+
+  if [[ -z "${TRAVIS_DOCKER_DISABLE_DIRECT_LVM}" ]]; then
+    travis-docker-volume-setup
+    DOCKER_OPTS="$DOCKER_OPTS --config-file=/etc/docker/daemon-direct-lvm.json"
+  fi
+
+  # shellcheck disable=SC2086
+  exec "${DOCKERD}" $DOCKER_OPTS --raw-logs
+}
+
+main "$@"

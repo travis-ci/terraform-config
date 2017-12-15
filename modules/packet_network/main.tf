@@ -9,6 +9,8 @@ variable "env" {}
 variable "facility" {}
 variable "github_users" {}
 variable "index" {}
+variable "librato_email" {}
+variable "librato_token" {}
 
 variable "nat_server_plan" {
   default = "baremetal_2"
@@ -41,6 +43,23 @@ export TRAVIS_NETWORK_VLAN_IP=10.10.${var.index}.1
 EOF
 }
 
+data "template_file" "librato_env" {
+  template = <<EOF
+export LIBRATO_EMAIL=${var.librato_email}
+export LIBRATO_TOKEN=${var.librato_token}
+EOF
+}
+
+data "template_file" "instance_env" {
+  template = <<EOF
+export TRAVIS_INSTANCE_INFRA_ENV=${var.env}
+export TRAVIS_INSTANCE_INFRA_INDEX=${var.index}
+export TRAVIS_INSTANCE_INFRA_NAME=packet
+export TRAVIS_INSTANCE_INFRA_REGION=${var.facility}
+export TRAVIS_INSTANCE_ROLE=nat
+EOF
+}
+
 data "template_file" "cloud_config" {
   template = "${file("${path.module}/cloud-config.yml.tpl")}"
 
@@ -48,6 +67,8 @@ data "template_file" "cloud_config" {
     assets           = "${path.module}/../../assets"
     github_users_env = "export GITHUB_USERS='${var.github_users}'"
     here             = "${path.module}"
+    instance_env     = "${data.template_file.instance_env.rendered}"
+    librato_env      = "${data.template_file.librato_env.rendered}"
     network_env      = "${data.template_file.network_env.rendered}"
     syslog_address   = "${var.syslog_address}"
     duo_config       = "${data.template_file.duo_config.rendered}"

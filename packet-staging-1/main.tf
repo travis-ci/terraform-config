@@ -15,6 +15,8 @@ variable "index" {
 variable "latest_docker_image_amethyst" {}
 variable "latest_docker_image_garnet" {}
 variable "latest_docker_image_worker" {}
+variable "librato_email" {}
+variable "librato_token" {}
 variable "project_id" {}
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
@@ -49,6 +51,8 @@ module "packet_network_sjc1" {
   facility            = "sjc1"
   github_users        = "${var.github_users}"
   index               = "${var.index}"
+  librato_email       = "${var.librato_email}"
+  librato_token       = "${var.librato_token}"
   project_id          = "${var.project_id}"
   syslog_address      = "${var.syslog_address_com}"
 }

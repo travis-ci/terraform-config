@@ -5,6 +5,12 @@ write_files:
 - content: '${base64encode(github_users_env)}'
   encoding: b64
   path: /etc/default/github-users
+- content: '${base64encode(librato_env)}'
+  encoding: b64
+  path: /etc/default/librato
+- content: '${base64encode(instance_env)}'
+  encoding: b64
+  path: /etc/default/travis-instance
 - content: '${base64encode(network_env)}'
   encoding: b64
   path: /etc/default/travis-network
@@ -28,6 +34,7 @@ write_files:
   path: /var/tmp/tfw.tar.bz2
 
 runcmd:
+- [export, DEBIAN_FRONTEND=noninteractive]
 - [apt-get, update, -yqq]
 - [apt-get, install, -yqq, bzip2]
 - [tar, --no-same-permissions, --strip-components=1, -C, /, -xvf, /var/tmp/tfw.tar.bz2]

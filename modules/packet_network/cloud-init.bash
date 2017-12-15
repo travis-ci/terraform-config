@@ -15,8 +15,6 @@ main() {
   __setup_sysctl
   __setup_networking
   __setup_duo
-
-  hostname >"${RUNDIR}/instance-hostname.tmpl"
 }
 
 __setup_travis_user() {
@@ -30,6 +28,10 @@ __setup_travis_user() {
 }
 
 __install_packages() {
+  for key in autosave_v{4,6}; do
+    echo "iptables-persistent iptables-persistent/${key} boolean true" |
+      debconf-set-selections
+  done
   apt-get install -yqq iptables-persistent
 }
 
@@ -96,7 +98,7 @@ __setup_duo() {
   fi
 
   if grep -qE 'ForceCommand.*login_duo' "${ETCDIR}/ssh/sshd_config"; then
-    logger 'sshd already condigured with login_duo'
+    logger 'sshd already configured with login_duo'
     return
   fi
 
