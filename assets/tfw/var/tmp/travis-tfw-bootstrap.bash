@@ -48,7 +48,6 @@ __setup_vardef() {
 
 __setup_directories() {
   mkdir -p "${RUNDIR}"
-  chown -R travis:travis "${RUNDIR}"
   chmod 0755 "${RUNDIR}"
   chown root:root "${TMPDIR}"
   chmod 0777 "${TMPDIR}"

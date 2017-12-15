@@ -34,8 +34,9 @@ write_files:
   path: /var/tmp/tfw.tar.bz2
 
 runcmd:
-- [DEBIAN_FRONTEND=noninteractive, apt-get, update, -yqq]
-- [DEBIAN_FRONTEND=noninteractive, apt-get, install, -yqq, bzip2]
+- [export, DEBIAN_FRONTEND=noninteractive]
+- [apt-get, update, -yqq]
+- [apt-get, install, -yqq, bzip2]
 - [tar, --no-same-permissions, --strip-components=1, -C, /, -xvf, /var/tmp/tfw.tar.bz2]
 - [bash, /var/tmp/travis-tfw-bootstrap.bash]
 - [bash, /var/tmp/travis-cloud-init.bash]
