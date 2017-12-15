@@ -94,7 +94,7 @@ __setup_duo() {
   fi
 
   if grep -qE 'ForceCommand.*login_duo' "${ETCDIR}/ssh/sshd_config"; then
-    logger 'sshd already condigured with login_duo'
+    logger 'sshd already configured with login_duo'
     return
   fi
 
