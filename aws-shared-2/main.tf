@@ -1,6 +1,7 @@
 variable "duo_api_hostname" {}
 variable "duo_integration_key" {}
 variable "duo_secret_key" {}
+variable "deny_target_ip_ranges" {}
 
 variable "env" {
   default = "shared"
@@ -121,6 +122,42 @@ resource "aws_vpc" "main" {
   tags = {
     Name = "${var.env}-${var.index}"
     team = "blue"
+  }
+}
+
+resource "aws_default_network_acl" "default" {
+  lifecycle {
+    ignore_changes = ["subnet_ids"]
+  }
+
+  default_network_acl_id = "${aws_vpc.main.default_network_acl_id}"
+
+  ingress {
+    protocol   = -1
+    rule_no    = 100
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 0
+    to_port    = 0
+  }
+
+  egress {
+    protocol   = -1
+    rule_no    = 100
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 0
+    to_port    = 0
+  }
+
+  # TODO: correctly handle multiple values
+  egress {
+    protocol   = -1
+    rule_no    = 50
+    action     = "deny"
+    cidr_block = "${var.deny_target_ip_ranges}"
+    from_port  = 0
+    to_port    = 0
   }
 }
 
