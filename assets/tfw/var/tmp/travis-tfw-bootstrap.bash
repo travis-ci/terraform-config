@@ -7,57 +7,12 @@ main() {
     set -o xtrace
   fi
 
-  : "${PACKER_BUILDER_TYPE:=packet}"
-  : "${PACKER_TEMPLATES_BASE_URL:=https://raw.githubusercontent.com/travis-ci/packer-templates}"
-  : "${PACKER_TEMPLATES_BRANCH:=master}"
-  : "${TMPDIR:=/tmp}"
-
-  export DEBIAN_FRONTEND=noninteractive
-  export PACKER_BUILDER_TYPE
-
-  for key in autosave_v{4,6}; do
-    echo "iptables-persistent iptables-persistent/${key} boolean true" |
-      debconf-set-selections
-  done
-
-  apt-get update -yqq
-  apt-get install -yqq curl software-properties-common
-
-  if [[ ! -f "${TMPDIR}/travis-pre-chef-bootstrap.done" ]]; then
-    if [[ ! -f "${TMPDIR}/pre-chef-bootstrap.bash" ]]; then
-      local bootstrap_url="${PACKER_TEMPLATES_BASE_URL}/${PACKER_TEMPLATES_BRANCH}"
-      bootstrap_url="${bootstrap_url}/packer-scripts/pre-chef-bootstrap"
-
-      curl -sSL -o "${TMPDIR}/pre-chef-bootstrap.bash" "${bootstrap_url}"
-    fi
-
-    bash "${TMPDIR}/pre-chef-bootstrap.bash"
-    date -u >"${TMPDIR}/travis-pre-chef-bootstrap.done"
-  fi
-
-  local tfwce_url="${PACKER_TEMPLATES_BASE_URL}/${PACKER_TEMPLATES_BRANCH}"
-  tfwce_url="${tfwce_url}/cookbooks/travis_tfw/files"
-  tfwce_url="${tfwce_url}/default/travis-tfw-combined-env"
-
-  curl -sSL -o /usr/local/bin/travis-tfw-combined-env "${tfwce_url}"
-  chmod 0755 /usr/local/bin/travis-tfw-combined-env
-  ln -svf \
-    /usr/local/bin/travis-tfw-combined-env \
-    /usr/local/bin/travis-combined-env
-
-  logger 'Setting up internal base'
-  __setup_internal_base
-}
-
-__setup_internal_base() {
-  : "${RUNDIR:=/var/tmp/travis-run.d}"
-
-  mkdir -p "${RUNDIR}"
-  chown -R travis:travis "${RUNDIR}"
-
   for substep in \
-    sudo \
+    vardef \
+    directories \
     apt \
+    sudo \
+    pre_chef \
     packages \
     instance_metadata \
     hostname \
@@ -68,15 +23,47 @@ __setup_internal_base() {
     duo \
     privnet; do
     logger "msg=\"setting up internal base\" substep=\"${substep}\""
-    "__setup_internal_base_${substep}"
+    "__setup_${substep}"
   done
 }
 
-__setup_internal_base_apt() {
+__setup_vardef() {
+  : "${ETCDIR:=/etc}"
+  : "${PACKER_BUILDER_TYPE:=packet}"
+  : "${PACKER_TEMPLATES_BASE_URL:=https://raw.githubusercontent.com/travis-ci/packer-templates}"
+  : "${PACKER_TEMPLATES_BRANCH:=master}"
+  : "${RUNDIR:=/var/tmp/travis-run.d}"
+  : "${SPOOLDIR:=/var/spool}"
+  : "${TMPDIR:=/tmp}"
+
+  export DEBIAN_FRONTEND=noninteractive
+  export ETCDIR
+  export PACKER_BUILDER_TYPE
+  export PACKER_TEMPLATES_BASE_URL
+  export PACKER_TEMPLATES_BRANCH
+  export RUNDIR
+  export SPOOLDIR
+  export TMPDIR
+}
+
+__setup_directories() {
+  mkdir -p "${RUNDIR}"
+  chown -R travis:travis "${RUNDIR}"
+  chmod 0755 "${RUNDIR}"
+  chown root:root "${TMPDIR}"
+  chmod 0777 "${TMPDIR}"
+}
+
+__setup_apt() {
   if ! apt-get --version &>/dev/null; then
     logger 'No apt-get found; skipping base apt setup'
     return
   fi
+
+  for key in autosave_v{4,6}; do
+    echo "iptables-persistent iptables-persistent/${key} boolean true" |
+      debconf-set-selections
+  done
 
   apt-get update -yqq
   touch '/var/lib/apt/periodic/update-success-stamp'
@@ -87,21 +74,35 @@ __setup_internal_base_apt() {
     chmod 0755 "${d}"
   done
 
+  apt-get install -yqq curl software-properties-common
   apt-get install -yqq apt-transport-https
 }
 
-__setup_internal_base_openssh() {
+__setup_pre_chef() {
+  if [[ -f "${TMPDIR}/travis-pre-chef-bootstrap.done" ]]; then
+    logger 'found pre-chef-bootstrap done file; skipping'
+    return
+  fi
+
+  if [[ ! -f "${TMPDIR}/pre-chef-bootstrap.bash" ]]; then
+    local bootstrap_url="${PACKER_TEMPLATES_BASE_URL}/${PACKER_TEMPLATES_BRANCH}"
+    bootstrap_url="${bootstrap_url}/packer-scripts/pre-chef-bootstrap"
+
+    curl -sSL -o "${TMPDIR}/pre-chef-bootstrap.bash" "${bootstrap_url}"
+  fi
+
+  bash "${TMPDIR}/pre-chef-bootstrap.bash"
+  date -u >"${TMPDIR}/travis-pre-chef-bootstrap.done"
+}
+
+__setup_openssh() {
   apt-get install -yqq openssh-client openssh-server
 }
 
-__setup_internal_base_papertrail() {
-  : "${ETCDIR:=/etc}"
-  : "${VAR_SPOOL:=/var/spool}"
-  : "${VAR_LOG:=/var/log}"
-  : "${VAR_TMP:=/var/tmp}"
+__setup_papertrail() {
   local rsyslog_d="${ETCDIR}/rsyslog.d"
   local rsyslog_conf="${ETCDIR}/rsyslog.conf"
-  local working_dir="${VAR_SPOOL}/rsyslog"
+  local working_dir="${SPOOLDIR}/rsyslog"
   local papertrail_ca="${ETCDIR}/papertrail-bundle.pem"
   local papertrail_ca_url='https://papertrailapp.com/tools/papertrail-bundle.pem'
 
@@ -126,8 +127,7 @@ __setup_internal_base_papertrail() {
   service rsyslog restart
 }
 
-__setup_internal_base_sudo() {
-  : "${ETCDIR:=/etc}"
+__setup_sudo() {
   local sudoers="${ETCDIR}/sudoers"
   local sudoers_d="${ETCDIR}/sudoers.d"
 
@@ -144,7 +144,7 @@ __setup_internal_base_sudo() {
   chmod 0440 "${sudoers_d}/90-group-sudo"
 }
 
-__setup_internal_base_instance_metadata() {
+__setup_instance_metadata() {
   : "${ETCDIR:=/etc}"
   : "${RUNDIR:=/var/tmp/travis-run.d}"
 
@@ -188,13 +188,13 @@ export TRAVIS_INSTANCE_IPV4=${instance_ipv4}
 EOF
 }
 
-__setup_internal_base_packages() {
+__setup_packages() {
   apt-get install -yqq fail2ban
   apt-get install -yqq iptables-persistent
   apt-get install -yqq jq libpam-cap pssh whois zsh
 }
 
-__setup_internal_base_cloudcfg() {
+__setup_cloudcfg() {
   : "${ETCDIR:=/etc}"
   : "${VARLIBDIR:=/var/lib}"
   local cloud_d="${ETCDIR}/cloud"
@@ -219,7 +219,7 @@ __setup_internal_base_cloudcfg() {
   done
 }
 
-__setup_internal_base_duo() {
+__setup_duo() {
   : "${DUO_CONF:=/var/tmp/duo.conf}"
 
   if [[ ! -f "${DUO_CONF}" ]]; then
@@ -265,7 +265,7 @@ __setup_internal_base_duo() {
   ln -svf /lib64/security/pam_duo.so /lib/security/pam_duo.so
 }
 
-__setup_internal_base_librato() {
+__setup_librato() {
   : "${ETCDIR:=/etc}"
   : "${OPTDIR:=/opt}"
 
@@ -305,7 +305,7 @@ EOF
 
   cat >"${OPTDIR}/collectd/etc/collectd.conf.d/librato.conf" <<EOF
 LoadPlugin write_http
-Hostname "$(__full_hostname)"
+Hostname "$(travis-full-hostname)"
 <Plugin write_http>
   <Node "librato">
     URL "https://collectd.librato.com/v1/measurements"
@@ -320,7 +320,7 @@ EOF
   service collectd restart
 }
 
-__setup_internal_base_privnet() {
+__setup_privnet() {
   : "${ETCDIR:=/etc}"
   : "${TMPDIR:=/var/tmp}"
   : "${RUNDIR:=/var/tmp/travis-run.d}"
@@ -400,7 +400,7 @@ __setup_internal_base_privnet() {
   ifup "${TRAVIS_NETWORK_VLAN_INTERFACE}" || true
 }
 
-__setup_internal_base_hostname() {
+__setup_hostname() {
   : "${ETCDIR:=/etc}"
   : "${TMPDIR:=/var/tmp}"
 
@@ -408,7 +408,7 @@ __setup_internal_base_hostname() {
   local hostname_file="${ETCDIR}/hostname"
   local hosts_tmp="${TMPDIR}/etc-hosts.tmp"
   local instance_hostname
-  instance_hostname="$(__full_hostname)"
+  instance_hostname="$(travis-full-hostname)"
   local gen_comment='# generated via travis-tfw-bootstrap'
 
   echo "${instance_hostname}" >"${hostname_file}"
@@ -422,8 +422,10 @@ __setup_internal_base_hostname() {
   cat "${hosts_file}" >"${hosts_tmp}"
   echo "${gen_comment} $(date -u)" >>"${hosts_tmp}"
 
-  ip -o addr | awk '/inet / { sub(/\/.*/, "", $4); print $4 }' | sort |
-    while read -r ipaddr; do
+  echo "127.0.0.1 ${instance_hostname%%.*} ${instance_hostname}" \
+    >>"${hosts_tmp}"
+  ip -o addr | awk '/inet / { sub(/\/.*/, "", $4); print $4 }' |
+    grep -v 127\. | sort | while read -r ipaddr; do
       echo "${ipaddr} ${instance_hostname%%.*} ${instance_hostname}" \
         >>"${hosts_tmp}"
     done
@@ -433,44 +435,6 @@ __setup_internal_base_hostname() {
     --label "b/${hosts_file}" "${hosts_tmp}" || true
 
   mv -v "${hosts_tmp}" "${hosts_file}"
-}
-
-__full_hostname() {
-  : "${RUNDIR:=/var/tmp/travis-run.d}"
-
-  local default_hostname
-  default_hostname="$(uname -n)"
-
-  eval "$(travis-tfw-combined-env travis-instance)"
-
-  : "${TRAVIS_INSTANCE_ID:=notset}"
-
-  local hntmpl="${RUNDIR}/instance-hostname.tmpl"
-  if [[ -f "${hntmpl}" ]]; then
-    logger "found ${hntmpl}; using that instead of generating hostname"
-    sed "s/___INSTANCE_ID___/${TRAVIS_INSTANCE_ID}/g" "${hntmpl}"
-    return
-  fi
-
-  if [[ ! "${TRAVIS_INSTANCE_ID}" || ! "${TRAVIS_INSTANCE_INFRA_NAME}" ]]; then
-    logger 'no instance id or infra name found; skipping generated hostname'
-    echo "${default_hostname}"
-    return
-  fi
-
-  : "${TRAVIS_INSTANCE_INFRA_INDEX:=1}"
-  : "${TRAVIS_INSTANCE_INFRA_ENV:=notset}"
-  : "${TRAVIS_INSTANCE_ROLE:=notset}"
-  : "${TRAVIS_INSTANCE_INFRA_NAME:=notset}"
-  : "${TRAVIS_INSTANCE_INFRA_REGION:=xyz0}"
-  : "${TRAVIS_INSTANCE_ID:=notset}"
-
-  local full_hostname="${TRAVIS_INSTANCE_ID}-${TRAVIS_INSTANCE_INFRA_ENV}"
-  full_hostname="${full_hostname}-${TRAVIS_INSTANCE_INFRA_INDEX}"
-  full_hostname="${full_hostname}-${TRAVIS_INSTANCE_ROLE}"
-  full_hostname="${full_hostname}.${TRAVIS_INSTANCE_INFRA_NAME}"
-  full_hostname="${full_hostname}-${TRAVIS_INSTANCE_INFRA_REGION}"
-  echo "${full_hostname}.travisci.net"
 }
 
 main "$@"

@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+set -o errexit
+
+main() {
+  if [[ "${DEBUG}" ]]; then
+    set -o xtrace
+  fi
+
+  : "${RUNDIR:=/var/tmp/travis-run.d}"
+
+  local default_hostname
+  default_hostname="$(uname -n)"
+
+  eval "$(travis-tfw-combined-env travis-instance)"
+
+  : "${TRAVIS_INSTANCE_ID:=notset}"
+
+  local hntmpl="${RUNDIR}/instance-hostname.tmpl"
+  if [[ -f "${hntmpl}" ]]; then
+    logger "found ${hntmpl}; using that instead of generating hostname"
+    sed "s/___INSTANCE_ID___/${TRAVIS_INSTANCE_ID}/g" "${hntmpl}"
+    return
+  fi
+
+  if [[ ! "${TRAVIS_INSTANCE_ID}" || ! "${TRAVIS_INSTANCE_INFRA_NAME}" ]]; then
+    logger 'no instance id or infra name found; skipping generated hostname'
+    echo "${default_hostname}"
+    return
+  fi
+
+  : "${TRAVIS_INSTANCE_INFRA_INDEX:=1}"
+  : "${TRAVIS_INSTANCE_INFRA_ENV:=notset}"
+  : "${TRAVIS_INSTANCE_ROLE:=notset}"
+  : "${TRAVIS_INSTANCE_INFRA_NAME:=notset}"
+  : "${TRAVIS_INSTANCE_INFRA_REGION:=xyz0}"
+  : "${TRAVIS_INSTANCE_ID:=notset}"
+
+  local full_hostname="${TRAVIS_INSTANCE_ID}-${TRAVIS_INSTANCE_INFRA_ENV}"
+  full_hostname="${full_hostname}-${TRAVIS_INSTANCE_INFRA_INDEX}"
+  full_hostname="${full_hostname}-${TRAVIS_INSTANCE_ROLE}"
+  full_hostname="${full_hostname}.${TRAVIS_INSTANCE_INFRA_NAME}"
+  full_hostname="${full_hostname}-${TRAVIS_INSTANCE_INFRA_REGION}"
+  echo "${full_hostname}.travisci.net"
+}
+
+main "$@"
