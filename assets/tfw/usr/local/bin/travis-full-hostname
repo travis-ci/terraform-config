@@ -13,8 +13,6 @@ main() {
 
   eval "$(travis-tfw-combined-env travis-instance)"
 
-  : "${TRAVIS_INSTANCE_ID:=notset}"
-
   local hntmpl="${RUNDIR}/instance-hostname.tmpl"
   if [[ -f "${hntmpl}" ]]; then
     logger "found ${hntmpl}; using that instead of generating hostname"
