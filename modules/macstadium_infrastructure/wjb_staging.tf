@@ -44,7 +44,7 @@ resource "vsphere_virtual_machine" "wjb_staging" {
   }
 }
 
-resource "null_resource" "worker" {
+resource "null_resource" "worker-staging" {
   triggers {
     host_id                = "${vsphere_virtual_machine.wjb_staging.uuid}"
     ssh_key_file_signature = "${sha256(file(var.vm_ssh_key_path))}"
