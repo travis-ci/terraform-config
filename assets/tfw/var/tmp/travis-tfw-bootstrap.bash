@@ -60,11 +60,6 @@ __setup_apt() {
     return
   fi
 
-  for key in autosave_v{4,6}; do
-    echo "iptables-persistent iptables-persistent/${key} boolean true" |
-      debconf-set-selections
-  done
-
   apt-get update -yqq
   touch '/var/lib/apt/periodic/update-success-stamp'
 
@@ -190,7 +185,6 @@ EOF
 
 __setup_packages() {
   apt-get install -yqq fail2ban
-  apt-get install -yqq iptables-persistent
   apt-get install -yqq jq libpam-cap pssh whois zsh
 }
 

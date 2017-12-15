@@ -28,6 +28,10 @@ __setup_travis_user() {
 }
 
 __install_packages() {
+  for key in autosave_v{4,6}; do
+    echo "iptables-persistent iptables-persistent/${key} boolean true" |
+      debconf-set-selections
+  done
   apt-get install -yqq iptables-persistent
 }
 
