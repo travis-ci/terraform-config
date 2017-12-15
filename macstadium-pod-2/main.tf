@@ -135,8 +135,8 @@ module "jupiter_brain_production_org" {
 
 module "jupiter_brain_staging_org" {
   source         = "../modules/jupiter_brain_bluegreen"
-  host_id        = "${module.macstadium_infrastructure.wjb-staging_uuid}"
-  ssh_ip_address = "${module.macstadium_infrastructure.wjb-staging_ip}"
+  host_id        = "${module.macstadium_infrastructure.wjb_staging_uuid}"
+  ssh_ip_address = "${module.macstadium_infrastructure.wjb_staging_ip}"
   ssh_user       = "${var.ssh_user}"
   version        = "${var.jupiter_brain_staging_version}"
   config_path    = "${path.module}/config/jupiter-brain-staging-org-env"
@@ -159,8 +159,8 @@ module "jupiter_brain_production_com" {
 
 module "jupiter_brain_staging_com" {
   source         = "../modules/jupiter_brain_bluegreen"
-  host_id        = "${module.macstadium_infrastructure.wjb-staging_uuid}"
-  ssh_ip_address = "${module.macstadium_infrastructure.wjb-staging_ip}"
+  host_id        = "${module.macstadium_infrastructure.wjb_staging_uuid}"
+  ssh_ip_address = "${module.macstadium_infrastructure.wjb_staging_ip}"
   ssh_user       = "${var.ssh_user}"
   version        = "${var.jupiter_brain_staging_version}"
   config_path    = "${path.module}/config/jupiter-brain-staging-com-env"
@@ -241,8 +241,8 @@ module "worker_production_org_2" {
 
 module "worker_staging_org_1" {
   source      = "../modules/macstadium_go_worker"
-  host_id     = "${module.macstadium_infrastructure.wjb-staging_uuid}"
-  ssh_host    = "${module.macstadium_infrastructure.wjb-staging_ip}"
+  host_id     = "${module.macstadium_infrastructure.wjb_staging_uuid}"
+  ssh_host    = "${module.macstadium_infrastructure.wjb_staging_ip}"
   ssh_user    = "${var.ssh_user}"
   version     = "${var.latest_travis_worker_version}"
   config_path = "${path.module}/config/travis-worker-staging-org-1"
@@ -252,8 +252,8 @@ module "worker_staging_org_1" {
 
 module "worker_staging_org_2" {
   source      = "../modules/macstadium_go_worker"
-  host_id     = "${module.macstadium_infrastructure.wjb-staging_uuid}"
-  ssh_host    = "${module.macstadium_infrastructure.wjb-staging_ip}"
+  host_id     = "${module.macstadium_infrastructure.wjb_staging_uuid}"
+  ssh_host    = "${module.macstadium_infrastructure.wjb_staging_ip}"
   ssh_user    = "${var.ssh_user}"
   version     = "${var.latest_travis_worker_version}"
   config_path = "${path.module}/config/travis-worker-staging-org-2"
@@ -263,8 +263,8 @@ module "worker_staging_org_2" {
 
 module "worker_staging_com_1" {
   source      = "../modules/macstadium_go_worker"
-  host_id     = "${module.macstadium_infrastructure.wjb-staging_uuid}"
-  ssh_host    = "${module.macstadium_infrastructure.wjb-staging_ip}"
+  host_id     = "${module.macstadium_infrastructure.wjb_staging_uuid}"
+  ssh_host    = "${module.macstadium_infrastructure.wjb_staging_ip}"
   ssh_user    = "${var.ssh_user}"
   version     = "${var.latest_travis_worker_version}"
   config_path = "${path.module}/config/travis-worker-staging-com-1"
@@ -274,8 +274,8 @@ module "worker_staging_com_1" {
 
 module "worker_com_staging_2" {
   source      = "../modules/macstadium_go_worker"
-  host_id     = "${module.macstadium_infrastructure.wjb-staging_uuid}"
-  ssh_host    = "${module.macstadium_infrastructure.wjb-staging_ip}"
+  host_id     = "${module.macstadium_infrastructure.wjb_staging_uuid}"
+  ssh_host    = "${module.macstadium_infrastructure.wjb_staging_ip}"
   ssh_user    = "${var.ssh_user}"
   version     = "${var.latest_travis_worker_version}"
   config_path = "${path.module}/config/travis-worker-staging-com-2"
@@ -362,8 +362,8 @@ module "vsphere_janitor_production_com" {
 
 module "vsphere_janitor_staging_com" {
   source      = "../modules/vsphere_janitor"
-  host_id     = "${module.macstadium_infrastructure.wjb-staging_uuid}"
-  ssh_host    = "${module.macstadium_infrastructure.wjb-staging_ip}"
+  host_id     = "${module.macstadium_infrastructure.wjb_staging_uuid}"
+  ssh_host    = "${module.macstadium_infrastructure.wjb_staging_ip}"
   ssh_user    = "${var.ssh_user}"
   version     = "${var.vsphere_janitor_staging_version}"
   config_path = "${path.module}/config/vsphere-janitor-staging-com"

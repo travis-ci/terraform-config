@@ -1,5 +1,5 @@
-resource "vsphere_virtual_machine" "wjb-staging" {
-  name       = "wjb-staging-${var.index}"
+resource "vsphere_virtual_machine" "wjb_staging" {
+  name       = "wjb_staging-${var.index}"
   folder     = "${vsphere_folder.internal_vms.path}"
   vcpu       = 4
   memory     = 4096
@@ -32,7 +32,7 @@ resource "vsphere_virtual_machine" "wjb-staging" {
   }
 
   connection {
-    host  = "${vsphere_virtual_machine.wjb-staging.network_interface.0.ipv4_address}"
+    host  = "${vsphere_virtual_machine.wjb_staging.network_interface.0.ipv4_address}"
     user  = "${var.ssh_user}"
     agent = true
   }
@@ -46,12 +46,12 @@ resource "vsphere_virtual_machine" "wjb-staging" {
 
 resource "null_resource" "worker" {
   triggers {
-    host_id                = "${vsphere_virtual_machine.wjb-staging.uuid}"
+    host_id                = "${vsphere_virtual_machine.wjb_staging.uuid}"
     ssh_key_file_signature = "${sha256(file(var.vm_ssh_key_path))}"
   }
 
   connection {
-    host  = "${vsphere_virtual_machine.wjb-staging.network_interface.0.ipv4_address}"
+    host  = "${vsphere_virtual_machine.wjb_staging.network_interface.0.ipv4_address}"
     user  = "${var.ssh_user}"
     agent = true
   }
@@ -71,10 +71,10 @@ resource "null_resource" "worker" {
   }
 }
 
-output "wjb-staging_ip" {
-  value = "${vsphere_virtual_machine.wjb-staging.network_interface.0.ipv4_address}"
+output "wjb_staging_ip" {
+  value = "${vsphere_virtual_machine.wjb_staging.network_interface.0.ipv4_address}"
 }
 
-output "wjb-staging_uuid" {
-  value = "${vsphere_virtual_machine.wjb-staging.uuid}"
+output "wjb_staging_uuid" {
+  value = "${vsphere_virtual_machine.wjb_staging.uuid}"
 }
