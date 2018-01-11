@@ -105,7 +105,7 @@ module "macstadium_infrastructure" {
   source                        = "../modules/macstadium_infrastructure"
   index                         = "${var.index}"
   vanilla_image                 = "${var.macstadium_vanilla_image}"
-  datacenter                    = "TravisCI - Cluster_2"
+  datacenter                    = "MacStadium - B"
   cluster                       = "main_macpro"
   datastore                     = "Datacore1_1"
   internal_network_label        = "dvPortGroup-Internal"
