@@ -344,7 +344,7 @@ module "aws_asg_cs50" {
   worker_docker_image_php        = "${var.cs50_image}"
   worker_docker_image_python     = "${var.cs50_image}"
   worker_docker_image_ruby       = "${var.cs50_image}"
-  worker_instance_type           = "c3.2xlarge"
+  worker_instance_type           = "c3.xlarge"
   worker_queue                   = "cs50"
 
   worker_subnets = [
