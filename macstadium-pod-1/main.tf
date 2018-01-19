@@ -13,7 +13,7 @@ variable "travisci_net_external_zone_id" {
 }
 
 variable "macstadium_vanilla_image" {
-  default = "travis-ci-ubuntu14.04-internal-vanilla-1481140635"
+  default = "travis-ci-ubuntu14.04-internal-vanilla-1516305382"
 }
 
 variable "jupiter_brain_production_version" {
@@ -87,7 +87,7 @@ variable "vsphere_ip" {}
 terraform {
   backend "s3" {
     bucket         = "travis-terraform-state"
-    key            = "terraform-config/macstadium-pod-1-terraform.tfstate"
+    key            = "terraform-config/macstadium-pod-1-new-terraform.tfstate"
     region         = "us-east-1"
     encrypt        = "true"
     dynamodb_table = "travis-terraform-state"
@@ -109,12 +109,12 @@ module "macstadium_infrastructure" {
   source                        = "../modules/macstadium_infrastructure"
   index                         = "${var.index}"
   vanilla_image                 = "${var.macstadium_vanilla_image}"
-  datacenter                    = "MacStadium - A"
-  cluster                       = "main_macpro"
-  datastore                     = "Datacore1_1"
-  internal_network_label        = "dvPortGroup-Internal"
-  management_network_label      = "dvPortGroup-Mgmt"
-  jobs_network_label            = "dvPortGroup-Jobs"
+  datacenter                    = "pod-1"
+  cluster                       = "MacPro_Pod_1"
+  datastore                     = "DataCore1_1"
+  internal_network_label        = "Internal"
+  management_network_label      = "ESXi-MGMT"
+  jobs_network_label            = "Jobs-1"
   jobs_network_subnet           = "10.182.0.0/18"
   ssh_user                      = "${var.ssh_user}"
   threatstack_key               = "${var.threatstack_key}"
