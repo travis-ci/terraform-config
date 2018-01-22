@@ -36,7 +36,17 @@ resource "vsphere_virtual_machine" "util" {
       "curl -s -v 'https://app.threatstack.com/agents/script?key=${var.threatstack_key}' | sudo bash",
     ]
   }
+
+  cdrom {
+    #datastore = "${data.vsphere_datastore.iso_datastore.id}"
+    datastore = "DataCore1_1"
+    path      = "wjb-1/user-data.iso"
+  }
 }
+
+#data "vsphere_datastore" "iso_datastore" {
+#id = "DataCore1_4"
+#}
 
 output "util_ip" {
   value = "${vsphere_virtual_machine.util.network_interface.0.ipv4_address}"
