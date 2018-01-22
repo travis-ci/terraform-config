@@ -2,9 +2,6 @@
 set -o errexit
 
 main() {
-  # declared for shellcheck
-  local env version
-
   #grab the dhcp server package
   sudo apt-get install isc-dhcp-server
 
