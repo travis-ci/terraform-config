@@ -1,0 +1,18 @@
+#!/bin/bash
+set -o errexit
+
+main() {
+  # declared for shellcheck
+  local env version
+
+  #grab the dhcp server package
+  sudo apt-get install isc-dhcp-server
+
+  # Configure dhcpd
+  sudo mv "/tmp/dhcpd.conf" "/etc/dhcp/dhcpd.conf"
+
+  # Configure dhcpd defaults
+  sudo mv "/tmp/isc-dhcp-server-defaults" "/etc/default/isc-dhcp-server"
+}
+
+main "$@"

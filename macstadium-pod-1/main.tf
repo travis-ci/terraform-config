@@ -16,6 +16,14 @@ variable "macstadium_vanilla_image" {
   default = "travis-ci-ubuntu14.04-internal-vanilla-1516305382"
 }
 
+variable "jobs_network_subnet" {
+  default = "10.182.0.0/18"
+}
+
+variable "jobs_network_label" {
+  default = "Jobs-1"
+}
+
 variable "jupiter_brain_production_version" {
   default = "v0.2.0-58-gce0b45a"
 }
@@ -114,8 +122,8 @@ module "macstadium_infrastructure" {
   datastore                     = "DataCore1_1"
   internal_network_label        = "Internal"
   management_network_label      = "ESXi-MGMT"
-  jobs_network_label            = "Jobs-1"
-  jobs_network_subnet           = "10.182.0.0/18"
+  jobs_network_label            = "${var.jobs_network_label}"
+  jobs_network_subnet           = "${var.jobs_network_subnet}"
   ssh_user                      = "${var.ssh_user}"
   threatstack_key               = "${var.threatstack_key}"
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
@@ -451,6 +459,15 @@ module "vsphere_janitor_custom_6" {
   config_path = "${path.module}/config/vsphere-janitor-custom-6"
   env         = "custom-6"
   index       = "${var.index}"
+}
+
+module "dhcp_server" {
+  source              = "../modules/macstadium_dhcp_server"
+  host_id             = "${module.macstadium_infrastructure.dhcp_server_uuid}"
+  index               = "${var.index}"
+  jobs_network_subnet = "${var.jobs_network_subnet}"
+  ssh_host            = "${module.macstadium_infrastructure.dhcp_server_ip}"
+  ssh_user            = "${var.ssh_user}"
 }
 
 module "vsphere_monitor" {
