@@ -14,18 +14,23 @@ data "template_file" "dhcpd_conf" {
   vars {
     # this is the jobs subnet. really all this does is lop the /18 off of the var
     jobs_subnet = "${cidrhost(var.jobs_network_subnet, 0)}"
+
     # dhcpd takes netmask in decimal form
     jobs_subnet_netmask = "${cidrnetmask(var.jobs_network_subnet)}"
-    domain_name = "macstadium.travisci.net"
+    domain_name         = "macstadium.travisci.net"
+
     # we reserve the first 256 addresses of the subnet for ourselves. greedy
     jobs_subnet_begin = "${cidrhost(var.jobs_network_subnet, 256)}"
+
     # ...and the last 128, just in case.
     jobs_subnet_end = "${cidrhost(var.jobs_network_subnet, -128)}"
+
     # we assume the first address is the gateway (for now, it is)
     jobs_gateway = "${cidrhost(var.jobs_network_subnet, 1)}"
+
     # lease times are in seconds
     dhcp_lease_default_time = "600"
-    dhcp_lease_max_time = "12600"
+    dhcp_lease_max_time     = "12600"
   }
 }
 
