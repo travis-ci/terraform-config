@@ -13,7 +13,15 @@ variable "travisci_net_external_zone_id" {
 }
 
 variable "macstadium_vanilla_image" {
-  default = "travis-ci-ubuntu14.04-internal-vanilla-1481140635"
+  default = "travis-ci-ubuntu14.04-internal-vanilla-1516305382"
+}
+
+variable "jobs_network_subnet" {
+  default = "10.182.128.0/18"
+}
+
+variable "jobs_network_label" {
+  default = "Jobs-2"
 }
 
 variable "jupiter_brain_production_version" {
@@ -105,13 +113,13 @@ module "macstadium_infrastructure" {
   source                        = "../modules/macstadium_infrastructure"
   index                         = "${var.index}"
   vanilla_image                 = "${var.macstadium_vanilla_image}"
-  datacenter                    = "MacStadium - B"
-  cluster                       = "main_macpro"
-  datastore                     = "Datacore1_1"
-  internal_network_label        = "dvPortGroup-Internal"
-  management_network_label      = "dvPortGroup-Mgmt"
-  jobs_network_label            = "dvPortGroup-Jobs2"
-  jobs_network_subnet           = "10.182.128.0/18"
+  datacenter                    = "pod-2"
+  cluster                       = "MacPro_Pod_2"
+  datastore                     = "DataCore1_3"
+  internal_network_label        = "Internal"
+  management_network_label      = "ESXi-MGMT"
+  jobs_network_label            = "${var.jobs_network_label}"
+  jobs_network_subnet           = "${var.jobs_network_subnet}"
   ssh_user                      = "${var.ssh_user}"
   threatstack_key               = "${var.threatstack_key}"
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
@@ -413,6 +421,15 @@ module "vsphere_janitor_custom_5" {
   config_path = "${path.module}/config/vsphere-janitor-custom-5"
   env         = "custom-5"
   index       = "${var.index}"
+}
+
+module "dhcp_server" {
+  source              = "../modules/macstadium_dhcp_server"
+  host_id             = "${module.macstadium_infrastructure.dhcp_server_uuid}"
+  index               = "${var.index}"
+  jobs_network_subnet = "${var.jobs_network_subnet}"
+  ssh_host            = "${module.macstadium_infrastructure.dhcp_server_ip}"
+  ssh_user            = "${var.ssh_user}"
 }
 
 module "vsphere_monitor" {
