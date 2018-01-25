@@ -236,7 +236,7 @@ resource "google_compute_firewall" "deny_target_ip" {
   project = "${var.project}"
 
   # highest priority
-  priority = "0"
+  priority = "1000"
 
   deny {
     protocol = "tcp"
