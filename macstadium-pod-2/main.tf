@@ -132,11 +132,11 @@ module "macstadium_infrastructure" {
   vm_ssh_key_path               = "${path.module}/config/travis-vm-ssh-key"
   pfsense_1_ip                  = "208.78.110.202"
   pfsense_2_ip                  = "208.78.110.203"
-custom_1_name = "${var.custom_1_name}"
-custom_2_name = "${var.custom_2_name}"
-custom_4_name = "${var.custom_4_name}"
-custom_5_name = "${var.custom_5_name}"
-custom_6_name = "${var.custom_6_name}"
+  custom_1_name                 = "${var.custom_1_name}"
+  custom_2_name                 = "${var.custom_2_name}"
+  custom_4_name                 = "${var.custom_4_name}"
+  custom_5_name                 = "${var.custom_5_name}"
+  custom_6_name                 = "${var.custom_6_name}"
 }
 
 module "jupiter_brain_production_org" {
