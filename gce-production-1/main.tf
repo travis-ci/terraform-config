@@ -3,14 +3,14 @@ variable "env" {
 }
 
 variable "gce_bastion_image" {
-  default = "eco-emissary-99515/bastion-1478778272"
+  default = "eco-emissary-99515/bastion-1496867305"
 }
 
 variable "gce_gcloud_zone" {}
 variable "gce_heroku_org" {}
 
 variable "gce_worker_image" {
-  default = "eco-emissary-99515/tfw-1499625597"
+  default = "eco-emissary-99515/tfw-1516675156-0b5be43"
 }
 
 variable "github_users" {}
@@ -63,8 +63,8 @@ module "gce_project_1" {
   worker_account_json_com       = "${file("${path.module}/config/gce-workers-production-1.json")}"
   worker_account_json_org       = "${file("${path.module}/config/gce-workers-production-1.json")}"
   worker_image                  = "${var.gce_worker_image}"
-  worker_instance_count_com     = 36
-  worker_instance_count_org     = 40
+  worker_instance_count_com     = 16
+  worker_instance_count_org     = 20
 
   build_com_subnet_cidr_range = "10.99.99.0/24"
   build_org_subnet_cidr_range = "10.10.20.0/22"
