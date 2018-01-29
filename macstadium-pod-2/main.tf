@@ -68,6 +68,11 @@ variable "ssh_user" {
   description = "your username on the wjb instances"
 }
 
+variable "custom_1_name" {}
+variable "custom_2_name" {}
+variable "custom_4_name" {}
+variable "custom_5_name" {}
+variable "custom_6_name" {}
 variable "threatstack_key" {}
 variable "librato_email" {}
 variable "librato_token" {}
@@ -127,6 +132,11 @@ module "macstadium_infrastructure" {
   vm_ssh_key_path               = "${path.module}/config/travis-vm-ssh-key"
   pfsense_1_ip                  = "208.78.110.202"
   pfsense_2_ip                  = "208.78.110.203"
+custom_1_name = "${var.custom_1_name}"
+custom_2_name = "${var.custom_2_name}"
+custom_4_name = "${var.custom_4_name}"
+custom_5_name = "${var.custom_5_name}"
+custom_6_name = "${var.custom_6_name}"
 }
 
 module "jupiter_brain_production_org" {
