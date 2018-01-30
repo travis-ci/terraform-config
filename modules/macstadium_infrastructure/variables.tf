@@ -12,8 +12,6 @@ variable "travisci_net_external_zone_id" {}
 variable "vsphere_ip" {}
 variable "ssh_user" {}
 variable "vm_ssh_key_path" {}
-variable "pfsense_1_ip" {}
-variable "pfsense_2_ip" {}
 variable "custom_1_name" {}
 variable "custom_2_name" {}
 variable "custom_4_name" {}

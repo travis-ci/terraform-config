@@ -27,36 +27,4 @@
 		Collect "ifmib_if_octets64" "ifmib_if_packets64"
 		Interval 60
 	</Host>
-
-	<Host "pfsense-1">
-		Address "${pfsense_1_ip}"
-		Version 2
-		Community "${pfsense_1_snmp_community}"
-		Collect "ifmib_if_octets64" "ifmib_if_packets64" "cpu_percentage"
-		Interval 60
-	</Host>
-
-	<Host "pfsense-2">
-		Address "${pfsense_2_ip}"
-		Version 2
-		Community "${pfsense_2_snmp_community}"
-		Collect "ifmib_if_octets64" "ifmib_if_packets64" "cpu_percentage"
-		Interval 60
-	</Host>
-
-	<Host "pfsense-2-1">
-		Address "${pfsense_2_1_ip}"
-		Version 2
-		Community "${pfsense_2_1_snmp_community}"
-		Collect "ifmib_if_octets64" "ifmib_if_packets64" "cpu_percentage"
-		Interval 60
-	</Host>
-
-	<Host "pfsense-2-2">
-		Address "${pfsense_2_2_ip}"
-		Version 2
-		Community "${pfsense_2_2_snmp_community}"
-		Collect "ifmib_if_octets64" "ifmib_if_packets64" "cpu_percentage"
-		Interval 60
-	</Host>
 </Plugin>
