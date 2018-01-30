@@ -31,8 +31,8 @@ data "template_file" "worker_config" {
   template = "${file("${path.module}/etc-default-worker.tpl")}"
 
   vars {
-    pool_size = "${var.pool_size}"
-    queue_type = "${var.queue_type}"
+    pool_size   = "${var.pool_size}"
+    queue_type  = "${var.queue_type}"
     travis_site = "${var.travis_site}"
   }
 }
@@ -47,7 +47,7 @@ resource "null_resource" "worker" {
     host_id                  = "${var.host_id}"
     pool_size                = "${var.pool_size}"
     queue_type               = "${var.queue_type}"
-    travis_site           = "${var.travis_site}"
+    travis_site              = "${var.travis_site}"
   }
 
   connection {
@@ -57,7 +57,7 @@ resource "null_resource" "worker" {
   }
 
   provisioner "file" {
-    content      = "${var.config_path}\n${data.template_file.worker_config.rendered}"
+    content     = "${var.config_path}\n${data.template_file.worker_config.rendered}"
     destination = "/tmp/etc-default-travis-worker-${var.env}"
   }
 
