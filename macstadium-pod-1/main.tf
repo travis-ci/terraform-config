@@ -248,6 +248,9 @@ module "worker_production_org_1" {
   config_path = "${path.module}/config/travis-worker-production-org-1"
   env         = "production-org-1"
   index       = "${var.index}"
+  pool_size = "45"
+  queue_type = "amqp"
+  travis_site = "org"
 }
 
 module "worker_production_org_2" {
@@ -259,6 +262,9 @@ module "worker_production_org_2" {
   config_path = "${path.module}/config/travis-worker-production-org-2"
   env         = "production-org-2"
   index       = "${var.index}"
+  pool_size = "45"
+  queue_type = "amqp"
+  travis_site = "org"
 }
 
 module "worker_staging_org_1" {
@@ -270,6 +276,9 @@ module "worker_staging_org_1" {
   config_path = "${path.module}/config/travis-worker-staging-org-1"
   env         = "staging-org-1"
   index       = "${var.index}"
+  pool_size = "2"
+  queue_type = "amqp"
+  travis_site = "org"
 }
 
 module "worker_staging_org_2" {
@@ -281,6 +290,9 @@ module "worker_staging_org_2" {
   config_path = "${path.module}/config/travis-worker-staging-org-2"
   env         = "staging-org-2"
   index       = "${var.index}"
+  pool_size = "2"
+  queue_type = "amqp"
+  travis_site = "org"
 }
 
 module "worker_production_com_1" {
@@ -292,6 +304,9 @@ module "worker_production_com_1" {
   config_path = "${path.module}/config/travis-worker-production-com-1"
   env         = "production-com-1"
   index       = "${var.index}"
+  pool_size = "30"
+  queue_type = "amqp"
+  travis_site = "com"
 }
 
 module "worker_production_com_2" {
@@ -303,6 +318,9 @@ module "worker_production_com_2" {
   config_path = "${path.module}/config/travis-worker-production-com-2"
   env         = "production-com-2"
   index       = "${var.index}"
+  pool_size = "30"
+  queue_type = "amqp"
+  travis_site = "com"
 }
 
 module "worker_staging_com_1" {
@@ -314,6 +332,9 @@ module "worker_staging_com_1" {
   config_path = "${path.module}/config/travis-worker-staging-com-1"
   env         = "staging-com-1"
   index       = "${var.index}"
+  pool_size = "2"
+  queue_type = "amqp"
+  travis_site = "com"
 }
 
 module "worker_staging_com_2" {
@@ -325,6 +346,9 @@ module "worker_staging_com_2" {
   config_path = "${path.module}/config/travis-worker-staging-com-2"
   env         = "staging-com-2"
   index       = "${var.index}"
+  pool_size = "2"
+  queue_type = "amqp"
+  travis_site = "com"
 }
 
 module "worker_custom_1" {
@@ -336,6 +360,9 @@ module "worker_custom_1" {
   config_path = "${path.module}/config/travis-worker-custom-1"
   env         = "custom-1"
   index       = "${var.index}"
+  pool_size = "5"
+  queue_type = "amqp"
+  travis_site = "com"
 }
 
 module "worker_custom_2" {
@@ -347,6 +374,9 @@ module "worker_custom_2" {
   config_path = "${path.module}/config/travis-worker-custom-2"
   env         = "custom-2"
   index       = "${var.index}"
+  pool_size = "5"
+  queue_type = "amqp"
+  travis_site = "com"
 }
 
 module "worker_custom_4" {
@@ -358,6 +388,9 @@ module "worker_custom_4" {
   config_path = "${path.module}/config/travis-worker-custom-4"
   env         = "custom-4"
   index       = "${var.index}"
+  pool_size = "5"
+  queue_type = "amqp"
+  travis_site = "com"
 }
 
 module "worker_custom_5" {
@@ -369,6 +402,9 @@ module "worker_custom_5" {
   config_path = "${path.module}/config/travis-worker-custom-5"
   env         = "custom-5"
   index       = "${var.index}"
+  pool_size = "5"
+  queue_type = "amqp"
+  travis_site = "com"
 }
 
 module "worker_custom_6" {
@@ -380,6 +416,9 @@ module "worker_custom_6" {
   config_path = "${path.module}/config/travis-worker-custom-6"
   env         = "custom-6"
   index       = "${var.index}"
+  pool_size = "5"
+  queue_type = "amqp"
+  travis_site = "com"
 }
 
 module "vsphere_janitor_production_com" {
