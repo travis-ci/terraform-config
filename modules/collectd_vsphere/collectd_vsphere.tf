@@ -40,8 +40,8 @@ data "template_file" "snmp_conf" {
   template = "${file("${path.module}/snmp.conf.tpl")}"
 
   vars {
-    fw_ip                      = "${var.fw_ip}"
-    fw_snmp_community          = "${var.fw_snmp_community}"
+    fw_ip             = "${var.fw_ip}"
+    fw_snmp_community = "${var.fw_snmp_community}"
   }
 }
 
