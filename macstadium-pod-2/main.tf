@@ -76,8 +76,6 @@ variable "custom_6_name" {}
 variable "threatstack_key" {}
 variable "librato_email" {}
 variable "librato_token" {}
-variable "collectd_vsphere_collectd_network_user" {}
-variable "collectd_vsphere_collectd_network_token" {}
 variable "fw_ip" {}
 variable "fw_snmp_community" {}
 variable "vsphere_user" {}
@@ -442,6 +440,10 @@ module "vsphere_monitor" {
   index       = "${var.index}"
 }
 
+resource "random_id" "collectd_vsphere_collectd_network_token" {
+  byte_length = 32
+}
+
 module "collectd-vsphere-common" {
   source                                  = "../modules/collectd_vsphere"
   host_id                                 = "${module.macstadium_infrastructure.wjb_uuid}"
@@ -453,8 +455,8 @@ module "collectd-vsphere-common" {
   librato_token                           = "${var.librato_token}"
   env                                     = "common"
   index                                   = "${var.index}"
-  collectd_vsphere_collectd_network_user  = "${var.collectd_vsphere_collectd_network_user}"
-  collectd_vsphere_collectd_network_token = "${var.collectd_vsphere_collectd_network_token}"
+  collectd_vsphere_collectd_network_user  = "collectd-vsphere-2"
+  collectd_vsphere_collectd_network_token = "${random_id.collectd_vsphere_collectd_network_token.hex}"
   fw_ip                                   = "${var.fw_ip}"
   fw_snmp_community                       = "${var.fw_snmp_community}"
 }
