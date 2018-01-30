@@ -177,7 +177,7 @@ data "template_file" "docker_daemon_json" {
     "dm.fs=xfs"
   ],
   "userns-remap": "default",
-  "debug": true
+  "debug": false
 }
 EOF
 }
