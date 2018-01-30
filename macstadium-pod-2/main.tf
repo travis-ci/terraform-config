@@ -80,14 +80,6 @@ variable "collectd_vsphere_collectd_network_user" {}
 variable "collectd_vsphere_collectd_network_token" {}
 variable "fw_ip" {}
 variable "fw_snmp_community" {}
-variable "pfsense_1_ip" {}
-variable "pfsense_1_snmp_community" {}
-variable "pfsense_2_ip" {}
-variable "pfsense_2_snmp_community" {}
-variable "pfsense_2_1_ip" {}
-variable "pfsense_2_1_snmp_community" {}
-variable "pfsense_2_2_ip" {}
-variable "pfsense_2_2_snmp_community" {}
 variable "vsphere_user" {}
 variable "vsphere_password" {}
 variable "vsphere_server" {}
@@ -130,8 +122,6 @@ module "macstadium_infrastructure" {
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
   vsphere_ip                    = "${var.vsphere_ip}"
   vm_ssh_key_path               = "${path.module}/config/travis-vm-ssh-key"
-  pfsense_1_ip                  = "208.78.110.202"
-  pfsense_2_ip                  = "208.78.110.203"
   custom_1_name                 = "${var.custom_1_name}"
   custom_2_name                 = "${var.custom_2_name}"
   custom_4_name                 = "${var.custom_4_name}"
@@ -467,14 +457,6 @@ module "collectd-vsphere-common" {
   collectd_vsphere_collectd_network_token = "${var.collectd_vsphere_collectd_network_token}"
   fw_ip                                   = "${var.fw_ip}"
   fw_snmp_community                       = "${var.fw_snmp_community}"
-  pfsense_1_ip                            = "${var.pfsense_1_ip}"
-  pfsense_1_snmp_community                = "${var.pfsense_1_snmp_community}"
-  pfsense_2_ip                            = "${var.pfsense_2_ip}"
-  pfsense_2_snmp_community                = "${var.pfsense_2_snmp_community}"
-  pfsense_2_1_ip                          = "${var.pfsense_2_1_ip}"
-  pfsense_2_1_snmp_community              = "${var.pfsense_2_1_snmp_community}"
-  pfsense_2_2_ip                          = "${var.pfsense_2_2_ip}"
-  pfsense_2_2_snmp_community              = "${var.pfsense_2_2_snmp_community}"
 }
 
 module "haproxy" {

@@ -26,33 +26,6 @@ LoadPlugin ping
 	MaxMissed 10
 </Plugin>
 
-<Plugin ping>
-  Host "${pfsense_1_ip}"
-  Interval 1.0
-  Timeout 0.9
-  MaxMissed 10
-</Plugin>
-
-<Plugin ping>
-  Host "${pfsense_2_ip}"
-  Interval 1.0
-  Timeout 0.9
-  MaxMissed 10
-</Plugin>
-
-<Plugin ping>
-  Host "${pfsense_2_1_ip}"
-  Interval 1.0
-  Timeout 0.9
-  MaxMissed 10
-</Plugin>
-
-<Plugin ping>
-  Host "${pfsense_2_2_ip}"
-  Interval 1.0
-  Timeout 0.9
-  MaxMissed 10
-</Plugin>
 
 <Plugin ping>
 	Host "8.8.8.8"
