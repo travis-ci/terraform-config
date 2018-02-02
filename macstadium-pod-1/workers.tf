@@ -4,7 +4,6 @@ variable "travis_worker_version" {
   default = "v3.4.0"
 }
 
-
 data "template_file" "worker_config_common" {
   template = <<EOF
 export TRAVIS_WORKER_BUILD_FIX_ETC_HOSTS="true"
@@ -39,13 +38,13 @@ EOF
 }
 
 module "worker_production_org_2" {
-  source   = "../modules/macstadium_go_worker"
-  host_id  = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
-  ssh_user = "${var.ssh_user}"
-  version  = "${var.travis_worker_version}"
-  env      = "production-org-2"
-  index    = "${var.index}"
+  source             = "../modules/macstadium_go_worker"
+  host_id            = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host           = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user           = "${var.ssh_user}"
+  version            = "${var.travis_worker_version}"
+  env                = "production-org-2"
+  index              = "${var.index}"
   worker_base_config = "${data.template_file.worker_config_common.rendered}"
   worker_env_config  = "${file("${path.module}/config/travis-worker-production-org-common")}"
 
@@ -59,13 +58,13 @@ EOF
 }
 
 module "worker_staging_org_1" {
-  source      = "../modules/macstadium_go_worker"
-  host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
-  ssh_user    = "${var.ssh_user}"
-  version     = "${var.latest_travis_worker_version}"
-  env         = "staging-org-1"
-  index       = "${var.index}"
+  source             = "../modules/macstadium_go_worker"
+  host_id            = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host           = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user           = "${var.ssh_user}"
+  version            = "${var.latest_travis_worker_version}"
+  env                = "staging-org-1"
+  index              = "${var.index}"
   worker_base_config = "${data.template_file.worker_config_common.rendered}"
   worker_env_config  = "${file("${path.module}/config/travis-worker-staging-org-common")}"
 
@@ -78,13 +77,13 @@ EOF
 }
 
 module "worker_staging_org_2" {
-  source      = "../modules/macstadium_go_worker"
-  host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
-  ssh_user    = "${var.ssh_user}"
-  version     = "${var.latest_travis_worker_version}"
-  env         = "staging-org-2"
-  index       = "${var.index}"
+  source             = "../modules/macstadium_go_worker"
+  host_id            = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host           = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user           = "${var.ssh_user}"
+  version            = "${var.latest_travis_worker_version}"
+  env                = "staging-org-2"
+  index              = "${var.index}"
   worker_base_config = "${data.template_file.worker_config_common.rendered}"
   worker_env_config  = "${file("${path.module}/config/travis-worker-staging-org-common")}"
 
@@ -97,13 +96,13 @@ EOF
 }
 
 module "worker_production_com_1" {
-  source      = "../modules/macstadium_go_worker"
-  host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
-  ssh_user    = "${var.ssh_user}"
-  version     = "${var.travis_worker_version}"
-  env         = "production-com-1"
-  index       = "${var.index}"
+  source             = "../modules/macstadium_go_worker"
+  host_id            = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host           = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user           = "${var.ssh_user}"
+  version            = "${var.travis_worker_version}"
+  env                = "production-com-1"
+  index              = "${var.index}"
   worker_base_config = "${data.template_file.worker_config_common.rendered}"
   worker_env_config  = "${file("${path.module}/config/travis-worker-production-com-common")}"
 
@@ -116,13 +115,13 @@ EOF
 }
 
 module "worker_production_com_2" {
-  source      = "../modules/macstadium_go_worker"
-  host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
-  ssh_user    = "${var.ssh_user}"
-  version     = "${var.travis_worker_version}"
-  env         = "production-com-2"
-  index       = "${var.index}"
+  source             = "../modules/macstadium_go_worker"
+  host_id            = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host           = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user           = "${var.ssh_user}"
+  version            = "${var.travis_worker_version}"
+  env                = "production-com-2"
+  index              = "${var.index}"
   worker_base_config = "${data.template_file.worker_config_common.rendered}"
   worker_env_config  = "${file("${path.module}/config/travis-worker-production-com-common")}"
 
@@ -135,13 +134,13 @@ EOF
 }
 
 module "worker_staging_com_1" {
-  source      = "../modules/macstadium_go_worker"
-  host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
-  ssh_user    = "${var.ssh_user}"
-  version     = "${var.latest_travis_worker_version}"
-  env         = "staging-com-1"
-  index       = "${var.index}"
+  source             = "../modules/macstadium_go_worker"
+  host_id            = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host           = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user           = "${var.ssh_user}"
+  version            = "${var.latest_travis_worker_version}"
+  env                = "staging-com-1"
+  index              = "${var.index}"
   worker_base_config = "${data.template_file.worker_config_common.rendered}"
   worker_env_config  = "${file("${path.module}/config/travis-worker-staging-com-common")}"
 
@@ -154,13 +153,13 @@ EOF
 }
 
 module "worker_staging_com_2" {
-  source      = "../modules/macstadium_go_worker"
-  host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
-  ssh_user    = "${var.ssh_user}"
-  version     = "${var.latest_travis_worker_version}"
-  env         = "staging-com-2"
-  index       = "${var.index}"
+  source             = "../modules/macstadium_go_worker"
+  host_id            = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host           = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user           = "${var.ssh_user}"
+  version            = "${var.latest_travis_worker_version}"
+  env                = "staging-com-2"
+  index              = "${var.index}"
   worker_base_config = "${data.template_file.worker_config_common.rendered}"
   worker_env_config  = "${file("${path.module}/config/travis-worker-staging-com-common")}"
 
@@ -173,13 +172,13 @@ EOF
 }
 
 module "worker_custom_1" {
-  source      = "../modules/macstadium_go_worker"
-  host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
-  ssh_user    = "${var.ssh_user}"
-  version     = "${var.travis_worker_version}"
-  env         = "custom-1"
-  index       = "${var.index}"
+  source             = "../modules/macstadium_go_worker"
+  host_id            = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host           = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user           = "${var.ssh_user}"
+  version            = "${var.travis_worker_version}"
+  env                = "custom-1"
+  index              = "${var.index}"
   worker_base_config = "${data.template_file.worker_config_common.rendered}"
   worker_env_config  = "${file("${path.module}/config/travis-worker-production-org-common")}"
 
@@ -193,13 +192,13 @@ EOF
 }
 
 module "worker_custom_2" {
-  source      = "../modules/macstadium_go_worker"
-  host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
-  ssh_user    = "${var.ssh_user}"
-  version     = "${var.travis_worker_version}"
-  env         = "custom-2"
-  index       = "${var.index}"
+  source             = "../modules/macstadium_go_worker"
+  host_id            = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host           = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user           = "${var.ssh_user}"
+  version            = "${var.travis_worker_version}"
+  env                = "custom-2"
+  index              = "${var.index}"
   worker_base_config = "${data.template_file.worker_config_common.rendered}"
   worker_env_config  = "${file("${path.module}/config/travis-worker-production-org-common")}"
 
@@ -213,13 +212,13 @@ EOF
 }
 
 module "worker_custom_4" {
-  source      = "../modules/macstadium_go_worker"
-  host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
-  ssh_user    = "${var.ssh_user}"
-  version     = "${var.travis_worker_version}"
-  env         = "custom-4"
-  index       = "${var.index}"
+  source             = "../modules/macstadium_go_worker"
+  host_id            = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host           = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user           = "${var.ssh_user}"
+  version            = "${var.travis_worker_version}"
+  env                = "custom-4"
+  index              = "${var.index}"
   worker_base_config = "${data.template_file.worker_config_common.rendered}"
   worker_env_config  = "${file("${path.module}/config/travis-worker-production-org-common")}"
 
@@ -233,13 +232,13 @@ EOF
 }
 
 module "worker_custom_5" {
-  source      = "../modules/macstadium_go_worker"
-  host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
-  ssh_user    = "${var.ssh_user}"
-  version     = "${var.travis_worker_version}"
-  env         = "custom-5"
-  index       = "${var.index}"
+  source             = "../modules/macstadium_go_worker"
+  host_id            = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host           = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user           = "${var.ssh_user}"
+  version            = "${var.travis_worker_version}"
+  env                = "custom-5"
+  index              = "${var.index}"
   worker_base_config = "${data.template_file.worker_config_common.rendered}"
   worker_env_config  = "${file("${path.module}/config/travis-worker-production-org-common")}"
 
@@ -253,13 +252,13 @@ EOF
 }
 
 module "worker_custom_6" {
-  source      = "../modules/macstadium_go_worker"
-  host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
-  ssh_user    = "${var.ssh_user}"
-  version     = "${var.travis_worker_version}"
-  env         = "custom-6"
-  index       = "${var.index}"
+  source             = "../modules/macstadium_go_worker"
+  host_id            = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host           = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user           = "${var.ssh_user}"
+  version            = "${var.travis_worker_version}"
+  env                = "custom-6"
+  index              = "${var.index}"
   worker_base_config = "${data.template_file.worker_config_common.rendered}"
   worker_env_config  = "${file("${path.module}/config/travis-worker-production-com-common")}"
 

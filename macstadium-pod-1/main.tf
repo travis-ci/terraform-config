@@ -18,7 +18,6 @@ variable "jobs_network_label" {
   default = "Jobs-1"
 }
 
-
 variable "vsphere_janitor_version" {
   default = "0a41b7f"
 }
@@ -97,7 +96,6 @@ module "macstadium_infrastructure" {
   custom_5_name                 = "${var.custom_5_name}"
   custom_6_name                 = "${var.custom_6_name}"
 }
-
 
 module "vsphere_janitor_production_com" {
   source      = "../modules/vsphere_janitor"
