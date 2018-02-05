@@ -49,10 +49,6 @@ resource "null_resource" "worker" {
     destination = "/tmp/init-travis-worker-${var.env}.conf"
   }
 
-  provisioner "remote-exec" {
-    inline = ["${data.template_file.worker_install.rendered}"]
-  }
-
   provisioner "file" {
     content = <<EOF
 # base config
@@ -66,5 +62,9 @@ ${var.worker_local_config}
 EOF
 
     destination = "/tmp/etc-default-travis-worker-${var.env}"
+  }
+
+  provisioner "remote-exec" {
+    inline = ["${data.template_file.worker_install.rendered}"]
   }
 }

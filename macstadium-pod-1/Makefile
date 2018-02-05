@@ -58,9 +58,9 @@ $(CONFIG_FILES):
 		| sed 's/^/export /' >config/travis-worker-staging-org-common
 	trvs generate-config -n -p TRAVIS_WORKER -f env macstadium-workers production-common \
 		| sed 's/^/export /' >config/travis-worker-production-org-common
-	trvs generate-config -n --pro -p TRAVIS_WORKER -f env macstadium-workers staging-$(INDEX)-common \
+	trvs generate-config -n --pro -p TRAVIS_WORKER -f env macstadium-workers staging-common \
 		| sed 's/^/export /' >config/travis-worker-staging-com-common
-	trvs generate-config -n --pro -p TRAVIS_WORKER -f env macstadium-workers production-$(INDEX)-common \
+	trvs generate-config -n --pro -p TRAVIS_WORKER -f env macstadium-workers production-common \
 		| sed 's/^/export /' >config/travis-worker-production-com-common
 	\
 	trvs generate-config --pro -p VSPHERE_JANITOR -f env vsphere-janitor production-$(INDEX) \
