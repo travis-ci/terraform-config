@@ -65,6 +65,6 @@ ${var.worker_env_config}
 ${var.worker_local_config}
 EOF
 
-    destination = "/tmp/etc-default-travis-worker-${var.env}.conf"
+    destination = "/tmp/etc-default-travis-worker-${var.env}"
   }
 }
