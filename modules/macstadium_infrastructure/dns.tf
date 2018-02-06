@@ -14,6 +14,15 @@ resource "aws_route53_record" "wjb" {
   records = ["${vsphere_virtual_machine.wjb.network_interface.0.ipv4_address}"]
 }
 
+resource "aws_route53_record" "wjb_staging" {
+  zone_id = "${var.travisci_net_external_zone_id}"
+  name    = "wjb-staging-${var.index}.macstadium-us-se-1.travisci.net"
+  type    = "A"
+  ttl     = 300
+  records = ["${vsphere_virtual_machine.wjb_staging.network_interface.0.ipv4_address}"]
+}
+
+
 resource "aws_route53_record" "util" {
   zone_id = "${var.travisci_net_external_zone_id}"
   name    = "util-${var.index}.macstadium-us-se-1.travisci.net"
