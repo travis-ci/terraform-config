@@ -11,14 +11,19 @@ __die() {
   exit "${code}"
 }
 
-__container_is_too_old() {
+__container_is_young() {
   cid="$1"
-  expr $(date +%s) - $(date --date="$(docker inspect -f '{{ .Created }}' $cid)" +%s)
+  created=$(date --date="$(docker inspect -f '{{ .Created }}' "$cid")" +%s)
+  age=$(($(date +%s) - created))
+  if [ "$age" -gt 10800 ]; then
+    echo 1
+  fi
 }
 
 main() {
   local cids killed_count
   cids=$(docker ps -q)
+  killed_count=0
 
   if [ -z "$cids" ]; then
     __die noop 0 0
@@ -29,14 +34,13 @@ main() {
     if [[ "$(docker inspect "$cid" --format '{{ .Name }}')" == "/travis-worker" ]]; then
       continue
     fi
-    age="$(expr $(date +%s) - $(date --date="$(docker inspect -f '{{ .Created }}' "$cid")" +%s))"
-    if [ "$age" -gt 10800 ]; then
+    if [[ ! $(__container_is_young "$cid") ]]; then
       logger "$cid is older than 10800; killing it! (age: $age)"
-      docker kill "$cid"
-      killed_count="$(($count + 1))"
+      echo "docker kill $cid"
+      killed_count="$((killed_count + 1))"
     fi
   done
-  __die killed 0 "$count"
+  __die killed 0 "$killed_count"
 }
 
 main "$@"
