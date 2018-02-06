@@ -23,6 +23,7 @@ __container_is_newer_than() {
 
 main() {
   local cids killed_count
+  # shellcheck disable=SC2153
   local max_age="${MAX_AGE}"
   : "${max_age:=10800}"
   killed_count=0
@@ -39,7 +40,7 @@ main() {
     fi
     if [[ ! $(__container_is_newer_than "$cid" "$max_age") ]]; then
       name="$(docker inspect "$cid" --format '{{ .Name }}')"
-      logger "$cid is older than 10800s; killing it! ($name)"
+      logger "$cid is older than $max_age; killing it! ($name)"
       docker kill "$cid"
       killed_count="$((killed_count + 1))"
     fi
