@@ -1,0 +1,3 @@
+Defaults !lecture,tty_tickets,!fqdn
+root ALL=(ALL) ALL
+#includedir /etc/sudoers.d

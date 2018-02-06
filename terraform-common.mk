@@ -11,6 +11,12 @@ JOB_BOARD_HOST ?= job-board.travis-ci.com
 AMQP_URL_VARNAME ?= AMQP_URL
 TOP := $(shell git rev-parse --show-toplevel)
 
+TFWBZ2 := $(TOP)/assets/tfw.tar.bz2
+
+PROD_TF_VERSION := v0.11.0
+TERRAFORM := $(HOME)/.cache/travis-terraform-config/terraform-$(PROD_TF_VERSION)
+TAR := tar
+
 .PHONY: hello
 hello: announce
 	@echo "Hello there, human."
@@ -22,18 +28,42 @@ hello: announce
 .assert-ruby:
 	@ruby -e "fail 'Ruby >= 2.3 required' unless RUBY_VERSION >= '2.3'"
 
+.PHONY: .echo-tf-version
+.echo-tf-version:
+	@echo $(PROD_TF_VERSION)
+
+.PHONY: .echo-tf
+.echo-tf:
+	@echo $(TERRAFORM)
+
+.PHONY: .assert-tf-version
+.assert-tf-version:
+	@TF_INSTALL_MISSING=0 $(TOP)/bin/ensure-terraform $(PROD_TF_VERSION)
+
 .PHONY: announce
-announce: .assert-ruby
+announce: .assert-ruby .assert-tf-version
 	@echo "👋 🎉  This is env=$(ENV_NAME) (short=$(ENV_SHORT) infra=$(INFRA) tail=$(ENV_TAIL))"
 
 .PHONY: apply
 apply: announce .config $(TFVARS) $(TFSTATE)
-	terraform apply $(TFPLAN)
+	$(TERRAFORM) apply $(TFPLAN)
 	$(TOP)/bin/post-flight $(TOP)
+
+.PHONY: init
+init: announce
+	$(TERRAFORM) init
+
+.PHONY: show
+show: announce
+	$(TERRAFORM) show
+
+.PHONY: console
+console: announce
+	$(TERRAFORM) console
 
 .PHONY: plan
 plan: announce .config $(TFVARS) $(TFSTATE)
-	terraform plan \
+	$(TERRAFORM) plan \
 		-var-file=$(ENV_NAME).tfvars \
 		-var-file=$(TFVARS) \
 		-module-depth=-1 \
@@ -41,7 +71,7 @@ plan: announce .config $(TFVARS) $(TFSTATE)
 
 .PHONY: destroy
 destroy: announce .config $(TFVARS) $(TFSTATE)
-	terraform plan \
+	$(TERRAFORM) plan \
 		-var-file=$(ENV_NAME).tfvars \
 		-var-file=$(TFVARS) \
 		-module-depth=-1 \
@@ -49,8 +79,11 @@ destroy: announce .config $(TFVARS) $(TFSTATE)
 		-out=$(TFPLAN)
 	$(TOP)/bin/post-flight $(TOP)
 
+$(TFWBZ2): $(wildcard $(TOP)/assets/tfw/**/*)
+	$(TAR) -C $(TOP)/assets -cjf $(TOP)/assets/tfw.tar.bz2 tfw
+
 $(TFSTATE):
-	terraform init
+	$(TERRAFORM) init
 
 .PHONY: clean
 clean: announce
@@ -62,7 +95,7 @@ distclean: clean
 
 .PHONY: graph
 graph:
-	terraform graph -draw-cycles | dot -Tpng > graph.png
+	$(TERRAFORM) graph -draw-cycles | dot -Tpng > graph.png
 
 $(ENV_NAME).tfvars:
 	$(TOP)/bin/generate-tfvars $@

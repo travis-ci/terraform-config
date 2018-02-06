@@ -28,6 +28,10 @@ terraform {
 
 provider "aws" {}
 
+provider "heroku" {
+  version = "0.1.0"
+}
+
 data "aws_ami" "tfw" {
   most_recent = true
 
@@ -93,35 +97,40 @@ EOF
 
 module "aws_az_1b" {
   source                    = "../modules/aws_workers_az"
-  az                        = "1b"
+  az_group                  = "1b"
   bastion_security_group_id = "${data.terraform_remote_state.vpc.bastion_security_group_1b_id}"
   env                       = "${var.env}"
   index                     = "${var.index}"
   vpc_id                    = "${data.terraform_remote_state.vpc.vpc_id}"
 }
 
-module "aws_az_1e" {
+module "aws_az_1b2" {
   source                    = "../modules/aws_workers_az"
-  az                        = "1e"
-  bastion_security_group_id = "${data.terraform_remote_state.vpc.bastion_security_group_1e_id}"
+  az_group                  = "1b2"
+  bastion_security_group_id = "${data.terraform_remote_state.vpc.bastion_security_group_1b_id}"
   env                       = "${var.env}"
   index                     = "${var.index}"
   vpc_id                    = "${data.terraform_remote_state.vpc.vpc_id}"
 }
 
 module "aws_asg_com" {
-  source                         = "../modules/aws_asg"
-  cyclist_auth_token             = "${random_id.cyclist_token_com.hex}"
-  cyclist_debug                  = "true"
-  cyclist_scale                  = "web=1:Hobby"
-  cyclist_version                = "v0.4.0"
-  env                            = "${var.env}"
-  env_short                      = "${var.env}"
-  github_users                   = "${var.github_users}"
-  heroku_org                     = "${var.aws_heroku_org}"
-  index                          = "${var.index}"
-  registry_hostname              = "${data.terraform_remote_state.vpc.registry_hostname}"
-  security_groups                = "${module.aws_az_1b.workers_com_security_group_id},${module.aws_az_1e.workers_com_security_group_id}"
+  source             = "../modules/aws_asg"
+  cyclist_auth_token = "${random_id.cyclist_token_com.hex}"
+  cyclist_debug      = "true"
+  cyclist_scale      = "web=1:Hobby"
+  cyclist_version    = "v0.5.0"
+  env                = "${var.env}"
+  env_short          = "${var.env}"
+  github_users       = "${var.github_users}"
+  heroku_org         = "${var.aws_heroku_org}"
+  index              = "${var.index}"
+  registry_hostname  = "${data.terraform_remote_state.vpc.registry_hostname}"
+
+  security_groups = [
+    "${module.aws_az_1b.workers_com_security_group_id}",
+    "${module.aws_az_1b2.workers_com_security_group_id}",
+  ]
+
   site                           = "com"
   syslog_address                 = "${var.syslog_address_com}"
   worker_ami                     = "${data.aws_ami.tfw.id}"
@@ -144,22 +153,31 @@ module "aws_asg_com" {
   worker_docker_image_ruby       = "${var.latest_docker_image_garnet}"
   worker_docker_self_image       = "${var.latest_docker_image_worker}"
   worker_queue                   = "ec2"
-  worker_subnets                 = "${data.terraform_remote_state.vpc.workers_com_subnet_1b_id},${data.terraform_remote_state.vpc.workers_com_subnet_1e_id}"
+
+  worker_subnets = [
+    "${data.terraform_remote_state.vpc.workers_com_subnet_1b2_id}",
+    "${data.terraform_remote_state.vpc.workers_com_subnet_1b_id}",
+  ]
 }
 
 module "aws_asg_org" {
-  source                         = "../modules/aws_asg"
-  cyclist_auth_token             = "${random_id.cyclist_token_org.hex}"
-  cyclist_debug                  = "true"
-  cyclist_scale                  = "web=1:Hobby"
-  cyclist_version                = "v0.4.0"
-  env                            = "${var.env}"
-  env_short                      = "${var.env}"
-  github_users                   = "${var.github_users}"
-  heroku_org                     = "${var.aws_heroku_org}"
-  index                          = "${var.index}"
-  registry_hostname              = "${data.terraform_remote_state.vpc.registry_hostname}"
-  security_groups                = "${module.aws_az_1b.workers_org_security_group_id},${module.aws_az_1e.workers_org_security_group_id}"
+  source             = "../modules/aws_asg"
+  cyclist_auth_token = "${random_id.cyclist_token_org.hex}"
+  cyclist_debug      = "true"
+  cyclist_scale      = "web=1:Hobby"
+  cyclist_version    = "v0.5.0"
+  env                = "${var.env}"
+  env_short          = "${var.env}"
+  github_users       = "${var.github_users}"
+  heroku_org         = "${var.aws_heroku_org}"
+  index              = "${var.index}"
+  registry_hostname  = "${data.terraform_remote_state.vpc.registry_hostname}"
+
+  security_groups = [
+    "${module.aws_az_1b.workers_org_security_group_id}",
+    "${module.aws_az_1b2.workers_org_security_group_id}",
+  ]
+
   site                           = "org"
   syslog_address                 = "${var.syslog_address_org}"
   worker_ami                     = "${data.aws_ami.tfw.id}"
@@ -182,5 +200,9 @@ module "aws_asg_org" {
   worker_docker_image_ruby       = "${var.latest_docker_image_garnet}"
   worker_docker_self_image       = "${var.latest_docker_image_worker}"
   worker_queue                   = "ec2"
-  worker_subnets                 = "${data.terraform_remote_state.vpc.workers_org_subnet_1b_id},${data.terraform_remote_state.vpc.workers_org_subnet_1e_id}"
+
+  worker_subnets = [
+    "${data.terraform_remote_state.vpc.workers_org_subnet_1b2_id}",
+    "${data.terraform_remote_state.vpc.workers_org_subnet_1b_id}",
+  ]
 }

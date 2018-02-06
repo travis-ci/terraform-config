@@ -18,16 +18,16 @@ variable "syslog_address_com" {}
 variable "syslog_address_org" {}
 
 variable "worker_ami" {
-  # tfw 2017-11-07 01-42-17
-  default = "ami-0e823274"
+  # tfw 2018-01-08 20-33-18
+  default = "ami-3889d642"
 }
 
 variable "amethyst_image" {
-  default = "travisci/ci-amethyst:packer-1503974220"
+  default = "travisci/ci-amethyst:packer-1512508255-986baf0"
 }
 
 variable "garnet_image" {
-  default = "travisci/ci-garnet:packer-1503972846"
+  default = "travisci/ci-garnet:packer-1512502276-986baf0"
 }
 
 terraform {
@@ -41,6 +41,10 @@ terraform {
 }
 
 provider "aws" {}
+
+provider "heroku" {
+  version = "0.1.0"
+}
 
 data "terraform_remote_state" "vpc" {
   backend = "s3"
@@ -113,28 +117,19 @@ export TRAVIS_WORKER_DOCKER_INSPECT_INTERVAL=1000ms
 EOF
 }
 
-module "aws_az_1a" {
-  source                    = "../modules/aws_workers_az"
-  az                        = "1a"
-  bastion_security_group_id = "${data.terraform_remote_state.vpc.bastion_security_group_1a_id}"
-  env                       = "${var.env}"
-  index                     = "${var.index}"
-  vpc_id                    = "${data.terraform_remote_state.vpc.vpc_id}"
-}
-
 module "aws_az_1b" {
   source                    = "../modules/aws_workers_az"
-  az                        = "1b"
+  az_group                  = "1b"
   bastion_security_group_id = "${data.terraform_remote_state.vpc.bastion_security_group_1b_id}"
   env                       = "${var.env}"
   index                     = "${var.index}"
   vpc_id                    = "${data.terraform_remote_state.vpc.vpc_id}"
 }
 
-module "aws_az_1c" {
+module "aws_az_1b2" {
   source                    = "../modules/aws_workers_az"
-  az                        = "1c"
-  bastion_security_group_id = "${data.terraform_remote_state.vpc.bastion_security_group_1c_id}"
+  az_group                  = "1b2"
+  bastion_security_group_id = "${data.terraform_remote_state.vpc.bastion_security_group_1b_id}"
   env                       = "${var.env}"
   index                     = "${var.index}"
   vpc_id                    = "${data.terraform_remote_state.vpc.vpc_id}"
@@ -142,7 +137,16 @@ module "aws_az_1c" {
 
 module "aws_az_1e" {
   source                    = "../modules/aws_workers_az"
-  az                        = "1e"
+  az_group                  = "1e"
+  bastion_security_group_id = "${data.terraform_remote_state.vpc.bastion_security_group_1e_id}"
+  env                       = "${var.env}"
+  index                     = "${var.index}"
+  vpc_id                    = "${data.terraform_remote_state.vpc.vpc_id}"
+}
+
+module "aws_az_1e2" {
+  source                    = "../modules/aws_workers_az"
+  az_group                  = "1e2"
   bastion_security_group_id = "${data.terraform_remote_state.vpc.bastion_security_group_1e_id}"
   env                       = "${var.env}"
   index                     = "${var.index}"
@@ -150,17 +154,24 @@ module "aws_az_1e" {
 }
 
 module "aws_asg_com" {
-  source                                 = "../modules/aws_asg"
-  cyclist_auth_token                     = "${random_id.cyclist_token_com.hex}"
-  cyclist_version                        = "v0.4.0"
-  docker_storage_dm_basesize             = "19G"
-  env                                    = "${var.env}"
-  env_short                              = "${var.env}"
-  github_users                           = "${var.github_users}"
-  heroku_org                             = "${var.aws_heroku_org}"
-  index                                  = "${var.index}"
-  registry_hostname                      = "${data.terraform_remote_state.vpc.registry_hostname}"
-  security_groups                        = "${module.aws_az_1a.workers_com_security_group_id},${module.aws_az_1b.workers_com_security_group_id},${module.aws_az_1c.workers_com_security_group_id},${module.aws_az_1e.workers_com_security_group_id}"
+  source                     = "../modules/aws_asg"
+  cyclist_auth_token         = "${random_id.cyclist_token_com.hex}"
+  cyclist_version            = "v0.5.0"
+  docker_storage_dm_basesize = "19G"
+  env                        = "${var.env}"
+  env_short                  = "${var.env}"
+  github_users               = "${var.github_users}"
+  heroku_org                 = "${var.aws_heroku_org}"
+  index                      = "${var.index}"
+  registry_hostname          = "${data.terraform_remote_state.vpc.registry_hostname}"
+
+  security_groups = [
+    "${module.aws_az_1b.workers_com_security_group_id}",
+    "${module.aws_az_1b2.workers_com_security_group_id}",
+    "${module.aws_az_1e.workers_com_security_group_id}",
+    "${module.aws_az_1e2.workers_com_security_group_id}",
+  ]
+
   site                                   = "com"
   syslog_address                         = "${var.syslog_address_com}"
   worker_ami                             = "${var.worker_ami}"
@@ -186,21 +197,34 @@ module "aws_asg_com" {
   worker_docker_image_ruby               = "${var.garnet_image}"
   worker_instance_type                   = "c3.8xlarge"
   worker_queue                           = "ec2"
-  worker_subnets                         = "${data.terraform_remote_state.vpc.workers_com_subnet_1a_id},${data.terraform_remote_state.vpc.workers_com_subnet_1b_id},${data.terraform_remote_state.vpc.workers_com_subnet_1c_id},${data.terraform_remote_state.vpc.workers_com_subnet_1e_id}"
+
+  worker_subnets = [
+    "${data.terraform_remote_state.vpc.workers_com_subnet_1b2_id}",
+    "${data.terraform_remote_state.vpc.workers_com_subnet_1b_id}",
+    "${data.terraform_remote_state.vpc.workers_com_subnet_1e2_id}",
+    "${data.terraform_remote_state.vpc.workers_com_subnet_1e_id}",
+  ]
 }
 
 module "aws_asg_org" {
-  source                                 = "../modules/aws_asg"
-  cyclist_auth_token                     = "${random_id.cyclist_token_org.hex}"
-  cyclist_version                        = "v0.4.0"
-  docker_storage_dm_basesize             = "19G"
-  env                                    = "${var.env}"
-  env_short                              = "${var.env}"
-  github_users                           = "${var.github_users}"
-  heroku_org                             = "${var.aws_heroku_org}"
-  index                                  = "${var.index}"
-  registry_hostname                      = "${data.terraform_remote_state.vpc.registry_hostname}"
-  security_groups                        = "${module.aws_az_1b.workers_org_security_group_id},${module.aws_az_1e.workers_org_security_group_id}"
+  source                     = "../modules/aws_asg"
+  cyclist_auth_token         = "${random_id.cyclist_token_org.hex}"
+  cyclist_version            = "v0.5.0"
+  docker_storage_dm_basesize = "19G"
+  env                        = "${var.env}"
+  env_short                  = "${var.env}"
+  github_users               = "${var.github_users}"
+  heroku_org                 = "${var.aws_heroku_org}"
+  index                      = "${var.index}"
+  registry_hostname          = "${data.terraform_remote_state.vpc.registry_hostname}"
+
+  security_groups = [
+    "${module.aws_az_1b.workers_org_security_group_id}",
+    "${module.aws_az_1b2.workers_org_security_group_id}",
+    "${module.aws_az_1e.workers_org_security_group_id}",
+    "${module.aws_az_1e2.workers_org_security_group_id}",
+  ]
+
   site                                   = "org"
   syslog_address                         = "${var.syslog_address_org}"
   worker_ami                             = "${var.worker_ami}"
@@ -226,7 +250,13 @@ module "aws_asg_org" {
   worker_docker_image_ruby               = "${var.garnet_image}"
   worker_instance_type                   = "c3.8xlarge"
   worker_queue                           = "ec2"
-  worker_subnets                         = "${data.terraform_remote_state.vpc.workers_org_subnet_1b_id},${data.terraform_remote_state.vpc.workers_org_subnet_1e_id}"
+
+  worker_subnets = [
+    "${data.terraform_remote_state.vpc.workers_org_subnet_1b2_id}",
+    "${data.terraform_remote_state.vpc.workers_org_subnet_1b_id}",
+    "${data.terraform_remote_state.vpc.workers_org_subnet_1e2_id}",
+    "${data.terraform_remote_state.vpc.workers_org_subnet_1e_id}",
+  ]
 }
 
 resource "null_resource" "language_mapping_json" {
@@ -277,15 +307,22 @@ EOF
 }
 
 module "aws_asg_cs50" {
-  source                         = "../modules/aws_asg"
-  cyclist_auth_token             = "${random_id.cyclist_token_cs50.hex}"
-  cyclist_version                = "v0.4.0"
-  env                            = "cs50-${var.env}"
-  env_short                      = "${var.env}"
-  github_users                   = "${var.github_users}"
-  heroku_org                     = "${var.aws_heroku_org}"
-  index                          = "${var.index}"
-  security_groups                = "${module.aws_az_1b.workers_com_security_group_id},${module.aws_az_1e.workers_com_security_group_id}"
+  source             = "../modules/aws_asg"
+  cyclist_auth_token = "${random_id.cyclist_token_cs50.hex}"
+  cyclist_version    = "v0.5.0"
+  env                = "cs50-${var.env}"
+  env_short          = "${var.env}"
+  github_users       = "${var.github_users}"
+  heroku_org         = "${var.aws_heroku_org}"
+  index              = "${var.index}"
+
+  security_groups = [
+    "${module.aws_az_1b.workers_com_security_group_id}",
+    "${module.aws_az_1b2.workers_com_security_group_id}",
+    "${module.aws_az_1e.workers_com_security_group_id}",
+    "${module.aws_az_1e2.workers_com_security_group_id}",
+  ]
+
   site                           = "com"
   syslog_address                 = "${var.syslog_address_com}"
   worker_ami                     = "${var.worker_ami}"
@@ -309,7 +346,13 @@ module "aws_asg_cs50" {
   worker_docker_image_ruby       = "${var.cs50_image}"
   worker_instance_type           = "c3.2xlarge"
   worker_queue                   = "cs50"
-  worker_subnets                 = "${data.terraform_remote_state.vpc.workers_com_subnet_1b_id},${data.terraform_remote_state.vpc.workers_com_subnet_1e_id}"
+
+  worker_subnets = [
+    "${data.terraform_remote_state.vpc.workers_com_subnet_1b2_id}",
+    "${data.terraform_remote_state.vpc.workers_com_subnet_1b_id}",
+    "${data.terraform_remote_state.vpc.workers_com_subnet_1e2_id}",
+    "${data.terraform_remote_state.vpc.workers_com_subnet_1e_id}",
+  ]
 }
 
 # } cs50

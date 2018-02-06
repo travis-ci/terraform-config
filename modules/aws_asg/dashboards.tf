@@ -14,7 +14,7 @@ resource "aws_cloudwatch_dashboard" "main" {
                 "view": "timeSeries",
                 "stacked": true,
                 "metrics": [
-                    [ "Travis/${var.site}${var.env == "staging" ? "-staging" : ""}", "v1.travis.rabbitmq.consumers.${var.env}.builds.ec2.headroom", { "color": "#2ca02c", "period": 60, "stat": "Average" } ]
+                    [ "Travis/${var.site}${var.env == "staging" ? "-staging" : ""}", "v1.travis.rabbitmq.consumers.builds.ec2.headroom", { "color": "#2ca02c", "period": 60, "stat": "Average" } ]
                 ],
                 "region": "us-east-1",
                 "annotations": {

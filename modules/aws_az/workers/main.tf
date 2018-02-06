@@ -1,4 +1,5 @@
 variable "az" {}
+variable "az_group" {}
 variable "cidr_block" {}
 variable "env" {}
 variable "index" {}
@@ -10,7 +11,7 @@ variable "vpc_cidr" {}
 variable "vpc_id" {}
 
 resource "aws_security_group" "nat" {
-  name   = "${var.env}-${var.index}-workers-nat-${var.site}-${var.az}"
+  name   = "${var.env}-${var.index}-workers-nat-${var.site}-${var.az_group}"
   vpc_id = "${var.vpc_id}"
 
   ingress {
@@ -32,7 +33,7 @@ resource "aws_security_group" "nat" {
   }
 
   tags = {
-    Name = "${var.env}-${var.index}-workers-nat-${var.site}-${var.az}"
+    Name = "${var.env}-${var.index}-workers-nat-${var.site}-${var.az_group}"
   }
 }
 
@@ -43,7 +44,7 @@ resource "aws_subnet" "subnet" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "${var.env}-${var.index}-workers-${var.site}-${var.az}"
+    Name = "${var.env}-${var.index}-workers-${var.site}-${var.az_group}"
   }
 }
 
@@ -55,7 +56,7 @@ resource "aws_instance" "nat" {
   source_dest_check      = false
 
   tags = {
-    Name = "${var.env}-${var.index}-workers-nat-${var.site}-${var.az}"
+    Name = "${var.env}-${var.index}-workers-nat-${var.site}-${var.az_group}"
   }
 
   lifecycle {
@@ -72,7 +73,7 @@ resource "aws_route_table" "rtb" {
   }
 
   tags = {
-    Name = "${var.env}-${var.index}-workers-${var.site}-${var.az}"
+    Name = "${var.env}-${var.index}-workers-${var.site}-${var.az_group}"
   }
 }
 

@@ -39,7 +39,7 @@ variable "worker_config_com" {}
 variable "worker_config_org" {}
 
 variable "worker_docker_self_image" {
-  default = "travisci/worker:v3.3.1"
+  default = "travisci/worker:v3.4.0"
 }
 
 variable "worker_image" {}
@@ -236,7 +236,7 @@ resource "google_compute_firewall" "deny_target_ip" {
   project = "${var.project}"
 
   # highest priority
-  priority = "0"
+  priority = "1000"
 
   deny {
     protocol = "tcp"

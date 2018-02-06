@@ -4,20 +4,50 @@ set -o errexit
 set -o pipefail
 
 main() {
-  # abort if there are uncommitted local changes
-  if [[ "${*}" =~ --force ]]; then
-    msg="You have uncommitted changes. Not proceeding, as this script changes some files in place. (Use --force to override)"
-    git diff-index --quiet HEAD -- || (echo "$msg" && exit 1)
+  local force env_file
+
+  while [[ "${1}" ]]; do
+    case "${1}" in
+    '--force' | '-f')
+      force=1
+      shift
+      continue
+      ;;
+    '--env' | '-e')
+      env_file="${2}"
+      shift 2
+      continue
+      ;;
+    '--')
+      shift
+      break
+      ;;
+    *)
+      echo "Unknown option '${1}'" >&2
+      exit 1
+      ;;
+    esac
+  done
+
+  if [[ ! "${force}" ]]; then
+    __assert_no_changes
   fi
 
-  if [[ $# -gt 1 && $1 == --env ]]; then
-    echo "Running isolated with env ${2}"
+  local terraform
+  terraform="$(make -f terraform-common.mk .echo-tf)"
+
+  if [[ "${env_file}" ]]; then
+    echo "Running isolated with env ${env_file}"
+    local exec_opts
+    if [[ "${force}" ]]; then
+      exec_opts='--force'
+    fi
     exec env -i \
       HOME="${HOME}" \
       PATH="${PATH}" \
       TERM="${TERM}" \
       LANG="${LANG}" \
-      bash -c "source '${2}' && bash ${BASH_SOURCE[0]}"
+      bash -c "source '${env_file}' && bash ${BASH_SOURCE[0]} ${exec_opts}"
   fi
 
   for f in $(git ls-files '*.json'); do
@@ -26,7 +56,7 @@ main() {
     echo "✓"
   done
 
-  for f in $(git ls-files '*Makefile'); do
+  for f in $(git ls-files '*/Makefile'); do
     echo -en "${f} "
     make -C "$(dirname "${f}")" -p >/dev/null
     echo "✓"
@@ -46,12 +76,34 @@ main() {
 
   for d in $(git ls-files '*.tf' | xargs -n1 dirname | LC_ALL=C sort | uniq); do
     echo -en "${d} "
-    terraform validate "${d}"
+    if [[ -f "${d}/Makefile" ]]; then
+      terraform="$(make -f "${d}/Makefile" .echo-tf)"
+    else
+      terraform="$(make -f terraform-common.mk .echo-tf)"
+    fi
+    if [[ -f "${d}/.terraform-validate-flags" ]]; then
+      # shellcheck disable=SC2046
+      "${terraform}" validate $(cat "${d}/.terraform-validate-flags") "${d}"
+    else
+      "${terraform}" validate -check-variables=false "${d}"
+    fi
     echo "✓"
   done
 
   echo 'Running terraform fmt'
-  terraform fmt
+  "${terraform}" fmt
+}
+
+__assert_no_changes() {
+  # abort if there are uncommitted local changes
+  if ! git diff-index --quiet HEAD --; then
+    cat <<EOF
+You have uncommitted changes.
+Not proceeding, as this script changes some files in place.
+(Use --force to override)
+EOF
+    exit 1
+  fi
 }
 
 main "$@"

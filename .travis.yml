@@ -1,33 +1,16 @@
 language: bash
-rvm: 2.4.1
+rvm: 2.4.2
 dist: trusty
 sudo: required
 cache:
   directories:
   - "${HOME}/bin"
+  - "${HOME}/.cache/travis-terraform-config"
 env:
   global:
   - PATH="${HOME}/bin:${PATH}"
-  - SHELLCHECK_URL="https://s3.amazonaws.com/travis-blue-public/binaries/ubuntu/14.04/x86_64/shellcheck-0.4.4.tar.bz2"
-  - SHFMT_URL="mvdan.cc/sh/cmd/shfmt"
   - TMPDIR="${TMPDIR:-/tmp}"
-before_install:
-- if ! terraform version ; then
-    pushd "${TMPDIR}" ;
-    curl -sSL
-      -o terraform.zip
-      "https://releases.hashicorp.com/terraform/0.9.0/terraform_0.9.0_linux_amd64.zip" ;
-    unzip terraform.zip ;
-    mv -v terraform "${HOME}/bin/terraform" ;
-    chmod +x "${HOME}/bin/terraform" ;
-    popd ;
-    terraform version ;
-  fi
-- if ! shellcheck --version ; then
-    curl -sSL "${SHELLCHECK_URL}" | tar -C "${HOME}/bin" -xjf - ;
-  fi
-- go get -u "${SHFMT_URL}" ;
+before_install: make deps
 script:
-- ./runtests --env .example.env
-- git diff --exit-code
-- git diff --cached --exit-code
+- make test
+- make assert-clean

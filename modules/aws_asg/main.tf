@@ -46,7 +46,10 @@ variable "registry_hostname" {
   default = ""
 }
 
-variable "security_groups" {}
+variable "security_groups" {
+  type = "list"
+}
+
 variable "site" {}
 variable "syslog_address" {}
 variable "worker_ami" {}
@@ -115,7 +118,7 @@ variable "worker_docker_image_python" {}
 variable "worker_docker_image_ruby" {}
 
 variable "worker_docker_self_image" {
-  default = "travisci/worker:v3.3.1"
+  default = "travisci/worker:v3.4.0"
 }
 
 variable "worker_instance_type" {
@@ -123,7 +126,10 @@ variable "worker_instance_type" {
 }
 
 variable "worker_queue" {}
-variable "worker_subnets" {}
+
+variable "worker_subnets" {
+  type = "list"
+}
 
 data "template_file" "cloud_init_env" {
   template = <<EOF
@@ -171,7 +177,7 @@ data "template_file" "docker_daemon_json" {
     "dm.fs=xfs"
   ],
   "userns-remap": "default",
-  "debug": true
+  "debug": false
 }
 EOF
 }
@@ -211,7 +217,7 @@ resource "aws_launch_configuration" "workers" {
   name_prefix       = "${var.env}-${var.index}-workers-${var.site}-"
   image_id          = "${var.worker_ami}"
   instance_type     = "${var.worker_instance_type}"
-  security_groups   = ["${split(",", var.security_groups)}"]
+  security_groups   = ["${var.security_groups}"]
   user_data         = "${data.template_cloudinit_config.cloud_config.rendered}"
   enable_monitoring = true
 
@@ -235,7 +241,7 @@ resource "aws_autoscaling_group" "workers" {
   launch_configuration      = "${aws_launch_configuration.workers.name}"
   max_size                  = "${var.worker_asg_max_size}"
   min_size                  = "${var.worker_asg_min_size}"
-  vpc_zone_identifier       = ["${split(",", var.worker_subnets)}"]
+  vpc_zone_identifier       = ["${var.worker_subnets}"]
 
   termination_policies = [
     "OldestLaunchConfiguration",
@@ -317,7 +323,7 @@ resource "aws_cloudwatch_metric_alarm" "workers_remove_capacity" {
   alarm_name          = "${var.env}-${var.index}-workers-${var.site}-remove-capacity"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = "${var.worker_asg_scale_in_evaluation_periods}"
-  metric_name         = "v1.travis.rabbitmq.consumers.${var.env}.builds.${var.worker_queue}.headroom"
+  metric_name         = "v1.travis.rabbitmq.consumers.builds.${var.worker_queue}.headroom"
   namespace           = "${var.worker_asg_namespace}"
   period              = "${var.worker_asg_scale_in_period}"
   statistic           = "Maximum"
@@ -357,7 +363,7 @@ resource "aws_cloudwatch_metric_alarm" "workers_add_capacity" {
   alarm_name          = "${var.env}-${var.index}-workers-${var.site}-add-capacity"
   comparison_operator = "LessThanThreshold"
   evaluation_periods  = "${var.worker_asg_scale_out_evaluation_periods}"
-  metric_name         = "v1.travis.rabbitmq.consumers.${var.env}.builds.${var.worker_queue}.headroom"
+  metric_name         = "v1.travis.rabbitmq.consumers.builds.${var.worker_queue}.headroom"
   namespace           = "${var.worker_asg_namespace}"
   period              = "${var.worker_asg_scale_out_period}"
   statistic           = "Maximum"
