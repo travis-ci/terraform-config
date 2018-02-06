@@ -30,7 +30,7 @@ module "worker_production_org_1" {
 
   worker_local_config = <<EOF
 export TRAVIS_WORKER_TRAVIS_SITE="org"
-export TRAVIS_WORKER_POOL_SIZE="105"
+export TRAVIS_WORKER_POOL_SIZE="60"
 export TRAVIS_WORKER_PPROF_PORT="7070"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT=http://${random_id.jupiter_brain_production_org_token.hex}@127.0.0.1:8081/
 export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-production-org-macstadium-${var.index}-1-dc18"
@@ -50,7 +50,7 @@ module "worker_production_org_2" {
 
   worker_local_config = <<EOF
 export TRAVIS_WORKER_TRAVIS_SITE="org"
-export TRAVIS_WORKER_POOL_SIZE="105"
+export TRAVIS_WORKER_POOL_SIZE="60"
 export TRAVIS_WORKER_PPROF_PORT="7071"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT=http://${random_id.jupiter_brain_production_org_token.hex}@127.0.0.1:8081/
 export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-production-org-macstadium-${var.index}-2-dc18"
@@ -107,6 +107,7 @@ module "worker_production_com_1" {
   worker_env_config  = "${file("${path.module}/config/travis-worker-production-com-common")}"
 
   worker_local_config = <<EOF
+export TRAVIS_WORKER_HARD_TIMEOUT=120m
 export TRAVIS_WORKER_TRAVIS_SITE="com"
 export TRAVIS_WORKER_POOL_SIZE="55"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT=http://${random_id.jupiter_brain_production_com_token.hex}@127.0.0.1:8083/
@@ -126,6 +127,7 @@ module "worker_production_com_2" {
   worker_env_config  = "${file("${path.module}/config/travis-worker-production-com-common")}"
 
   worker_local_config = <<EOF
+export TRAVIS_WORKER_HARD_TIMEOUT=120m
 export TRAVIS_WORKER_TRAVIS_SITE="com"
 export TRAVIS_WORKER_POOL_SIZE="55"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT=http://${random_id.jupiter_brain_production_com_token.hex}@127.0.0.1:8083/
@@ -145,6 +147,7 @@ module "worker_staging_com_1" {
   worker_env_config  = "${file("${path.module}/config/travis-worker-staging-com-common")}"
 
   worker_local_config = <<EOF
+export TRAVIS_WORKER_HARD_TIMEOUT=120m
 export TRAVIS_WORKER_TRAVIS_SITE="com"
 export TRAVIS_WORKER_POOL_SIZE="2"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT=http://${random_id.jupiter_brain_staging_com_token.hex}@127.0.0.1:8084/
@@ -164,6 +167,7 @@ module "worker_staging_com_2" {
   worker_env_config  = "${file("${path.module}/config/travis-worker-staging-com-common")}"
 
   worker_local_config = <<EOF
+export TRAVIS_WORKER_HARD_TIMEOUT=120m
 export TRAVIS_WORKER_TRAVIS_SITE="com"
 export TRAVIS_WORKER_POOL_SIZE="2"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT=http://${random_id.jupiter_brain_staging_com_token.hex}@127.0.0.1:8084/
@@ -183,6 +187,7 @@ module "worker_custom_1" {
   worker_env_config  = "${file("${path.module}/config/travis-worker-production-org-common")}"
 
   worker_local_config = <<EOF
+export TRAVIS_WORKER_HARD_TIMEOUT=120m
 export TRAVIS_WORKER_TRAVIS_SITE="com"
 export TRAVIS_WORKER_POOL_SIZE="5"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT=http://${random_id.jupiter_brain_custom_1_token.hex}@127.0.0.1:8085/
@@ -203,6 +208,7 @@ module "worker_custom_2" {
   worker_env_config  = "${file("${path.module}/config/travis-worker-production-org-common")}"
 
   worker_local_config = <<EOF
+export TRAVIS_WORKER_HARD_TIMEOUT=120m
 export TRAVIS_WORKER_TRAVIS_SITE="com"
 export TRAVIS_WORKER_POOL_SIZE="5"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT=http://${random_id.jupiter_brain_custom_2_token.hex}@127.0.0.1:8086/
@@ -223,6 +229,7 @@ module "worker_custom_4" {
   worker_env_config  = "${file("${path.module}/config/travis-worker-production-org-common")}"
 
   worker_local_config = <<EOF
+export TRAVIS_WORKER_HARD_TIMEOUT=120m
 export TRAVIS_WORKER_TRAVIS_SITE="com"
 export TRAVIS_WORKER_POOL_SIZE="5"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT=http://${random_id.jupiter_brain_custom_4_token.hex}@127.0.0.1:8088/
@@ -243,6 +250,7 @@ module "worker_custom_5" {
   worker_env_config  = "${file("${path.module}/config/travis-worker-production-org-common")}"
 
   worker_local_config = <<EOF
+export TRAVIS_WORKER_HARD_TIMEOUT=120m
 export TRAVIS_WORKER_TRAVIS_SITE="com"
 export TRAVIS_WORKER_POOL_SIZE="5"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT=http://${random_id.jupiter_brain_custom_5_token.hex}@127.0.0.1:8089/
@@ -263,6 +271,7 @@ module "worker_custom_6" {
   worker_env_config  = "${file("${path.module}/config/travis-worker-production-com-common")}"
 
   worker_local_config = <<EOF
+export TRAVIS_WORKER_HARD_TIMEOUT=120m
 export TRAVIS_WORKER_TRAVIS_SITE="com"
 export TRAVIS_WORKER_POOL_SIZE="5"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT=http://${random_id.jupiter_brain_custom_6_token.hex}@127.0.0.1:8090/
