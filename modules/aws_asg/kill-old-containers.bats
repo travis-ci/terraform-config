@@ -3,7 +3,7 @@
 load bats_helpers
 
 setup() {
-  export MAX_AGE=120
+  export MAX_AGE=10800
   aws_asg_setup
 }
 
