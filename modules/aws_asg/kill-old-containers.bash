@@ -17,15 +17,15 @@ __container_is_newer_than() {
   created=$(date --date="$(docker inspect -f '{{ .Created }}' "$cid")" +%s)
   age=$(($(date +%s) - created))
   if [ "$age" -gt "$max_age" ]; then
-    echo 1
+    return 1
   fi
 }
 
 main() {
   local cids killed_count
   local max_age="${MAX_AGE}"
-  killed_count=0
   : "${max_age:=10800}"
+  killed_count=0
   cids=$(docker ps -q)
 
   if [ -z "$cids" ]; then
@@ -38,8 +38,9 @@ main() {
       continue
     fi
     if [[ ! $(__container_is_newer_than "$cid" "$max_age") ]]; then
-      logger "$cid is older than 10800; killing it! (age: $age)"
-      echo "docker kill $cid"
+      name="$(docker inspect "$cid" --format '{{ .Name }}')"
+      logger "$cid is older than 10800s; killing it! ($name)"
+      docker kill "$cid"
       killed_count="$((killed_count + 1))"
     fi
   done
