@@ -11,20 +11,32 @@ __die() {
   exit "${code}"
 }
 
+__container_is_too_old() {
+  cid="$1"
+  expr $(date +%s) - $(date --date="$(docker inspect -f '{{ .Created }}' $cid)" +%s)
+}
+
 main() {
-  local worker_cid cids
-  worker_cid=$(docker inspect travis-worker --format '{{ .Id }}')
-  cids=$(docker ps -q --filter before="$worker_cid")
+  local cids killed_count
+  cids=$(docker ps -q)
 
   if [ -z "$cids" ]; then
     __die noop 0 0
   fi
 
   for cid in $cids; do
-    logger "Removing container older than travis-worker: $(docker ps --filter id="$cid" | grep -v CONTAINER)"
-    docker kill "$cid"
+    # Don't kill travis-worker
+    if [[ "$(docker inspect "$cid" --format '{{ .Name }}')" == "/travis-worker" ]]; then
+      continue
+    fi
+    age="$(expr $(date +%s) - $(date --date="$(docker inspect -f '{{ .Created }}' "$cid")" +%s))"
+    if [ "$age" -gt 10800 ]; then
+      logger "$cid is older than 10800; killing it! (age: $age)"
+      docker kill "$cid"
+      killed_count="$(($count + 1))"
+    fi
   done
-  __die killed 0 "$(echo "$cids" | wc -l)"
+  __die killed 0 "$count"
 }
 
 main "$@"
