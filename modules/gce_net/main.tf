@@ -1,19 +1,32 @@
 variable "bastion_config" {}
 variable "bastion_image" {}
 
+variable "bastion_zones" {
+  default = ["b", "f"]
+}
+
 variable "deny_target_ip_ranges" {
   type    = "list"
   default = []
 }
 
 variable "env" {}
-variable "gcloud_zone" {}
 variable "github_users" {}
 variable "index" {}
 variable "nat_config" {}
 variable "nat_image" {}
 variable "nat_machine_type" {}
+
+variable "nat_zones" {
+  default = ["a", "b", "c", "f"]
+}
+
 variable "project" {}
+
+variable "region" {
+  default = "us-central1"
+}
+
 variable "syslog_address" {}
 variable "travisci_net_external_zone_id" {}
 
@@ -51,54 +64,31 @@ resource "google_compute_subnetwork" "public" {
   name          = "public"
   ip_cidr_range = "${var.public_subnet_cidr_range}"
   network       = "${google_compute_network.main.self_link}"
-  region        = "us-central1"
-
-  project = "${var.project}"
+  region        = "${var.region}"
+  project       = "${var.project}"
 }
 
 resource "google_compute_subnetwork" "workers" {
   name          = "workers"
   ip_cidr_range = "${var.workers_subnet_cidr_range}"
   network       = "${google_compute_network.main.self_link}"
-  region        = "us-central1"
-
-  project = "${var.project}"
+  region        = "${var.region}"
+  project       = "${var.project}"
 }
 
 resource "google_compute_subnetwork" "jobs_org" {
   name          = "jobs-org"
   ip_cidr_range = "${var.jobs_org_subnet_cidr_range}"
   network       = "${google_compute_network.main.self_link}"
-  region        = "us-central1"
-
-  project = "${var.project}"
-}
-
-# TODO: remove this legacy subnetwork when no longer in use
-resource "google_compute_subnetwork" "build_org" {
-  name          = "buildorg"
-  ip_cidr_range = "${var.build_org_subnet_cidr_range}"
-  network       = "${google_compute_network.main.self_link}"
-  region        = "us-central1"
-
-  project = "${var.project}"
+  region        = "${var.region}"
+  project       = "${var.project}"
 }
 
 resource "google_compute_subnetwork" "jobs_com" {
   name          = "jobs-com"
   ip_cidr_range = "${var.jobs_com_subnet_cidr_range}"
   network       = "${google_compute_network.main.self_link}"
-  region        = "us-central1"
-
-  project = "${var.project}"
-}
-
-# TODO: remove this legacy subnetwork when no longer in use
-resource "google_compute_subnetwork" "build_com" {
-  name          = "buildcom"
-  ip_cidr_range = "${var.build_com_subnet_cidr_range}"
-  network       = "${google_compute_network.main.self_link}"
-  region        = "us-central1"
+  region        = "${var.region}"
 
   project = "${var.project}"
 }
@@ -205,20 +195,22 @@ resource "google_compute_firewall" "deny_target_ip" {
   }
 }
 
-resource "google_compute_address" "nat-b" {
-  name    = "nat-b"
-  region  = "us-central1"
+resource "google_compute_address" "nat" {
+  count   = "${length(var.nat_zones)}"
+  name    = "nat-${element(var.nat_zones, count.index)}"
+  region  = "${var.region}"
   project = "${var.project}"
 }
 
-resource "aws_route53_record" "nat-b" {
+resource "aws_route53_record" "nat" {
+  count   = "${length(var.nat_zones)}"
   zone_id = "${var.travisci_net_external_zone_id}"
-  name    = "nat-${var.env}-${var.index}.gce-us-central1-b.travisci.net"
+  name    = "nat-${var.env}-${var.index}.gce-${var.region}-${element(var.nat_zones, count.index)}.travisci.net"
   type    = "A"
   ttl     = 5
 
   records = [
-    "${google_compute_address.nat-b.address}",
+    "${element(google_compute_address.nat.*.address, count.index)}",
   ]
 }
 
@@ -230,30 +222,39 @@ data "template_file" "nat_cloud_config" {
     cloud_init_bash  = "${file("${path.module}/nat-cloud-init.bash")}"
     github_users_env = "export GITHUB_USERS='${var.github_users}'"
     syslog_address   = "${var.syslog_address}"
+    assets           = "${path.module}/../../assets"
   }
 }
 
-resource "google_compute_instance" "nat-b" {
-  name         = "${var.env}-${var.index}-nat-b"
-  machine_type = "${var.nat_machine_type}"
-  zone         = "us-central1-b"
-  tags         = ["nat", "${var.env}"]
-  project      = "${var.project}"
+resource "google_compute_instance_template" "nat" {
+  count          = "${length(var.nat_zones)}"
+  name           = "${var.env}-${var.index}-nat-${element(var.nat_zones, count.index)}-template-${substr(sha256(data.template_file.nat_cloud_config.rendered), 0, 7)}"
+  machine_type   = "${var.nat_machine_type}"
+  can_ip_forward = true
+  region         = "${var.region}"
+  tags           = ["nat", "${var.env}"]
+  project        = "${var.project}"
 
-  boot_disk {
-    auto_delete = true
+  labels {
+    environment = "${var.env}"
+  }
 
-    initialize_params {
-      image = "${var.nat_image}"
-      type  = "pd-ssd"
-    }
+  scheduling {
+    automatic_restart   = true
+    on_host_maintenance = "MIGRATE"
+  }
+
+  disk {
+    auto_delete  = true
+    boot         = true
+    source_image = "${var.nat_image}"
   }
 
   network_interface {
-    subnetwork = "public"
+    subnetwork = "${google_compute_subnetwork.public.self_link}"
 
     access_config {
-      nat_ip = "${google_compute_address.nat-b.address}"
+      nat_ip = "${element(google_compute_address.nat.*.address, count.index)}"
     }
   }
 
@@ -261,22 +262,100 @@ resource "google_compute_instance" "nat-b" {
     "block-project-ssh-keys" = "true"
     "user-data"              = "${data.template_file.nat_cloud_config.rendered}"
   }
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
-resource "google_compute_address" "bastion-b" {
-  name    = "bastion-b"
-  region  = "us-central1"
+resource "google_compute_http_health_check" "nat" {
+  name                = "nat-health-check"
+  request_path        = "/health-check"
+  check_interval_sec  = 30
+  healthy_threshold   = 1
+  unhealthy_threshold = 5
+}
+
+resource "google_compute_firewall" "nat" {
+  name        = "nat"
+  network     = "${google_compute_network.main.name}"
+  target_tags = ["nat"]
+  project     = "${var.project}"
+
+  source_ranges = [
+    "209.85.152.0/22",
+    "209.85.204.0/22",
+    "35.191.0.0/16",
+  ]
+
+  allow {
+    protocol = "tcp"
+    ports    = [80]
+  }
+}
+
+resource "google_compute_instance_group_manager" "nat" {
+  count              = "${length(var.nat_zones)}"
+  name               = "nat-${element(var.nat_zones, count.index)}"
+  target_size        = 1
+  base_instance_name = "nat"
+  instance_template  = "${element(google_compute_instance_template.nat.*.self_link, count.index)}"
+  zone               = "${var.region}-${element(var.nat_zones, count.index)}"
+
+  named_port {
+    name = "http"
+    port = 80
+  }
+
+  auto_healing_policies {
+    health_check      = "${google_compute_http_health_check.nat.self_link}"
+    initial_delay_sec = 300
+  }
+}
+
+data "external" "nats_by_zone" {
+  program = ["${path.module}/../../bin/gcloud-nats-by-zone"]
+
+  query {
+    zones   = "${join(",", var.nat_zones)}"
+    region  = "${var.region}"
+    project = "${var.project}"
+  }
+
+  depends_on = ["google_compute_instance_group_manager.nat"]
+}
+
+resource "google_compute_route" "nat" {
+  count                  = "${length(var.nat_zones)}"
+  name                   = "nat-${element(var.nat_zones, count.index)}"
+  dest_range             = "0.0.0.0/0"
+  tags                   = ["no-ip"]
+  priority               = 800
+  next_hop_instance_zone = "${var.region}-${element(var.nat_zones, count.index)}"
+  next_hop_instance      = "${data.external.nats_by_zone.result[element(var.nat_zones, count.index)]}"
+  network                = "${google_compute_network.main.self_link}"
+
+  lifecycle {
+    ignore_changes = ["next_hop_instance", "id"]
+  }
+}
+
+resource "google_compute_address" "bastion" {
+  count   = "${length(var.bastion_zones)}"
+  name    = "bastion-${element(var.bastion_zones, count.index)}"
+  region  = "${var.region}"
   project = "${var.project}"
 }
 
-resource "aws_route53_record" "bastion-b" {
+resource "aws_route53_record" "bastion" {
+  count   = "${length(var.bastion_zones)}"
   zone_id = "${var.travisci_net_external_zone_id}"
-  name    = "bastion-${var.env}-${var.index}.gce-us-central1-b.travisci.net"
+  name    = "bastion-${var.env}-${var.index}.gce-${var.region}-${element(var.bastion_zones, count.index)}.travisci.net"
   type    = "A"
   ttl     = 5
 
   records = [
-    "${google_compute_address.bastion-b.address}",
+    "${element(google_compute_address.bastion.*.address, count.index)}",
   ]
 }
 
@@ -291,10 +370,11 @@ data "template_file" "bastion_cloud_config" {
   }
 }
 
-resource "google_compute_instance" "bastion-b" {
-  name         = "${var.env}-${var.index}-bastion-b"
+resource "google_compute_instance" "bastion" {
+  count        = "${length(var.bastion_zones)}"
+  name         = "${var.env}-${var.index}-bastion-${element(var.bastion_zones, count.index)}"
   machine_type = "g1-small"
-  zone         = "us-central1-b"
+  zone         = "${var.region}-${element(var.bastion_zones, count.index)}"
   tags         = ["bastion", "${var.env}"]
   project      = "${var.project}"
 
@@ -303,15 +383,15 @@ resource "google_compute_instance" "bastion-b" {
 
     initialize_params {
       image = "${var.bastion_image}"
-      type  = "pd-ssd"
+      type  = "pd-standard"
     }
   }
 
   network_interface {
-    subnetwork = "public"
+    subnetwork = "${google_compute_subnetwork.public.self_link}"
 
     access_config {
-      nat_ip = "${google_compute_address.bastion-b.address}"
+      nat_ip = "${element(google_compute_address.bastion.*.address, count.index)}"
     }
   }
 

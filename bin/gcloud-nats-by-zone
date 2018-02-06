@@ -1,0 +1,61 @@
+#!/usr/bin/env python
+from __future__ import print_function
+
+import json
+import os
+import subprocess
+import sys
+import textwrap
+
+
+def main(sysargs=sys.argv[:]):
+    if sys.stdin.isatty() or '-h' in sysargs[1:] or '--help' in sysargs[1:]:
+        return _usage()
+
+    in_args = json.load(sys.stdin)
+    zones = list(filter(lambda s: s != '', [
+        z.strip() for z in in_args.get('zones', '').split(',')
+    ]))
+    project = in_args['project']
+    region = in_args['region']
+
+    instances = {'__count__': '0'}
+    instances_command = [
+        'gcloud', 'compute', 'instance-groups', 'managed', 'list-instances',
+    ]
+
+    for zone in zones:
+        try:
+            instance_name = subprocess.check_output(
+                instances_command + [
+                    'nat-{}'.format(zone),
+                    '--project={}'.format(project),
+                    '--zone={}-{}'.format(region, zone),
+                    '--format=value(instance)',
+                ]
+            ).strip()
+            instances[zone] = instance_name.decode('utf-8')
+        except subprocess.CalledProcessError:
+            instances[zone] = '<notset>'
+
+    if '<notset>' not in instances.values():
+        instances['__count__'] = str(len(instances) - 1)
+    print(json.dumps(instances, sort_keys=True, indent=4))
+    return 0
+
+
+def _usage(sysargs=sys.argv[:]):
+    print(textwrap.dedent("""\
+        Usage: {prog} [-h|--help]
+
+        Print a mapping of zone=>instance-id given a JSON blob containing
+        the following arguments provided via stdin:
+
+        project - the gcloud project name
+        region - the region in which to look for nat instances
+        zones - a comma-delimited list of zones within the region
+    """).format(prog=sysargs[0]))
+    return 2
+
+if __name__ == '__main__':
+    sys.exit(main())

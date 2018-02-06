@@ -7,10 +7,9 @@ variable "gce_bastion_image" {
 }
 
 variable "gce_nat_image" {
-  default = "eco-emissary-99515/nat-1481594315"
+  default = "eco-emissary-99515/nat-1517861556-35889bb"
 }
 
-variable "gce_gcloud_zone" {}
 variable "github_users" {}
 
 variable "index" {
@@ -51,7 +50,6 @@ module "gce_nat_1" {
   bastion_image                 = "${var.gce_bastion_image}"
   deny_target_ip_ranges         = ["${split(",", var.deny_target_ip_ranges)}"]
   env                           = "${var.env}"
-  gcloud_zone                   = "${var.gce_gcloud_zone}"
   github_users                  = "${var.github_users}"
   index                         = "${var.index}"
   nat_config                    = "${file("config/nat.env")}"
