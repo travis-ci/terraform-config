@@ -13,15 +13,8 @@ main() {
     "${GCE_NAT_DUO_SECRET_KEY}" \
     "${GCE_NAT_DUO_API_HOSTNAME}"
 
-  local service_src="${VARTMP}/travis-nat-health-check.service"
-  local service_dest="${ETCDIR}/systemd/system/travis-nat-health-check.service"
-
-  if [[ -f "${service_src}" && -d "$(dirname "${service_dest}")" ]]; then
-    cp -v "${service_src}" "${service_dest}"
-
-    systemctl enable travis-nat-health-check || true
-    systemctl start travis-nat-health-check || true
-  fi
+  __setup_nat_forwarding
+  __setup_nat_health_check
 }
 
 __write_duo_configs() {
@@ -36,6 +29,23 @@ host = ${3}
 failmode = secure
 EOF
   done
+}
+
+__setup_nat_forwarding() {
+  sysctl -w net.ipv4.ip_forward=1
+  iptables -t nat -A POSTROUTING -o ens4 -j MASQUERADE
+}
+
+__setup_nat_health_check() {
+  local service_src="${VARTMP}/travis-nat-health-check.service"
+  local service_dest="${ETCDIR}/systemd/system/travis-nat-health-check.service"
+
+  if [[ -f "${service_src}" && -d "$(dirname "${service_dest}")" ]]; then
+    cp -v "${service_src}" "${service_dest}"
+
+    systemctl enable travis-nat-health-check || true
+    systemctl start travis-nat-health-check || true
+  fi
 }
 
 main "${@}"

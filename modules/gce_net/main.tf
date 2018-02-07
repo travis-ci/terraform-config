@@ -135,30 +135,22 @@ resource "google_compute_firewall" "allow_public_icmp" {
 resource "google_compute_firewall" "allow_internal" {
   name    = "allow-internal"
   network = "${google_compute_network.main.name}"
+  project = "${var.project}"
 
   source_ranges = [
     "${google_compute_subnetwork.public.ip_cidr_range}",
     "${google_compute_subnetwork.workers.ip_cidr_range}",
   ]
 
-  project = "${var.project}"
-
   allow {
-    protocol = "icmp"
-  }
-
-  allow {
-    protocol = "tcp"
-  }
-
-  allow {
-    protocol = "udp"
+    protocol = "all"
   }
 }
 
 resource "google_compute_firewall" "allow_jobs_nat" {
   name    = "allow-jobs-nat"
   network = "${google_compute_network.main.name}"
+  project = "${var.project}"
 
   source_ranges = [
     "${google_compute_subnetwork.jobs_org.ip_cidr_range}",
@@ -167,18 +159,8 @@ resource "google_compute_firewall" "allow_jobs_nat" {
 
   target_tags = ["nat"]
 
-  project = "${var.project}"
-
   allow {
-    protocol = "icmp"
-  }
-
-  allow {
-    protocol = "tcp"
-  }
-
-  allow {
-    protocol = "udp"
+    protocol = "all"
   }
 }
 
@@ -191,19 +173,10 @@ resource "google_compute_firewall" "deny_target_ip" {
 
   project = "${var.project}"
 
-  # highest priority
-  priority = "1000"
+  priority = "1"
 
   deny {
-    protocol = "tcp"
-  }
-
-  deny {
-    protocol = "udp"
-  }
-
-  deny {
-    protocol = "icmp"
+    protocol = "all"
   }
 }
 
@@ -291,8 +264,8 @@ resource "google_compute_http_health_check" "nat" {
 resource "google_compute_firewall" "nat" {
   name        = "nat"
   network     = "${google_compute_network.main.name}"
-  target_tags = ["nat"]
   project     = "${var.project}"
+  target_tags = ["nat"]
 
   source_ranges = [
     "209.85.152.0/22",
@@ -307,11 +280,13 @@ resource "google_compute_firewall" "nat" {
 }
 
 resource "google_compute_instance_group_manager" "nat" {
-  count              = "${length(var.nat_zones)}"
-  name               = "nat-${element(var.nat_zones, count.index)}"
-  target_size        = 1
+  count = "${length(var.nat_zones)}"
+
   base_instance_name = "nat"
   instance_template  = "${element(google_compute_instance_template.nat.*.self_link, count.index)}"
+  name               = "nat-${element(var.nat_zones, count.index)}"
+  target_size        = 1
+  update_strategy    = "NONE"
   zone               = "${var.region}-${element(var.nat_zones, count.index)}"
 
   named_port {
