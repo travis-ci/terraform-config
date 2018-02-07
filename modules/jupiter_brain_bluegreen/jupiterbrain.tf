@@ -6,6 +6,7 @@ variable "env" {}
 variable "index" {}
 variable "port_suffix" {}
 variable "host_id" {}
+variable "token" {}
 
 data "template_file" "jupiter_brain_install" {
   template = "${file("${path.module}/install-jupiter-brain.sh")}"
@@ -50,6 +51,7 @@ resource "null_resource" "jupiter_brain" {
     content = <<EOF
 export JUPITER_BRAIN_ADDR='127.0.0.1:${9080 + var.port_suffix}'
 export JUPITER_BRAIN_LIBRATO_SOURCE='jupiter-brain-${var.env}-${var.index}-blue'
+export JUPITER_BRAIN_AUTH_TOKEN='${var.token}'
 EOF
 
     destination = "/tmp/etc-default-jupiter-brain-${var.env}-blue"
@@ -59,6 +61,7 @@ EOF
     content = <<EOF
 export JUPITER_BRAIN_ADDR='127.0.0.1:${10080 + var.port_suffix}'
 export JUPITER_BRAIN_LIBRATO_SOURCE='jupiter-brain-${var.env}-${var.index}-green'
+export JUPITER_BRAIN_AUTH_TOKEN='${var.token}'
 EOF
 
     destination = "/tmp/etc-default-jupiter-brain-${var.env}-green"
