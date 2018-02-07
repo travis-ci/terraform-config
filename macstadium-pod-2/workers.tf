@@ -32,7 +32,7 @@ module "worker_production_org_1" {
 export TRAVIS_WORKER_TRAVIS_SITE="org"
 export TRAVIS_WORKER_POOL_SIZE="60"
 export TRAVIS_WORKER_PPROF_PORT="7070"
-export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT=http://${random_id.jupiter_brain_production_org_token.hex}@127.0.0.1:8081/
+export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_production_org_token.hex}@127.0.0.1:8081/"
 export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-production-org-macstadium-${var.index}-1-dc18"
 EOF
 }
@@ -52,7 +52,7 @@ module "worker_production_org_2" {
 export TRAVIS_WORKER_TRAVIS_SITE="org"
 export TRAVIS_WORKER_POOL_SIZE="60"
 export TRAVIS_WORKER_PPROF_PORT="7071"
-export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT=http://${random_id.jupiter_brain_production_org_token.hex}@127.0.0.1:8081/
+export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_production_org_token.hex}@127.0.0.1:8081/"
 export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-production-org-macstadium-${var.index}-2-dc18"
 EOF
 }
@@ -71,7 +71,7 @@ module "worker_staging_org_1" {
   worker_local_config = <<EOF
 export TRAVIS_WORKER_TRAVIS_SITE="org"
 export TRAVIS_WORKER_POOL_SIZE="2"
-export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT=http://${random_id.jupiter_brain_staging_org_token.hex}@127.0.0.1:8082/
+export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_staging_org_token.hex}@127.0.0.1:8082/"
 export TRAVIS_WORKER_LIBRATO_SOURCE="worker-staging-org-${var.index}-1-dc18"
 EOF
 }
@@ -90,7 +90,7 @@ module "worker_staging_org_2" {
   worker_local_config = <<EOF
 export TRAVIS_WORKER_TRAVIS_SITE="org"
 export TRAVIS_WORKER_POOL_SIZE="2"
-export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT=http://${random_id.jupiter_brain_staging_org_token.hex}@127.0.0.1:8082/
+export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_staging_org_token.hex}@127.0.0.1:8082/"
 export TRAVIS_WORKER_LIBRATO_SOURCE="worker-staging-org-${var.index}-2-dc18"
 EOF
 }
@@ -110,7 +110,7 @@ module "worker_production_com_1" {
 export TRAVIS_WORKER_HARD_TIMEOUT=120m
 export TRAVIS_WORKER_TRAVIS_SITE="com"
 export TRAVIS_WORKER_POOL_SIZE="55"
-export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT=http://${random_id.jupiter_brain_production_com_token.hex}@127.0.0.1:8083/
+export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_production_com_token.hex}@127.0.0.1:8083/"
 export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-production-com-macstadium-${var.index}-1-dc18"
 EOF
 }
@@ -130,7 +130,7 @@ module "worker_production_com_2" {
 export TRAVIS_WORKER_HARD_TIMEOUT=120m
 export TRAVIS_WORKER_TRAVIS_SITE="com"
 export TRAVIS_WORKER_POOL_SIZE="55"
-export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT=http://${random_id.jupiter_brain_production_com_token.hex}@127.0.0.1:8083/
+export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_production_com_token.hex}@127.0.0.1:8083/"
 export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-production-com-macstadium-${var.index}-2-dc18"
 EOF
 }
@@ -150,7 +150,7 @@ module "worker_staging_com_1" {
 export TRAVIS_WORKER_HARD_TIMEOUT=120m
 export TRAVIS_WORKER_TRAVIS_SITE="com"
 export TRAVIS_WORKER_POOL_SIZE="2"
-export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT=http://${random_id.jupiter_brain_staging_com_token.hex}@127.0.0.1:8084/
+export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_staging_com_token.hex}@127.0.0.1:8084/"
 export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-staging-com-macstadium-${var.index}-1-dc18"
 EOF
 }
@@ -170,7 +170,7 @@ module "worker_staging_com_2" {
 export TRAVIS_WORKER_HARD_TIMEOUT=120m
 export TRAVIS_WORKER_TRAVIS_SITE="com"
 export TRAVIS_WORKER_POOL_SIZE="2"
-export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT=http://${random_id.jupiter_brain_staging_com_token.hex}@127.0.0.1:8084/
+export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_staging_com_token.hex}@127.0.0.1:8084/"
 export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-staging-com-macstadium-${var.index}-2-dc18"
 EOF
 }
@@ -190,7 +190,7 @@ module "worker_custom_1" {
 export TRAVIS_WORKER_HARD_TIMEOUT=120m
 export TRAVIS_WORKER_TRAVIS_SITE="com"
 export TRAVIS_WORKER_POOL_SIZE="5"
-export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT=http://${random_id.jupiter_brain_custom_1_token.hex}@127.0.0.1:8085/
+export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_custom_1_token.hex}@127.0.0.1:8085/"
 export TRAVIS_WORKER_QUEUE_NAME="builds.customer.${lower(var.custom_1_name)}-macos"
 export TRAVIS_WORKER_LIBRATO_SOURCE="worker-custom-1-${var.index}-dc18"
 EOF
@@ -211,7 +211,7 @@ module "worker_custom_2" {
 export TRAVIS_WORKER_HARD_TIMEOUT=120m
 export TRAVIS_WORKER_TRAVIS_SITE="com"
 export TRAVIS_WORKER_POOL_SIZE="5"
-export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT=http://${random_id.jupiter_brain_custom_2_token.hex}@127.0.0.1:8086/
+export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_custom_2_token.hex}@127.0.0.1:8086/"
 export TRAVIS_WORKER_QUEUE_NAME="builds.customer.${lower(var.custom_2_name)}-macos"
 export TRAVIS_WORKER_LIBRATO_SOURCE="worker-custom-2-${var.index}-dc18"
 EOF
@@ -232,7 +232,7 @@ module "worker_custom_4" {
 export TRAVIS_WORKER_HARD_TIMEOUT=120m
 export TRAVIS_WORKER_TRAVIS_SITE="com"
 export TRAVIS_WORKER_POOL_SIZE="5"
-export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT=http://${random_id.jupiter_brain_custom_4_token.hex}@127.0.0.1:8088/
+export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_custom_4_token.hex}@127.0.0.1:8088/"
 export TRAVIS_WORKER_QUEUE_NAME="builds.customer.${lower(var.custom_4_name)}"
 export TRAVIS_WORKER_LIBRATO_SOURCE="worker-custom-4-${var.index}-dc18"
 EOF
@@ -253,7 +253,7 @@ module "worker_custom_5" {
 export TRAVIS_WORKER_HARD_TIMEOUT=120m
 export TRAVIS_WORKER_TRAVIS_SITE="com"
 export TRAVIS_WORKER_POOL_SIZE="5"
-export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT=http://${random_id.jupiter_brain_custom_5_token.hex}@127.0.0.1:8089/
+export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_custom_5_token.hex}@127.0.0.1:8089/"
 export TRAVIS_WORKER_QUEUE_NAME="builds.customer.${lower(var.custom_5_name)}"
 export TRAVIS_WORKER_LIBRATO_SOURCE="worker-custom-5-${var.index}-dc18"
 EOF
