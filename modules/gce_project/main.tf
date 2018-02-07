@@ -351,8 +351,7 @@ module "gce_worker_a" {
   syslog_address_org       = "${var.syslog_address_org}"
   worker_docker_self_image = "${var.worker_docker_self_image}"
   worker_image             = "${var.worker_image}"
-  zone                     = "us-central1-a"
-  zone_suffix              = "a"
+  zones                    = ["a"]
 }
 
 module "gce_worker_b" {
@@ -369,13 +368,13 @@ module "gce_worker_b" {
   instance_count_org       = "${var.worker_instance_count_org / var.zone_count}"
   machine_type             = "g1-small"
   project                  = "${var.project}"
+  region                   = "${var.region}"
   subnetwork_workers       = "${google_compute_subnetwork.workers.self_link}"
   syslog_address_com       = "${var.syslog_address_com}"
   syslog_address_org       = "${var.syslog_address_org}"
   worker_docker_self_image = "${var.worker_docker_self_image}"
   worker_image             = "${var.worker_image}"
-  zone                     = "us-central1-b"
-  zone_suffix              = "b"
+  zones                    = ["b"]
 }
 
 module "gce_worker_c" {
@@ -392,13 +391,13 @@ module "gce_worker_c" {
   instance_count_org       = "${var.worker_instance_count_org / var.zone_count}"
   machine_type             = "g1-small"
   project                  = "${var.project}"
+  region                   = "${var.region}"
   subnetwork_workers       = "${google_compute_subnetwork.workers.self_link}"
   syslog_address_com       = "${var.syslog_address_com}"
   syslog_address_org       = "${var.syslog_address_org}"
   worker_docker_self_image = "${var.worker_docker_self_image}"
   worker_image             = "${var.worker_image}"
-  zone                     = "us-central1-c"
-  zone_suffix              = "c"
+  zones                    = ["c"]
 }
 
 module "gce_worker_f" {
@@ -420,8 +419,8 @@ module "gce_worker_f" {
   syslog_address_org       = "${var.syslog_address_org}"
   worker_docker_self_image = "${var.worker_docker_self_image}"
   worker_image             = "${var.worker_image}"
-  zone                     = "us-central1-f"
-  zone_suffix              = "f"
+  region                   = "${var.region}"
+  zones                    = ["f"]
 }
 
 resource "heroku_app" "gcloud_cleanup" {
