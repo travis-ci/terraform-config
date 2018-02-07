@@ -28,7 +28,7 @@ variable "deny_target_ip_ranges" {}
 terraform {
   backend "s3" {
     bucket         = "travis-terraform-state"
-    key            = "terraform-config/gce-stagingnet-1.tfstate"
+    key            = "terraform-config/gce-staging-net-1.tfstate"
     region         = "us-east-1"
     encrypt        = "true"
     dynamodb_table = "travis-terraform-state"
@@ -43,7 +43,7 @@ provider "google" {
 
 provider "aws" {}
 
-module "gce_nat_1" {
+module "gce_net" {
   source = "../modules/gce_net"
 
   bastion_config                = "${file("config/bastion.env")}"
@@ -58,4 +58,8 @@ module "gce_nat_1" {
   project                       = "travis-staging-1"
   syslog_address                = "${var.syslog_address_com}"
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
+}
+
+output "gce_subnetwork_workers" {
+  value = "${module.gce_net.gce_subnetwork_workers}"
 }

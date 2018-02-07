@@ -93,6 +93,18 @@ resource "google_compute_subnetwork" "jobs_com" {
   project = "${var.project}"
 }
 
+resource "google_compute_firewall" "allow_main_ssh" {
+  name          = "allow-main-ssh"
+  network       = "${google_compute_network.main.name}"
+  source_ranges = ["87.142.116.219"]
+  priority      = 1000
+
+  allow {
+    protocol = "tcp"
+    ports    = [22]
+  }
+}
+
 resource "google_compute_firewall" "allow_public_ssh" {
   name          = "allow-public-ssh"
   network       = "${google_compute_network.main.name}"
@@ -403,4 +415,8 @@ resource "google_compute_instance" "bastion" {
 
 output "gce_subnetwork_public" {
   value = "${google_compute_subnetwork.public.self_link}"
+}
+
+output "gce_subnetwork_workers" {
+  value = "${google_compute_subnetwork.workers.self_link}"
 }
