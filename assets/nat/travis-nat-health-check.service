@@ -1,0 +1,10 @@
+[Unit]
+Description=Travis NAT Health Check
+
+[Service]
+ExecStart=/usr/local/bin/travis-nat-health-check
+Restart=always
+WorkingDirectory=/
+
+[Install]
+WantedBy=multi-user.target

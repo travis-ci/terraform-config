@@ -1,0 +1,53 @@
+#!/usr/bin/python
+# This is a modified version of the health check code available via:
+# $ gsutil cp gs://nat-gw-template/startup.sh .
+import os
+import subprocess
+import sys
+
+from wsgiref.util import setup_testing_defaults
+from wsgiref.simple_server import make_server
+
+
+PORT_NUMBER = 80
+PING_HOST = 'www.google.com'
+
+
+def check_connectivity(ping_host):
+    try:
+        subprocess.check_call(['ping', '-c', '1', ping_host])
+        return True
+    except subprocess.CalledProcessError:
+        return False
+
+
+def health_app(environ, start_response):
+    setup_testing_defaults(environ)
+    ping_host = os.environ.get('PING_HOST', PING_HOST)
+
+    def resp(status, body):
+        body = body.encode('utf-8')
+        start_response(status, [
+            ('content-type', 'text/plain; charset=utf-8'),
+            ('content-length', str(len(body))),
+        ])
+        return [body]
+
+    if environ['PATH_INFO'] == '/health-check':
+        if check_connectivity(ping_host):
+            return resp('200 OK', 'ok\n')
+        else:
+            return resp('503 Internal Server Error', 'oh no\n')
+
+    return resp('404 Not Found', 'what\n')
+
+
+def main():
+    port_number = int(os.environ.get('PORT', PORT_NUMBER))
+    httpd = make_server('', port_number, health_app)
+    print('Serving health check app on port {}...'.format(port_number))
+    httpd.serve_forever()
+
+
+if __name__ == '__main__':
+    sys.exit(main())

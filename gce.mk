@@ -1,6 +1,6 @@
 include $(shell git rev-parse --show-toplevel)/terraform.mk
 
-WRITE_CONFIG_OPTS := --write-bastion --env-tail $(ENV_TAIL)
+WRITE_CONFIG_OPTS := --write-bastion --write-nat --env-tail $(ENV_TAIL)
 
 .PHONY: default
 default: hello
