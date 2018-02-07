@@ -1,101 +1,72 @@
-#!/usr/bin/env python
-from __future__ import print_function
+#!/usr/bin/env ruby
 
-import datetime
-import json
-import os
-import subprocess
-import sys
-import textwrap
-import time
+require 'json'
 
+NOTSET = '<notset>'
 
-def main(sysargs=sys.argv[:]):
-    prog = sysargs[0]
-    _log = make_log(prog)
-    if sys.stdin.isatty() or '-h' in sysargs[1:] or '--help' in sysargs[1:]:
-        return _usage(prog)
+def main(argv: ARGV)
+  if $stdin.tty? || argv.include?('-h') || argv.include?('--help')
+    return usage
+  end
 
-    in_args = json.load(sys.stdin)
-    zones = list(filter(lambda s: s != '', [
-        z.strip() for z in in_args.get('zones', '').split(',')
-    ]))
-    project = in_args['project']
-    region = in_args['region']
-    retries = int(in_args.get('retries', '4'))
-    retry_sleep = int(in_args.get('retry_sleep', '120'))
-    retried = 0
+  in_args = JSON.parse($stdin.read)
+  zones = in_args.fetch('zones', '').split(',').map(&:strip).reject(&:empty?)
+  project = in_args.fetch('project')
+  region = in_args.fetch('region')
+  retries = Integer(in_args.fetch('retries', '4'))
+  retry_sleep = Integer(in_args.fetch('retry_sleep', '120'))
+  retried = 0
 
-    instances = {}
-    while retried <= retries:
-        instances = _fetch_nats_by_zone(zones, project, region, _log)
-        if instances['__count__'] == str(len(zones)):
-            break
-        _log('instances={!r} sleeping={}s'.format(instances, retry_sleep))
-        time.sleep(retry_sleep)
-        retried += 1
+  instances = {}
+  while retried <= retries
+    instances = fetch_nats_by_zone(zones, project, region)
+    break if instances.length == zones.length
 
-    print(json.dumps(instances, sort_keys=True, indent=4))
-    return 0
+    $stderr.puts("#{$PROGRAM_NAME}: sleeping=#{retry_sleep}s")
+    sleep(retry_sleep)
+    retried += 1
+  end
 
+  $stdout.puts(JSON.pretty_generate(instances))
+  0
+end
 
-def _fetch_nats_by_zone(zones, project, region, _log):
-    instances = {'__count__': '0'}
-    instances_command = [
-        'gcloud', 'compute', 'instance-groups', 'list-instances',
-    ]
+def fetch_nats_by_zone(zones, project, region)
+  instances = {}
+  instances_command = %w[
+    gcloud compute instance-groups list-instances
+  ]
 
-    for zone in zones:
-        try:
-            instance_name = subprocess.check_output(
-                instances_command + [
-                    'nat-{}'.format(zone),
-                    '--project={}'.format(project),
-                    '--zone={}-{}'.format(region, zone),
-                    '--format=value(instance)',
-                ]
-            ).strip()
-            _log('zone={} instance_name={}'.format(zone, instance_name))
-            instances[zone] = instance_name.decode('utf-8')
-        except subprocess.CalledProcessError:
-            instances[zone] = '<notset>'
+  zones.each do |zone|
+    begin
+      full_command = instances_command + %W[
+        nat-#{zone}
+        --project=#{project}
+        --zone=#{region}-#{zone}
+        --format="value(instance)"
+      ]
+      instance_name = `#{full_command.join(' ')}`.strip
+      instances[zone] = instance_name
+    rescue => e
+      warn e
+    end
+  end
 
-    if '<notset>' not in instances.values():
-        instances['__count__'] = str(len(instances) - 1)
+  instances
+end
 
-    return instances
+def usage
+  $stderr.puts <<~EOF
+    Usage: #{$PROGRAM_NAME} [-h|--help]
 
+    Print a mapping of zone=>instance-id given a JSON blob containing
+    the following arguments provided via stdin:
 
-def _usage(prog):
-    print(textwrap.dedent("""\
-        Usage: {prog} [-h|--help]
+    project - the gcloud project name
+    region - the region in which to look for nat instances
+    zones - a comma-delimited list of zones within the region
+  EOF
+  2
+end
 
-        Print a mapping of zone=>instance-id given a JSON blob containing
-        the following arguments provided via stdin:
-
-        project - the gcloud project name
-        region - the region in which to look for nat instances
-        zones - a comma-delimited list of zones within the region
-    """).format(prog=prog), file=sys.stderr)
-    return 2
-
-
-def make_log(prog):
-    out = sys.stderr
-    if os.environ.get('DEBUG_LOG') is not None:
-        out = open(os.environ['DEBUG_LOG'], 'a+')
-
-    def _log(msg):
-        print(
-            '{prog}:{now} {msg}'.format(
-                  prog=prog, now=datetime.datetime.now().isoformat(), msg=msg
-            ),
-            file=out
-        )
-        out.flush()
-
-    return _log
-
-
-if __name__ == '__main__':
-    sys.exit(main())
+exit(main) if $PROGRAM_NAME == __FILE__
