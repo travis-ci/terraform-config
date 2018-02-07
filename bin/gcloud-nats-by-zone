@@ -1,0 +1,72 @@
+#!/usr/bin/env ruby
+
+require 'json'
+
+NOTSET = '<notset>'
+
+def main(argv: ARGV)
+  if $stdin.tty? || argv.include?('-h') || argv.include?('--help')
+    return usage
+  end
+
+  in_args = JSON.parse($stdin.read)
+  zones = in_args.fetch('zones', '').split(',').map(&:strip).reject(&:empty?)
+  project = in_args.fetch('project')
+  region = in_args.fetch('region')
+  retries = Integer(in_args.fetch('retries', '4'))
+  retry_sleep = Integer(in_args.fetch('retry_sleep', '120'))
+  retried = 0
+
+  instances = {}
+  while retried <= retries
+    instances = fetch_nats_by_zone(zones, project, region)
+    break if instances.length == zones.length
+
+    $stderr.puts("#{$PROGRAM_NAME}: sleeping=#{retry_sleep}s")
+    sleep(retry_sleep)
+    retried += 1
+  end
+
+  $stdout.puts(JSON.pretty_generate(instances))
+  0
+end
+
+def fetch_nats_by_zone(zones, project, region)
+  instances = {}
+  instances_command = %w[
+    gcloud compute instance-groups list-instances
+  ]
+
+  zones.each do |zone|
+    begin
+      full_command = instances_command + %W[
+        nat-#{zone}
+        --project=#{project}
+        --zone=#{region}-#{zone}
+        --format="value(instance)"
+      ]
+      instance_name = `#{full_command.join(' ')}`.strip
+      instances[zone] = instance_name
+    rescue => e
+      warn e
+    end
+  end
+
+  instances
+end
+
+def usage
+  $stderr.puts <<~EOF
+    Usage: #{$PROGRAM_NAME} [-h|--help]
+
+    Print a mapping of zone=>instance-id given a JSON blob containing
+    the following arguments provided via stdin:
+
+    project - the gcloud project name
+    region - the region in which to look for nat instances
+    zones - a comma-delimited list of zones within the region
+  EOF
+  2
+end
+
+exit(main) if $PROGRAM_NAME == __FILE__
