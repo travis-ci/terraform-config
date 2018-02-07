@@ -2,13 +2,8 @@ variable "env" {
   default = "staging"
 }
 
-variable "gce_bastion_image" {
-  default = "eco-emissary-99515/bastion-1496867305"
-}
-
-variable "gce_nat_image" {
-  default = "eco-emissary-99515/nat-1517861556-35889bb"
-}
+variable "latest_gce_bastion_image" {}
+variable "latest_gce_nat_image" {}
 
 variable "github_users" {}
 
@@ -47,13 +42,13 @@ module "gce_net" {
   source = "../modules/gce_net"
 
   bastion_config                = "${file("config/bastion.env")}"
-  bastion_image                 = "${var.gce_bastion_image}"
+  bastion_image                 = "${var.latest_gce_bastion_image}"
   deny_target_ip_ranges         = ["${split(",", var.deny_target_ip_ranges)}"]
   env                           = "${var.env}"
   github_users                  = "${var.github_users}"
   index                         = "${var.index}"
   nat_config                    = "${file("config/nat.env")}"
-  nat_image                     = "${var.gce_nat_image}"
+  nat_image                     = "${var.latest_gce_nat_image}"
   nat_machine_type              = "g1-small"
   project                       = "travis-staging-1"
   syslog_address                = "${var.syslog_address_com}"
