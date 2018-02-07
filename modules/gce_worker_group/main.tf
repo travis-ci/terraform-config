@@ -28,6 +28,7 @@ variable "github_users" {}
 variable "heroku_org" {}
 variable "index" {}
 variable "project" {}
+variable "region" {}
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
 variable "travisci_net_external_zone_id" {}
@@ -57,7 +58,6 @@ variable "worker_zones" {
 module "gce_workers" {
   source = "../gce_worker"
 
-  count                    = "${length(var.worker_zones)}"
   account_json_com         = "${var.worker_account_json_com}"
   account_json_org         = "${var.worker_account_json_org}"
   config_com               = "${var.worker_config_com}"
@@ -65,17 +65,17 @@ module "gce_workers" {
   env                      = "${var.env}"
   github_users             = "${var.github_users}"
   index                    = "${var.index}"
-  instance_count_com       = "${var.worker_instance_count_com / length(var.worker_zones)}"
-  instance_count_org       = "${var.worker_instance_count_org / length(var.worker_zones)}"
+  instance_count_com       = "${var.worker_instance_count_com}"
+  instance_count_org       = "${var.worker_instance_count_org}"
   machine_type             = "${var.worker_machine_type}"
   project                  = "${var.project}"
+  region                   = "${var.region}"
   subnetwork_workers       = "${var.worker_subnetwork}"
   syslog_address_com       = "${var.syslog_address_com}"
   syslog_address_org       = "${var.syslog_address_org}"
   worker_docker_self_image = "${var.worker_docker_self_image}"
   worker_image             = "${var.worker_image}"
-  zone                     = "${var.region}-${element(var.worker_zones, count.index)}"
-  zone_suffix              = "${element(var.worker_zones, count.index)}"
+  zones                    = "${var.worker_zones}"
 }
 
 resource "heroku_app" "gcloud_cleanup" {
@@ -103,7 +103,7 @@ resource "heroku_app" "gcloud_cleanup" {
 
 resource "null_resource" "gcloud_cleanup" {
   triggers {
-    config_signature = "${sha256(join(",", values(heroku_app.gcloud_cleanup.config_vars.0)))}"
+    config_signature = "${sha256(jsonencode(heroku_app.gcloud_cleanup.config_vars))}"
     heroku_id        = "${heroku_app.gcloud_cleanup.id}"
     ps_scale         = "${var.gcloud_cleanup_scale}"
     version          = "${var.gcloud_cleanup_version}"

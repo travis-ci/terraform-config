@@ -76,6 +76,7 @@ module "gce_worker_group" {
   heroku_org                    = "${var.gce_heroku_org}"
   index                         = "${var.index}"
   project                       = "travis-staging-1"
+  region                        = "us-central1"
   syslog_address_com            = "${var.syslog_address_com}"
   syslog_address_org            = "${var.syslog_address_org}"
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
