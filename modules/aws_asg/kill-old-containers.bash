@@ -17,6 +17,7 @@ __container_is_newer_than() {
   created=$(date --date="$(docker inspect -f '{{ .Created }}' "$cid")" +%s)
   age=$(($(date +%s) - created))
   if [ "$age" -gt "$max_age" ]; then
+    logger "Container $cid age $age is older than max_age of $max_age."
     return 1
   fi
 }
@@ -38,7 +39,7 @@ main() {
     if [[ "$(docker inspect "$cid" --format '{{ .Name }}')" == "/travis-worker" ]]; then
       continue
     fi
-    if [[ ! $(__container_is_newer_than "$cid" "$max_age") ]]; then
+    if ! __container_is_newer_than "$cid" "$max_age"; then
       name="$(docker inspect "$cid" --format '{{ .Name }}')"
       logger "$cid is older than $max_age; killing it! ($name)"
       docker kill "$cid"
