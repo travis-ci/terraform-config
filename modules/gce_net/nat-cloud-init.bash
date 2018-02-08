@@ -13,6 +13,10 @@ main() {
     "${GCE_NAT_DUO_SECRET_KEY}" \
     "${GCE_NAT_DUO_API_HOSTNAME}"
 
+  __write_librato_config \
+    "${GCE_NAT_LIBRATO_EMAIL}" \
+    "${GCE_NAT_LIBRATO_TOKEN}"
+
   __setup_nat_forwarding
   __setup_nat_health_check
 }
@@ -31,6 +35,36 @@ EOF
   done
 }
 
+__write_librato_config() {
+  mkdir -p "${ETCDIR}/collectd/collectd.conf.d"
+
+  local hostname_tmpl="${VARTMP}/travis-run.d/instance-hostname.tmpl"
+  local hostname_setting
+  if [[ -f "${hostname_tmpl}" ]]; then
+    local region_zone hostname_rendered
+    region_zone="$(__fetch_region_zone)"
+    hostname_rendered="$(
+      sed "s/___REGION_ZONE___/${region_zone}/g" <"${hostname_tmpl}"
+    )"
+    hostname_setting="Hostname ${hostname_rendered}"
+  fi
+
+  cat >"${ETCDIR}/collectd/collectd.conf.d/librato.conf" <<EOF
+# Written by cloud-init $(date -u) :heart:
+${hostname_setting}
+LoadPlugin write_http
+
+<Plugin "write_http">
+  <Node "Librato">
+    URL "https://collectd.librato.com/v1/measurements"
+    User "${1}"
+    Password "${2}"
+    Format "JSON"
+  </Node>
+</Plugin>
+EOF
+}
+
 __setup_nat_forwarding() {
   sysctl -w net.ipv4.ip_forward=1
   iptables -t nat -A POSTROUTING -o ens4 -j MASQUERADE
@@ -46,6 +80,12 @@ __setup_nat_health_check() {
     systemctl enable travis-nat-health-check || true
     systemctl start travis-nat-health-check || true
   fi
+}
+
+__fetch_region_zone() {
+  curl -s -H 'Metadata-Flavor: Google' \
+    http://metadata.google.internal/computeMetadata/v1/instance/zone |
+    awk -F/ '{ print $NF }'
 }
 
 main "${@}"

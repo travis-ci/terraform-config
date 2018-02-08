@@ -19,6 +19,9 @@ write_files:
 - content: '${base64encode(file("${assets}/nat/travis-nat-health-check.service"))}'
   encoding: b64
   path: /var/tmp/travis-nat-health-check.service
+- content: '${base64encode(instance_hostname)}'
+  encoding: b64
+  path: /var/tmp/travis-run.d/instance-hostname.tmpl
 - content: '${base64encode(syslog_address)}'
   encoding: b64
   path: /var/tmp/travis-run.d/syslog-address

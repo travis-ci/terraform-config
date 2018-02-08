@@ -203,11 +203,12 @@ data "template_file" "nat_cloud_config" {
   template = "${file("${path.module}/nat-cloud-config.yml.tpl")}"
 
   vars {
-    nat_config       = "${var.nat_config}"
-    cloud_init_bash  = "${file("${path.module}/nat-cloud-init.bash")}"
-    github_users_env = "export GITHUB_USERS='${var.github_users}'"
-    syslog_address   = "${var.syslog_address}"
-    assets           = "${path.module}/../../assets"
+    nat_config        = "${var.nat_config}"
+    cloud_init_bash   = "${file("${path.module}/nat-cloud-init.bash")}"
+    github_users_env  = "export GITHUB_USERS='${var.github_users}'"
+    instance_hostname = "nat-${var.env}-${var.index}.gce-___REGION_ZONE___.travisci.net"
+    syslog_address    = "${var.syslog_address}"
+    assets            = "${path.module}/../../assets"
   }
 }
 
