@@ -3,7 +3,6 @@
 load bats_helpers
 
 setup() {
-  export CREDS_FILE=/dev/null
   aws_asg_setup
 }
 

@@ -18,7 +18,9 @@ __report_kills() {
   count_not_killed="$2"
   timestamp="$(date +%s)"
 
-  request_body=$(< <(cat <<EOF
+  # request_body=$(< <(cat <<EOF)
+  # read -r -d '' request_body <<EOF
+  request_body=$(cat <<EOF
   { "measure_time": "$timestamp",
     "source": "cron.ec2.aj.container-killer",
     "gauges": [
@@ -35,7 +37,7 @@ __report_kills() {
     ]
   }
 EOF
-  ))
+  )
 
   curl \
     -u "$LIBRATO_CREDENTIALS" \
@@ -57,16 +59,16 @@ __container_is_newer_than() {
 }
 
 main() {
+  # shellcheck disable=SC2153
+  : "${MAX_AGE:=10800}"
   : "${CREDS_FILE:=/etc/default/travis-worker}"
   : "${LIBRATO_API:=https://metrics-api.librato.com}"
   : "${LIBRATO_USERNAME:=${TRAVIS_WORKER_LIBRATO_EMAIL}}"
   : "${LIBRATO_TOKEN:=${TRAVIS_WORKER_LIBRATO_TOKEN}}"
   : "${LIBRATO_CREDENTIALS:=${LIBRATO_USERNAME}:${LIBRATO_TOKEN}}"
-  : "${max_age:=10800}"
   : "${RUNDIR:=/var/tmp/travis-run.d}"
 
   local instance_id cids killed_count not_killed_count max_age
-  # shellcheck disable=SC2153
   max_age="${MAX_AGE}"
   killed_count=0
   not_killed_count=0
