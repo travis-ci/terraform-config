@@ -3,7 +3,7 @@
 load bats_helpers
 
 setup() {
-  export MAX_AGE=10800
+  export CREDS_FILE=/dev/null
   aws_asg_setup
 }
 
@@ -13,29 +13,6 @@ teardown() {
 
 run_kill_old_containers() {
   bash "${BATS_TEST_DIRNAME}/kill-old-containers.bash"
-}
-
-@test "removes containers older than 3 hours" {
-  cat >"${BATS_TMPDIR}/returns/docker" <<EOF
-4b4b1e76884b
-e2f6756f92d7
-75e342138b9e
-f2dc4be5a304
-9153fe19ef63
-32b7af38a72a
-098460f0b007
-76ca3e25d62a
-83a9c5a0eb61
-EOF
-
-  cat >"${BATS_TMPDIR}/returns/date" <<EOF
-20171030T153252
-EOF
-
-  run run_kill_old_containers
-
-  [ "${status}" -eq 0 ]
-  assert_cmd "logger time=20171030T153252  prog=kill-old-containers.bash status=killed count=9"
 }
 
 @test "is a no-op if there are no containers" {
@@ -49,7 +26,7 @@ EOF
   run run_kill_old_containers
 
   [ "${status}" -eq 0 ]
-  assert_cmd "logger time=20171030T153252  prog=kill-old-containers.bash status=noop count=0"
+  assert_cmd "logger time=20171030T153252  prog=kill-old-containers.bash status=noop killed_count=0 not_killed_count=0"
 }
 
 @test "is a no-op if only travis-worker container is running" {
@@ -65,5 +42,5 @@ EOF
 
   [ "${status}" -eq 0 ]
 
-  assert_cmd "logger time=20171030T153252  prog=kill-old-containers.bash status=killed count=0"
+  assert_cmd "logger time=20171030T153252  prog=kill-old-containers.bash status=killed killed_count=0 not_killed_count=1"
 }
