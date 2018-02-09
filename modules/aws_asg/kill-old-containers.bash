@@ -20,7 +20,8 @@ __report_kills() {
 
   # request_body=$(< <(cat <<EOF)
   # read -r -d '' request_body <<EOF
-  request_body=$(cat <<EOF
+  request_body=$(
+    cat <<EOF
   { "measure_time": "$timestamp",
     "source": "cron.ec2.aj.container-killer",
     "gauges": [
