@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+require 'json'
 
 DEFAULT_GCE_PROJECT_ID = 'eco-emissary-99515'
 DEFAULT_IMAGE_PREFIXES = 'bastion nat tfw'
@@ -15,7 +16,7 @@ def main(argv: ARGV)
 
   prefixes.each do |prefix|
     name = fetch_latest_image_name(prefix, project)
-    $stdout.puts %[latest_gce_#{prefix}_image = "#{project}/#{name}"]
+    $stdout.puts %[latest_gce_#{prefix}_image = "#{name}"]
   end
 
   0
@@ -26,10 +27,11 @@ def fetch_latest_image_name(prefix, project)
     gcloud compute images list
     --project=#{project}
     --filter='name~^#{prefix}-'
-    --format='value(name)'
+    --format=json
   ].join(' ')
-  names = `#{command}`.split.map(&:strip)
-  names.sort.last
+  images = JSON.parse(`#{command}`)
+  images.sort! { |a, b| a.fetch('name') <=> b.fetch('name') }
+  images.last.fetch('selfLink')
 end
 
 def usage

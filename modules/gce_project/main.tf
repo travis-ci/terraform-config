@@ -157,6 +157,7 @@ resource "google_compute_subnetwork" "build_com" {
 resource "google_compute_firewall" "allow_public_ssh" {
   name          = "allow-public-ssh"
   network       = "${google_compute_network.main.name}"
+  direction     = "INGRESS"
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["bastion"]
 
@@ -171,6 +172,7 @@ resource "google_compute_firewall" "allow_public_ssh" {
 resource "google_compute_firewall" "allow_public_icmp" {
   name          = "allow-public-icmp"
   network       = "${google_compute_network.main.name}"
+  direction     = "INGRESS"
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["nat", "bastion"]
 
@@ -182,8 +184,9 @@ resource "google_compute_firewall" "allow_public_icmp" {
 }
 
 resource "google_compute_firewall" "allow_internal" {
-  name    = "allow-internal"
-  network = "${google_compute_network.main.name}"
+  name      = "allow-internal"
+  network   = "${google_compute_network.main.name}"
+  direction = "INGRESS"
 
   source_ranges = [
     "${google_compute_subnetwork.public.ip_cidr_range}",
@@ -206,8 +209,9 @@ resource "google_compute_firewall" "allow_internal" {
 }
 
 resource "google_compute_firewall" "allow_jobs_nat" {
-  name    = "allow-jobs-nat"
-  network = "${google_compute_network.main.name}"
+  name      = "allow-jobs-nat"
+  network   = "${google_compute_network.main.name}"
+  direction = "INGRESS"
 
   source_ranges = [
     "${google_compute_subnetwork.jobs_org.ip_cidr_range}",
@@ -314,6 +318,7 @@ resource "google_compute_instance" "bastion-b" {
     initialize_params {
       image = "${var.bastion_image}"
       type  = "pd-ssd"
+      size  = 10
     }
   }
 
