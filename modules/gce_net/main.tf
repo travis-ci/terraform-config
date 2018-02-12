@@ -14,6 +14,11 @@ variable "env" {}
 variable "github_users" {}
 variable "index" {}
 variable "nat_config" {}
+
+variable "nat_count_per_zone" {
+  default = 1
+}
+
 variable "nat_image" {}
 variable "nat_machine_type" {}
 
@@ -181,16 +186,16 @@ resource "google_compute_firewall" "deny_target_ip" {
 }
 
 resource "google_compute_address" "nat" {
-  count   = "${length(var.nat_zones)}"
-  name    = "nat-${element(var.nat_zones, count.index)}"
+  count   = "${length(var.nat_zones) * var.nat_count_per_zone}"
+  name    = "nat-${element(var.nat_zones, count.index / var.nat_count_per_zone)}-${(count.index % var.nat_count_per_zone) + 1}"
   region  = "${var.region}"
   project = "${var.project}"
 }
 
 resource "aws_route53_record" "nat" {
-  count   = "${length(var.nat_zones)}"
+  count   = "${length(var.nat_zones) * var.nat_count_per_zone}"
   zone_id = "${var.travisci_net_external_zone_id}"
-  name    = "nat-${var.env}-${var.index}.gce-${var.region}-${element(var.nat_zones, count.index)}.travisci.net"
+  name    = "nat-${var.env}-${var.index}.gce-${var.region}-${element(var.nat_zones, count.index / var.nat_count_per_zone)}.travisci.net"
   type    = "A"
   ttl     = 5
 
@@ -213,8 +218,8 @@ data "template_file" "nat_cloud_config" {
 }
 
 resource "google_compute_instance_template" "nat" {
-  count          = "${length(var.nat_zones)}"
-  name           = "${var.env}-${var.index}-nat-${element(var.nat_zones, count.index)}-template-${substr(sha256(data.template_file.nat_cloud_config.rendered), 0, 7)}"
+  count          = "${length(var.nat_zones) * var.nat_count_per_zone}"
+  name           = "${var.env}-${var.index}-nat-${element(var.nat_zones, count.index / var.nat_count_per_zone)}-${(count.index % var.nat_count_per_zone) + 1}-template-${substr(sha256("${var.nat_image}${data.template_file.nat_cloud_config.rendered}"), 0, 7)}"
   machine_type   = "${var.nat_machine_type}"
   can_ip_forward = true
   region         = "${var.region}"
@@ -281,14 +286,14 @@ resource "google_compute_firewall" "nat" {
 }
 
 resource "google_compute_instance_group_manager" "nat" {
-  count = "${length(var.nat_zones)}"
+  count = "${length(var.nat_zones) * var.nat_count_per_zone}"
 
   base_instance_name = "nat"
   instance_template  = "${element(google_compute_instance_template.nat.*.self_link, count.index)}"
-  name               = "nat-${element(var.nat_zones, count.index)}"
+  name               = "nat-${element(var.nat_zones, count.index / var.nat_count_per_zone)}-${(count.index % var.nat_count_per_zone) + 1}"
   target_size        = 1
   update_strategy    = "NONE"
-  zone               = "${var.region}-${element(var.nat_zones, count.index)}"
+  zone               = "${var.region}-${element(var.nat_zones, count.index / var.nat_count_per_zone)}"
 
   named_port {
     name = "http"
@@ -308,19 +313,20 @@ data "external" "nats_by_zone" {
     zones   = "${join(",", var.nat_zones)}"
     region  = "${var.region}"
     project = "${var.project}"
+    count   = "${length(var.nat_zones) * var.nat_count_per_zone}"
   }
 
   depends_on = ["google_compute_instance_group_manager.nat"]
 }
 
 resource "google_compute_route" "nat" {
-  count                  = "${length(var.nat_zones)}"
-  name                   = "nat-${element(var.nat_zones, count.index)}"
+  count                  = "${length(var.nat_zones) * var.nat_count_per_zone}"
+  name                   = "nat-${element(var.nat_zones, count.index / var.nat_count_per_zone)}-${(count.index % var.nat_count_per_zone) + 1}"
   dest_range             = "0.0.0.0/0"
   tags                   = ["no-ip"]
   priority               = 800
-  next_hop_instance_zone = "${var.region}-${element(var.nat_zones, count.index)}"
-  next_hop_instance      = "${data.external.nats_by_zone.result[element(var.nat_zones, count.index)]}"
+  next_hop_instance_zone = "${var.region}-${element(var.nat_zones, count.index / var.nat_count_per_zone)}"
+  next_hop_instance      = "${data.external.nats_by_zone.result["${element(var.nat_zones, count.index / var.nat_count_per_zone)}-${(count.index % var.nat_count_per_zone) + 1}"]}"
   network                = "${google_compute_network.main.self_link}"
 
   lifecycle {

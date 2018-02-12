@@ -11,16 +11,23 @@ def main(argv: ARGV)
 
   in_args = JSON.parse($stdin.read)
   zones = in_args.fetch('zones', '').split(',').map(&:strip).reject(&:empty?)
+  count = in_args.fetch('count', zones.length).to_s
   project = in_args.fetch('project')
   region = in_args.fetch('region')
   retries = Integer(in_args.fetch('retries', '4'))
   retry_sleep = Integer(in_args.fetch('retry_sleep', '120'))
+  accounting = %w[1 yes on true].include?(
+    ENV.fetch(
+      'ACCOUNTING', in_args.fetch('accounting', true)
+    ).to_s
+  )
   retried = 0
 
   instances = {}
   while retried <= retries
-    instances = fetch_nats_by_zone(zones, project, region)
-    break if instances.length == zones.length
+    instances = fetch_nats_by_zone(zones, Integer(count), project, region)
+    break if !accounting
+    break if instances.length == count
 
     $stderr.puts("#{$PROGRAM_NAME}: sleeping=#{retry_sleep}s")
     sleep(retry_sleep)
@@ -31,24 +38,26 @@ def main(argv: ARGV)
   0
 end
 
-def fetch_nats_by_zone(zones, project, region)
+def fetch_nats_by_zone(zones, count, project, region)
   instances = {}
   instances_command = %w[
     gcloud compute instance-groups list-instances
   ]
 
   zones.each do |zone|
-    begin
-      full_command = instances_command + %W[
-        nat-#{zone}
-        --project=#{project}
-        --zone=#{region}-#{zone}
-        --format="value(instance)"
-      ]
-      instance_name = `#{full_command.join(' ')}`.strip
-      instances[zone] = instance_name
-    rescue => e
-      warn e
+    (count / zones.length).times do |count_index|
+      begin
+        full_command = instances_command + %W[
+          nat-#{zone}-#{count_index + 1}
+          --project=#{project}
+          --zone=#{region}-#{zone}
+          --format="value(instance)"
+        ]
+        instance_name = `#{full_command.join(' ')}`.strip
+        instances["#{zone}-#{count_index + 1}"] = instance_name
+      rescue => e
+        warn e
+      end
     end
   end
 
@@ -59,8 +68,8 @@ def usage
   $stderr.puts <<~EOF
     Usage: #{$PROGRAM_NAME} [-h|--help]
 
-    Print a mapping of zone=>instance-id given a JSON blob containing
-    the following arguments provided via stdin:
+    Print a mapping of {zone}-{index}=>{instance-id} given a JSON blob
+    containing the following arguments provided via stdin:
 
     project - the gcloud project name
     region - the region in which to look for nat instances
