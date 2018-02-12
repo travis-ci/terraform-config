@@ -1,9 +1,11 @@
+variable "deny_target_ip_ranges" {}
+
 variable "env" {
   default = "production"
 }
 
 variable "gce_bastion_image" {
-  default = "eco-emissary-99515/bastion-1496867305"
+  default = "https://www.googleapis.com/compute/v1/projects/eco-emissary-99515/global/images/bastion-1496867305"
 }
 
 variable "gce_gcloud_zone" {}
@@ -22,8 +24,6 @@ variable "travisci_net_external_zone_id" {
 
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
-
-variable "deny_target_ip_ranges" {}
 
 terraform {
   backend "s3" {
