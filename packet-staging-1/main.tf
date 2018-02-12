@@ -25,10 +25,6 @@ variable "travisci_net_external_zone_id" {
   default = "Z2RI61YP4UWSIO"
 }
 
-variable "worker_docker_self_image" {
-  default = "travisci/worker:v3.0.2"
-}
-
 terraform {
   backend "s3" {
     bucket         = "travis-terraform-state"
@@ -108,7 +104,6 @@ module "packet_workers_com" {
   worker_docker_image_php     = "${var.latest_docker_image_garnet}"
   worker_docker_image_python  = "${var.latest_docker_image_garnet}"
   worker_docker_image_ruby    = "${var.latest_docker_image_garnet}"
-  worker_docker_self_image    = "${var.latest_docker_image_worker}"
 }
 
 module "packet_workers_org" {
@@ -136,7 +131,6 @@ module "packet_workers_org" {
   worker_docker_image_php     = "${var.latest_docker_image_garnet}"
   worker_docker_image_python  = "${var.latest_docker_image_garnet}"
   worker_docker_image_ruby    = "${var.latest_docker_image_garnet}"
-  worker_docker_self_image    = "${var.latest_docker_image_worker}"
 }
 
 resource "aws_route53_record" "nat" {
