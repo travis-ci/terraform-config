@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+#set -e
 set -o pipefail
 
 __die() {
@@ -63,6 +63,7 @@ main() {
   # shellcheck disable=SC2153
   : "${MAX_AGE:=10800}"
   : "${CREDS_FILE:=/etc/default/travis-worker}"
+  source "${CREDS_FILE}"
   : "${LIBRATO_API:=https://metrics-api.librato.com}"
   : "${LIBRATO_USERNAME:=${TRAVIS_WORKER_LIBRATO_EMAIL}}"
   : "${LIBRATO_TOKEN:=${TRAVIS_WORKER_LIBRATO_TOKEN}}"
@@ -75,9 +76,16 @@ main() {
   not_killed_count=0
   cids=$(docker ps -q)
   instance_id="$(cat "${RUNDIR}/instance-id")"
+  status="noop"
+
+  if [ -z "${LIBRATO_CREDENTIALS}" ]; then
+    logger "No Librato credentials defined, aborting"
+    __die "error" 0 0 0
+  fi
 
   if [ -z "$cids" ]; then
-    __die noop 0 0 0
+    logger "No containers running, aborting"
+    __die "error" 0 0 0
   fi
 
   for cid in $cids; do
@@ -91,11 +99,12 @@ main() {
       logger "$cid is older than $max_age; killing it! ($name)"
       docker kill "$cid"
       killed_count="$((killed_count + 1))"
+      status="killed"
     else
       not_killed_count="$((not_killed_count + 1))"
     fi
   done
-  __die killed 0 "$killed_count" "$not_killed_count"
+  __die "$status" 0 "$killed_count" "$not_killed_count"
 }
 
 main "$@"
