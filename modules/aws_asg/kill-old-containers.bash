@@ -63,6 +63,7 @@ main() {
   # shellcheck disable=SC2153
   : "${MAX_AGE:=10800}"
   : "${CREDS_FILE:=/etc/default/travis-worker}"
+  # shellcheck disable=SC1090
   source "${CREDS_FILE}"
   : "${LIBRATO_API:=https://metrics-api.librato.com}"
   : "${LIBRATO_USERNAME:=${TRAVIS_WORKER_LIBRATO_EMAIL}}"
@@ -80,12 +81,12 @@ main() {
 
   if [ -z "${LIBRATO_CREDENTIALS}" ]; then
     logger "No Librato credentials defined, aborting"
-    __die "error" 0 0 0
+    __die "error" 1 0 0
   fi
 
   if [ -z "$cids" ]; then
     logger "No containers running, aborting"
-    __die "error" 0 0 0
+    __die "warning" 0 0 0
   fi
 
   for cid in $cids; do

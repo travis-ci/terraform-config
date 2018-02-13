@@ -25,7 +25,7 @@ EOF
   run run_kill_old_containers
 
   [ "${status}" -eq 0 ]
-  assert_cmd "logger time=20171030T153252  prog=kill-old-containers.bash status=noop killed_count=0 not_killed_count=0"
+  assert_cmd "logger time=20171030T153252  prog=kill-old-containers.bash status=warning killed_count=0 not_killed_count=0"
 }
 
 @test "is a no-op if only travis-worker container is running" {
@@ -41,5 +41,5 @@ EOF
 
   [ "${status}" -eq 0 ]
 
-  assert_cmd "logger time=20171030T153252  prog=kill-old-containers.bash status=killed killed_count=0 not_killed_count=1"
+  assert_cmd "logger time=20171030T153252  prog=kill-old-containers.bash status=noop killed_count=0 not_killed_count=1"
 }
