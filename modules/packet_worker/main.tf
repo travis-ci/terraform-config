@@ -38,7 +38,7 @@ variable "worker_docker_image_python" {}
 variable "worker_docker_image_ruby" {}
 
 variable "worker_docker_self_image" {
-  default = "travisci/worker:v3.4.0"
+  default = "travisci/worker:v3.5.0"
 }
 
 data "template_file" "cloud_init_env" {
