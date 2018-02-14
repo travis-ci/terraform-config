@@ -208,9 +208,7 @@ resource "aws_route53_record" "nat" {
   type    = "A"
   ttl     = 5
 
-  records = [
-    "${element(google_compute_address.nat.*.address, count.index)}",
-  ]
+  records = ["${element(google_compute_address.nat.*.address, count.index)}"]
 }
 
 data "template_file" "nat_cloud_config" {
@@ -406,4 +404,8 @@ output "gce_subnetwork_public" {
 
 output "gce_subnetwork_workers" {
   value = "${google_compute_subnetwork.workers.self_link}"
+}
+
+output "nat_addresses" {
+  value = ["${google_compute_address.nat.*.address}"]
 }
