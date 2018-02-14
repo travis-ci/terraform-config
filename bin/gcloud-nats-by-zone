@@ -11,7 +11,7 @@ def main(argv: ARGV)
 
   in_args = JSON.parse($stdin.read)
   zones = in_args.fetch('zones', '').split(',').map(&:strip).reject(&:empty?)
-  count = in_args.fetch('count', zones.length).to_s
+  count = Integer(in_args.fetch('count', zones.length))
   project = in_args.fetch('project')
   region = in_args.fetch('region')
   retries = Integer(in_args.fetch('retries', '4'))
@@ -25,9 +25,9 @@ def main(argv: ARGV)
 
   instances = {}
   while retried <= retries
-    instances = fetch_nats_by_zone(zones, Integer(count), project, region)
+    instances = fetch_nats_by_zone(zones, count, project, region)
     break if !accounting
-    break if instances.length == Integer(count)
+    break if instances.length == count
 
     $stderr.puts(
       "#{$PROGRAM_NAME}: sleeping=#{retry_sleep}s " \
@@ -75,8 +75,12 @@ def usage
     Print a mapping of {zone}-{index}=>{instance-id} given a JSON blob
     containing the following arguments provided via stdin:
 
-    project - the gcloud project name
-    region - the region in which to look for nat instances
+    accounting - boolean controlling count check and retries, default=false
+    count - total number of expected instances, default=zones.length
+    project - the gcloud project name *REQUIRED*
+    region - the region in which to look for nat instances *REQUIRED*
+    retries - number of total retries, default=4
+    retry_sleep - sleep interval between retries, default=120
     zones - a comma-delimited list of zones within the region
   EOF
   2
