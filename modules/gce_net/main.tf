@@ -211,6 +211,15 @@ resource "aws_route53_record" "nat" {
   records = ["${element(google_compute_address.nat.*.address, count.index)}"]
 }
 
+resource "aws_route53_record" "nat_regional" {
+  zone_id = "${var.travisci_net_external_zone_id}"
+  name    = "nat-${var.env}-${var.index}.gce-${var.region}.travisci.net"
+  type    = "A"
+  ttl     = 5
+
+  records = ["${google_compute_address.nat.*.address}"]
+}
+
 data "template_file" "nat_cloud_config" {
   template = "${file("${path.module}/nat-cloud-config.yml.tpl")}"
 
@@ -404,8 +413,4 @@ output "gce_subnetwork_public" {
 
 output "gce_subnetwork_workers" {
   value = "${google_compute_subnetwork.workers.self_link}"
-}
-
-output "nat_addresses" {
-  value = ["${google_compute_address.nat.*.address}"]
 }
