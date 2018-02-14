@@ -27,9 +27,13 @@ def main(argv: ARGV)
   while retried <= retries
     instances = fetch_nats_by_zone(zones, Integer(count), project, region)
     break if !accounting
-    break if instances.length == count
+    break if instances.length == Integer(count)
 
-    $stderr.puts("#{$PROGRAM_NAME}: sleeping=#{retry_sleep}s")
+    $stderr.puts(
+      "#{$PROGRAM_NAME}: sleeping=#{retry_sleep}s " \
+      "instances_length=#{instances.length} count=#{count}"
+    )
+
     sleep(retry_sleep)
     retried += 1
   end

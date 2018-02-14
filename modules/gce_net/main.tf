@@ -11,6 +11,14 @@ variable "deny_target_ip_ranges" {
 }
 
 variable "env" {}
+
+variable "gce_health_check_source_ranges" {
+  default = [
+    "130.211.0.0/22",
+    "35.191.0.0/16",
+  ]
+}
+
 variable "github_users" {}
 variable "index" {}
 variable "nat_config" {}
@@ -32,6 +40,7 @@ variable "region" {
   default = "us-central1"
 }
 
+variable "rigaer_strasse_8_ipv4" {}
 variable "syslog_address" {}
 variable "travisci_net_external_zone_id" {}
 
@@ -101,7 +110,7 @@ resource "google_compute_subnetwork" "jobs_com" {
 resource "google_compute_firewall" "allow_main_ssh" {
   name          = "allow-main-ssh"
   network       = "${google_compute_network.main.name}"
-  source_ranges = ["87.142.116.219"]
+  source_ranges = ["${var.rigaer_strasse_8_ipv4}"]
   priority      = 1000
 
   allow {
@@ -267,17 +276,13 @@ resource "google_compute_http_health_check" "nat" {
   unhealthy_threshold = 5
 }
 
-resource "google_compute_firewall" "nat" {
-  name        = "nat"
+resource "google_compute_firewall" "nat_health_check" {
+  name        = "nat-health-check"
   network     = "${google_compute_network.main.name}"
   project     = "${var.project}"
   target_tags = ["nat"]
 
-  source_ranges = [
-    "209.85.152.0/22",
-    "209.85.204.0/22",
-    "35.191.0.0/16",
-  ]
+  source_ranges = ["${var.gce_health_check_source_ranges}"]
 
   allow {
     protocol = "tcp"

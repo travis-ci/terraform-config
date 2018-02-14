@@ -15,6 +15,7 @@ variable "travisci_net_external_zone_id" {
   default = "Z2RI61YP4UWSIO"
 }
 
+variable "rigaer_strasse_8_ipv4" {}
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
 
@@ -51,6 +52,7 @@ module "gce_net" {
   nat_image                     = "${var.latest_gce_nat_image}"
   nat_machine_type              = "g1-small"
   project                       = "travis-staging-1"
+  rigaer_strasse_8_ipv4         = "${var.rigaer_strasse_8_ipv4}"
   syslog_address                = "${var.syslog_address_com}"
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
 }
