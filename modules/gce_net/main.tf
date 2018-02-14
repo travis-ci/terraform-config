@@ -276,8 +276,8 @@ resource "google_compute_http_health_check" "nat" {
   unhealthy_threshold = 5
 }
 
-resource "google_compute_firewall" "nat_health_check" {
-  name        = "nat-health-check"
+resource "google_compute_firewall" "allow_nat_health_check" {
+  name        = "allow-nat-health-check"
   network     = "${google_compute_network.main.name}"
   project     = "${var.project}"
   target_tags = ["nat"]
