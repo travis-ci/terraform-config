@@ -67,7 +67,7 @@ __container_is_newer_than() {
 
 main() {
   # shellcheck disable=SC2153
-  : "${MAX_AGE:=10800}"
+  : "${MAX_AGE:=12000}"
   : "${CREDS_FILE:=/etc/default/travis-worker}"
   # shellcheck disable=SC1090
   source "${CREDS_FILE}"
