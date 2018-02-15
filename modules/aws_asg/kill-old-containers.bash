@@ -23,7 +23,6 @@ __report_kills() {
     stage="production"
   fi
 
-
   # request_body=$(< <(cat <<EOF)
   # read -r -d '' request_body <<EOF
   request_body=$(
@@ -67,7 +66,7 @@ __container_is_newer_than() {
 
 main() {
   # shellcheck disable=SC2153
-  : "${MAX_AGE:=12000}"
+  : "${MAX_AGE:=10800}"
   : "${CREDS_FILE:=/etc/default/travis-worker}"
   # shellcheck disable=SC1090
   source "${CREDS_FILE}"
