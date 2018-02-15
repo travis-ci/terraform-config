@@ -17,21 +17,27 @@ __report_kills() {
   count_killed="$1"
   count_not_killed="$2"
   timestamp="$(date +%s)"
+  site="$TRAVIS_WORKER_TRAVIS_SITE"
+  stage="staging"
+  if [[ "$HOSTNAME" == *"production"* ]]; then
+    stage="production"
+  fi
+
 
   # request_body=$(< <(cat <<EOF)
   # read -r -d '' request_body <<EOF
   request_body=$(
     cat <<EOF
   { "measure_time": "$timestamp",
-    "source": "cron.ec2.aj.container-killer",
+    "source": "cron.ec2.$site.$stage.aj-container-killer",
     "gauges": [
       {
-        "name": "cron.containers.killed",
+        "name": "cron.containers.killed.$site.$stage",
         "value": "$count_killed",
         "source": "$instance_id"
       },
       {
-        "name": "cron.containers.not-killed",
+        "name": "cron.containers.not-killed.$site.$stage",
         "value": "$count_not_killed",
         "source": "$instance_id"
       }
