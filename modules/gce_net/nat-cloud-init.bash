@@ -36,6 +36,10 @@ EOF
 }
 
 __write_librato_config() {
+  if [[ ! "${1}" || ! "${2}" ]]; then
+    return
+  fi
+
   mkdir -p "${ETCDIR}/collectd/collectd.conf.d"
 
   local hostname_tmpl="${VARTMP}/travis-run.d/instance-hostname.tmpl"
