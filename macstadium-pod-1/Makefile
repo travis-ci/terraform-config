@@ -35,8 +35,6 @@ INDEX ?= $(subst $(INFRA)-$(ENV_SHORT)-,,$(ENV_NAME))
 
 .PHONY: .config
 .config: $(CONFIG_FILES) $(ENV_NAME).tfvars
-
-$(CONFIG_FILES):
 	mkdir -p config
 	cp -v $$TRAVIS_KEYCHAIN_DIR/travis-keychain/macstadium/travis-vm-ssh-key config/
 	trvs generate-config -p JUPITER_BRAIN -f env jupiter-brain production-$(INDEX) \
