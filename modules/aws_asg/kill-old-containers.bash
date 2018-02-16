@@ -1,5 +1,5 @@
 #!/bin/bash
-#set -e
+set -e
 set -o pipefail
 
 __die() {
@@ -28,15 +28,15 @@ __report_kills() {
   request_body=$(
     cat <<EOF
   { "measure_time": "$timestamp",
-    "source": "cron.ec2.$site.$stage.aj-container-killer",
+    "source": "cron.ec2.$site.$stage.container-killer",
     "gauges": [
       {
-        "name": "cron.containers.killed.$site.$stage",
+        "name": "cron.containers.$site.$stage.killed",
         "value": "$count_killed",
         "source": "$instance_id"
       },
       {
-        "name": "cron.containers.not-killed.$site.$stage",
+        "name": "cron.containers.$site.$stage.not-killed",
         "value": "$count_not_killed",
         "source": "$instance_id"
       }
@@ -80,7 +80,7 @@ main() {
   max_age="${MAX_AGE}"
   killed_count=0
   not_killed_count=0
-  cids=$(docker ps -q)
+  cids="$(docker ps -q)"
   instance_id="$(cat "${RUNDIR}/instance-id")"
   status="noop"
 
