@@ -1,5 +1,5 @@
 #!/bin/bash
-#set -e
+set -e
 set -o pipefail
 
 __die() {
@@ -28,15 +28,15 @@ __report_kills() {
   request_body=$(
     cat <<EOF
   { "measure_time": "$timestamp",
-    "source": "cron.ec2.$site.$stage.aj-container-killer",
+    "source": "cron.ec2.$site.$stage.container-killer",
     "gauges": [
       {
-        "name": "cron.containers.killed.$site.$stage",
+        "name": "cron.containers.$site.$stage.killed",
         "value": "$count_killed",
         "source": "$instance_id"
       },
       {
-        "name": "cron.containers.not-killed.$site.$stage",
+        "name": "cron.containers.$site.$stage.not-killed",
         "value": "$count_not_killed",
         "source": "$instance_id"
       }
@@ -56,6 +56,9 @@ EOF
 __container_is_newer_than() {
   cid="$1"
   max_age="$2"
+  # Note: if $cid no longer exists, we're essentially running `date --date=""`
+  # which returns the equivalent of "midnight" of the current date. But 'set -e'
+  # should prevent us from attempting to delete nonexistent containers anyway.
   created=$(date --date="$(docker inspect -f '{{ .Created }}' "$cid")" +%s)
   age=$(($(date +%s) - created))
   if [ "$age" -gt "$max_age" ]; then
@@ -66,7 +69,7 @@ __container_is_newer_than() {
 
 main() {
   # shellcheck disable=SC2153
-  : "${MAX_AGE:=10800}"
+  : "${MAX_AGE:=12000}"
   : "${CREDS_FILE:=/etc/default/travis-worker}"
   # shellcheck disable=SC1090
   source "${CREDS_FILE}"
@@ -80,7 +83,7 @@ main() {
   max_age="${MAX_AGE}"
   killed_count=0
   not_killed_count=0
-  cids=$(docker ps -q)
+  cids="$(docker ps -q)"
   instance_id="$(cat "${RUNDIR}/instance-id")"
   status="noop"
 
