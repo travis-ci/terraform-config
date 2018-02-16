@@ -56,6 +56,9 @@ EOF
 __container_is_newer_than() {
   cid="$1"
   max_age="$2"
+  # Note: if $cid no longer exists, we're essentially running `date --date=""`
+  # which returns the equivalent of "midnight" of the current date. But 'set -e'
+  # should prevent us from attempting to delete nonexistent containers anyway.
   created=$(date --date="$(docker inspect -f '{{ .Created }}' "$cid")" +%s)
   age=$(($(date +%s) - created))
   if [ "$age" -gt "$max_age" ]; then
