@@ -45,7 +45,7 @@ __report_kills() {
         "source": "$instance_id"
       },
       {
-        "name": "cron.containers.$site.$stage.not-killed",
+        "name": "cron.containers.$site.$stage.running",
         "value": "$count_not_killed",
         "source": "$instance_id"
       }
