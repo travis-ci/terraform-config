@@ -2,13 +2,24 @@
 set -e
 set -o pipefail
 
+__logger() {
+  level="$1" && shift
+  msg="$1" && shift
+  date="$(date -u +%Y%m%dT%H%M%S)"
+  log_msg="tag=cron time=$date level=$level msg=\"$msg\" $*"
+  logger -t kill-old-containers "$log_msg"
+}
+
 __die() {
   local status="${1}"
   local code="${2}"
   local killed_count="${3}"
   local not_killed_count="${4}"
-  logger "time=$(date -u +%Y%m%dT%H%M%S) " \
-    "prog=$(basename "${0}") status=${status} killed_count=${killed_count} not_killed_count=${not_killed_count}"
+  __logger "info" \
+    "cron finished" \
+    "status=${status}" \
+    "killed=${killed_count}" \
+    "running=${not_killed_count}"
   __report_kills "$killed_count" "$not_killed_count"
   exit "${code}"
 }
@@ -23,8 +34,6 @@ __report_kills() {
     stage="production"
   fi
 
-  # request_body=$(< <(cat <<EOF)
-  # read -r -d '' request_body <<EOF
   request_body=$(
     cat <<EOF
   { "measure_time": "$timestamp",
@@ -36,7 +45,7 @@ __report_kills() {
         "source": "$instance_id"
       },
       {
-        "name": "cron.containers.$site.$stage.not-killed",
+        "name": "cron.containers.$site.$stage.running",
         "value": "$count_not_killed",
         "source": "$instance_id"
       }
@@ -62,7 +71,7 @@ __container_is_newer_than() {
   created=$(date --date="$(docker inspect -f '{{ .Created }}' "$cid")" +%s)
   age=$(($(date +%s) - created))
   if [ "$age" -gt "$max_age" ]; then
-    logger "Container $cid age $age is older than max_age of $max_age."
+    __logger "info" "Container $cid age $age is older than max_age of $max_age."
     return 1
   fi
 }
@@ -88,12 +97,12 @@ main() {
   status="noop"
 
   if [ -z "${LIBRATO_CREDENTIALS}" ]; then
-    logger "No Librato credentials defined, aborting"
+    __logger "error" "No Librato credentials defined, aborting"
     __die "error" 1 0 0
   fi
 
   if [ -z "$cids" ]; then
-    logger "No containers running, aborting"
+    __logger "warning" "No containers running, aborting"
     __die "warning" 0 0 0
   fi
 
@@ -105,7 +114,7 @@ main() {
     fi
     if ! __container_is_newer_than "$cid" "$max_age"; then
       name="$(docker inspect "$cid" --format '{{ .Name }}')"
-      logger "$cid is older than $max_age; killing it! ($name)"
+      __logger "info" "$cid is older than $max_age; killing it! ($name)"
       docker kill "$cid"
       killed_count="$((killed_count + 1))"
       status="killed"
