@@ -6,8 +6,8 @@ __logger() {
   level="$1" && shift
   msg="$1" && shift
   date="$(date -u +%Y%m%dT%H%M%S)"
-  log_msg="prog=$(basename "${0}") tag=cron time=$date level=$level msg=\"$msg\" $*"
-  logger "$log_msg"
+  log_msg="tag=cron time=$date level=$level msg=\"$msg\" $*"
+  logger -t kill-old-containers "$log_msg"
 }
 
 __die() {
