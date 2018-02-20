@@ -1,0 +1,305 @@
+#!/usr/bin/env python
+import argparse
+import logging
+import sys
+import time
+
+from collections import namedtuple, Counter, OrderedDict
+from threading import Lock, Thread
+from xml.dom.minidom import parseString as minidom_parse_string
+from xml.parsers.expat import ExpatError
+
+# requires installation of 'netaddr' via pip or 'python-netaddr' via apt
+from netaddr import IPNetwork, IPAddress
+
+PRIVATE_NETS = (
+    IPNetwork('10.0.0.0/8'),
+    IPNetwork('127.0.0.0/8'),
+    IPNetwork('169.254.0.0/16'),
+    IPNetwork('172.16.0.0/12'),
+    IPNetwork('192.168.0.0/16'),
+)
+
+
+def main(sysargs=sys.argv[:]):
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        'events', nargs='?', type=argparse.FileType('r'),
+        default=sys.stdin,
+        help='input event XML stream or filename'
+    )
+    parser.add_argument(
+        '-T', '--conn-threshold',
+        type=int, default=500,
+        help='connection count threshold for message logging'
+    )
+    parser.add_argument(
+        '-n', '--top-n',
+        type=int, help='periodically sample the top n counted connections'
+    )
+    parser.add_argument(
+        '-S', '--max-stats-size',
+        type=int, default=1000,
+        help='max number of src=>dst:dport counters to track'
+    )
+    parser.add_argument(
+        '-l', '--log-file',
+        default='', help='optional separate file for logging'
+    )
+    parser.add_argument(
+        '-I', '--eval-interval',
+        type=int, default=5,
+        help='interval at which stats will be evaluated'
+    )
+    parser.add_argument(
+        '-P', '--include-privnets',
+        action='store_true', default=False,
+        help='include private networks when handling flows'
+    )
+    args = parser.parse_args(sysargs[1:])
+
+    logging_args = dict(
+        level=logging.INFO,
+        format='%(asctime)s %(levelname)s: %(message)s'
+    )
+
+    if args.log_file:
+        logging_args['filename'] = args.log_file
+
+    logging.basicConfig(**logging_args)
+
+    ignore = PRIVATE_NETS
+    if args.include_privnets:
+        ignore = ()
+
+    ctr = Conntracker(max_size=args.max_stats_size, ignore=ignore)
+    handle_thread = Thread(
+        target=ctr.handle,
+        args=(args.events,)
+    )
+    handle_thread.start()
+
+    try:
+        while True:
+            ctr.log_over_threshold(args.conn_threshold, args.top_n)
+            handle_thread.join(1)
+            if not handle_thread.is_alive():
+                break
+            time.sleep(args.eval_interval)
+    except KeyboardInterrupt:
+        logging.warn('interrupt')
+    finally:
+        ctr.log_over_threshold(args.conn_threshold, args.top_n)
+        handle_thread.join()
+
+    return 0
+
+
+class Conntracker(object):
+    def __init__(self, max_size=1000, ignore=PRIVATE_NETS):
+        self.ignore = ignore
+        self.stats = ConntrackerStats(max_size=max_size)
+
+    def handle(self, stream):
+        ConntrackFlowParser(self).handle_events(stream)
+
+    def log_over_threshold(self, threshold, top_n):
+        for ((src, dst), count) in self.stats.top(n=top_n):
+            if count >= threshold:
+                logging.warn('threshold={} src={} dst={} count={}'.format(
+                    threshold, src, dst, count
+                ))
+
+    def handle_flow(self, flow):
+        if flow is None:
+            return
+
+        (src, dst) = flow.src_dst()
+        if src is None or dst is None:
+            return
+
+        src_addr = IPAddress(src.host)
+        dst_addr = IPAddress(dst.host)
+
+        for ign in self.ignore:
+            if src_addr in ign or dst_addr in ign:
+                return
+
+        try:
+            self.stats.add(src, dst)
+        except Exception as exc:
+            logging.error(exc)
+
+
+class ConntrackerStats(object):
+    def __init__(self, max_size=1000):
+        self.max_size = max_size
+        self.counter = Counter()
+        self.index = OrderedDict()
+        self._lock = Lock()
+
+    def __repr__(self):
+        return '<{} max_size={!r}>'.format(
+            self.__class__.__name__, self.max_size
+        )
+
+    def top(self, n=10):
+        try:
+            self._lock.acquire()
+            ret = []
+            for key, count in self.counter.most_common(n):
+                (src, dst) = self.index[key]
+                ret.append(((src.host, self._daddr(dst)), count))
+            return ret
+        finally:
+            self._lock.release()
+
+    def add(self, src, dst):
+        try:
+            self._lock.acquire()
+            while len(self.index) > self.max_size:
+                item_key, _ = self.index.popitem(last=False)
+                del self.counter[item_key]
+            key = self._key(src, dst)
+            self.counter[key] += 1
+            self.index[key] = (src, dst)
+        finally:
+            self._lock.release()
+
+    def _key(self, src, dst):
+        return '{}_{}'.format(src.host, self._daddr(dst))
+
+    def _daddr(self, dst):
+        dport = dst.port
+        if dport == '':
+            dport = '?'
+        return '{}:{}'.format(dst.host, dport)
+
+
+ConntrackFlowAddress = namedtuple('ConntrackFlowAddress', ['host', 'port'])
+
+
+class ConntrackFlowMetaGeneric(object):
+    def __init__(self):
+        self.direction = ''
+
+    def __repr__(self):
+        return '<{} direction={!r}>'.format(
+            self.__class__.__name__, self.direction
+        )
+
+    @classmethod
+    def from_node(cls, meta_node):
+        inst = cls()
+        inst.direction = meta_node.getAttribute('direction')
+        return inst
+
+
+class ConntrackFlowMetaOrigReply(object):
+    def __init__(self):
+        self.direction = ''
+        self.src = None
+        self.dst = None
+
+    def __repr__(self):
+        return '<{} direction={!r} src={!r} dst={!r}>'.format(
+            self.__class__.__name__, self.direction, self.src, self.dst
+        )
+
+    @classmethod
+    def from_node(cls, meta_node):
+        inst = cls()
+        inst.direction = meta_node.getAttribute('direction')
+        inst.src = ConntrackFlowAddress(
+            find_data(meta_node, 'src'), find_data(meta_node, 'sport')
+        )
+        inst.dst = ConntrackFlowAddress(
+            find_data(meta_node, 'dst'), find_data(meta_node, 'dport')
+        )
+        return inst
+
+
+class ConntrackFlowMetaIndependent(object):
+    direction = 'independent'
+
+    def __init__(self):
+        self.id = ''
+        self.assured = False
+
+    def __repr__(self):
+        return '<{} id={!r} assured={!r}>'.format(
+            self.__class__.__name__, self.id, self.assured
+        )
+
+    @classmethod
+    def from_node(cls, meta_node):
+        inst = cls()
+        inst.id = find_data(meta_node, 'id')
+        if len(meta_node.getElementsByTagName('assured')) > 0:
+            inst.assured = True
+        return inst
+
+
+class ConntrackFlow(object):
+    def __init__(self):
+        self.flowtype = ''
+        self.meta = []
+
+    def __repr__(self):
+        return '<{} flowtype={!r} meta={!r}>'.format(
+            self.__class__.__name__, self.flowtype, self.meta
+        )
+
+    def src_dst(self):
+        for meta in self.meta:
+            if meta.direction != 'original':
+                continue
+            if meta.src is not None and meta.dst is not None:
+                return (meta.src, meta.dst)
+        return (None, None)
+
+    @classmethod
+    def from_node(cls, flow_node):
+        inst = cls()
+        inst.flowtype = flow_node.getAttribute('type')
+        for meta_node in flow_node.getElementsByTagName('meta'):
+            inst.meta.append(meta_from_node(meta_node))
+        return inst
+
+
+class ConntrackFlowParser(object):
+    def __init__(self, conntracker):
+        self._conntracker = conntracker
+
+    def handle_events(self, stream):
+        for line in stream:
+            try:
+                dom = minidom_parse_string(line)
+                for flow_node in dom.getElementsByTagName('flow'):
+                    self._conntracker.handle_flow(
+                        ConntrackFlow.from_node(flow_node)
+                    )
+            except ExpatError as experr:
+                logging.debug('expat error: {}'.format(experr))
+
+
+def meta_from_node(meta_node):
+    return {
+        'original': ConntrackFlowMetaOrigReply,
+        'reply': ConntrackFlowMetaOrigReply,
+        'independent': ConntrackFlowMetaIndependent
+    }.get(
+        meta_node.getAttribute('direction'),
+        ConntrackFlowMetaGeneric
+    ).from_node(meta_node)
+
+
+def find_data(node, parent_tag, default=''):
+    for subnode in node.getElementsByTagName(parent_tag):
+        if subnode.firstChild is not None:
+            return subnode.firstChild.data
+    return default
+
+
+if __name__ == '__main__':
+    sys.exit(main())

@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -o errexit
+set -o pipefail
+
+main() {
+  eval "$(travis-combined-env travis-nat-conntracker)"
+  conntrack -o xml -E conntrack | travis-nat-conntracker -
+}
+
+main "$@"
