@@ -48,13 +48,13 @@ main() {
   # The loop of commands below drops any in-container traffic (which goes
   # through the -I DOCKER chain) that attempts to talk to the docker registry host(s),
   # and also drops anything destined for 128.0.0.0/16 (plus other reserved ranges)
-  reserved_ranges="
+  reserved_ranges=(
     128.0.0.0/16
-  "
+  )
   dig +short "${registry_hostname}" | while read -r ipv4; do
     iptables -I DOCKER -s "${ipv4}" -j DROP || true
-    for r in $reserved_ranges; do
-      iptables -I DOCKER -d "$r" -j DROP || true
+    for r in "${reserved_ranges[@]}"; do
+      iptables -I DOCKER -d "${r}" -j DROP || true
     done
   done
 }
