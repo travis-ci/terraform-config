@@ -34,8 +34,9 @@ main() {
   service travis-worker stop || true
   service travis-worker start || true
 
+  # The command below drops any requests to the AWS metadata API.
   iptables -t nat -I PREROUTING -p tcp -d '169.254.169.254' \
-    --dport 80 -j DNAT --to-destination '192.0.2.1'
+    --dport 80 -j DROP
 
   __wait_for_docker
 
@@ -44,8 +45,17 @@ main() {
 
   set +o pipefail
   set +o errexit
+  # The loop of commands below drops any in-container traffic (which goes
+  # through the -I DOCKER chain) that attempts to talk to the docker registry host(s),
+  # and also drops anything destined for 128.0.0.0/16 (plus other reserved ranges)
+  reserved_ranges="
+    128.0.0.0/16
+  "
   dig +short "${registry_hostname}" | while read -r ipv4; do
     iptables -I DOCKER -s "${ipv4}" -j DROP || true
+    for r in $reserved_ranges; do
+      iptables -I DOCKER -d "$r" -j DROP || true
+    done
   done
 }
 
