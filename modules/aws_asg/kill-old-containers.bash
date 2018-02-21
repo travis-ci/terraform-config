@@ -5,7 +5,7 @@ set -o pipefail
 __logger() {
   level="$1" && shift
   msg="$1" && shift
-  date="$(date -u +%Y%m%dT%H%M%S)"
+  date="$(date --iso-8601=seconds)"
   log_msg="tag=cron time=$date level=$level msg=\"$msg\" $*"
   logger -t kill-old-containers "$log_msg"
 }
