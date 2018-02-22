@@ -53,6 +53,7 @@ module "gce_net" {
   github_users                  = "${var.github_users}"
   index                         = "${var.index}"
   nat_config                    = "${file("config/nat.env")}"
+  nat_conntracker_config        = "${file("nat-conntracker.env")}"
   nat_image                     = "${var.latest_gce_nat_image}"
   nat_machine_type              = "g1-small"
   project                       = "travis-staging-1"

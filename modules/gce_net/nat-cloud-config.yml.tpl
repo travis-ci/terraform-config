@@ -8,6 +8,9 @@ write_files:
 - content: '${base64encode(nat_config)}'
   encoding: b64
   path: /etc/default/nat
+- content: '${base64encode(nat_conntracker_config)}'
+  encoding: b64
+  path: /etc/default/nat-conntracker
 - content: '${base64encode(file("${assets}/nat/travis-nat-health-check"))}'
   encoding: b64
   path: /usr/local/bin/travis-nat-health-check

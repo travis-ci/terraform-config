@@ -70,8 +70,26 @@ EOF
 }
 
 __setup_nat_forwarding() {
+  local pub_iface
+  pub_iface="$(__find_public_interface)"
+
   sysctl -w net.ipv4.ip_forward=1
-  iptables -t nat -A POSTROUTING -o ens4 -j MASQUERADE
+
+  iptables -t nat -S POSTROUTING | if ! grep -q MASQUERADE; then
+    iptables -t nat -A POSTROUTING -o "${pub_iface}" -j MASQUERADE
+  fi
+
+  iptables -S FORWARD | if ! grep -q conntrack; then
+    iptables -A FORWARD -o "${pub_iface}" \
+      -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+  fi
+}
+
+__find_public_interface() {
+  local iface=ens4
+  iface="$(ip -o addr show | grep -vE 'inet (172|127)\.' | grep -v inet6 |
+    awk '{ print $2 }' | grep -v '^lo$' | head -n 1)"
+  echo "${iface:-ens4}"
 }
 
 __setup_nat_health_check() {
