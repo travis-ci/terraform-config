@@ -35,8 +35,7 @@ main() {
   service travis-worker start || true
 
   # The command below drops any requests to the AWS metadata API.
-  iptables -t nat -I PREROUTING -p tcp -d '169.254.169.254' \
-    --dport 80 -j DROP
+  iptables -I FORWARD -d 169.254.169.254 -j REJECT
 
   __wait_for_docker
 
