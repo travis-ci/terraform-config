@@ -11,9 +11,23 @@ variable "deny_target_ip_ranges" {
 }
 
 variable "env" {}
+
+variable "gce_health_check_source_ranges" {
+  default = [
+    "130.211.0.0/22",
+    "35.191.0.0/16",
+  ]
+}
+
 variable "github_users" {}
 variable "index" {}
 variable "nat_config" {}
+variable "nat_conntracker_config" {}
+
+variable "nat_count_per_zone" {
+  default = 1
+}
+
 variable "nat_image" {}
 variable "nat_machine_type" {}
 
@@ -27,6 +41,7 @@ variable "region" {
   default = "us-central1"
 }
 
+variable "rigaer_strasse_8_ipv4" {}
 variable "syslog_address" {}
 variable "travisci_net_external_zone_id" {}
 
@@ -96,7 +111,7 @@ resource "google_compute_subnetwork" "jobs_com" {
 resource "google_compute_firewall" "allow_main_ssh" {
   name          = "allow-main-ssh"
   network       = "${google_compute_network.main.name}"
-  source_ranges = ["87.142.116.219"]
+  source_ranges = ["${var.rigaer_strasse_8_ipv4}"]
   priority      = 1000
 
   allow {
@@ -135,30 +150,22 @@ resource "google_compute_firewall" "allow_public_icmp" {
 resource "google_compute_firewall" "allow_internal" {
   name    = "allow-internal"
   network = "${google_compute_network.main.name}"
+  project = "${var.project}"
 
   source_ranges = [
     "${google_compute_subnetwork.public.ip_cidr_range}",
     "${google_compute_subnetwork.workers.ip_cidr_range}",
   ]
 
-  project = "${var.project}"
-
   allow {
-    protocol = "icmp"
-  }
-
-  allow {
-    protocol = "tcp"
-  }
-
-  allow {
-    protocol = "udp"
+    protocol = "all"
   }
 }
 
 resource "google_compute_firewall" "allow_jobs_nat" {
   name    = "allow-jobs-nat"
   network = "${google_compute_network.main.name}"
+  project = "${var.project}"
 
   source_ranges = [
     "${google_compute_subnetwork.jobs_org.ip_cidr_range}",
@@ -167,18 +174,8 @@ resource "google_compute_firewall" "allow_jobs_nat" {
 
   target_tags = ["nat"]
 
-  project = "${var.project}"
-
   allow {
-    protocol = "icmp"
-  }
-
-  allow {
-    protocol = "tcp"
-  }
-
-  allow {
-    protocol = "udp"
+    protocol = "all"
   }
 }
 
@@ -191,56 +188,56 @@ resource "google_compute_firewall" "deny_target_ip" {
 
   project = "${var.project}"
 
-  # highest priority
-  priority = "1000"
+  priority = "1"
 
   deny {
-    protocol = "tcp"
-  }
-
-  deny {
-    protocol = "udp"
-  }
-
-  deny {
-    protocol = "icmp"
+    protocol = "all"
   }
 }
 
 resource "google_compute_address" "nat" {
-  count   = "${length(var.nat_zones)}"
-  name    = "nat-${element(var.nat_zones, count.index)}"
+  count   = "${length(var.nat_zones) * var.nat_count_per_zone}"
+  name    = "nat-${element(var.nat_zones, count.index / var.nat_count_per_zone)}-${(count.index % var.nat_count_per_zone) + 1}"
   region  = "${var.region}"
   project = "${var.project}"
 }
 
 resource "aws_route53_record" "nat" {
-  count   = "${length(var.nat_zones)}"
+  count   = "${length(var.nat_zones) * var.nat_count_per_zone}"
   zone_id = "${var.travisci_net_external_zone_id}"
-  name    = "nat-${var.env}-${var.index}.gce-${var.region}-${element(var.nat_zones, count.index)}.travisci.net"
+  name    = "nat-${var.env}-${var.index}.gce-${var.region}-${element(var.nat_zones, count.index / var.nat_count_per_zone)}.travisci.net"
   type    = "A"
   ttl     = 5
 
-  records = [
-    "${element(google_compute_address.nat.*.address, count.index)}",
-  ]
+  records = ["${element(google_compute_address.nat.*.address, count.index)}"]
+}
+
+resource "aws_route53_record" "nat_regional" {
+  zone_id = "${var.travisci_net_external_zone_id}"
+  name    = "nat-${var.env}-${var.index}.gce-${var.region}.travisci.net"
+  type    = "A"
+  ttl     = 5
+
+  records = ["${google_compute_address.nat.*.address}"]
 }
 
 data "template_file" "nat_cloud_config" {
   template = "${file("${path.module}/nat-cloud-config.yml.tpl")}"
 
   vars {
-    nat_config       = "${var.nat_config}"
-    cloud_init_bash  = "${file("${path.module}/nat-cloud-init.bash")}"
-    github_users_env = "export GITHUB_USERS='${var.github_users}'"
-    syslog_address   = "${var.syslog_address}"
-    assets           = "${path.module}/../../assets"
+    nat_config             = "${var.nat_config}"
+    nat_conntracker_config = "${var.nat_conntracker_config}"
+    cloud_init_bash        = "${file("${path.module}/nat-cloud-init.bash")}"
+    github_users_env       = "export GITHUB_USERS='${var.github_users}'"
+    instance_hostname      = "nat-${var.env}-${var.index}.gce-___REGION_ZONE___.travisci.net"
+    syslog_address         = "${var.syslog_address}"
+    assets                 = "${path.module}/../../assets"
   }
 }
 
 resource "google_compute_instance_template" "nat" {
-  count          = "${length(var.nat_zones)}"
-  name           = "${var.env}-${var.index}-nat-${element(var.nat_zones, count.index)}-template-${substr(sha256(data.template_file.nat_cloud_config.rendered), 0, 7)}"
+  count          = "${length(var.nat_zones) * var.nat_count_per_zone}"
+  name           = "${var.env}-${var.index}-nat-${element(var.nat_zones, count.index / var.nat_count_per_zone)}-${(count.index % var.nat_count_per_zone) + 1}-template-${substr(sha256("${var.nat_image}${data.template_file.nat_cloud_config.rendered}"), 0, 7)}"
   machine_type   = "${var.nat_machine_type}"
   can_ip_forward = true
   region         = "${var.region}"
@@ -288,17 +285,13 @@ resource "google_compute_http_health_check" "nat" {
   unhealthy_threshold = 5
 }
 
-resource "google_compute_firewall" "nat" {
-  name        = "nat"
+resource "google_compute_firewall" "allow_nat_health_check" {
+  name        = "allow-nat-health-check"
   network     = "${google_compute_network.main.name}"
-  target_tags = ["nat"]
   project     = "${var.project}"
+  target_tags = ["nat"]
 
-  source_ranges = [
-    "209.85.152.0/22",
-    "209.85.204.0/22",
-    "35.191.0.0/16",
-  ]
+  source_ranges = ["${var.gce_health_check_source_ranges}"]
 
   allow {
     protocol = "tcp"
@@ -307,12 +300,14 @@ resource "google_compute_firewall" "nat" {
 }
 
 resource "google_compute_instance_group_manager" "nat" {
-  count              = "${length(var.nat_zones)}"
-  name               = "nat-${element(var.nat_zones, count.index)}"
-  target_size        = 1
+  count = "${length(var.nat_zones) * var.nat_count_per_zone}"
+
   base_instance_name = "nat"
   instance_template  = "${element(google_compute_instance_template.nat.*.self_link, count.index)}"
-  zone               = "${var.region}-${element(var.nat_zones, count.index)}"
+  name               = "nat-${element(var.nat_zones, count.index / var.nat_count_per_zone)}-${(count.index % var.nat_count_per_zone) + 1}"
+  target_size        = 1
+  update_strategy    = "NONE"
+  zone               = "${var.region}-${element(var.nat_zones, count.index / var.nat_count_per_zone)}"
 
   named_port {
     name = "http"
@@ -332,23 +327,31 @@ data "external" "nats_by_zone" {
     zones   = "${join(",", var.nat_zones)}"
     region  = "${var.region}"
     project = "${var.project}"
+    count   = "${length(var.nat_zones) * var.nat_count_per_zone}"
   }
 
   depends_on = ["google_compute_instance_group_manager.nat"]
 }
 
 resource "google_compute_route" "nat" {
-  count                  = "${length(var.nat_zones)}"
-  name                   = "nat-${element(var.nat_zones, count.index)}"
+  count                  = "${length(var.nat_zones) * var.nat_count_per_zone}"
   dest_range             = "0.0.0.0/0"
-  tags                   = ["no-ip"]
-  priority               = 800
-  next_hop_instance_zone = "${var.region}-${element(var.nat_zones, count.index)}"
-  next_hop_instance      = "${data.external.nats_by_zone.result[element(var.nat_zones, count.index)]}"
+  name                   = "nat-${element(var.nat_zones, count.index / var.nat_count_per_zone)}-${(count.index % var.nat_count_per_zone) + 1}"
   network                = "${google_compute_network.main.self_link}"
+  next_hop_instance      = "${data.external.nats_by_zone.result["${element(var.nat_zones, count.index / var.nat_count_per_zone)}-${(count.index % var.nat_count_per_zone) + 1}"]}"
+  next_hop_instance_zone = "${var.region}-${element(var.nat_zones, count.index / var.nat_count_per_zone)}"
+  priority               = 800
+  tags                   = ["no-ip"]
 
   lifecycle {
-    ignore_changes = ["next_hop_instance", "id"]
+    # NOTE: the `next_hop_instance` is provided by `data.external.nats_by_zone`,
+    # which does not play nicely with graph change detection.  Rather than
+    # constantly re-creating these route resources, we ignore the change to
+    # `next_hop_instance`.  Any changes in the instances within the relevant
+    # instance groups will require a manual `taint` of *this* resource in order
+    # for the route to correctly resolve.  See the following URL for details:
+    # https://www.terraform.io/docs/commands/taint.html#example-tainting-a-resource-within-a-module
+    ignore_changes = ["next_hop_instance"]
   }
 }
 

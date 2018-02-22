@@ -13,15 +13,12 @@ main() {
     "${GCE_NAT_DUO_SECRET_KEY}" \
     "${GCE_NAT_DUO_API_HOSTNAME}"
 
-  local service_src="${VARTMP}/travis-nat-health-check.service"
-  local service_dest="${ETCDIR}/systemd/system/travis-nat-health-check.service"
+  __write_librato_config \
+    "${GCE_NAT_LIBRATO_EMAIL}" \
+    "${GCE_NAT_LIBRATO_TOKEN}"
 
-  if [[ -f "${service_src}" && -d "$(dirname "${service_dest}")" ]]; then
-    cp -v "${service_src}" "${service_dest}"
-
-    systemctl enable travis-nat-health-check || true
-    systemctl start travis-nat-health-check || true
-  fi
+  __setup_nat_forwarding
+  __setup_nat_health_check
 }
 
 __write_duo_configs() {
@@ -36,6 +33,81 @@ host = ${3}
 failmode = secure
 EOF
   done
+}
+
+__write_librato_config() {
+  if [[ ! "${1}" || ! "${2}" ]]; then
+    return
+  fi
+
+  mkdir -p "${ETCDIR}/collectd/collectd.conf.d"
+
+  local hostname_tmpl="${VARTMP}/travis-run.d/instance-hostname.tmpl"
+  local hostname_setting
+  if [[ -f "${hostname_tmpl}" ]]; then
+    local region_zone hostname_rendered
+    region_zone="$(__fetch_region_zone)"
+    hostname_rendered="$(
+      sed "s/___REGION_ZONE___/${region_zone}/g" <"${hostname_tmpl}"
+    )"
+    hostname_setting="Hostname ${hostname_rendered}"
+  fi
+
+  cat >"${ETCDIR}/collectd/collectd.conf.d/librato.conf" <<EOF
+# Written by cloud-init $(date -u) :heart:
+${hostname_setting}
+LoadPlugin write_http
+
+<Plugin "write_http">
+  <Node "Librato">
+    URL "https://collectd.librato.com/v1/measurements"
+    User "${1}"
+    Password "${2}"
+    Format "JSON"
+  </Node>
+</Plugin>
+EOF
+}
+
+__setup_nat_forwarding() {
+  local pub_iface
+  pub_iface="$(__find_public_interface)"
+
+  sysctl -w net.ipv4.ip_forward=1
+
+  iptables -t nat -S POSTROUTING | if ! grep -q MASQUERADE; then
+    iptables -t nat -A POSTROUTING -o "${pub_iface}" -j MASQUERADE
+  fi
+
+  iptables -S FORWARD | if ! grep -q conntrack; then
+    iptables -A FORWARD -o "${pub_iface}" \
+      -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+  fi
+}
+
+__find_public_interface() {
+  local iface=ens4
+  iface="$(ip -o addr show | grep -vE 'inet (172|127)\.' | grep -v inet6 |
+    awk '{ print $2 }' | grep -v '^lo$' | head -n 1)"
+  echo "${iface:-ens4}"
+}
+
+__setup_nat_health_check() {
+  local service_src="${VARTMP}/travis-nat-health-check.service"
+  local service_dest="${ETCDIR}/systemd/system/travis-nat-health-check.service"
+
+  if [[ -f "${service_src}" && -d "$(dirname "${service_dest}")" ]]; then
+    cp -v "${service_src}" "${service_dest}"
+
+    systemctl enable travis-nat-health-check || true
+    systemctl start travis-nat-health-check || true
+  fi
+}
+
+__fetch_region_zone() {
+  curl -s -H 'Metadata-Flavor: Google' \
+    http://metadata.google.internal/computeMetadata/v1/instance/zone |
+    awk -F/ '{ print $NF }'
 }
 
 main "${@}"
