@@ -32,5 +32,5 @@ run_cloud_init() {
 
 @test "disables access to ec2 metadata api" {
   run_cloud_init
-  assert_cmd 'iptables -t nat -I PREROUTING -p tcp -d 169.254.169.254 --dport 80 -j DROP'
+  assert_cmd 'iptables -I FORWARD -d 169.254.169.254 -j REJECT'
 }
