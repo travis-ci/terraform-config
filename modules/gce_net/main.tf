@@ -335,16 +335,23 @@ data "external" "nats_by_zone" {
 
 resource "google_compute_route" "nat" {
   count                  = "${length(var.nat_zones) * var.nat_count_per_zone}"
-  name                   = "nat-${element(var.nat_zones, count.index / var.nat_count_per_zone)}-${(count.index % var.nat_count_per_zone) + 1}"
   dest_range             = "0.0.0.0/0"
-  tags                   = ["no-ip"]
-  priority               = 800
-  next_hop_instance_zone = "${var.region}-${element(var.nat_zones, count.index / var.nat_count_per_zone)}"
-  next_hop_instance      = "${data.external.nats_by_zone.result["${element(var.nat_zones, count.index / var.nat_count_per_zone)}-${(count.index % var.nat_count_per_zone) + 1}"]}"
+  name                   = "nat-${element(var.nat_zones, count.index / var.nat_count_per_zone)}-${(count.index % var.nat_count_per_zone) + 1}"
   network                = "${google_compute_network.main.self_link}"
+  next_hop_instance      = "${data.external.nats_by_zone.result["${element(var.nat_zones, count.index / var.nat_count_per_zone)}-${(count.index % var.nat_count_per_zone) + 1}"]}"
+  next_hop_instance_zone = "${var.region}-${element(var.nat_zones, count.index / var.nat_count_per_zone)}"
+  priority               = 800
+  tags                   = ["no-ip"]
 
   lifecycle {
-    ignore_changes = ["next_hop_instance", "id"]
+    # NOTE: the `next_hop_instance` is provided by `data.external.nats_by_zone`,
+    # which does not play nicely with graph change detection.  Rather than
+    # constantly re-creating these route resources, we ignore the change to
+    # `next_hop_instance`.  Any changes in the instances within the relevant
+    # instance groups will require a manual `taint` of *this* resource in order
+    # for the route to correctly resolve.  See the following URL for details:
+    # https://www.terraform.io/docs/commands/taint.html#example-tainting-a-resource-within-a-module
+    ignore_changes = ["next_hop_instance"]
   }
 }
 

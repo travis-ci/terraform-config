@@ -58,7 +58,14 @@ def fetch_nats_by_zone(zones, count, project, region)
           --format="value(instance)"
         ]
         instance_name = `#{full_command.join(' ')}`.strip
-        instances["#{zone}-#{count_index + 1}"] = instance_name
+        instances["#{zone}-#{count_index + 1}"] = %W[
+          projects
+          #{project}
+          zones
+          #{region}-#{zone}
+          instances
+          #{instance_name}
+        ].join('/')
       rescue => e
         warn e
       end
