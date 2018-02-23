@@ -355,6 +355,24 @@ resource "google_compute_route" "nat" {
   }
 }
 
+data "template_file" "nat_rolling_updater_config" {
+  template = <<EOF
+export GCE_NAT_ROLLING_UPDATER_PROJECT='${var.project}'
+export GCE_NAT_ROLLING_UPDATER_REGION='${var.region}'
+export GCE_NAT_ROLLING_UPDATER_GROUPS='${join(",", google_compute_instance_group_manager.nat.*.name)}'
+export GCE_NAT_ROLLING_UPDATER_TEMPLATES='${join(",", google_compute_instance_template.nat.*.name)}'
+EOF
+}
+
+resource "local_file" "nat_rolling_updater_config" {
+  content  = "${data.template_file.nat_rolling_updater_config.rendered}"
+  filename = "${path.module}/../../tmp/nat-rolling-updater-${var.env}-${var.index}.env"
+
+  provisioner "local-exec" {
+    command = "chmod 0644 ${local_file.nat_rolling_updater_config.filename}"
+  }
+}
+
 resource "google_compute_address" "bastion" {
   count   = "${length(var.bastion_zones)}"
   name    = "bastion-${element(var.bastion_zones, count.index)}"
