@@ -19,6 +19,18 @@ write_files:
   encoding: b64
   path: /var/lib/cloud/scripts/per-boot/99-nat-cloud-init
   permissions: '0750'
+- content: '${base64encode(file("${assets}/nat/fail2ban-action-iptables-blocktype.local"))}'
+  encoding: b64
+  path: /var/tmp/nat-conntracker-confs/fail2ban-action-iptables-blocktype.local
+  permissions: '0640'
+- content: '${base64encode(file("${assets}/nat/fail2ban-filter-nat-conntracker.conf"))}'
+  encoding: b64
+  path: /var/tmp/nat-conntracker-confs/fail2ban-filter-nat-conntracker.conf
+  permissions: '0640'
+- content: '${base64encode(file("${assets}/nat/fail2ban-jail-nat-conntracker.conf"))}'
+  encoding: b64
+  path: /var/tmp/nat-conntracker-confs/fail2ban-jail-nat-conntracker.conf
+  permissions: '0640'
 - content: '${base64encode(file("${assets}/nat/travis-nat-health-check.service"))}'
   encoding: b64
   path: /var/tmp/travis-nat-health-check.service

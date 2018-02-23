@@ -18,6 +18,7 @@ main() {
     "${GCE_NAT_LIBRATO_TOKEN}"
 
   __setup_nat_forwarding
+  __setup_nat_conntracker_fail2ban
   __setup_nat_health_check
 }
 
@@ -90,6 +91,38 @@ __find_public_interface() {
   iface="$(ip -o addr show | grep -vE 'inet (172|127)\.' | grep -v inet6 |
     awk '{ print $2 }' | grep -v '^lo$' | head -n 1)"
   echo "${iface:-ens4}"
+}
+
+
+__setup_nat_conntracker_fail2ban() {
+  local ncc="${VARTMP}/nat-conntracker-confs"
+
+	if [[ ! -d "${ETCDIR}/fail2ban" ]]; then
+    return
+  fi
+
+  if [[ ! -d "${ncc}" ]]; then
+    return
+  fi
+
+  if ! systemctl is-enabled nat-conntracker.service &>/dev/null; then
+    return
+  fi
+
+  if ! systemctl is-enabled fail2ban.service &>/dev/null; then
+    return
+  fi
+
+  cp -v "${ncc}/fail2ban-action-iptables-blocktype.local" \
+        "${ETCDIR}/fail2ban/action.d/iptables-blocktype.local"
+
+  cp -v "${ncc}/fail2ban-filter-nat-conntracker.conf" \
+        "${ETCDIR}/fail2ban/filter.d/nat-conntracker.conf"
+
+  cp -v "${ncc}/fail2ban-jail-nat-conntracker.conf" \
+        "${ETCDIR}/fail2ban/jail.d/nat-conntracker.conf"
+
+  systemctl restart fail2ban
 }
 
 __setup_nat_health_check() {
