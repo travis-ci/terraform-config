@@ -93,11 +93,10 @@ __find_public_interface() {
   echo "${iface:-ens4}"
 }
 
-
 __setup_nat_conntracker_fail2ban() {
   local ncc="${VARTMP}/nat-conntracker-confs"
 
-	if [[ ! -d "${ETCDIR}/fail2ban" ]]; then
+  if [[ ! -d "${ETCDIR}/fail2ban" ]]; then
     return
   fi
 
@@ -114,13 +113,13 @@ __setup_nat_conntracker_fail2ban() {
   fi
 
   cp -v "${ncc}/fail2ban-action-iptables-blocktype.local" \
-        "${ETCDIR}/fail2ban/action.d/iptables-blocktype.local"
+    "${ETCDIR}/fail2ban/action.d/iptables-blocktype.local"
 
   cp -v "${ncc}/fail2ban-filter-nat-conntracker.conf" \
-        "${ETCDIR}/fail2ban/filter.d/nat-conntracker.conf"
+    "${ETCDIR}/fail2ban/filter.d/nat-conntracker.conf"
 
   cp -v "${ncc}/fail2ban-jail-nat-conntracker.conf" \
-        "${ETCDIR}/fail2ban/jail.d/nat-conntracker.conf"
+    "${ETCDIR}/fail2ban/jail.d/nat-conntracker.conf"
 
   systemctl restart fail2ban
 }
