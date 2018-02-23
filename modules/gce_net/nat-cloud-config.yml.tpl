@@ -11,29 +11,13 @@ write_files:
 - content: '${base64encode(nat_conntracker_config)}'
   encoding: b64
   path: /etc/default/nat-conntracker
-- content: '${base64encode(file("${assets}/nat/travis-nat-health-check"))}'
-  encoding: b64
-  path: /usr/local/bin/travis-nat-health-check
-  permissions: '0750'
 - content: '${base64encode(cloud_init_bash)}'
   encoding: b64
   path: /var/lib/cloud/scripts/per-boot/99-nat-cloud-init
   permissions: '0750'
-- content: '${base64encode(file("${assets}/nat/fail2ban-action-iptables-blocktype.local"))}'
+- content: '${base64encode(file("${assets}/nat.tar.bz2"))}'
   encoding: b64
-  path: /var/tmp/nat-conntracker-confs/fail2ban-action-iptables-blocktype.local
-  permissions: '0640'
-- content: '${base64encode(file("${assets}/nat/fail2ban-filter-nat-conntracker.conf"))}'
-  encoding: b64
-  path: /var/tmp/nat-conntracker-confs/fail2ban-filter-nat-conntracker.conf
-  permissions: '0640'
-- content: '${base64encode(file("${assets}/nat/fail2ban-jail-nat-conntracker.conf"))}'
-  encoding: b64
-  path: /var/tmp/nat-conntracker-confs/fail2ban-jail-nat-conntracker.conf
-  permissions: '0640'
-- content: '${base64encode(file("${assets}/nat/travis-nat-health-check.service"))}'
-  encoding: b64
-  path: /var/tmp/travis-nat-health-check.service
+  path: /var/tmp/nat.tar.bz2
 - content: '${base64encode(instance_hostname)}'
   encoding: b64
   path: /var/tmp/travis-run.d/instance-hostname.tmpl

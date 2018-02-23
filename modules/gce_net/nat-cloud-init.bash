@@ -17,6 +17,7 @@ main() {
     "${GCE_NAT_LIBRATO_EMAIL}" \
     "${GCE_NAT_LIBRATO_TOKEN}"
 
+  __expand_nat_tbz2
   __setup_nat_forwarding
   __setup_nat_conntracker_fail2ban
   __setup_nat_health_check
@@ -68,6 +69,16 @@ LoadPlugin write_http
   </Node>
 </Plugin>
 EOF
+}
+
+__expand_nat_tbz2() {
+  local nattbz2="${VARTMP}/nat.tar.bz2"
+
+  if [[ ! -f "${nattbz2}" ]]; then
+    return
+  fi
+
+  tar --no-same-permissions --strip-components=1 -C / -xvf "${nattbz2}"
 }
 
 __setup_nat_forwarding() {

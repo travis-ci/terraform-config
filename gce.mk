@@ -9,7 +9,8 @@ CONFIG_FILES := \
 	config/bastion.env \
 	config/gce-workers-$(ENV_SHORT).json \
 	config/worker-com.env \
-	config/worker-org.env
+	config/worker-org.env \
+	$(NATBZ2)
 
 .PHONY: .config
 .config: $(CONFIG_FILES) $(ENV_NAME).tfvars
