@@ -39,14 +39,28 @@ def main
       #{instance_group} --max-surge=0 --zone=#{zone} --project=#{project}
       --version=template=#{groups_templates.fetch(instance_group)}
     ]
-    if options.fetch(:noop)
-      puts "---> NOOP: #{command.join(' ').inspect}"
-    else
-      puts "---> RUNNING: #{command.join(' ').inspect}"
-      system(*command)
-    end
+
+    run_command(command, options.fetch(:noop))
   end
+
+  groups.length.times do |i|
+    command = %W[
+      terraform taint -module=gce_net google_compute_route.nat.#{i}
+    ]
+
+    run_command(command, options.fetch(:noop))
+  end
+
   0
+end
+
+def run_command(command, noop)
+  if noop
+    puts "---> NOOP: #{command.join(' ').inspect}"
+  else
+    puts "---> RUNNING: #{command.join(' ').inspect}"
+    system(*command)
+  end
 end
 
 def source_env(env_file)
