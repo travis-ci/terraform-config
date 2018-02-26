@@ -229,7 +229,7 @@ data "template_file" "nat_cloud_config" {
     nat_conntracker_config = "${var.nat_conntracker_config}"
     cloud_init_bash        = "${file("${path.module}/nat-cloud-init.bash")}"
     github_users_env       = "export GITHUB_USERS='${var.github_users}'"
-    instance_hostname      = "nat-${var.env}-${var.index}.gce-___REGION_ZONE___.travisci.net"
+    instance_hostname      = "nat-${var.env}-${var.index}-___INSTANCE_ID___.gce-___REGION_ZONE___.travisci.net"
     syslog_address         = "${var.syslog_address}"
     assets                 = "${path.module}/../../assets"
   }
