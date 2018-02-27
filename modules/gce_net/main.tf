@@ -366,7 +366,7 @@ EOF
 
 resource "local_file" "nat_rolling_updater_config" {
   content  = "${data.template_file.nat_rolling_updater_config.rendered}"
-  filename = "${path.module}/../../tmp/nat-rolling-updater-${var.env}-${var.index}.env"
+  filename = "${path.cwd}/config/nat-rolling-updater-${var.env}-${var.index}.env"
 
   provisioner "local-exec" {
     command = "chmod 0644 ${local_file.nat_rolling_updater_config.filename}"
