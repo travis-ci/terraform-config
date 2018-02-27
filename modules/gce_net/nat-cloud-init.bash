@@ -3,6 +3,7 @@
 set -o errexit
 
 main() {
+  : "${USRLOCAL:=/usr/local}"
   : "${VARTMP:=/var/tmp}"
   : "${ETCDIR:=/etc}"
 
@@ -19,7 +20,7 @@ main() {
 
   __expand_nat_tbz2
   __setup_nat_forwarding
-  __setup_nat_conntracker_fail2ban
+  __setup_nat_conntracker
   __setup_nat_health_check
 }
 
@@ -104,18 +105,33 @@ __find_public_interface() {
   echo "${iface:-ens4}"
 }
 
-__setup_nat_conntracker_fail2ban() {
+__setup_nat_conntracker() {
   local ncc="${VARTMP}/nat-conntracker-confs"
+  local conf="${ETCDIR}/default/nat-conntracker"
+  local ncs="${USRLOCAL}/src/nat-conntracker"
+
+  if ! systemctl is-enabled nat-conntracker.service &>/dev/null; then
+    return
+  fi
+
+  if [[ -f "${conf}" ]]; then
+    # shellcheck source=/dev/null
+    source "${conf}"
+  fi
+
+  if [[ "${NAT_CONNTRACKER_GIT_REF}" ]]; then
+    pushd "${ncs}"
+    git fetch --all
+    git checkout -qf "${NAT_CONNTRACKER_GIT_REF}"
+    make sysinstall
+    popd
+  fi
 
   if [[ ! -d "${ETCDIR}/fail2ban" ]]; then
     return
   fi
 
   if [[ ! -d "${ncc}" ]]; then
-    return
-  fi
-
-  if ! systemctl is-enabled nat-conntracker.service &>/dev/null; then
     return
   fi
 
