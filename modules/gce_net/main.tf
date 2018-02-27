@@ -229,7 +229,7 @@ data "template_file" "nat_cloud_config" {
     nat_conntracker_config = "${var.nat_conntracker_config}"
     cloud_init_bash        = "${file("${path.module}/nat-cloud-init.bash")}"
     github_users_env       = "export GITHUB_USERS='${var.github_users}'"
-    instance_hostname      = "nat-${var.env}-${var.index}.gce-___REGION_ZONE___.travisci.net"
+    instance_hostname      = "nat-${var.env}-${var.index}-___INSTANCE_ID___.gce-___REGION_ZONE___.travisci.net"
     syslog_address         = "${var.syslog_address}"
     assets                 = "${path.module}/../../assets"
   }
@@ -302,7 +302,7 @@ resource "google_compute_firewall" "allow_nat_health_check" {
 resource "google_compute_instance_group_manager" "nat" {
   count = "${length(var.nat_zones) * var.nat_count_per_zone}"
 
-  base_instance_name = "nat"
+  base_instance_name = "${var.env}-${var.index}-nat-${element(var.nat_zones, count.index / var.nat_count_per_zone)}-${(count.index % var.nat_count_per_zone) + 1}"
   instance_template  = "${element(google_compute_instance_template.nat.*.self_link, count.index)}"
   name               = "nat-${element(var.nat_zones, count.index / var.nat_count_per_zone)}-${(count.index % var.nat_count_per_zone) + 1}"
   target_size        = 1
@@ -352,6 +352,24 @@ resource "google_compute_route" "nat" {
     # for the route to correctly resolve.  See the following URL for details:
     # https://www.terraform.io/docs/commands/taint.html#example-tainting-a-resource-within-a-module
     ignore_changes = ["next_hop_instance"]
+  }
+}
+
+data "template_file" "nat_rolling_updater_config" {
+  template = <<EOF
+export GCE_NAT_ROLLING_UPDATER_PROJECT='${var.project}'
+export GCE_NAT_ROLLING_UPDATER_REGION='${var.region}'
+export GCE_NAT_ROLLING_UPDATER_GROUPS='${join(",", google_compute_instance_group_manager.nat.*.name)}'
+export GCE_NAT_ROLLING_UPDATER_TEMPLATES='${join(",", google_compute_instance_template.nat.*.name)}'
+EOF
+}
+
+resource "local_file" "nat_rolling_updater_config" {
+  content  = "${data.template_file.nat_rolling_updater_config.rendered}"
+  filename = "${path.cwd}/config/nat-rolling-updater-${var.env}-${var.index}.env"
+
+  provisioner "local-exec" {
+    command = "chmod 0644 ${local_file.nat_rolling_updater_config.filename}"
   }
 }
 
