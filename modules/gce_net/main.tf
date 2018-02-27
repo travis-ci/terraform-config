@@ -302,7 +302,7 @@ resource "google_compute_firewall" "allow_nat_health_check" {
 resource "google_compute_instance_group_manager" "nat" {
   count = "${length(var.nat_zones) * var.nat_count_per_zone}"
 
-  base_instance_name = "nat-${var.env}-${var.index}-${element(var.nat_zones, count.index / var.nat_count_per_zone)}-${(count.index % var.nat_count_per_zone) + 1}"
+  base_instance_name = "${var.env}-${var.index}-nat-${element(var.nat_zones, count.index / var.nat_count_per_zone)}-${(count.index % var.nat_count_per_zone) + 1}"
   instance_template  = "${element(google_compute_instance_template.nat.*.self_link, count.index)}"
   name               = "nat-${element(var.nat_zones, count.index / var.nat_count_per_zone)}-${(count.index % var.nat_count_per_zone) + 1}"
   target_size        = 1
