@@ -34,7 +34,10 @@ variable "nat_count_per_zone" {
 }
 
 variable "nat_image" {}
-variable "nat_machine_type" {}
+
+variable "nat_machine_type" {
+  default = "n1-highcpu-2"
+}
 
 variable "nat_zones" {
   default = ["a", "b", "c", "f"]
