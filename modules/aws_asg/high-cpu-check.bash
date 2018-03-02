@@ -25,7 +25,7 @@ report_greedy_containers() {
   instance_id="$(cat "${RUNDIR}/instance-id")"
   instance_ip="$(cat "${RUNDIR}/instance-ipv4")"
 
-  IFS=$(echo -en "\n\b")
+  IFS=$'\n'
   cpu_usage="$(docker stats --no-stream --format "{{.Container}} {{.CPUPerc}} {{.Name}}")"
 
   for line in $cpu_usage; do
