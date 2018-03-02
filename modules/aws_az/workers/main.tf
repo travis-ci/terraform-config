@@ -10,6 +10,10 @@ variable "site" {}
 variable "vpc_cidr" {}
 variable "vpc_id" {}
 
+variable "worker_nat_packets_out_threshold" {
+  default = 100000
+}
+
 resource "aws_security_group" "nat" {
   name   = "${var.env}-${var.index}-workers-nat-${var.site}-${var.az_group}"
   vpc_id = "${var.vpc_id}"
@@ -57,11 +61,32 @@ resource "aws_instance" "nat" {
 
   tags = {
     Name = "${var.env}-${var.index}-workers-nat-${var.site}-${var.az_group}"
+    role = "nat"
+    site = "${var.site}"
+    env  = "${var.env}"
   }
 
   lifecycle {
     ignore_changes = ["ami"]
   }
+}
+
+resource "aws_cloudwatch_metric_alarm" "low_packets_out" {
+  alarm_name          = "low-packets-out"
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods  = "2"
+  metric_name         = "PacketsOutToDestination"
+  namespace           = "AWS/NATGateway"
+  period              = "120"
+  statistic           = "Average"
+  threshold           = "${var.worker_nat_packets_out_threshold}"
+
+  dimensions {
+    NatGatewayId = "${aws_instance.nat.name}"
+  }
+
+  alarm_description  = "This metric monitors outbound packets through NAT"
+  treat_missing_data = "breaching"
 }
 
 resource "aws_route_table" "rtb" {
