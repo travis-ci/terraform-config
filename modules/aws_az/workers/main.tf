@@ -11,7 +11,7 @@ variable "vpc_cidr" {}
 variable "vpc_id" {}
 
 variable "worker_nat_packets_out_threshold" {
-  default = 100000
+  default = 100
 }
 
 resource "aws_security_group" "nat" {
@@ -72,21 +72,20 @@ resource "aws_instance" "nat" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "low_packets_out" {
-  alarm_name          = "low-packets-out"
+  alarm_description   = "This metric monitors outbound packets through NAT"
+  alarm_name          = "low-packets-out-${aws_instance.nat.id}"
   comparison_operator = "LessThanThreshold"
   evaluation_periods  = "2"
-  metric_name         = "PacketsOutToDestination"
-  namespace           = "AWS/NATGateway"
+  metric_name         = "NetworkPacketsOut"
+  namespace           = "AWS/EC2"
   period              = "120"
   statistic           = "Average"
   threshold           = "${var.worker_nat_packets_out_threshold}"
+  treat_missing_data  = "missing"
 
   dimensions {
-    NatGatewayId = "${aws_instance.nat.name}"
+    InstanceId = "${aws_instance.nat.id}"
   }
-
-  alarm_description  = "This metric monitors outbound packets through NAT"
-  treat_missing_data = "breaching"
 }
 
 resource "aws_route_table" "rtb" {
