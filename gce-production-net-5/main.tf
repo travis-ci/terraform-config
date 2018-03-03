@@ -65,9 +65,11 @@ module "gce_net" {
   nat_conntracker_config        = "${file("nat-conntracker.env")}"
   nat_image                     = "${var.gce_nat_image}"
   project                       = "travis-ci-prod-5"
+  public_subnet_cidr_range      = "10.10.1.0/24"
   rigaer_strasse_8_ipv4         = "${var.rigaer_strasse_8_ipv4}"
   syslog_address                = "${var.syslog_address_com}"
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
+  workers_subnet_cidr_range     = "10.10.16.0/22"
 }
 
 output "gce_subnetwork_workers" {

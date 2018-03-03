@@ -18,6 +18,8 @@ variable "travisci_net_external_zone_id" {
 
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
+variable "worker_instance_count_com" {}
+variable "worker_instance_count_org" {}
 
 variable "worker_zones" {
   default = ["a", "b", "c", "f"]
@@ -75,8 +77,8 @@ module "gce_worker_group" {
 
   worker_zones = "${var.worker_zones}"
 
-  worker_instance_count_com = 0
-  worker_instance_count_org = "${2 * length(var.worker_zones)}"
+  worker_instance_count_com = "${var.worker_instance_count_com}"
+  worker_instance_count_org = "${var.worker_instance_count_org}"
 
   worker_config_com = <<EOF
 ### worker.env
