@@ -148,6 +148,9 @@ __setup_nat_conntracker() {
   cp -v "${ncc}/fail2ban-jail-nat-conntracker.conf" \
     "${ETCDIR}/fail2ban/jail.d/nat-conntracker.conf"
 
+  cp -v "${ncc}/fail2ban.local" \
+    "${ETCDIR}/fail2ban/fail2ban.local"
+
   systemctl restart fail2ban
 }
 
