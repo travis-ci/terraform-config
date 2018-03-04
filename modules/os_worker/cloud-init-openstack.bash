@@ -9,7 +9,7 @@ main() {
   : "${VARTMP:=/var/tmp}"
   : "${TMP:=/tmp}"
   : "${GO_VERSION:=1.9.2}"
-  : "${GO_PATH:="${TMP}/go-workspace"}"
+  : "${GOPATH:="${TMP}/go-workspace"}"
 
   __install_go
   __build_travis_worker
@@ -26,26 +26,27 @@ __start_worker_service() {
 }
 __install_go() {
   if [ ! -f "${TMP}/go${GO_VERSION}.linux-ppc64le.tar.gz" ]; then
-    wget -P ${TMP} "https://storage.googleapis.com/golang/go${GO_VERSION}.linux-ppc64le.tar.gz"
+    wget -P "${TMP}" "https://storage.googleapis.com/golang/go${GO_VERSION}.linux-ppc64le.tar.gz"
   fi
   if [ ! -f /usr/local/bin/go ]; then
-    tar -C ${TMP} -xf "${TMP}/go${GO_VERSION}.linux-ppc64le.tar.gz"
+    tar -C "${TMP}" -xf "${TMP}/go${GO_VERSION}.linux-ppc64le.tar.gz"
     mv "${TMP}/go" /usr/local
   fi
 }
 
 __build_travis_worker() {
 
-  export GOPATH="${GO_PATH}"
-  export PATH=$PATH:/usr/local/go/bin
-  export PATH=$PATH:$(go env GOPATH)/bin
+  export GOPATH
+  PATH=${PATH}:/usr/local/go/bin
+  PATH=${PATH}:$(go env GOPATH)/bin
+  export PATH
 
-  if [ ! -f "${GO_PATH}/bin/travis-worker" ]; then
-    mkdir -p "${GO_PATH}/src/github.com/travis-ci"
-    if [ ! -d "${GO_PATH}/src/github.com/travis-ci/worker" ]; then
-      git clone https://github.com/travis-ci/worker "${GO_PATH}/src/github.com/travis-ci/worker"
+  if [ ! -f "${GOPATH}/bin/travis-worker" ]; then
+    mkdir -p "${GOPATH}/src/github.com/travis-ci"
+    if [ ! -d "${GOPATH}/src/github.com/travis-ci/worker" ]; then
+      git clone https://github.com/travis-ci/worker "${GOPATH}/src/github.com/travis-ci/worker"
     fi
-    cd "${GO_PATH}/src/github.com/travis-ci/worker" || exit
+    cd "${GOPATH}/src/github.com/travis-ci/worker" || exit
 
     go get -u github.com/FiloSottile/gvt
     go get -u github.com/alecthomas/gometalinter
@@ -57,8 +58,8 @@ __build_travis_worker() {
     make build
   fi
 
-  if [ -f $GO_PATH/bin/travis-worker ]; then
-    cp $GO_PATH/bin/travis-worker /usr/local/bin/travis-worker
+  if [ -f "${GOPATH}/bin/travis-worker" ]; then
+    cp "${GOPATH}/bin/travis-worker" /usr/local/bin/travis-worker
   fi
 }
 
