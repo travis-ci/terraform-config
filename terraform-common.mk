@@ -2,7 +2,7 @@ ENV_NAME := $(notdir $(shell cd $(PWD) && pwd))
 ENV_SHORT ?= $(word 2,$(subst -, ,$(ENV_NAME)))
 INFRA ?= $(word 1,$(subst -, ,$(ENV_NAME)))
 ENV_TAIL ?= $(subst $(INFRA)-,,$(ENV_NAME))
-TFVARS := $(PWD)/terraform.auto.tfvars
+TRVS_TFVARS := $(PWD)/trvs.auto.tfvars
 TFSTATE := $(PWD)/.terraform/terraform.tfstate
 TFPLAN := $(PWD)/$(ENV_NAME).tfplan
 TRAVIS_BUILD_COM_HOST ?= build.travis-ci.com
@@ -46,7 +46,7 @@ announce: .assert-ruby .assert-tf-version
 	@echo "👋 🎉  This is env=$(ENV_NAME) (short=$(ENV_SHORT) infra=$(INFRA) tail=$(ENV_TAIL))"
 
 .PHONY: apply
-apply: announce .config $(TFVARS) $(TFSTATE)
+apply: announce .config $(TRVS_TFVARS) $(TFSTATE)
 	$(TERRAFORM) apply $(TFPLAN)
 	$(TOP)/bin/post-flight $(TOP)
 
@@ -63,11 +63,11 @@ console: announce
 	$(TERRAFORM) console
 
 .PHONY: plan
-plan: announce .config $(TFVARS) $(TFSTATE)
+plan: announce .config $(TRVS_TFVARS) $(TFSTATE)
 	$(TERRAFORM) plan -module-depth=-1 -out=$(TFPLAN)
 
 .PHONY: destroy
-destroy: announce .config $(TFVARS) $(TFSTATE)
+destroy: announce .config $(TRVS_TFVARS) $(TFSTATE)
 	$(TERRAFORM) plan -module-depth=-1 -destroy -out=$(TFPLAN)
 	$(TOP)/bin/post-flight $(TOP)
 
@@ -82,7 +82,7 @@ $(TFSTATE):
 
 .PHONY: clean
 clean: announce
-	$(RM) -r config $(TFVARS) $(ENV_NAME).auto.tfvars
+	$(RM) -r config $(TRVS_TFVARS) $(ENV_NAME).auto.tfvars
 
 .PHONY: distclean
 distclean: clean
