@@ -89,7 +89,7 @@ write_files:
 - content: '${base64encode(file("${here}/high-cpu-check.bash"))}'
   encoding: b64
   owner: 'root:root'
-  path: /var/tmp/travis-run.d/kill-old-containers
+  path: /var/tmp/travis-run.d/high-cpu-check
   permissions: '0750'
 - content: '${base64encode(file("${here}/high-cpu-check-crontab"))}'
   encoding: b64
