@@ -28,8 +28,15 @@ report_greedy_containers() {
   IFS=$'\n'
   cpu_usage="$(docker stats --no-stream --format "{{.Container}} {{.CPUPerc}} {{.Name}}")"
 
-  for line in $cpu_usage; do
+  if [ -z "${cpu_usage}" ]; then
+    __logger "info" \
+      "no containers running" \
+      "status=noop" \
+      "instance_id=${instance_id}" \
+      "instance_ip=${instance_ip}"
+  fi
 
+  for line in $cpu_usage; do
     IFS=" "
     echo "$line" | while read -r cid usage_as_float name; do
       if [[ "${name}" == "travis-worker" ]]; then
