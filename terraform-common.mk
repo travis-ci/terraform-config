@@ -2,7 +2,7 @@ ENV_NAME := $(notdir $(shell cd $(PWD) && pwd))
 ENV_SHORT ?= $(word 2,$(subst -, ,$(ENV_NAME)))
 INFRA ?= $(word 1,$(subst -, ,$(ENV_NAME)))
 ENV_TAIL ?= $(subst $(INFRA)-,,$(ENV_NAME))
-TFVARS := $(PWD)/terraform.tfvars
+TFVARS := $(PWD)/terraform.auto.tfvars
 TFSTATE := $(PWD)/.terraform/terraform.tfstate
 TFPLAN := $(PWD)/$(ENV_NAME).tfplan
 TRAVIS_BUILD_COM_HOST ?= build.travis-ci.com
@@ -64,20 +64,11 @@ console: announce
 
 .PHONY: plan
 plan: announce .config $(TFVARS) $(TFSTATE)
-	$(TERRAFORM) plan \
-		-var-file=$(ENV_NAME).tfvars \
-		-var-file=$(TFVARS) \
-		-module-depth=-1 \
-		-out=$(TFPLAN)
+	$(TERRAFORM) plan -module-depth=-1 -out=$(TFPLAN)
 
 .PHONY: destroy
 destroy: announce .config $(TFVARS) $(TFSTATE)
-	$(TERRAFORM) plan \
-		-var-file=$(ENV_NAME).tfvars \
-		-var-file=$(TFVARS) \
-		-module-depth=-1 \
-		-destroy \
-		-out=$(TFPLAN)
+	$(TERRAFORM) plan -module-depth=-1 -destroy -out=$(TFPLAN)
 	$(TOP)/bin/post-flight $(TOP)
 
 $(TFWBZ2): $(wildcard $(TOP)/assets/tfw/**/*)
@@ -91,7 +82,7 @@ $(TFSTATE):
 
 .PHONY: clean
 clean: announce
-	$(RM) -r config $(TFVARS) $(ENV_NAME).tfvars
+	$(RM) -r config $(TFVARS) $(ENV_NAME).auto.tfvars
 
 .PHONY: distclean
 distclean: clean
@@ -101,7 +92,7 @@ distclean: clean
 graph:
 	$(TERRAFORM) graph -draw-cycles | dot -Tpng > graph.png
 
-$(ENV_NAME).tfvars:
+$(ENV_NAME).auto.tfvars:
 	$(TOP)/bin/generate-tfvars $@
 
 .PHONY: list
