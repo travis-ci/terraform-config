@@ -227,7 +227,7 @@ resource "aws_route53_record" "nat_regional" {
 }
 
 resource "heroku_app" "nat_conntracker" {
-  name   = "nat-conntracker-${var.env}-${var.index}"
+  name   = "nat-conntracker-gce-${var.env == "production" ? "prod" : var.env}-${var.index}"
   region = "us"
 
   organization {
@@ -260,7 +260,7 @@ data "template_file" "nat_cloud_config" {
 ${var.nat_conntracker_config}
 
 ### in-line
-export NAT_CONNTRACKER_REDIS_URL=${heroku_app.nat_conntracker.all_config_vars.REDIS_URL}
+export NAT_CONNTRACKER_REDIS_URL=${lookup(heroku_app.nat_conntracker.all_config_vars, "REDIS_URL")}
 export NAT_CONNTRACKER_REDIS_ADDON_NAME=${heroku_addon.nat_conntracker_redis.name}
 export NAT_CONNTRACKER_REDIS_APP_NAME=${heroku_app.nat_conntracker.name}
 EOF
