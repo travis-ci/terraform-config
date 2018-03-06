@@ -94,7 +94,7 @@ write_files:
 - content: '${base64encode(file("${here}/high-cpu-check-crontab"))}'
   encoding: b64
   owner: 'root:root'
-  path: /etc/cron.d/kill-old-containers-crontab
+  path: /etc/cron.d/high-cpu-check-crontab
   permissions: '0644'
 - content: '${base64encode(file("${assets}/travis-worker/travis-worker.service"))}'
   encoding: b64
