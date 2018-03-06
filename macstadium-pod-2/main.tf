@@ -163,6 +163,17 @@ module "vsphere_janitor_custom_5" {
   index       = "${var.index}"
 }
 
+module "vsphere_janitor_custom_6" {
+  source      = "../modules/vsphere_janitor"
+  host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user    = "${var.ssh_user}"
+  version     = "${var.vsphere_janitor_version}"
+  config_path = "${path.module}/config/vsphere-janitor-custom-6"
+  env         = "custom-6"
+  index       = "${var.index}"
+}
+
 module "dhcp_server" {
   source              = "../modules/macstadium_dhcp_server"
   host_id             = "${module.macstadium_infrastructure.dhcp_server_uuid}"
@@ -257,6 +268,12 @@ module "haproxy" {
       frontend_port      = "8089"
       backend_port_blue  = "9089"
       backend_port_green = "10089"
+    },
+    {
+      name               = "jupiter-brain-custom-6"
+      frontend_port      = "8091"
+      backend_port_blue  = "9091"
+      backend_port_green = "10091"
     },
   ]
 }
