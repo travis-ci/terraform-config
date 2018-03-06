@@ -15,7 +15,7 @@ variable "gce_nat_image" {
 variable "github_users" {}
 
 variable "index" {
-  default = 5
+  default = 4
 }
 
 variable "travisci_net_external_zone_id" {
@@ -43,8 +43,8 @@ terraform {
 }
 
 provider "google" {
-  credentials = "${file("config/gce-workers-production-4.json")}"
-  project     = "travis-ci-prod-4"
+  credentials = "${file("config/gce-workers-${var.env}-${var.index}.json")}"
+  project     = "travis-ci-prod-${var.index}"
   region      = "${var.region}"
 }
 
