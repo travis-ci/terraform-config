@@ -5,6 +5,7 @@ variable "env" {
 variable "latest_gce_bastion_image" {}
 variable "latest_gce_nat_image" {}
 
+variable "gce_heroku_org" {}
 variable "github_users" {}
 
 variable "index" {
@@ -15,6 +16,11 @@ variable "travisci_net_external_zone_id" {
   default = "Z2RI61YP4UWSIO"
 }
 
+variable "region" {
+  default = "us-central1"
+}
+
+variable "rigaer_strasse_8_ipv4" {}
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
 
@@ -33,10 +39,11 @@ terraform {
 provider "google" {
   credentials = "${file("config/gce-workers-staging-1.json")}"
   project     = "travis-staging-1"
-  region      = "us-central1"
+  region      = "${var.region}"
 }
 
 provider "aws" {}
+provider "heroku" {}
 
 module "gce_net" {
   source = "../modules/gce_net"
@@ -46,11 +53,15 @@ module "gce_net" {
   deny_target_ip_ranges         = ["${split(",", var.deny_target_ip_ranges)}"]
   env                           = "${var.env}"
   github_users                  = "${var.github_users}"
+  heroku_org                    = "${var.gce_heroku_org}"
   index                         = "${var.index}"
   nat_config                    = "${file("config/nat.env")}"
+  nat_conntracker_config        = "${file("nat-conntracker.env")}"
+  nat_conntracker_redis_plan    = "hobby-dev"
   nat_image                     = "${var.latest_gce_nat_image}"
   nat_machine_type              = "g1-small"
   project                       = "travis-staging-1"
+  rigaer_strasse_8_ipv4         = "${var.rigaer_strasse_8_ipv4}"
   syslog_address                = "${var.syslog_address_com}"
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
 }
