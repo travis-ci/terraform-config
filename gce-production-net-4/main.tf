@@ -44,7 +44,7 @@ terraform {
 
 provider "google" {
   credentials = "${file("config/gce-workers-production-4.json")}"
-  project     = "travis-ci-prod-5"
+  project     = "travis-ci-prod-4"
   region      = "${var.region}"
 }
 
@@ -64,7 +64,7 @@ module "gce_net" {
   nat_config                    = "${file("config/nat.env")}"
   nat_conntracker_config        = "${file("nat-conntracker.env")}"
   nat_image                     = "${var.gce_nat_image}"
-  project                       = "travis-ci-prod-5"
+  project                       = "travis-ci-prod-4"
   public_subnet_cidr_range      = "10.10.1.0/24"
   rigaer_strasse_8_ipv4         = "${var.rigaer_strasse_8_ipv4}"
   syslog_address                = "${var.syslog_address_com}"
