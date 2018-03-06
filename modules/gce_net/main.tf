@@ -230,7 +230,7 @@ resource "aws_route53_record" "nat_regional" {
 }
 
 resource "heroku_app" "nat_conntracker" {
-  name   = "nat-conntracker-${var.env}-${var.index}"
+  name   = "nat-conntracker-gce-${var.env == "production" ? "prod" : var.env}-${var.index}"
   region = "us"
 
   organization {
