@@ -217,6 +217,7 @@ resource "aws_launch_configuration" "workers" {
   name_prefix       = "${var.env}-${var.index}-workers-${var.site}-"
   image_id          = "${var.worker_ami}"
   instance_type     = "${var.worker_instance_type}"
+  key_name          = "aj"
   security_groups   = ["${var.security_groups}"]
   user_data         = "${data.template_cloudinit_config.cloud_config.rendered}"
   enable_monitoring = true
