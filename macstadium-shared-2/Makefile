@@ -1,4 +1,4 @@
-include $(shell git rev-parse --show-toplevel)/terraform.mk
+include $(shell git rev-parse --show-toplevel)/terraform-common.mk
 
 PROD_TF_VERSION := v0.9.11
 TERRAFORM := $(HOME)/.cache/travis-terraform-config/terraform-$(PROD_TF_VERSION)

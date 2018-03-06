@@ -1,4 +1,4 @@
-include $(shell git rev-parse --show-toplevel)/terraform.mk
+include $(shell git rev-parse --show-toplevel)/terraform-common.mk
 
 WRITE_CONFIG_OPTS := --write-bastion --write-nat --env-tail $(ENV_TAIL)
 
