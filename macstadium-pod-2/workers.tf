@@ -1,7 +1,7 @@
 variable "latest_travis_worker_version" {}
 
 variable "travis_worker_version" {
-  default = "v3.5.0"
+  default = "v3.6.0"
 }
 
 data "template_file" "worker_config_common" {
@@ -256,5 +256,26 @@ export TRAVIS_WORKER_POOL_SIZE="5"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_custom_5_token.hex}@127.0.0.1:8089/"
 export TRAVIS_WORKER_QUEUE_NAME="builds.customer.${lower(var.custom_5_name)}"
 export TRAVIS_WORKER_LIBRATO_SOURCE="worker-custom-5-${var.index}-dc18"
+EOF
+}
+
+module "worker_custom_6" {
+  source             = "../modules/macstadium_go_worker"
+  host_id            = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host           = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user           = "${var.ssh_user}"
+  version            = "${var.travis_worker_version}"
+  env                = "custom-6"
+  index              = "${var.index}"
+  worker_base_config = "${data.template_file.worker_config_common.rendered}"
+  worker_env_config  = "${file("${path.module}/config/travis-worker-production-com-common")}"
+
+  worker_local_config = <<EOF
+export TRAVIS_WORKER_HARD_TIMEOUT=120m
+export TRAVIS_WORKER_TRAVIS_SITE="com"
+export TRAVIS_WORKER_POOL_SIZE="5"
+export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_custom_6_token.hex}@127.0.0.1:8091/"
+export TRAVIS_WORKER_QUEUE_NAME="builds.customer.${lower(var.custom_6_name)}"
+export TRAVIS_WORKER_LIBRATO_SOURCE="worker-custom-6-${var.index}-dc18"
 EOF
 }
