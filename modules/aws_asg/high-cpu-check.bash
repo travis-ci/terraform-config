@@ -61,7 +61,7 @@ report_greedy_containers() {
 
 main() {
   # shellcheck disable=SC2153
-  : "${MAX_CPU:=150}"
+  : "${MAX_CPU:=100}"
 
   local max_cpu
   max_cpu="${MAX_CPU}"
