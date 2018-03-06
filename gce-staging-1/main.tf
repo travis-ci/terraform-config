@@ -59,12 +59,12 @@ module "gce_worker_group" {
   source = "../modules/gce_worker_group"
 
   env                           = "${var.env}"
-  github_users                  = "${var.github_users}"
   gcloud_cleanup_account_json   = "${file("${path.module}/config/gce-cleanup-staging-1.json")}"
   gcloud_cleanup_job_board_url  = "${var.job_board_url}"
   gcloud_cleanup_loop_sleep     = "2m"
   gcloud_cleanup_scale          = "worker=1:Hobby"
   gcloud_zone                   = "${var.gce_gcloud_zone}"
+  github_users                  = "${var.github_users}"
   heroku_org                    = "${var.gce_heroku_org}"
   index                         = "${var.index}"
   project                       = "travis-staging-1"

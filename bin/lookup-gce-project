@@ -1,0 +1,18 @@
+#!/usr/bin/env ruby
+
+def main
+  env_name = ARGV.fetch(0)
+
+  project = {
+    'gce-staging-1' => 'travis-staging-1',
+    'gce-staging-net-1' => 'travis-staging-1',
+    'gce-production-1' => 'eco-emissary-99515',
+    'gce-production-net-1' => 'eco-emissary-99515',
+  }.fetch(env_name, "travis-ci-prod-#{env_name.split('-').last}")
+
+  $stdout.puts(project)
+
+  0
+end
+
+exit(main) if $PROGRAM_NAME == __FILE__
