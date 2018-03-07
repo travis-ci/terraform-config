@@ -25,18 +25,10 @@ report_greedy_containers() {
   instance_id="$(cat "${RUNDIR}/instance-id")"
   instance_ip="$(cat "${RUNDIR}/instance-ipv4")"
 
-  #IFS=$'\n'
-  counter=0
-
   IFS=$'\n'
   stats="$(docker stats --no-stream --format "{{.Container}} {{.CPUPerc}} {{.Name}}" | tr -d '%')"
-  echo "${stats}" | while IFS=" " read -r cid usage_as_float name; do
-      counter=$((counter+1))
-      #let "counter++"
-      if [[ "${name}" == "travis-worker" ]]; then
-        continue
-      fi
 
+  echo "${stats}" | while IFS=" " read -r cid usage_as_float name; do
       usage_as_int=${usage_as_float/.*}
       if [ "${usage_as_int}" -ge "${max_cpu}" ]; then
         __logger "warning" \
@@ -48,12 +40,10 @@ report_greedy_containers() {
           "cpu_usage=${usage_as_float}" \
           "name=${name}"
       fi
-      logger --stderr MRAAAA "${counter}"
-      #export counter
   done
 
   __logger "info" \
-    "checked cpu usage of ${counter} running containers" \
+    "checked cpu usage of $(echo "${stats}" | wc -l) running containers" \
     "status=noop" \
     "instance_id=${instance_id}" \
     "instance_ip=${instance_ip}"
