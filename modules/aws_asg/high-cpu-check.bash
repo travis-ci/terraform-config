@@ -1,13 +1,13 @@
 #!/bin/bash
-set -e
-set -o pipefail
+#set -e
+#set -o pipefail
 
 __logger() {
   level="${1}" && shift
   msg="${1}" && shift
   date="$(date --iso-8601=seconds)"
-  log_msg="tag=cron time=${date} level=${level} msg=\"${msg}\" ${*}"
-  logger -t "$(basename "${0}")" "${log_msg}"
+  log_msg="tag=cron time=${date} level=${level} msg=\"${msg}\" ${@}"
+  logger --stderr -t "$(basename "${0}")" "${log_msg}"
 }
 
 __die() {
@@ -25,27 +25,20 @@ report_greedy_containers() {
   instance_id="$(cat "${RUNDIR}/instance-id")"
   instance_ip="$(cat "${RUNDIR}/instance-ipv4")"
 
+  #IFS=$'\n'
+  counter=0
+
   IFS=$'\n'
-  cpu_usage="$(docker stats --no-stream --format "{{.Container}} {{.CPUPerc}} {{.Name}}" | tr -d '%')"
-
-  if [ -z "${cpu_usage}" ]; then
-    __logger "info" \
-      "no containers running" \
-      "status=noop" \
-      "instance_id=${instance_id}" \
-      "instance_ip=${instance_ip}"
-  fi
-
-  for line in ${cpu_usage}; do
-    IFS=" "
-    echo "${line}" | while read -r cid usage_as_float name; do
+  stats="$(docker stats --no-stream --format "{{.Container}} {{.CPUPerc}} {{.Name}}" | tr -d '%')"
+  echo "${stats}" | while IFS=" " read -r cid usage_as_float name; do
+      counter=$((counter+1))
+      #let "counter++"
       if [[ "${name}" == "travis-worker" ]]; then
         continue
       fi
 
-      usage_as_int=${usage_as_float%.*}
-      if [ "${usage_as_int}" -gt "${max_cpu}" ]; then
-        echo "${cid} ${usage_as_int} ${name}"
+      usage_as_int=${usage_as_float/.*}
+      if [ "${usage_as_int}" -ge "${max_cpu}" ]; then
         __logger "warning" \
           "high cpu usage detected" \
           "status=noop" \
@@ -55,8 +48,15 @@ report_greedy_containers() {
           "cpu_usage=${usage_as_float}" \
           "name=${name}"
       fi
-    done
+      logger --stderr MRAAAA "${counter}"
+      #export counter
   done
+
+  __logger "info" \
+    "checked cpu usage of ${counter} running containers" \
+    "status=noop" \
+    "instance_id=${instance_id}" \
+    "instance_ip=${instance_ip}"
 }
 
 main() {
