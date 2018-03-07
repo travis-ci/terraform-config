@@ -1,13 +1,17 @@
 #!/bin/bash
-#set -e
-#set -o pipefail
+set -e
+set -o pipefail
 
 __logger() {
   level="${1}" && shift
   msg="${1}" && shift
   date="$(date --iso-8601=seconds)"
-  log_msg="tag=cron time=${date} level=${level} msg=\"${msg}\" ${@}"
-  logger --stderr -t "$(basename "${0}")" "${log_msg}"
+  log_msg="tag=cron time=${date} level=${level} msg=\"${msg}\""
+  for bit in "${@}"; do
+    log_msg="${log_msg} ${bit}"
+  done
+
+  logger -t "$(basename "${0}")" "${log_msg}"
 }
 
 __die() {
@@ -29,21 +33,25 @@ report_greedy_containers() {
   stats="$(docker stats --no-stream --format "{{.Container}} {{.CPUPerc}} {{.Name}}" | tr -d '%')"
 
   echo "${stats}" | while IFS=" " read -r cid usage_as_float name; do
-      usage_as_int=${usage_as_float/.*}
-      if [ "${usage_as_int}" -ge "${max_cpu}" ]; then
-        __logger "warning" \
-          "high cpu usage detected" \
-          "status=noop" \
-          "instance_id=${instance_id}" \
-          "instance_ip=${instance_ip}" \
-          "cid=${cid}" \
-          "cpu_usage=${usage_as_float}" \
-          "name=${name}"
-      fi
+    usage_as_int=${usage_as_float/.*/}
+    [ -z "${usage_as_float}" ] && continue
+    if [ "${usage_as_int}" -ge "${max_cpu}" ]; then
+      __logger "warning" \
+        "high cpu usage detected" \
+        "status=noop" \
+        "instance_id=${instance_id}" \
+        "instance_ip=${instance_ip}" \
+        "cid=${cid}" \
+        "cpu_usage=${usage_as_float}" \
+        "name=${name}"
+    fi
   done
 
+  count="$(echo "${stats}" | wc -l)"
+  [ -z "${stats}" ] && count="0"
+
   __logger "info" \
-    "checked cpu usage of $(echo "${stats}" | wc -l) running containers" \
+    "checked cpu usage of ${count} running containers" \
     "status=noop" \
     "instance_id=${instance_id}" \
     "instance_ip=${instance_ip}"
