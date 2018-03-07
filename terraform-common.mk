@@ -2,7 +2,9 @@ ENV_NAME := $(notdir $(shell cd $(PWD) && pwd))
 ENV_SHORT ?= $(word 2,$(subst -, ,$(ENV_NAME)))
 INFRA ?= $(word 1,$(subst -, ,$(ENV_NAME)))
 ENV_TAIL ?= $(subst $(INFRA)-,,$(ENV_NAME))
-TRVS_TFVARS := $(PWD)/trvs.auto.tfvars
+TRVS_INFRA_ENV_TFVARS := $(PWD)/trvs-$(INFRA)-$(ENV_SHORT).auto.tfvars
+TRVS_ENV_NAME_TFVARS := $(PWD)/trvs-$(ENV_NAME).auto.tfvars
+TRVS_TFVARS := $(TRVS_INFRA_ENV_TFVARS) $(TRVS_ENV_NAME_TFVARS)
 TFSTATE := $(PWD)/.terraform/terraform.tfstate
 TFPLAN := $(PWD)/$(ENV_NAME).tfplan
 TRAVIS_BUILD_COM_HOST ?= build.travis-ci.com
@@ -115,3 +117,9 @@ config/.written:
 config/.gce-keys-written:
 	cp -v $$TRAVIS_KEYCHAIN_DIR/travis-keychain/gce/*.json config/
 	date -u >$@
+
+$(TRVS_INFRA_ENV_TFVARS):
+	trvs generate-config -f json terraform-config $(INFRA)_$(ENV_SHORT) >$@
+
+$(TRVS_ENV_NAME_TFVARS):
+	trvs generate-config -f json terraform-config $(subst -,_,$(ENV_NAME)) >$@

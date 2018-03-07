@@ -1,4 +1,4 @@
-include $(shell git rev-parse --show-toplevel)/terraform.mk
+include $(shell git rev-parse --show-toplevel)/terraform-common.mk
 
 WRITE_CONFIG_OPTS := --write-bastion --write-nat --env-tail $(ENV_TAIL)
 
@@ -30,7 +30,9 @@ import-net:
 		--terraform $(TERRAFORM)
 
 # Removes state references from a GCE project that has migrated network
-# resources to a network-only terraform graph (see `import-net` above)
+# resources to a network-only terraform graph (see `import-net` above). This
+# target is intended to be run within a given "non-net" graph directory such as
+# "gce-production-5".
 .PHONY: export-net
 export-net:
 	$(TOP)/bin/gce-export-net --terraform $(TERRAFORM)

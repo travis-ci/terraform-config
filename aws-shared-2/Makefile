@@ -1,4 +1,4 @@
-include $(shell git rev-parse --show-toplevel)/terraform.mk
+include $(shell git rev-parse --show-toplevel)/terraform-common.mk
 
 .PHONY: default
 default: hello
