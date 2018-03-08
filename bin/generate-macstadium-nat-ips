@@ -3,18 +3,15 @@ require 'ipaddr'
 require 'json'
 
 NETS = %w[
-  208.78.110.192/27
   207.254.16.35/32
   207.254.16.36/30
+  208.78.110.192/27
 ].freeze
 
 def main
-  addrs = []
-  NETS.each do |net|
-    IPAddr.new(net).to_range.each do |addr|
-      addrs << addr.to_s
-    end
-  end
+  addrs = NETS.map { |net| IPAddr.new(net).to_range.map { |a| a.to_s } }
+  addrs.flatten!
+  addrs.sort!
 
   out = $stdout
   out = File.open(ARGV.first, 'w') if ARGV.first
