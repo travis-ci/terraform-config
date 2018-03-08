@@ -3,6 +3,11 @@ set -e
 set -o pipefail
 
 __logger() {
+  local level
+  local msg
+  local date
+  local log_msg
+
   level="${1}" && shift
   msg="${1}" && shift
   date="$(date --iso-8601=seconds)"
@@ -17,6 +22,7 @@ __logger() {
 __die() {
   local status="${1}"
   local code="${2}"
+
   __logger "info" \
     "cron finished" \
     "status=${status}"
@@ -24,6 +30,10 @@ __die() {
 }
 
 report_greedy_containers() {
+  local max_cpu
+  local instance_id
+  local instance_ip
+
   max_cpu="${1}"
   : "${RUNDIR:=/var/tmp/travis-run.d}"
   instance_id="$(cat "${RUNDIR}/instance-id")"
