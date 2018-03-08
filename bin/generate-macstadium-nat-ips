@@ -1,0 +1,25 @@
+#!/usr/bin/env ruby
+require 'ipaddr'
+
+NETS = %w[
+  208.78.110.192/27
+  207.254.16.35/32
+  207.254.16.36/30
+].freeze
+
+def main
+  addrs = []
+  NETS.each do |net|
+    IPAddr.new(net).to_range.each do |addr|
+      addrs << addr.to_s
+    end
+  end
+
+  out = $stdout
+  out = File.open(ARGV.first, 'w') if ARGV.first
+
+  out.puts "macstadium_production_nat_addrs = #{addrs.inspect}"
+  0
+end
+
+exit(main) if $PROGRAM_NAME == __FILE__
