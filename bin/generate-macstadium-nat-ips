@@ -5,7 +5,7 @@ require 'json'
 def main
   nets = ENV.fetch(
     'TRAVIS_MACSTADIUM_NAT_NETS',
-    '207.254.16.8/29'
+    '207.254.16.35/32 207.254.16.36/30'
   ).split(/[ ,]/).map(&:strip)
 
   addrs = nets.map { |net| IPAddr.new(net).to_range.map(&:to_s) }
