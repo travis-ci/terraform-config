@@ -40,9 +40,10 @@ report_greedy_containers() {
   instance_ip="$(cat "${RUNDIR}/instance-ipv4")"
 
   IFS=$'\n'
-  stats="$(docker stats --no-stream --format "{{.Container}} {{.CPUPerc}} {{.Name}}" | tr -d '%')"
+  stats="$(docker stats --no-stream --format "{{.Container}} {{.CPUPerc}} {{.Name}}")"
 
   echo "${stats}" | while IFS=" " read -r cid usage_as_float name; do
+    usage_as_float="${usage_as_float//%/}"
     usage_as_int=${usage_as_float/.*/}
     [ -z "${usage_as_float}" ] && continue
     if [ "${usage_as_int}" -ge "${max_cpu}" ]; then
