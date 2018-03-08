@@ -44,7 +44,7 @@ terraform {
 
 provider "google" {
   credentials = "${file("config/gce-workers-${var.env}-${var.index}.json")}"
-  project     = "travis-ci-prod-${var.index}"
+  project     = "eco-emissary-99515"
   region      = "${var.region}"
 }
 
