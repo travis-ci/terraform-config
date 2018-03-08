@@ -1,4 +1,4 @@
-ENV := production-dns
+ENV := dns
 ENV_SHORT := production
 INDEX := 0
 

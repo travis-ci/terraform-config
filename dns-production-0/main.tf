@@ -9,7 +9,7 @@ variable "region" {
 terraform {
   backend "s3" {
     bucket         = "travis-terraform-state"
-    key            = "terraform-config/gce-production-nat-dns.tfstate"
+    key            = "terraform-config/dns-production-0.tfstate"
     region         = "us-east-1"
     encrypt        = "true"
     dynamodb_table = "travis-terraform-state"
@@ -38,7 +38,7 @@ data "dns_a_record_set" "gce_production_5_nat" {
   host = "nat-production-5.gce-${var.region}.travisci.net"
 }
 
-resource "aws_route53_record" "nat" {
+resource "aws_route53_record" "gce_nat" {
   zone_id = "${var.travisci_net_external_zone_id}"
   name    = "nat.gce-${var.region}.travisci.net"
   type    = "A"
