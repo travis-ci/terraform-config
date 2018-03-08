@@ -21,7 +21,7 @@ main() {
     if [[ -f "${RUNDIR}/instance-ipv4" ]]; then
       local ipv4_label
       ipv4_label="travis.ipv4:$(cat "${RUNDIR}/instance-ipv4")"
-      container_labels="${container_labels}\\ ${ipv4_label}"
+      container_labels="${container_labels},${ipv4_label}"
     fi
 
     echo "export TRAVIS_WORKER_DOCKER_CONTAINER_LABELS=${container_labels}" |
