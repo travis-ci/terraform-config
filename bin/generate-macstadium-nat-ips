@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 require 'ipaddr'
+require 'json'
 
 NETS = %w[
   208.78.110.192/27
@@ -18,7 +19,12 @@ def main
   out = $stdout
   out = File.open(ARGV.first, 'w') if ARGV.first
 
-  out.puts "macstadium_production_nat_addrs = #{addrs.inspect}"
+  out.puts(
+    JSON.pretty_generate(
+      macstadium_production_nat_addrs: addrs
+    )
+  )
+
   0
 end
 
