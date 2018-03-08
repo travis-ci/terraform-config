@@ -2,16 +2,15 @@
 require 'ipaddr'
 require 'json'
 
-NETS = %w[
-  207.254.16.35/32
-  207.254.16.36/30
-  208.78.110.192/27
-].freeze
-
 def main
-  addrs = NETS.map { |net| IPAddr.new(net).to_range.map { |a| a.to_s } }
+  nets = ENV.fetch(
+    'TRAVIS_MACSTADIUM_NAT_NETS',
+    '207.254.16.8/29'
+  ).split(/[ ,]/).map(&:strip)
+
+  addrs = nets.map { |net| IPAddr.new(net).to_range.map(&:to_s) }
   addrs.flatten!
-  addrs.sort!
+  addrs.sort! { |a, b| a.split('.').map(&:to_i) <=> b.split('.').map(&:to_i) }
 
   out = $stdout
   out = File.open(ARGV.first, 'w') if ARGV.first
