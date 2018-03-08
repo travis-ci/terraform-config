@@ -63,6 +63,7 @@ module "gce_net" {
   index                         = "${var.index}"
   nat_config                    = "${file("config/nat.env")}"
   nat_conntracker_config        = "${file("nat-conntracker.env")}"
+  nat_count_per_zone            = 2
   nat_image                     = "${var.gce_nat_image}"
   project                       = "eco-emissary-99515"
   rigaer_strasse_8_ipv4         = "${var.rigaer_strasse_8_ipv4}"
