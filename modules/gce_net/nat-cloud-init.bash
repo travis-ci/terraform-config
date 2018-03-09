@@ -109,9 +109,10 @@ __setup_nat_conntracker() {
   local ncc="${VARTMP}/nat-conntracker-confs"
   local conf="${ETCDIR}/default/nat-conntracker"
   local ncs="${USRLOCAL}/src/nat-conntracker"
+  local ncr='https://github.com/travis-ci/nat-conntracker.git'
 
-  if ! systemctl is-enabled nat-conntracker.service &>/dev/null; then
-    return
+  if [[ ! -d "${ncs}" ]]; then
+    git clone --branch=master "${ncr}" "${ncs}"
   fi
 
   if [[ -f "${conf}" ]]; then
@@ -119,12 +120,28 @@ __setup_nat_conntracker() {
     source "${conf}"
   fi
 
+  systemctl enable nat-conntracker || true
+  systemctl start nat-conntracker || true
+
   if [[ "${NAT_CONNTRACKER_GIT_REF}" ]]; then
+    local ncs_dest="${ncs}.bak.$(date +%s)"
+    local ncs_dest_tbz="${ncs_dest}.tar.bz2"
+
+    mv -v "${ncs}" "${ncs_dest}"
+    tar -C "$(dirname "${ncs}")" \
+      -cjvf "$(basename "${ncs_dest_tbz}")" \
+      "$(basename "${ncs_dest}")"
+    rm -rf "${ncs_dest}"
+
+    git clone --branch=master "${ncr}" "${ncs}"
+
     pushd "${ncs}"
-    git fetch --all
+    git reset --hard origin/master
     git checkout -qf "${NAT_CONNTRACKER_GIT_REF}"
     make sysinstall
     popd
+
+    systemctl restart nat-conntracker
   fi
 
   if [[ ! -d "${ETCDIR}/fail2ban" ]]; then
