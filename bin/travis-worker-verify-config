@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 # This executable is run via null resource provisioner
 # but you can run it directly, too
+# FIXME: How?
 
 require 'base64'
 require 'json'
@@ -62,6 +63,9 @@ class TravisWorkerConfigVerifier
       ),
       msg: 'job-board credentials do not work'
     )
+
+    assert! vars.key?('TRAVIS_WORKER_LIBRATO_TOKEN')
+    assert! vars.key?('TRAVIS_WORKER_LIBRATO_EMAIL')
   end
 
   def verify_var_tmp_travis_run_d_check_unregister_netdevice!(content)
@@ -85,6 +89,18 @@ class TravisWorkerConfigVerifier
   def verify_etc_cron_d_check_docker_health!(content)
     assert_identical_content!(
       content, 'modules/aws_asg/check-docker-health-crontab'
+    )
+  end
+
+  def verify_etc_cron_d_high_cpu_check!(content)
+    assert_identical_content!(
+      content, 'modules/aws_asg/high-cpu-check-crontab'
+    )
+  end
+
+  def verify_var_tmp_travis_run_d_high_cpu_check!(content)
+    assert_identical_content!(
+      content, 'modules/aws_asg/high-cpu-check.bash'
     )
   end
 
