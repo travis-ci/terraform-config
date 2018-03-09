@@ -2,7 +2,7 @@ SHELL := bash
 
 TOP := $(shell git rev-parse --show-toplevel)
 
-include $(TOP)/terraform.mk
+include $(TOP)/terraform-common.mk
 
 .PHONY: default
 default: hello
@@ -16,7 +16,7 @@ CONFIG_FILES := \
 	config/worker-org.env
 
 .PHONY: .config
-.config: $(CONFIG_FILES) $(ENV_NAME).tfvars
+.config: $(CONFIG_FILES) $(ENV_NAME).auto.tfvars
 
 $(CONFIG_FILES): config/.written
 
@@ -26,4 +26,4 @@ diff-docker-images:
 		--label a/docker-images \
 		<($(TOP)/bin/show-current-docker-images) \
 		--label b/docker-images \
-		<($(TOP)/bin/show-proposed-docker-images "$(ENV_NAME).tfvars")
+		<($(TOP)/bin/show-proposed-docker-images "$(ENV_NAME).auto.tfvars")

@@ -12,6 +12,22 @@ main() {
   local instance_id
   instance_id="$(cat "${RUNDIR}/instance-id")"
 
+  if
+    ! grep -q TRAVIS_WORKER_DOCKER_CONTAINER_LABELS \
+      "${ETCDIR}/default/travis-worker-local"
+  then
+    local container_labels="travis.instance_id:${instance_id}"
+
+    if [[ -f "${RUNDIR}/instance-ipv4" ]]; then
+      local ipv4_label
+      ipv4_label="travis.ipv4:$(cat "${RUNDIR}/instance-ipv4")"
+      container_labels="${container_labels},${ipv4_label}"
+    fi
+
+    echo "export TRAVIS_WORKER_DOCKER_CONTAINER_LABELS=${container_labels}" |
+      tee -a "${ETCDIR}/default/travis-worker-local"
+  fi
+
   for envfile in "${ETCDIR}/default/travis-worker"*; do
     sed -i "s/___INSTANCE_ID___/${instance_id}/g" "${envfile}"
   done

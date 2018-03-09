@@ -1,4 +1,4 @@
-include $(shell git rev-parse --show-toplevel)/terraform.mk
+include $(shell git rev-parse --show-toplevel)/terraform-common.mk
 
 PROD_TF_VERSION := v0.9.11
 TERRAFORM := $(HOME)/.cache/travis-terraform-config/terraform-$(PROD_TF_VERSION)
@@ -34,7 +34,7 @@ CONFIG_FILES := \
 INDEX ?= $(subst $(INFRA)-$(ENV_SHORT)-,,$(ENV_NAME))
 
 .PHONY: .config
-.config: $(CONFIG_FILES) $(ENV_NAME).tfvars
+.config: $(CONFIG_FILES) $(ENV_NAME).auto.tfvars
 
 $(CONFIG_FILES):
 	mkdir -p config
@@ -86,6 +86,6 @@ $(CONFIG_FILES):
 	trvs generate-config -n -p COLLECTD_VSPHERE -f env collectd-vsphere common-$(INDEX) \
 		| sed 's/^/export /' >config/collectd-vsphere-common
 
-$(ENV_NAME).tfvars:
+$(ENV_NAME).auto.tfvars:
 	$(TOP)/bin/generate-tfvars $@
 	trvs generate-config -f hcl collectd-vsphere common-$(INDEX) >> $@

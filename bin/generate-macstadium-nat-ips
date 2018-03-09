@@ -1,0 +1,27 @@
+#!/usr/bin/env ruby
+require 'ipaddr'
+require 'json'
+
+def main
+  nets = ENV.fetch(
+    'TRAVIS_MACSTADIUM_NAT_NETS',
+    '207.254.16.35/32 207.254.16.36/30'
+  ).split(/[ ,]/).map(&:strip)
+
+  addrs = nets.map { |net| IPAddr.new(net).to_range.map(&:to_s) }
+  addrs.flatten!
+  addrs.sort! { |a, b| a.split('.').map(&:to_i) <=> b.split('.').map(&:to_i) }
+
+  out = $stdout
+  out = File.open(ARGV.first, 'w') if ARGV.first
+
+  out.puts(
+    JSON.pretty_generate(
+      macstadium_production_nat_addrs: addrs
+    )
+  )
+
+  0
+end
+
+exit(main) if $PROGRAM_NAME == __FILE__

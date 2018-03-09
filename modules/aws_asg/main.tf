@@ -118,7 +118,7 @@ variable "worker_docker_image_python" {}
 variable "worker_docker_image_ruby" {}
 
 variable "worker_docker_self_image" {
-  default = "travisci/worker:v3.5.0"
+  default = "travisci/worker:v3.6.0"
 }
 
 variable "worker_instance_type" {
@@ -217,6 +217,7 @@ resource "aws_launch_configuration" "workers" {
   name_prefix       = "${var.env}-${var.index}-workers-${var.site}-"
   image_id          = "${var.worker_ami}"
   instance_type     = "${var.worker_instance_type}"
+  key_name          = "aj"
   security_groups   = ["${var.security_groups}"]
   user_data         = "${data.template_cloudinit_config.cloud_config.rendered}"
   enable_monitoring = true
