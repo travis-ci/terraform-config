@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # vim:filetype=sh
 set -o errexit
+set -o pipefail
 
 main() {
   : "${USRLOCAL:=/usr/local}"
@@ -124,13 +125,12 @@ __setup_nat_conntracker() {
   systemctl start nat-conntracker || true
 
   if [[ "${NAT_CONNTRACKER_GIT_REF}" ]]; then
-    local ncs_dest="${ncs}.bak.$(date +%s)"
-    local ncs_dest_tbz="${ncs_dest}.tar.bz2"
+    local now_s="$(date +%s)"
+    local ncs_dest="${USRLOCAL}/src/nat-conntracker.bak.${now_s}"
+    local ncs_dest_tbz="${USRLOCAL}/src/nat-conntracker.bak.${now_s}.tar.bz2"
 
     mv -v "${ncs}" "${ncs_dest}"
-    tar -C "$(dirname "${ncs}")" \
-      -cjvf "$(basename "${ncs_dest_tbz}")" \
-      "$(basename "${ncs_dest}")"
+    tar -C "${USRLOCAL}/src" -cjvf "${ncs_dest_tbz}" "${ncs_dest}"
     rm -rf "${ncs_dest}"
 
     git clone --branch=master "${ncr}" "${ncs}"
