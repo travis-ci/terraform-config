@@ -8,6 +8,8 @@ main() {
   : "${VARTMP:=/var/tmp}"
   : "${ETCDIR:=/etc}"
 
+  export DEBIAN_FRONTEND=noninteractive
+
   # shellcheck source=/dev/null
   source "${ETCDIR}/default/nat"
   __write_duo_configs \
@@ -22,7 +24,7 @@ main() {
   __expand_nat_tbz2
   __setup_nat_forwarding
   __setup_nat_conntracker
-  __setup_nat_health_check
+  __setup_gesund
 }
 
 __write_duo_configs() {
@@ -109,51 +111,36 @@ __find_public_interface() {
 __setup_nat_conntracker() {
   local ncc="${VARTMP}/nat-conntracker-confs"
   local conf="${ETCDIR}/default/nat-conntracker"
-  local ncs="${USRLOCAL}/src/nat-conntracker"
-  local ncr='https://github.com/travis-ci/nat-conntracker.git'
+  local service_dest="${ETCDIR}/systemd/system/nat-conntracker.service"
+  local wrapper_dest="${USRLOCAL}/bin/nat-conntracker-wrapper"
 
-  if [[ ! -d "${ncs}" ]]; then
-    git clone --branch=master "${ncr}" "${ncs}"
+  eval "$(travis-combined-env nat-conntracker)"
+
+  local nc_self_image="${GESUND_SELF_IMAGE:-travisci/nat-conntracker}"
+
+  docker run \
+    --rm \
+    "${nc_self_image}" \
+    nat-conntracker --print-wrapper >"${wrapper_dest}"
+  chmod +x "${wrapper_dest}"
+
+  if [[ -d "$(dirname "${service_dest}")" ]]; then
+    docker run \
+      --rm \
+      "${nc_self_image}" \
+      nat-conntracker --print-service >"${service_dest}"
   fi
 
-  if [[ -f "${conf}" ]]; then
-    # shellcheck source=/dev/null
-    source "${conf}"
-  fi
+  apt-get update -y
+  apt-get install -y fail2ban conntrack
 
   systemctl enable nat-conntracker || true
   systemctl start nat-conntracker || true
 
-  if [[ "${NAT_CONNTRACKER_GIT_REF}" ]]; then
-    local now_s
-    now_s="$(date +%s)"
-    local ncs_dest="${USRLOCAL}/src/nat-conntracker.bak.${now_s}"
-    local ncs_dest_tbz="${USRLOCAL}/src/nat-conntracker.bak.${now_s}.tar.bz2"
-
-    mv -v "${ncs}" "${ncs_dest}"
-    tar -C "${USRLOCAL}/src" -cjvf "${ncs_dest_tbz}" "${ncs_dest}"
-    rm -rf "${ncs_dest}"
-
-    git clone --branch=master "${ncr}" "${ncs}"
-
-    pushd "${ncs}"
-    git reset --hard origin/master
-    git checkout -qf "${NAT_CONNTRACKER_GIT_REF}"
-    make sysinstall
-    popd
-
-    systemctl restart nat-conntracker
-  fi
-
-  if [[ ! -d "${ETCDIR}/fail2ban" ]]; then
-    return
-  fi
+  systemctl enable fail2ban || true
+  systemctl start fail2ban || true
 
   if [[ ! -d "${ncc}" ]]; then
-    return
-  fi
-
-  if ! systemctl is-enabled fail2ban.service &>/dev/null; then
     return
   fi
 
@@ -169,18 +156,31 @@ __setup_nat_conntracker() {
   cp -v "${ncc}/fail2ban.local" \
     "${ETCDIR}/fail2ban/fail2ban.local"
 
-  systemctl restart fail2ban
+  systemctl restart fail2ban || true
 }
 
-__setup_nat_health_check() {
-  local service_src="${VARTMP}/travis-nat-health-check.service"
-  local service_dest="${ETCDIR}/systemd/system/travis-nat-health-check.service"
+__setup_gesund() {
+  local service_dest="${ETCDIR}/systemd/system/gesund.service"
+  local wrapper_dest="${USRLOCAL}/bin/gesund-wrapper"
 
-  if [[ -f "${service_src}" && -d "$(dirname "${service_dest}")" ]]; then
-    cp -v "${service_src}" "${service_dest}"
+  eval "$(travis-combined-env gesund)"
 
-    systemctl enable travis-nat-health-check || true
-    systemctl start travis-nat-health-check || true
+  local gesund_self_image="${GESUND_SELF_IMAGE:-travisci/gesund}"
+
+  docker run \
+    --rm \
+    "${gesund_self_image}" \
+    gesund --print-wrapper >"${wrapper_dest}"
+  chmod +x "${wrapper_dest}"
+
+  if [[ -d "$(dirname "${service_dest}")" ]]; then
+    docker run \
+      --rm \
+      "${gesund_self_image}" \
+      gesund --print-service >"${service_dest}"
+
+    systemctl enable gesund || true
+    systemctl start gesund || true
   fi
 }
 

@@ -3,7 +3,7 @@ variable "env" {
 }
 
 variable "latest_gce_bastion_image" {}
-variable "latest_gce_nat_image" {}
+variable "latest_gce_tfw_image" {}
 
 variable "gce_heroku_org" {}
 variable "github_users" {}
@@ -58,7 +58,7 @@ module "gce_net" {
   nat_config                    = "${file("config/nat.env")}"
   nat_conntracker_config        = "${file("nat-conntracker.env")}"
   nat_conntracker_redis_plan    = "hobby-dev"
-  nat_image                     = "${var.latest_gce_nat_image}"
+  nat_image                     = "${var.latest_gce_tfw_image}"
   nat_machine_type              = "g1-small"
   project                       = "travis-staging-1"
   rigaer_strasse_8_ipv4         = "${var.rigaer_strasse_8_ipv4}"
