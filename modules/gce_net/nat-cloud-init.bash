@@ -125,7 +125,8 @@ __setup_nat_conntracker() {
   systemctl start nat-conntracker || true
 
   if [[ "${NAT_CONNTRACKER_GIT_REF}" ]]; then
-    local now_s="$(date +%s)"
+    local now_s
+    now_s="$(date +%s)"
     local ncs_dest="${USRLOCAL}/src/nat-conntracker.bak.${now_s}"
     local ncs_dest_tbz="${USRLOCAL}/src/nat-conntracker.bak.${now_s}.tar.bz2"
 
