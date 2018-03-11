@@ -114,7 +114,7 @@ __setup_nat_conntracker() {
   local service_dest="${ETCDIR}/systemd/system/nat-conntracker.service"
   local wrapper_dest="${USRLOCAL}/bin/nat-conntracker-wrapper"
 
-  eval "$(travis-combined-env nat-conntracker)"
+  eval "$(travis-tfw-combined-env nat-conntracker)"
 
   local nc_self_image="${GESUND_SELF_IMAGE:-travisci/nat-conntracker}"
 
@@ -163,7 +163,7 @@ __setup_gesund() {
   local service_dest="${ETCDIR}/systemd/system/gesund.service"
   local wrapper_dest="${USRLOCAL}/bin/gesund-wrapper"
 
-  eval "$(travis-combined-env gesund)"
+  eval "$(travis-tfw-combined-env gesund)"
 
   local gesund_self_image="${GESUND_SELF_IMAGE:-travisci/gesund}"
 

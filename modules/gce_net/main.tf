@@ -261,6 +261,7 @@ data "template_file" "nat_cloud_config" {
   vars {
     assets            = "${path.module}/../../assets"
     cloud_init_bash   = "${file("${path.module}/nat-cloud-init.bash")}"
+    docker_env        = "export TRAVIS_DOCKER_DISABLE_DIRECT_LVM=1"
     gesund_config     = "export GESUND_SELF_IMAGE=${var.gesund_self_image}"
     github_users_env  = "export GITHUB_USERS='${var.github_users}'"
     instance_hostname = "nat-${var.env}-${var.index}-___INSTANCE_ID___.gce-___REGION_ZONE___.travisci.net"
