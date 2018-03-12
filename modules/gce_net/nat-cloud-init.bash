@@ -10,35 +10,24 @@ main() {
 
   export DEBIAN_FRONTEND=noninteractive
 
-  # shellcheck source=/dev/null
-  source "${ETCDIR}/default/nat"
-  __write_duo_configs \
-    "${GCE_NAT_DUO_INTEGRATION_KEY}" \
-    "${GCE_NAT_DUO_SECRET_KEY}" \
-    "${GCE_NAT_DUO_API_HOSTNAME}"
+  __install_tfw
 
-  __write_librato_config \
-    "${GCE_NAT_LIBRATO_EMAIL}" \
-    "${GCE_NAT_LIBRATO_TOKEN}"
+  eval "$(tfw printenv nat)"
 
   __expand_nat_tbz2
+  __setup_gesund
+  __write_librato_config "${GCE_NAT_LIBRATO_EMAIL}" "${GCE_NAT_LIBRATO_TOKEN}"
   __setup_nat_forwarding
   __setup_nat_conntracker
-  __setup_gesund
 }
 
-__write_duo_configs() {
-  mkdir -p "${ETCDIR}/duo"
-  for conf in "${ETCDIR}/duo/login_duo.conf" "${ETCDIR}/duo/pam_duo.conf"; do
-    cat >"${conf}" <<EOF
-# Written by cloud-init $(date -u) :heart:
-[duo]
-ikey = ${1}
-skey = ${2}
-host = ${3}
-failmode = secure
-EOF
-  done
+__install_tfw() {
+  curl -sSL \
+    -o "${VARTMP}/tfw" \
+    'https://raw.githubusercontent.com/travis-ci/tfw/master/tfw'
+
+  chmod +x "${VARTMP}/tfw"
+  mv -v "${VARTMP}/tfw" "${USRLOCAL}/bin/tfw"
 }
 
 __write_librato_config() {
@@ -109,36 +98,19 @@ __find_public_interface() {
 }
 
 __setup_nat_conntracker() {
-  local ncc="${VARTMP}/nat-conntracker-confs"
-  local conf="${ETCDIR}/default/nat-conntracker"
-  local service_dest="${ETCDIR}/systemd/system/nat-conntracker.service"
-  local wrapper_dest="${USRLOCAL}/bin/nat-conntracker-wrapper"
-
-  eval "$(travis-tfw-combined-env nat-conntracker)"
-
-  local nc_self_image="${GESUND_SELF_IMAGE:-travisci/nat-conntracker}"
-
-  docker run \
-    --rm \
-    "${nc_self_image}" \
-    nat-conntracker --print-wrapper >"${wrapper_dest}"
-  chmod +x "${wrapper_dest}"
-
-  if [[ -d "$(dirname "${service_dest}")" ]]; then
-    docker run \
-      --rm \
-      "${nc_self_image}" \
-      nat-conntracker --print-service >"${service_dest}"
-  fi
-
-  apt-get update -y
-  apt-get install -y fail2ban conntrack
+  eval "$(tfw printenv nat-conntracker)"
+  tfw extract nat-conntracker "${NAT_CONNTRACKER_SELF_IMAGE}"
 
   systemctl enable nat-conntracker || true
   systemctl start nat-conntracker || true
 
+  apt-get update -y
+  apt-get install -y fail2ban conntrack
+
   systemctl enable fail2ban || true
   systemctl start fail2ban || true
+
+  local ncc="${VARTMP}/nat-conntracker-confs"
 
   if [[ ! -d "${ncc}" ]]; then
     return
@@ -160,28 +132,11 @@ __setup_nat_conntracker() {
 }
 
 __setup_gesund() {
-  local service_dest="${ETCDIR}/systemd/system/gesund.service"
-  local wrapper_dest="${USRLOCAL}/bin/gesund-wrapper"
+  eval "$(tfw printenv gesund)"
+  tfw extract gesund "${GESUND_SELF_IMAGE}"
 
-  eval "$(travis-tfw-combined-env gesund)"
-
-  local gesund_self_image="${GESUND_SELF_IMAGE:-travisci/gesund}"
-
-  docker run \
-    --rm \
-    "${gesund_self_image}" \
-    gesund --print-wrapper >"${wrapper_dest}"
-  chmod +x "${wrapper_dest}"
-
-  if [[ -d "$(dirname "${service_dest}")" ]]; then
-    docker run \
-      --rm \
-      "${gesund_self_image}" \
-      gesund --print-service >"${service_dest}"
-
-    systemctl enable gesund || true
-    systemctl start gesund || true
-  fi
+  systemctl enable gesund || true
+  systemctl start gesund || true
 }
 
 __fetch_region_zone() {
