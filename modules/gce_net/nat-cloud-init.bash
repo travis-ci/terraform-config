@@ -101,11 +101,11 @@ __setup_nat_conntracker() {
   eval "$(tfw printenv nat-conntracker)"
   tfw extract nat-conntracker "${NAT_CONNTRACKER_SELF_IMAGE}"
 
-  systemctl enable nat-conntracker || true
-  systemctl start nat-conntracker || true
-
   apt-get update -y
   apt-get install -y fail2ban conntrack
+
+  systemctl enable nat-conntracker || true
+  systemctl start nat-conntracker || true
 
   systemctl enable fail2ban || true
   systemctl start fail2ban || true
