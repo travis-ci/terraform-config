@@ -9,7 +9,7 @@ main() {
   : "${ETCDIR:=/etc}"
 
   export DEBIAN_FRONTEND=noninteractive
-  __disable_apt_daily
+  __disable_unfriendly_services
   __install_tfw
 
   eval "$(tfw printenv nat)"
@@ -21,11 +21,14 @@ main() {
   __setup_nat_conntracker
 }
 
-__disable_apt_daily() {
+__disable_unfriendly_services() {
   systemctl stop apt-daily-upgrade || true
   systemctl disable apt-daily-upgrade || true
   systemctl stop apt-daily || true
   systemctl disable apt-daily || true
+  systemctl stop apparmor || true
+  systemctl disable apparmor || true
+  systemctl reset-failed
 }
 
 __install_tfw() {
