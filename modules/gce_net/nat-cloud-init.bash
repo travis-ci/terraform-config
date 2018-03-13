@@ -9,7 +9,7 @@ main() {
   : "${ETCDIR:=/etc}"
 
   export DEBIAN_FRONTEND=noninteractive
-
+  __disable_apt_daily
   __install_tfw
 
   eval "$(tfw printenv nat)"
@@ -19,6 +19,13 @@ main() {
   __write_librato_config "${GCE_NAT_LIBRATO_EMAIL}" "${GCE_NAT_LIBRATO_TOKEN}"
   __setup_nat_forwarding
   __setup_nat_conntracker
+}
+
+__disable_apt_daily() {
+  systemctl stop apt-daily-upgrade || true
+  systemctl disable apt-daily-upgrade || true
+  systemctl stop apt-daily || true
+  systemctl disable apt-daily || true
 }
 
 __install_tfw() {

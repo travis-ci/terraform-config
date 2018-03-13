@@ -26,8 +26,17 @@ def main
     tag = latest_docker_image_tag("travisci/ci-#{stack}")
     $stdout.puts(%(latest_docker_image_#{stack} = #{tag.to_s.inspect}))
   end
-  worker_tag = latest_docker_image_tag('travisci/worker')
-  $stdout.puts(%(latest_docker_image_worker = #{worker_tag.to_s.inspect}))
+
+  %w[
+    gesund
+    nat-conntracker
+    worker
+  ].each do |image|
+    tag = latest_docker_image_tag("travisci/#{image}")
+    $stdout.puts(
+      %(latest_docker_image_#{image.gsub('-', '_')} = #{tag.to_s.inspect})
+    )
+  end
 
   0
 end
