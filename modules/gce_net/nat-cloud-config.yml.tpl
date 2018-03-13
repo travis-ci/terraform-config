@@ -2,6 +2,13 @@
 # vim:filetype=yaml
 
 write_files:
+- content: '${base64encode(docker_env)}'
+  encoding: b64
+  owner: 'root:root'
+  path: /etc/default/docker
+- content: '${base64encode(gesund_config)}'
+  encoding: b64
+  path: /etc/default/gesund
 - content: '${base64encode(github_users_env)}'
   encoding: b64
   path: /etc/default/github-users
