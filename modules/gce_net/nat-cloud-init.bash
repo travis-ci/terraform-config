@@ -96,9 +96,9 @@ __setup_nat_forwarding() {
 
   iptables -S FORWARD | grep -v docker |
     if ! grep -qE 'conntrack.+RELATED,ESTABLISHED'; then
-    iptables -A FORWARD -o "${pub_iface}" \
-      -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
-  fi
+      iptables -A FORWARD -o "${pub_iface}" \
+        -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+    fi
 }
 
 __find_public_interface() {
