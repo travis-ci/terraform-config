@@ -310,20 +310,20 @@ resource "aws_autoscaling_policy" "workers_remove_capacity" {
   step_adjustment {
     scaling_adjustment          = "${var.worker_asg_scale_in_qty}"
     metric_interval_lower_bound = 1.0
-    metric_interval_upper_bound = "${ceil(var.worker_asg_scale_in_threshold / 2)}"
+    metric_interval_upper_bound = "${ceil(var.worker_asg_scale_in_threshold / 4.0)}"
   }
 
   # Headroom is way above scale-in threshold; remove n * 2 instances
   step_adjustment {
     scaling_adjustment          = "${var.worker_asg_scale_in_qty * 2}"
-    metric_interval_lower_bound = "${ceil(var.worker_asg_scale_in_threshold / 2)}"
-    metric_interval_upper_bound = "${ceil(var.worker_asg_scale_in_threshold / 3)}"
+    metric_interval_lower_bound = "${ceil(var.worker_asg_scale_in_threshold / 4.0)}"
+    metric_interval_upper_bound = "${ceil(var.worker_asg_scale_in_threshold / 3.0)}"
   }
 
   # Headroom is way above scale-in threshold; remove n * 2 instances
   step_adjustment {
     scaling_adjustment          = "${var.worker_asg_scale_in_qty * 3}"
-    metric_interval_lower_bound = "${ceil(var.worker_asg_scale_in_threshold / 3)}"
+    metric_interval_lower_bound = "${ceil(var.worker_asg_scale_in_threshold / 3.0)}"
   }
 }
 

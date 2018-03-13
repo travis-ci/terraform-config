@@ -26,7 +26,9 @@ terraform {
   }
 }
 
-provider "aws" {}
+provider "aws" {
+  version = "1.3.1"
+}
 
 provider "heroku" {
   version = "0.1.0"
