@@ -1,4 +1,5 @@
 *.tfplan
+*.tfstate
 *.tfstate.*.backup
 *.tfstate.backup
 *.tfvars
@@ -19,3 +20,4 @@ local-development-0/local-development-0.tfstate
 macstadium-*/config/
 packet-*/config/
 tfstate
+.envrc
