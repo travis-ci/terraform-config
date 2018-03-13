@@ -20,7 +20,7 @@ variable "gce_health_check_source_ranges" {
 }
 
 variable "gesund_self_image" {
-  default = "travisci/gesund:1a57807"
+  default = "travisci/gesund:0.1.0"
 }
 
 variable "github_users" {}
