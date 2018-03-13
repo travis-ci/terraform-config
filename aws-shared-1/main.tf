@@ -63,7 +63,7 @@ terraform {
 }
 
 provider "aws" {
-  version = "1.3.1"
+  version = "~> 1.4"
 }
 
 data "aws_ami" "nat" {
