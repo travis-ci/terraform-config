@@ -54,6 +54,6 @@ __git_diff_names() {
   popd &>/dev/null
 }
 
-if [[ "$(pwd)" == *"production"* ]]; then
+if [[ "$(pwd)" == *"production"* ]] || [[ "$(pwd)" == *"2"* ]]; then
   main "$@"
 fi
