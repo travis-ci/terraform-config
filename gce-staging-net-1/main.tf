@@ -2,6 +2,7 @@ variable "env" {
   default = "staging"
 }
 
+variable "latest_docker_image_gesund" {}
 variable "latest_docker_image_nat_conntracker" {}
 variable "latest_gce_bastion_image" {}
 variable "latest_gce_tfw_image" {}
@@ -53,6 +54,7 @@ module "gce_net" {
   bastion_image                 = "${var.latest_gce_bastion_image}"
   deny_target_ip_ranges         = ["${split(",", var.deny_target_ip_ranges)}"]
   env                           = "${var.env}"
+  gesund_self_image             = "${var.latest_docker_image_gesund}"
   github_users                  = "${var.github_users}"
   heroku_org                    = "${var.gce_heroku_org}"
   index                         = "${var.index}"
