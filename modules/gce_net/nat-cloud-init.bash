@@ -90,11 +90,12 @@ __setup_nat_forwarding() {
 
   sysctl -w net.ipv4.ip_forward=1
 
-  iptables -t nat -S POSTROUTING | if ! grep -q MASQUERADE; then
+  iptables -t nat -S POSTROUTING | grep -v 172. | if ! grep -q MASQUERADE; then
     iptables -t nat -A POSTROUTING -o "${pub_iface}" -j MASQUERADE
   fi
 
-  iptables -S FORWARD | if ! grep -q conntrack; then
+  iptables -S FORWARD | grep -v docker |
+    if ! grep -qE 'conntrack.+RELATED,ESTABLISHED'; then
     iptables -A FORWARD -o "${pub_iface}" \
       -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
   fi
