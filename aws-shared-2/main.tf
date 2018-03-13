@@ -72,7 +72,9 @@ terraform {
   }
 }
 
-provider "aws" {}
+provider "aws" {
+  version = "~> 1.4"
+}
 
 data "aws_ami" "nat" {
   most_recent = true

@@ -1,3 +1,5 @@
+/* For changes to this file to take effect, run `make apply` in `aws-shared-{1,2}/`.  */
+
 variable "az" {}
 variable "az_group" {}
 variable "cidr_block" {}
@@ -72,7 +74,7 @@ resource "aws_instance" "nat" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "low_packets_out" {
-  alarm_description   = "This metric monitors outbound packets through NAT"
+  alarm_description   = "NetworkPacketsOut: NAT ${var.az_group} (${var.env}/${var.site})"
   alarm_name          = "low-packets-out-${aws_instance.nat.id}"
   comparison_operator = "LessThanThreshold"
   evaluation_periods  = "2"
