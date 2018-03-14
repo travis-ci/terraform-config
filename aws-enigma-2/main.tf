@@ -10,11 +10,10 @@ variable "index" {
   default = 0
 }
 
-variable "rabbitmq_password_com" {}
 variable "rabbitmq_password_org" {}
-variable "rabbitmq_username_com" {}
+
 variable "rabbitmq_username_org" {}
-variable "syslog_address_com" {}
+
 variable "syslog_address_org" {}
 
 data "aws_ami" "tfw" {
@@ -70,22 +69,8 @@ data "terraform_remote_state" "vpc" {
   }
 }
 
-resource "random_id" "cyclist_token_com" {
-  byte_length = 32
-}
-
 resource "random_id" "cyclist_token_org" {
   byte_length = 32
-}
-
-module "rabbitmq_worker_config_com" {
-  source         = "../modules/rabbitmq_user"
-  admin_password = "${var.rabbitmq_password_com}"
-  admin_username = "${var.rabbitmq_username_com}"
-  endpoint       = "https://${trimspace(file("${path.module}/config/CLOUDAMQP_URL_HOST_COM"))}"
-  scheme         = "${trimspace(file("${path.module}/config/CLOUDAMQP_URL_SCHEME_COM"))}"
-  username       = "travis-worker-ec2-${var.env}-${var.index}"
-  vhost          = "${replace(trimspace("${file("${path.module}/config/CLOUDAMQP_URL_PATH_COM")}"), "/^//", "")}"
 }
 
 module "rabbitmq_worker_config_org" {
@@ -96,22 +81,6 @@ module "rabbitmq_worker_config_org" {
   scheme         = "${trimspace(file("${path.module}/config/CLOUDAMQP_URL_SCHEME_ORG"))}"
   username       = "travis-worker-ec2-${var.env}-${var.index}"
   vhost          = "${replace(trimspace("${file("${path.module}/config/CLOUDAMQP_URL_PATH_ORG")}"), "/^//", "")}"
-}
-
-data "template_file" "worker_config_com" {
-  template = <<EOF
-### config/worker-com-local.env
-${file("${path.module}/config/worker-com-local.env")}
-### config/worker-com.env
-${file("${path.module}/config/worker-com.env")}
-### worker.env
-${file("${path.module}/worker.env")}
-
-export TRAVIS_WORKER_AMQP_URI=${module.rabbitmq_worker_config_com.uri}
-export TRAVIS_WORKER_HARD_TIMEOUT=2h
-export TRAVIS_WORKER_TRAVIS_SITE=com
-export TRAVIS_WORKER_DOCKER_INSPECT_INTERVAL=1000ms
-EOF
 }
 
 data "template_file" "worker_config_org" {
@@ -164,59 +133,6 @@ module "aws_az_1e2" {
   env                       = "${var.env}"
   index                     = "${var.index}"
   vpc_id                    = "${data.terraform_remote_state.vpc.vpc_id}"
-}
-
-module "aws_asg_com" {
-  source                     = "../modules/aws_asg"
-  cyclist_auth_token         = "${random_id.cyclist_token_com.hex}"
-  cyclist_version            = "v0.5.0"
-  docker_storage_dm_basesize = "19G"
-  env                        = "${var.env}"
-  env_short                  = "${var.env}"
-  github_users               = "${var.github_users}"
-  heroku_org                 = "${var.aws_heroku_org}"
-  index                      = "${var.index}"
-  registry_hostname          = "${data.terraform_remote_state.vpc.registry_hostname}"
-
-  security_groups = [
-    "${module.aws_az_1b.workers_com_security_group_id}",
-    "${module.aws_az_1b2.workers_com_security_group_id}",
-    "${module.aws_az_1e.workers_com_security_group_id}",
-    "${module.aws_az_1e2.workers_com_security_group_id}",
-  ]
-
-  site                                   = "com"
-  syslog_address                         = "${var.syslog_address_com}"
-  worker_ami                             = "${data.aws_ami.tfw.id}"
-  worker_asg_max_size                    = 20
-  worker_asg_min_size                    = 1
-  worker_asg_namespace                   = "Travis/com"
-  worker_asg_scale_in_threshold          = 120
-  worker_asg_scale_in_evaluation_periods = 3
-  worker_asg_scale_in_period             = 300
-  worker_asg_scale_out_threshold         = 80
-  worker_asg_scale_out_qty               = 2
-  worker_config                          = "${data.template_file.worker_config_com.rendered}"
-  worker_docker_image_android            = "${var.amethyst_image}"
-  worker_docker_image_default            = "${var.garnet_image}"
-  worker_docker_image_erlang             = "${var.amethyst_image}"
-  worker_docker_image_go                 = "${var.garnet_image}"
-  worker_docker_image_haskell            = "${var.amethyst_image}"
-  worker_docker_image_jvm                = "${var.garnet_image}"
-  worker_docker_image_node_js            = "${var.garnet_image}"
-  worker_docker_image_perl               = "${var.amethyst_image}"
-  worker_docker_image_php                = "${var.garnet_image}"
-  worker_docker_image_python             = "${var.garnet_image}"
-  worker_docker_image_ruby               = "${var.garnet_image}"
-  worker_instance_type                   = "c3.8xlarge"
-  worker_queue                           = "ec2"
-
-  worker_subnets = [
-    "${data.terraform_remote_state.vpc.workers_com_subnet_1b2_id}",
-    "${data.terraform_remote_state.vpc.workers_com_subnet_1b_id}",
-    "${data.terraform_remote_state.vpc.workers_com_subnet_1e2_id}",
-    "${data.terraform_remote_state.vpc.workers_com_subnet_1e_id}",
-  ]
 }
 
 module "aws_asg_org" {
