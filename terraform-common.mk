@@ -117,9 +117,3 @@ config/.written:
 config/.gce-keys-written:
 	cp -v $$TRAVIS_KEYCHAIN_DIR/travis-keychain/gce/*.json config/
 	date -u >$@
-
-$(TRVS_INFRA_ENV_TFVARS):
-	trvs generate-config -f json terraform-config $(INFRA)_$(ENV_SHORT) >$@
-
-$(TRVS_ENV_NAME_TFVARS):
-	trvs generate-config -f json terraform-config $(subst -,_,$(ENV_NAME)) >$@
