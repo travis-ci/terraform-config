@@ -7,7 +7,7 @@ variable "env" {
 variable "github_users" {}
 
 variable "index" {
-  default = 0
+  default = 2
 }
 
 variable "rabbitmq_password_org" {}
