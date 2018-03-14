@@ -1,41 +1,43 @@
 #!/usr/bin/env bash
 # vim:filetype=sh
 set -o errexit
+set -o pipefail
 
 main() {
   : "${USRLOCAL:=/usr/local}"
   : "${VARTMP:=/var/tmp}"
   : "${ETCDIR:=/etc}"
 
-  # shellcheck source=/dev/null
-  source "${ETCDIR}/default/nat"
-  __write_duo_configs \
-    "${GCE_NAT_DUO_INTEGRATION_KEY}" \
-    "${GCE_NAT_DUO_SECRET_KEY}" \
-    "${GCE_NAT_DUO_API_HOSTNAME}"
+  export DEBIAN_FRONTEND=noninteractive
+  __disable_unfriendly_services
+  __install_tfw
 
-  __write_librato_config \
-    "${GCE_NAT_LIBRATO_EMAIL}" \
-    "${GCE_NAT_LIBRATO_TOKEN}"
+  eval "$(tfw printenv nat)"
 
   __expand_nat_tbz2
+  __setup_gesund
+  __write_librato_config "${GCE_NAT_LIBRATO_EMAIL}" "${GCE_NAT_LIBRATO_TOKEN}"
   __setup_nat_forwarding
   __setup_nat_conntracker
-  __setup_nat_health_check
 }
 
-__write_duo_configs() {
-  mkdir -p "${ETCDIR}/duo"
-  for conf in "${ETCDIR}/duo/login_duo.conf" "${ETCDIR}/duo/pam_duo.conf"; do
-    cat >"${conf}" <<EOF
-# Written by cloud-init $(date -u) :heart:
-[duo]
-ikey = ${1}
-skey = ${2}
-host = ${3}
-failmode = secure
-EOF
-  done
+__disable_unfriendly_services() {
+  systemctl stop apt-daily-upgrade || true
+  systemctl disable apt-daily-upgrade || true
+  systemctl stop apt-daily || true
+  systemctl disable apt-daily || true
+  systemctl stop apparmor || true
+  systemctl disable apparmor || true
+  systemctl reset-failed
+}
+
+__install_tfw() {
+  curl -sSL \
+    -o "${VARTMP}/tfw" \
+    'https://raw.githubusercontent.com/travis-ci/tfw/master/tfw'
+
+  chmod +x "${VARTMP}/tfw"
+  mv -v "${VARTMP}/tfw" "${USRLOCAL}/bin/tfw"
 }
 
 __write_librato_config() {
@@ -88,14 +90,15 @@ __setup_nat_forwarding() {
 
   sysctl -w net.ipv4.ip_forward=1
 
-  iptables -t nat -S POSTROUTING | if ! grep -q MASQUERADE; then
+  iptables -t nat -S POSTROUTING | grep -v 172. | if ! grep -q MASQUERADE; then
     iptables -t nat -A POSTROUTING -o "${pub_iface}" -j MASQUERADE
   fi
 
-  iptables -S FORWARD | if ! grep -q conntrack; then
-    iptables -A FORWARD -o "${pub_iface}" \
-      -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
-  fi
+  iptables -S FORWARD | grep -v docker |
+    if ! grep -qE 'conntrack.+RELATED,ESTABLISHED'; then
+      iptables -A FORWARD -o "${pub_iface}" \
+        -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+    fi
 }
 
 __find_public_interface() {
@@ -106,36 +109,21 @@ __find_public_interface() {
 }
 
 __setup_nat_conntracker() {
+  eval "$(tfw printenv nat-conntracker)"
+  tfw extract nat-conntracker "${NAT_CONNTRACKER_SELF_IMAGE}"
+
+  apt-get update -y
+  apt-get install -y fail2ban conntrack
+
+  systemctl enable nat-conntracker || true
+  systemctl start nat-conntracker || true
+
+  systemctl enable fail2ban || true
+  systemctl start fail2ban || true
+
   local ncc="${VARTMP}/nat-conntracker-confs"
-  local conf="${ETCDIR}/default/nat-conntracker"
-  local ncs="${USRLOCAL}/src/nat-conntracker"
-
-  if ! systemctl is-enabled nat-conntracker.service &>/dev/null; then
-    return
-  fi
-
-  if [[ -f "${conf}" ]]; then
-    # shellcheck source=/dev/null
-    source "${conf}"
-  fi
-
-  if [[ "${NAT_CONNTRACKER_GIT_REF}" ]]; then
-    pushd "${ncs}"
-    git fetch --all
-    git checkout -qf "${NAT_CONNTRACKER_GIT_REF}"
-    make sysinstall
-    popd
-  fi
-
-  if [[ ! -d "${ETCDIR}/fail2ban" ]]; then
-    return
-  fi
 
   if [[ ! -d "${ncc}" ]]; then
-    return
-  fi
-
-  if ! systemctl is-enabled fail2ban.service &>/dev/null; then
     return
   fi
 
@@ -151,19 +139,15 @@ __setup_nat_conntracker() {
   cp -v "${ncc}/fail2ban.local" \
     "${ETCDIR}/fail2ban/fail2ban.local"
 
-  systemctl restart fail2ban
+  systemctl restart fail2ban || true
 }
 
-__setup_nat_health_check() {
-  local service_src="${VARTMP}/travis-nat-health-check.service"
-  local service_dest="${ETCDIR}/systemd/system/travis-nat-health-check.service"
+__setup_gesund() {
+  eval "$(tfw printenv gesund)"
+  tfw extract gesund "${GESUND_SELF_IMAGE}"
 
-  if [[ -f "${service_src}" && -d "$(dirname "${service_dest}")" ]]; then
-    cp -v "${service_src}" "${service_dest}"
-
-    systemctl enable travis-nat-health-check || true
-    systemctl start travis-nat-health-check || true
-  fi
+  systemctl enable gesund || true
+  systemctl start gesund || true
 }
 
 __fetch_region_zone() {

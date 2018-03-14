@@ -1,3 +1,5 @@
+/* For changes to this file to take effect, run `make apply` in `aws-shared-{1,2}/`.  */
+
 variable "az" {}
 variable "az_group" {}
 variable "cidr_block" {}
@@ -9,6 +11,10 @@ variable "public_subnet_id" {}
 variable "site" {}
 variable "vpc_cidr" {}
 variable "vpc_id" {}
+
+variable "worker_nat_packets_out_threshold" {
+  default = 100
+}
 
 resource "aws_security_group" "nat" {
   name   = "${var.env}-${var.index}-workers-nat-${var.site}-${var.az_group}"
@@ -57,10 +63,30 @@ resource "aws_instance" "nat" {
 
   tags = {
     Name = "${var.env}-${var.index}-workers-nat-${var.site}-${var.az_group}"
+    role = "nat"
+    site = "${var.site}"
+    env  = "${var.env}"
   }
 
   lifecycle {
     ignore_changes = ["ami"]
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "low_packets_out" {
+  alarm_description   = "NetworkPacketsOut: NAT ${var.az_group} (${var.env}/${var.site})"
+  alarm_name          = "low-packets-out-${aws_instance.nat.id}"
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods  = "2"
+  metric_name         = "NetworkPacketsOut"
+  namespace           = "AWS/EC2"
+  period              = "120"
+  statistic           = "Average"
+  threshold           = "${var.worker_nat_packets_out_threshold}"
+  treat_missing_data  = "missing"
+
+  dimensions {
+    InstanceId = "${aws_instance.nat.id}"
   }
 }
 

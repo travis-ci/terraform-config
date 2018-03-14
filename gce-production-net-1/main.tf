@@ -9,7 +9,7 @@ variable "gce_bastion_image" {
 variable "gce_heroku_org" {}
 
 variable "gce_nat_image" {
-  default = "https://www.googleapis.com/compute/v1/projects/eco-emissary-99515/global/images/nat-1519767745-74530dd"
+  default = "https://www.googleapis.com/compute/v1/projects/eco-emissary-99515/global/images/tfw-1520467760-573cd26"
 }
 
 variable "github_users" {}
