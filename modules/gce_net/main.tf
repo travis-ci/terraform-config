@@ -44,7 +44,7 @@ variable "nat_count_per_zone" {
 variable "nat_image" {}
 
 variable "nat_machine_type" {
-  default = "n1-highcpu-2"
+  default = "custom-1-2048"
 }
 
 variable "nat_zones" {
