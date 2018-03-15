@@ -178,7 +178,7 @@ module "aws_asg_org" {
   worker_docker_image_python             = "${var.garnet_image}"
   worker_docker_image_ruby               = "${var.garnet_image}"
   worker_instance_type                   = "c3.8xlarge"
-  worker_queue                           = "ec2"
+  worker_queue                           = "enigma"
 
   worker_subnets = [
     "${data.terraform_remote_state.vpc.workers_org_subnet_1b2_id}",
