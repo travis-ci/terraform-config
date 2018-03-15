@@ -1,7 +1,7 @@
 variable "aws_heroku_org" {}
 
 variable "env" {
-  default = "enigma"
+  default = "production"
 }
 
 variable "github_users" {}
@@ -108,27 +108,9 @@ module "aws_az_1b" {
   vpc_id                    = "${data.terraform_remote_state.vpc.vpc_id}"
 }
 
-module "aws_az_1b2" {
-  source                    = "../modules/aws_workers_az"
-  az_group                  = "1b2"
-  bastion_security_group_id = "${data.terraform_remote_state.vpc.bastion_security_group_1b_id}"
-  env                       = "${var.env}"
-  index                     = "${var.index}"
-  vpc_id                    = "${data.terraform_remote_state.vpc.vpc_id}"
-}
-
 module "aws_az_1e" {
   source                    = "../modules/aws_workers_az"
   az_group                  = "1e"
-  bastion_security_group_id = "${data.terraform_remote_state.vpc.bastion_security_group_1e_id}"
-  env                       = "${var.env}"
-  index                     = "${var.index}"
-  vpc_id                    = "${data.terraform_remote_state.vpc.vpc_id}"
-}
-
-module "aws_az_1e2" {
-  source                    = "../modules/aws_workers_az"
-  az_group                  = "1e2"
   bastion_security_group_id = "${data.terraform_remote_state.vpc.bastion_security_group_1e_id}"
   env                       = "${var.env}"
   index                     = "${var.index}"
@@ -149,9 +131,7 @@ module "aws_asg_org" {
 
   security_groups = [
     "${module.aws_az_1b.workers_org_security_group_id}",
-    "${module.aws_az_1b2.workers_org_security_group_id}",
     "${module.aws_az_1e.workers_org_security_group_id}",
-    "${module.aws_az_1e2.workers_org_security_group_id}",
   ]
 
   site                                   = "org"
@@ -181,25 +161,7 @@ module "aws_asg_org" {
   worker_queue                           = "enigma"
 
   worker_subnets = [
-    "${data.terraform_remote_state.vpc.workers_org_subnet_1b2_id}",
     "${data.terraform_remote_state.vpc.workers_org_subnet_1b_id}",
-    "${data.terraform_remote_state.vpc.workers_org_subnet_1e2_id}",
     "${data.terraform_remote_state.vpc.workers_org_subnet_1e_id}",
   ]
-}
-
-resource "null_resource" "language_mapping_json" {
-  triggers {
-    amethyst_image = "${var.amethyst_image}"
-    garnet_image   = "${var.garnet_image}"
-  }
-
-  provisioner "local-exec" {
-    command = <<EOF
-exec ${path.module}/../bin/format-images-json \
-  ${var.amethyst_image}=android,erlang,haskell,perl \
-  ${var.garnet_image}=default,go,jvm,node_js,php,python,ruby \
-  >${path.module}/generated-language-mapping.json
-EOF
-  }
 }
