@@ -30,7 +30,7 @@ variable "nat_config" {}
 variable "nat_conntracker_config" {}
 
 variable "nat_conntracker_self_image" {
-  default = "travisci/nat-conntracker:0.4.0"
+  default = "travisci/nat-conntracker:0.5.0"
 }
 
 variable "nat_conntracker_redis_plan" {
