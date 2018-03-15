@@ -1,7 +1,7 @@
 variable "aws_heroku_org" {}
 
 variable "env" {
-  default = "production"
+  default = "enigma"
 }
 
 variable "github_users" {}
