@@ -298,6 +298,7 @@ resource "aws_autoscaling_group" "workers" {
   }
 }
 
+/* Be sure to update modules/aws_asg/dashboards.tf when changing any of the bounds here. */
 resource "aws_autoscaling_policy" "workers_remove_capacity" {
   name                      = "${var.env}-${var.index}-workers-${var.site}-remove-capacity"
   adjustment_type           = "ChangeInCapacity"
@@ -310,13 +311,20 @@ resource "aws_autoscaling_policy" "workers_remove_capacity" {
   step_adjustment {
     scaling_adjustment          = "${var.worker_asg_scale_in_qty}"
     metric_interval_lower_bound = 1.0
-    metric_interval_upper_bound = "${ceil(var.worker_asg_scale_in_threshold / 2)}"
+    metric_interval_upper_bound = "${var.worker_asg_scale_in_threshold * 1.5}"
   }
 
   # Headroom is way above scale-in threshold; remove n * 2 instances
   step_adjustment {
     scaling_adjustment          = "${var.worker_asg_scale_in_qty * 2}"
-    metric_interval_lower_bound = "${ceil(var.worker_asg_scale_in_threshold / 2)}"
+    metric_interval_lower_bound = "${var.worker_asg_scale_in_threshold * 1.5}"
+    metric_interval_upper_bound = "${var.worker_asg_scale_in_threshold * 2}"
+  }
+
+  # Headroom is way above scale-in threshold; remove n * 3 instances
+  step_adjustment {
+    scaling_adjustment          = "${var.worker_asg_scale_in_qty * 3}"
+    metric_interval_lower_bound = "${var.worker_asg_scale_in_threshold * 2}"
   }
 }
 
@@ -332,6 +340,7 @@ resource "aws_cloudwatch_metric_alarm" "workers_remove_capacity" {
   alarm_actions       = ["${aws_autoscaling_policy.workers_remove_capacity.arn}"]
 }
 
+/* Be sure to update modules/aws_asg/dashboards.tf when changing any of the bounds here. */
 resource "aws_autoscaling_policy" "workers_add_capacity" {
   name                      = "${var.env}-${var.index}-workers-${var.site}-add-capacity"
   adjustment_type           = "ChangeInCapacity"
