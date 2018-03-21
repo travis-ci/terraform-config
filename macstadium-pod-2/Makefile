@@ -95,4 +95,3 @@ $(TRVS_ENV_NAME_TFVARS):
 $(ENV_NAME).auto.tfvars:
 	$(TOP)/bin/generate-tfvars $@
 	trvs generate-config -f hcl collectd-vsphere common-$(INDEX) >> $@
-	
