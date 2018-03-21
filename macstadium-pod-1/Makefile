@@ -1,4 +1,3 @@
-include $(shell git rev-parse --show-toplevel)/trvs.mk
 include $(shell git rev-parse --show-toplevel)/terraform-common.mk
 
 PROD_TF_VERSION := v0.9.11
@@ -34,8 +33,10 @@ CONFIG_FILES := \
 
 INDEX ?= $(subst $(INFRA)-$(ENV_SHORT)-,,$(ENV_NAME))
 
+include $(shell git rev-parse --show-toplevel)/trvs.mk
+
 .PHONY: .config
-.config: $(CONFIG_FILES) $(ENV_NAME).auto.tfvars
+.config: $(CONFIG_FILES) $(ENV_NAME).auto.tfvars trvs-collectd-vsphere.auto.tfvars
 
 $(CONFIG_FILES):
 	mkdir -p config
@@ -89,4 +90,7 @@ $(CONFIG_FILES):
 
 $(ENV_NAME).auto.tfvars:
 	$(TOP)/bin/generate-tfvars $@
-	trvs-collectd-vsphere.auto.tfvars
+
+trvs-collectd-vsphere.auto.tfvars:
+	trvs generate-config -f json collectd-vsphere common-$(INDEX) -o $@
+
