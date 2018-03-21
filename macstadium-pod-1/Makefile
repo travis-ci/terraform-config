@@ -35,6 +35,7 @@ INDEX ?= $(subst $(INFRA)-$(ENV_SHORT)-,,$(ENV_NAME))
 
 include $(shell git rev-parse --show-toplevel)/trvs.mk
 
+
 .PHONY: .config
 .config: $(CONFIG_FILES) $(ENV_NAME).auto.tfvars trvs-collectd-vsphere.auto.tfvars
 
@@ -88,7 +89,14 @@ $(CONFIG_FILES):
 	trvs generate-config -n -p COLLECTD_VSPHERE -f env collectd-vsphere common-$(INDEX) \
 		| sed 's/^/export /' >config/collectd-vsphere-common
 
-$(ENV_NAME).auto.tfvars:
+$(TERRAFORM) plan -module-depth=-1
+	var-file=macstadium-pod-1.auto.tfvars
+	var-file=trvs-collectd-vsphere.auto.tfvars
+	var-file=trvs-macstadium-pod-1.auto.tfvars
+	var-file=trvs-macstadium-pod.auto.tfvars
+ -out=$(TFPLAN)
+ 
+ $(ENV_NAME).auto.tfvars:
 	$(TOP)/bin/generate-tfvars $@
 
 trvs-collectd-vsphere.auto.tfvars:
