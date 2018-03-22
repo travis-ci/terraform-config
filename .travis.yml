@@ -10,7 +10,9 @@ env:
   global:
   - PATH="${HOME}/bin:${PATH}"
   - TMPDIR="${TMPDIR:-/tmp}"
-before_install: make deps
+before_install:
+- eval "$(gimme 1.9.4)"
+- make deps
 script:
 - make test
 - make assert-clean
