@@ -1,0 +1,49 @@
+#!/usr/bin/env ruby
+
+def main
+  tfplan = ARGV.first
+  fail 'Missing {tfplan} input as first argument' if tfplan.nil?
+
+  differ = ENV.fetch('TFPLANDIFF_DIFFER', 'diff')
+
+  require 'json'
+  require 'tmpdir'
+
+  tfplan_parsed = JSON.parse(`tfplan2json <#{tfplan}`)
+  target_module = tfplan_parsed.fetch('Diff').fetch('Modules').find do |mod|
+    !mod.fetch('Resources').empty?
+  end
+
+  target_module.fetch('Resources')
+    .reject { |n, _| n.start_with?('data.') }.each do |n, v|
+    $stdout.puts(gen_resource_diff(n, v, differ: differ))
+  end
+
+  0
+end
+
+def gen_resource_diff(resource_name, definition, differ: 'diff')
+  out = []
+
+  Dir.mktmpdir(%w[tfplandiff- -tmp]) do |tmpdir|
+    definition.fetch('Attributes').each do |attr_name, attr_def|
+      a_name = File.join(tmpdir, "a-#{attr_name}")
+      b_name = File.join(tmpdir, "b-#{attr_name}")
+      File.write(a_name, attr_def.fetch('Old') + "\n")
+      File.write(b_name, attr_def.fetch('New') + "\n")
+      diff_command = %W[
+        #{differ} -u
+          --label a/#{resource_name}/#{attr_name}
+          #{a_name}
+          --label b/#{resource_name}/#{attr_name}
+          #{b_name}
+      ]
+      out << `#{diff_command.join(' ')}`
+    end
+  end
+
+  out.join("\n")
+end
+
+
+exit(main) if $PROGRAM_NAME == __FILE__

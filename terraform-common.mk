@@ -68,6 +68,10 @@ console: announce
 plan: announce .config $(TRVS_TFVARS) $(TFSTATE)
 	$(TERRAFORM) plan -module-depth=-1 -out=$(TFPLAN)
 
+.PHONY: plandiff
+plandiff: $(TFPLAN)
+	$(TOP)/bin/tfplandiff $^
+
 .PHONY: destroy
 destroy: announce .config $(TRVS_TFVARS) $(TFSTATE)
 	$(TERRAFORM) plan -module-depth=-1 -destroy -out=$(TFPLAN)
