@@ -89,16 +89,17 @@ $(CONFIG_FILES):
 	trvs generate-config -n -p COLLECTD_VSPHERE -f env collectd-vsphere common-$(INDEX) \
 		| sed 's/^/export /' >config/collectd-vsphere-common
 
-$(TERRAFORM) plan -module-depth=-1
-	var-file=macstadium-pod-1.auto.tfvars
-	var-file=trvs-collectd-vsphere.auto.tfvars
-	var-file=trvs-macstadium-pod-1.auto.tfvars
-	var-file=trvs-macstadium-pod.auto.tfvars
- -out=$(TFPLAN)
+.PHONY: plan
+plan: announce .config $(TRVS_TFVARS) $(TFSTATE)
+	$(TERRAFORM) plan -module-depth=-1 \
+		-var-file=$(ENV_NAME).auto.tfvars \
+		-var-file=trvs-collectd-vsphere.auto.tfvars \
+		-var-file=trvs-$(ENV_NAME).auto.tfvars \
+		-var-file=trvs-$(INFRA)-$(ENV_SHORT).auto.tfvars \
+		-out=$(TFPLAN)
  
  $(ENV_NAME).auto.tfvars:
 	$(TOP)/bin/generate-tfvars $@
 
 trvs-collectd-vsphere.auto.tfvars:
 	trvs generate-config -f json collectd-vsphere common-$(INDEX) -o $@
-
