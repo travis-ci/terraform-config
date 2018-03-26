@@ -1,6 +1,6 @@
 SHELLCHECK_URL := https://s3.amazonaws.com/travis-blue-public/binaries/ubuntu/14.04/x86_64/shellcheck-0.4.4.tar.bz2
 SHFMT_URL := mvdan.cc/sh/cmd/shfmt
-TFPLAN2JSON_URL := go-gist.appspot.com/meatballhat/d644c2f75dd98cba6638c38e7a9561a2/tfplan2json
+TFPLAN2JSON_URL := github.com/travis-ci/tfplan2json
 
 SHELL := bash
 
