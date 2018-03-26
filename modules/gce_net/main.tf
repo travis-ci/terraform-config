@@ -30,7 +30,7 @@ variable "nat_config" {}
 variable "nat_conntracker_config" {}
 
 variable "nat_conntracker_self_image" {
-  default = "travisci/nat-conntracker:0.4.0"
+  default = "travisci/nat-conntracker:0.5.0"
 }
 
 variable "nat_conntracker_redis_plan" {
@@ -44,7 +44,7 @@ variable "nat_count_per_zone" {
 variable "nat_image" {}
 
 variable "nat_machine_type" {
-  default = "n1-highcpu-2"
+  default = "custom-1-2048"
 }
 
 variable "nat_zones" {
