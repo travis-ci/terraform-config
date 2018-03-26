@@ -45,6 +45,9 @@ __write_librato_config() {
     return
   fi
 
+  apt-get update -y
+  apt-get install -y collectd collectd-utils
+
   mkdir -p "${ETCDIR}/collectd/collectd.conf.d"
 
   local hostname_tmpl="${VARTMP}/travis-run.d/instance-hostname.tmpl"

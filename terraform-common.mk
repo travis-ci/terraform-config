@@ -16,7 +16,7 @@ TOP := $(shell git rev-parse --show-toplevel)
 TFWBZ2 := $(TOP)/assets/tfw.tar.bz2
 NATBZ2 := $(TOP)/assets/nat.tar.bz2
 
-PROD_TF_VERSION := v0.11.0
+PROD_TF_VERSION := v0.11.5
 TERRAFORM := $(HOME)/.cache/travis-terraform-config/terraform-$(PROD_TF_VERSION)
 TAR := tar
 
