@@ -98,7 +98,7 @@ plan: announce .config $(TRVS_TFVARS) $(TFSTATE)
 		-var-file=trvs-$(INFRA)-$(ENV_SHORT).auto.tfvars \
 		-out=$(TFPLAN)
  
- $(ENV_NAME).auto.tfvars:
+$(ENV_NAME).auto.tfvars:
 	$(TOP)/bin/generate-tfvars $@
 
 trvs-collectd-vsphere.auto.tfvars:
