@@ -1,5 +1,6 @@
 SHELLCHECK_URL := https://s3.amazonaws.com/travis-blue-public/binaries/ubuntu/14.04/x86_64/shellcheck-0.4.4.tar.bz2
 SHFMT_URL := mvdan.cc/sh/cmd/shfmt
+TFPLAN2JSON_URL := github.com/travis-ci/tfplan2json
 
 SHELL := bash
 
@@ -20,7 +21,7 @@ assert-clean:
 	$(GIT) diff --cached --exit-code
 
 .PHONY: deps
-deps: .ensure-terraforms .ensure-shellcheck .ensure-shfmt
+deps: .ensure-terraforms .ensure-shellcheck .ensure-shfmt .ensure-tfplan2json
 
 .PHONY: .ensure-terraforms
 .ensure-terraforms:
@@ -41,3 +42,7 @@ deps: .ensure-terraforms .ensure-shellcheck .ensure-shfmt
 .PHONY: .ensure-shfmt
 .ensure-shfmt:
 	$(GO) get -u "$(SHFMT_URL)"
+
+.PHONY: .ensure-tfplan2json
+.ensure-tfplan2json:
+	$(GO) get -u "$(TFPLAN2JSON_URL)"

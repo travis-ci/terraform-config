@@ -19,11 +19,19 @@ variable "gce_health_check_source_ranges" {
   ]
 }
 
+variable "gesund_self_image" {
+  default = "travisci/gesund:0.1.0"
+}
+
 variable "github_users" {}
 variable "heroku_org" {}
 variable "index" {}
 variable "nat_config" {}
 variable "nat_conntracker_config" {}
+
+variable "nat_conntracker_self_image" {
+  default = "travisci/nat-conntracker:0.5.0"
+}
 
 variable "nat_conntracker_redis_plan" {
   default = "premium-0"
@@ -34,7 +42,10 @@ variable "nat_count_per_zone" {
 }
 
 variable "nat_image" {}
-variable "nat_machine_type" {}
+
+variable "nat_machine_type" {
+  default = "custom-1-2048"
+}
 
 variable "nat_zones" {
   default = ["a", "b", "c", "f"]
@@ -227,7 +238,7 @@ resource "aws_route53_record" "nat_regional" {
 }
 
 resource "heroku_app" "nat_conntracker" {
-  name   = "nat-conntracker-${var.env}-${var.index}"
+  name   = "nat-conntracker-gce-${var.env == "production" ? "prod" : var.env}-${var.index}"
   region = "us"
 
   organization {
@@ -248,21 +259,31 @@ data "template_file" "nat_cloud_config" {
   template = "${file("${path.module}/nat-cloud-config.yml.tpl")}"
 
   vars {
-    nat_config        = "${var.nat_config}"
+    assets            = "${path.module}/../../assets"
     cloud_init_bash   = "${file("${path.module}/nat-cloud-init.bash")}"
     github_users_env  = "export GITHUB_USERS='${var.github_users}'"
     instance_hostname = "nat-${var.env}-${var.index}-___INSTANCE_ID___.gce-___REGION_ZONE___.travisci.net"
+    nat_config        = "${var.nat_config}"
     syslog_address    = "${var.syslog_address}"
-    assets            = "${path.module}/../../assets"
+
+    docker_env = <<EOF
+export TRAVIS_DOCKER_DISABLE_DIRECT_LVM=1
+EOF
+
+    gesund_config = <<EOF
+### in-line
+export GESUND_SELF_IMAGE=${var.gesund_self_image}
+EOF
 
     nat_conntracker_config = <<EOF
 ### nat-conntracker.env
 ${var.nat_conntracker_config}
 
 ### in-line
-export NAT_CONNTRACKER_REDIS_URL=${heroku_app.nat_conntracker.all_config_vars.REDIS_URL}
 export NAT_CONNTRACKER_REDIS_ADDON_NAME=${heroku_addon.nat_conntracker_redis.name}
 export NAT_CONNTRACKER_REDIS_APP_NAME=${heroku_app.nat_conntracker.name}
+export NAT_CONNTRACKER_REDIS_URL=${lookup(heroku_app.nat_conntracker.all_config_vars, "REDIS_URL")}
+export NAT_CONNTRACKER_SELF_IMAGE=${var.nat_conntracker_self_image}
 EOF
   }
 }
