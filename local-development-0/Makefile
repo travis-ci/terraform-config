@@ -4,5 +4,8 @@ include $(shell git rev-parse --show-toplevel)/terraform-common.mk
 .config:
 	@echo no-op
 
-$(TFVARS):
+$(TRVS_INFRA_ENV_TFVARS):
+	@echo "{}" >$@
+
+$(TRVS_ENV_NAME_TFVARS):
 	@echo "{}" >$@

@@ -1,0 +1,73 @@
+#!/usr/bin/env ruby
+require 'optparse'
+
+def main
+  options = {
+    env: ENV.fetch('ENV', 'staging'),
+    index: ENV.fetch('INDEX', '1'),
+    noop: false,
+    project: ENV.fetch('PROJECT', 'notset'),
+    region: ENV.fetch('REGION', 'us-central1'),
+    terraform: ENV.fetch('TERRAFORM', 'terraform'),
+  }
+
+  OptionParser.new do |opts|
+    opts.on('-e', '--env=ENV') do |v|
+      options[:env] = v.strip
+    end
+
+    opts.on('-i', '--index=INDEX') do |v|
+      options[:index] = v.strip
+    end
+
+    opts.on('-n', '--noop') do
+      options[:noop] = true
+    end
+
+    opts.on('-p', '--project=PROJECT') do |v|
+      options[:project] = v.strip
+    end
+
+    opts.on('-r', '--region=REGION') do |v|
+      options[:region] = v.strip
+    end
+
+    opts.on('-T', '--terraform=TERRAFORM') do |v|
+      options[:terraform] = v.strip
+    end
+  end.parse!
+
+  env = options.fetch(:env)
+  index = options.fetch(:index)
+  noop = !!options.fetch(:noop)
+  project = options.fetch(:project)
+  region = options.fetch(:region)
+  terraform = options.fetch(:terraform)
+
+  {
+    'google_compute_address.bastion[0]' => 'bastion-b',
+    'google_compute_firewall.allow_internal' => 'allow-internal',
+    'google_compute_firewall.allow_jobs_nat' => 'allow-jobs-nat',
+    'google_compute_firewall.allow_public_icmp' => 'allow-public-icmp',
+    'google_compute_firewall.allow_public_ssh' => 'allow-public-ssh',
+    'google_compute_firewall.deny_target_ip' => 'deny-target-ip',
+    'google_compute_instance.bastion[0]' =>
+      "#{project}/#{region}-b/#{env}-#{index}-bastion-b",
+    'google_compute_network.main' => 'main',
+    'google_compute_subnetwork.jobs_com' => "#{region}/jobs-com",
+    'google_compute_subnetwork.jobs_org' => "#{region}/jobs-org",
+    'google_compute_subnetwork.public' => "#{region}/public",
+    'google_compute_subnetwork.workers' => "#{region}/workers",
+  }.each do |resource, importable|
+    command = %W[
+      #{terraform} import module.gce_net.#{resource} #{importable}
+    ]
+    $stderr.puts("---> #{command.join(' ')}")
+    next if noop
+    system(*command) || $stderr.puts('---? already imported?')
+  end
+
+  0
+end
+
+exit(main) if $PROGRAM_NAME == __FILE__

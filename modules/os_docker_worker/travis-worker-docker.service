@@ -1,0 +1,18 @@
+[Unit]
+Description=Travis Worker
+Description=Travis Worker
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=simple
+User=root
+Group=root
+ExecStartPre=/bin/mkdir -p /var/tmp/travis-run.d
+ExecStartPre=/bin/cp /usr/local/bin/travis-worker /var/tmp/travis-run.d/travis-worker
+ExecStart=/bin/bash -c 'if [ -f /etc/default/travis-worker ]; then source /etc/default/travis-worker; fi; export GOMAXPROCS=$(nproc); exec /var/tmp/travis-run.d/travis-worker'
+ExecStopPost=/bin/sleep 5
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

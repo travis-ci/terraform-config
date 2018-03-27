@@ -31,11 +31,15 @@ resource "aws_cloudwatch_dashboard" "main" {
                         },
                         {
                             "label": "Remove ${var.worker_asg_scale_in_qty} instance",
-                            "value": "${var.worker_asg_scale_in_threshold}"
+                            "value": "${var.worker_asg_scale_in_threshold + 1}"
                         },
                         {
                             "label": "Remove ${var.worker_asg_scale_in_qty * 2} instances",
-                            "value": "${var.worker_asg_scale_in_threshold + ceil(var.worker_asg_scale_in_threshold / 2)}"
+                            "value": "${var.worker_asg_scale_in_threshold * 1.5}"
+                        },
+                        {
+                            "label": "Remove ${var.worker_asg_scale_in_qty * 3} instances",
+                            "value": "${var.worker_asg_scale_in_threshold * 2}"
                         },
                         {
                             "color": "#d62728",

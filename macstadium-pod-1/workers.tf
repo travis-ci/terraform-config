@@ -1,7 +1,7 @@
 variable "latest_travis_worker_version" {}
 
 variable "travis_worker_version" {
-  default = "v3.5.0"
+  default = "v3.6.0"
 }
 
 data "template_file" "worker_config_common" {
@@ -30,7 +30,7 @@ module "worker_production_org_1" {
 
   worker_local_config = <<EOF
 export TRAVIS_WORKER_TRAVIS_SITE="org"
-export TRAVIS_WORKER_POOL_SIZE="60"
+export TRAVIS_WORKER_POOL_SIZE="35"
 export TRAVIS_WORKER_PPROF_PORT="7070"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_production_org_token.hex}@127.0.0.1:8081/"
 export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-production-org-macstadium-${var.index}-1-dc18"
@@ -50,7 +50,7 @@ module "worker_production_org_2" {
 
   worker_local_config = <<EOF
 export TRAVIS_WORKER_TRAVIS_SITE="org"
-export TRAVIS_WORKER_POOL_SIZE="60"
+export TRAVIS_WORKER_POOL_SIZE="35"
 export TRAVIS_WORKER_PPROF_PORT="7071"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_production_org_token.hex}@127.0.0.1:8081/"
 export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-production-org-macstadium-${var.index}-2-dc18"
@@ -109,7 +109,7 @@ module "worker_production_com_1" {
   worker_local_config = <<EOF
 export TRAVIS_WORKER_HARD_TIMEOUT=120m
 export TRAVIS_WORKER_TRAVIS_SITE="com"
-export TRAVIS_WORKER_POOL_SIZE="55"
+export TRAVIS_WORKER_POOL_SIZE="30"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_production_com_token.hex}@127.0.0.1:8083/"
 export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-production-com-macstadium-${var.index}-1-dc18"
 EOF
@@ -129,7 +129,7 @@ module "worker_production_com_2" {
   worker_local_config = <<EOF
 export TRAVIS_WORKER_HARD_TIMEOUT=120m
 export TRAVIS_WORKER_TRAVIS_SITE="com"
-export TRAVIS_WORKER_POOL_SIZE="55"
+export TRAVIS_WORKER_POOL_SIZE="30"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_production_com_token.hex}@127.0.0.1:8083/"
 export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-production-com-macstadium-${var.index}-2-dc18"
 EOF
