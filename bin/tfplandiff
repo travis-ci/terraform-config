@@ -27,13 +27,10 @@ def main
 
   PREAMBLE
 
-  target_module = tfplan.fetch('Diff').fetch('Modules').find do |mod|
-    !mod.fetch('Resources').empty?
-  end
-
-  target_module.fetch('Resources')
-    .reject { |n, _| n.start_with?('data.') }.each do |n, v|
-    $stdout.puts(gen_resource_diff(n, v, differ: differ))
+  tfplan.fetch('Diff').fetch('Modules').each do |mod|
+    mod.fetch('Resources').each do |n, v|
+      $stdout.puts(gen_resource_diff(n, v, differ: differ))
+    end
   end
 
   0
