@@ -444,8 +444,8 @@ resource "null_resource" "nat_conntracker_dynamic_config" {
 
   provisioner "local-exec" {
     command = <<EOF
-${path.module}/../../bin/configure-nat-conntracker \
-    --app "${heroku_addon.nat_conntracker_redis.name}" \
+${path.module}/../../bin/nat-conntracker-configure \
+    --app "${heroku_app.nat_conntracker.name}" \
     --dst-ignore "${join(",", sort(var.nat_conntracker_dst_ignore))}" \
     --src-ignore "${join(",", sort(var.nat_conntracker_src_ignore))}"
 EOF
