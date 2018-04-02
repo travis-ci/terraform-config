@@ -13,7 +13,7 @@ variable "librato_email" {}
 variable "librato_token" {}
 
 variable "nat_server_plan" {
-  default = "baremetal_2"
+  default = "c2.medium.x86"
 }
 
 variable "project_id" {}
@@ -88,6 +88,10 @@ resource "packet_device" "nat" {
   plan             = "${var.nat_server_plan}"
   project_id       = "${var.project_id}"
   user_data        = "${data.template_file.cloud_config.rendered}"
+
+  lifecycle {
+    ignore_changes = ["root_password"]
+  }
 }
 
 resource "null_resource" "assign_private_network" {

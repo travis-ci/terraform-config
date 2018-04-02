@@ -19,7 +19,7 @@ variable "nat_public_ip" {}
 variable "server_count" {}
 
 variable "server_plan" {
-  default = "baremetal_2"
+  default = "c2.medium.x86"
 }
 
 variable "site" {}
@@ -128,6 +128,10 @@ resource "packet_device" "worker" {
   plan             = "${var.server_plan}"
   project_id       = "${var.project_id}"
   user_data        = "${data.template_file.cloud_config.rendered}"
+
+  lifecycle {
+    ignore_changes = ["root_password"]
+  }
 }
 
 resource "null_resource" "assign_private_network" {

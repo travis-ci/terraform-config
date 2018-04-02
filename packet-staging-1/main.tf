@@ -38,13 +38,13 @@ terraform {
 provider "packet" {}
 provider "aws" {}
 
-module "packet_network_sjc1" {
+module "packet_network_ewr1" {
   source              = "../modules/packet_network"
   duo_api_hostname    = "${var.duo_api_hostname}"
   duo_integration_key = "${var.duo_integration_key}"
   duo_secret_key      = "${var.duo_secret_key}"
   env                 = "${var.env}"
-  facility            = "sjc1"
+  facility            = "ewr1"
   github_users        = "${var.github_users}"
   index               = "${var.index}"
   librato_email       = "${var.librato_email}"
@@ -81,13 +81,13 @@ EOF
 
 module "packet_workers_com" {
   source                      = "../modules/packet_worker"
-  bastion_ip                  = "${module.packet_network_sjc1.nat_maint_ip}"
+  bastion_ip                  = "${module.packet_network_ewr1.nat_maint_ip}"
   env                         = "${var.env}"
-  facility                    = "${module.packet_network_sjc1.facility}"
+  facility                    = "${module.packet_network_ewr1.facility}"
   github_users                = "${var.github_users}"
   index                       = "${var.index}"
-  nat_ip                      = "${module.packet_network_sjc1.nat_ip}"
-  nat_public_ip               = "${module.packet_network_sjc1.nat_public_ip}"
+  nat_ip                      = "${module.packet_network_ewr1.nat_ip}"
+  nat_public_ip               = "${module.packet_network_ewr1.nat_public_ip}"
   project_id                  = "${var.project_id}"
   server_count                = 1
   site                        = "com"
@@ -108,13 +108,13 @@ module "packet_workers_com" {
 
 module "packet_workers_org" {
   source                      = "../modules/packet_worker"
-  bastion_ip                  = "${module.packet_network_sjc1.nat_maint_ip}"
+  bastion_ip                  = "${module.packet_network_ewr1.nat_maint_ip}"
   env                         = "${var.env}"
-  facility                    = "${module.packet_network_sjc1.facility}"
+  facility                    = "${module.packet_network_ewr1.facility}"
   github_users                = "${var.github_users}"
   index                       = "${var.index}"
-  nat_ip                      = "${module.packet_network_sjc1.nat_ip}"
-  nat_public_ip               = "${module.packet_network_sjc1.nat_public_ip}"
+  nat_ip                      = "${module.packet_network_ewr1.nat_ip}"
+  nat_public_ip               = "${module.packet_network_ewr1.nat_public_ip}"
   project_id                  = "${var.project_id}"
   server_count                = 1
   site                        = "org"
@@ -135,9 +135,9 @@ module "packet_workers_org" {
 
 resource "aws_route53_record" "nat" {
   zone_id = "${var.travisci_net_external_zone_id}"
-  name    = "nat-${var.env}-${var.index}.packet-sjc1.travisci.net"
+  name    = "nat-${var.env}-${var.index}.packet-ewr1.travisci.net"
   type    = "A"
   ttl     = 300
 
-  records = ["${module.packet_network_sjc1.nat_public_ip}"]
+  records = ["${module.packet_network_ewr1.nat_public_ip}"]
 }
