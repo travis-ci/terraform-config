@@ -81,7 +81,7 @@ def expand_user_data(attr_def)
     begin
       loaded_yaml = YAML.load(value)
 
-      unless loaded_yaml.key?('write_files')
+      unless loaded_yaml.respond_to?(:key?) && loaded_yaml.key?('write_files')
         expanded[key] = value
         next
       end
