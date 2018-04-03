@@ -36,25 +36,23 @@ main() {
     systemctl enable travis-worker || true
   fi
 
-  if [[ ! -e "${DEV}/md0" ]]; then
-    mdadm --create "${DEV}/md0" --level=0 --raid-devices=4 \
-      "${DEV}/sdc" "${DEV}/sdd" "${DEV}/sde" "${DEV}/sdf"
-  fi
-
-  service travis-worker stop || true
-  service travis-worker start || true
+  systemctl stop travis-worker || true
+  systemctl start travis-worker || true
 
   echo "___INSTANCE_ID___-$(hostname)" >"${RUNDIR}/instance-hostname.tmpl"
 
   eval "$(travis-tfw-combined-env travis-network)"
 
-  if [[ "${TRAVIS_NETWORK_VLAN_GATEWAY}" ]]; then
-    ip route | if ! grep -q "^default via ${TRAVIS_NETWORK_VLAN_GATEWAY}"; then
-      ip route del default || true
-      sleep 5
-      ip route add default via "${TRAVIS_NETWORK_VLAN_GATEWAY}" || true
-    fi
-  fi
+  ## FIXME: this routing is not working but whyyyy
+  ## {
+  # if [[ "${TRAVIS_NETWORK_VLAN_GATEWAY}" ]]; then
+  #   ip route | if ! grep -q "^default via ${TRAVIS_NETWORK_VLAN_GATEWAY}"; then
+  #     ip route del default || true
+  #     sleep 5
+  #     ip route add default via "${TRAVIS_NETWORK_VLAN_GATEWAY}" || true
+  #   fi
+  # fi
+  ## }
 
   __wait_for_docker
 }

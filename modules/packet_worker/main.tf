@@ -120,7 +120,8 @@ resource "local_file" "user_data_dump" {
 }
 
 resource "packet_device" "worker" {
-  count            = "${var.server_count}"
+  count = "${var.server_count}"
+
   billing_cycle    = "${var.billing_cycle}"
   facility         = "${var.facility}"
   hostname         = "${format("${var.env}-${var.index}-worker-${var.site}-%02d", count.index + 1)}"

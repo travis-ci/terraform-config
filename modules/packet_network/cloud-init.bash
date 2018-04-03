@@ -70,12 +70,12 @@ __setup_networking() {
 }
 
 __find_private_interface() {
-  local iface=enp2s0d1
+  local iface=enp1s0f1
   iface="$(
     ip -o addr show | grep -E 'inet 10\.' |
-      awk '{ print $2 }' | head -n 1
+      grep -v bond | awk '{ print $2 }' | head -n 1
   )"
-  echo "${iface:-enp2s0d1}"
+  echo "${iface:-enp1s0f1}"
 }
 
 __find_public_interface() {

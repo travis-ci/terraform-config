@@ -153,7 +153,7 @@ def parse_options!(argv: ARGV)
       ENV.fetch('PACKET_DEBUG_HTTP', 'no').downcase
     ),
     device_id: ENV['PACKET_DEVICE_ID'],
-    # device_interface: ENV.fetch('PACKET_DEVICE_INTERFACE', 'enp2s0d1'),
+    # device_interface: ENV.fetch('PACKET_DEVICE_INTERFACE', 'enp1s0f1'),
     device_interface_alias: ENV.fetch('PACKET_DEVICE_INTERFACE_ALIAS', 'eth1'),
     facility_id: ENV.fetch('PACKET_PRIVATE_NETWORK_FACILITY', 'ewr1'),
     network_name: ENV.fetch('PACKET_PRIVATE_NETWORK_NAME', 'private'),

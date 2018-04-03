@@ -1,7 +1,3 @@
-variable "duo_api_hostname" {}
-variable "duo_integration_key" {}
-variable "duo_secret_key" {}
-
 variable "env" {
   default = "staging"
 }
@@ -21,10 +17,6 @@ variable "project_id" {}
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
 
-variable "travisci_net_external_zone_id" {
-  default = "Z2RI61YP4UWSIO"
-}
-
 terraform {
   backend "s3" {
     bucket         = "travis-terraform-state"
@@ -38,19 +30,15 @@ terraform {
 provider "packet" {}
 provider "aws" {}
 
-module "packet_network_ewr1" {
-  source              = "../modules/packet_network"
-  duo_api_hostname    = "${var.duo_api_hostname}"
-  duo_integration_key = "${var.duo_integration_key}"
-  duo_secret_key      = "${var.duo_secret_key}"
-  env                 = "${var.env}"
-  facility            = "ewr1"
-  github_users        = "${var.github_users}"
-  index               = "${var.index}"
-  librato_email       = "${var.librato_email}"
-  librato_token       = "${var.librato_token}"
-  project_id          = "${var.project_id}"
-  syslog_address      = "${var.syslog_address_com}"
+data "terraform_remote_state" "vpc" {
+  backend = "s3"
+
+  config {
+    bucket         = "travis-terraform-state"
+    key            = "terraform-config/packet-staging-net-1.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "travis-terraform-state"
+  }
 }
 
 data "template_file" "worker_config_com" {
@@ -80,14 +68,15 @@ EOF
 }
 
 module "packet_workers_com" {
-  source                      = "../modules/packet_worker"
-  bastion_ip                  = "${module.packet_network_ewr1.nat_maint_ip}"
+  source = "../modules/packet_worker"
+
+  bastion_ip                  = "${data.terraform_remote_state.vpc.nat_maint_ip}"
   env                         = "${var.env}"
-  facility                    = "${module.packet_network_ewr1.facility}"
+  facility                    = "${data.terraform_remote_state.vpc.facility}"
   github_users                = "${var.github_users}"
   index                       = "${var.index}"
-  nat_ip                      = "${module.packet_network_ewr1.nat_ip}"
-  nat_public_ip               = "${module.packet_network_ewr1.nat_public_ip}"
+  nat_ip                      = "${data.terraform_remote_state.vpc.nat_ip}"
+  nat_public_ip               = "${data.terraform_remote_state.vpc.nat_public_ip}"
   project_id                  = "${var.project_id}"
   server_count                = 1
   site                        = "com"
@@ -107,14 +96,15 @@ module "packet_workers_com" {
 }
 
 module "packet_workers_org" {
-  source                      = "../modules/packet_worker"
-  bastion_ip                  = "${module.packet_network_ewr1.nat_maint_ip}"
+  source = "../modules/packet_worker"
+
+  bastion_ip                  = "${data.terraform_remote_state.vpc.nat_maint_ip}"
   env                         = "${var.env}"
-  facility                    = "${module.packet_network_ewr1.facility}"
+  facility                    = "${data.terraform_remote_state.vpc.facility}"
   github_users                = "${var.github_users}"
   index                       = "${var.index}"
-  nat_ip                      = "${module.packet_network_ewr1.nat_ip}"
-  nat_public_ip               = "${module.packet_network_ewr1.nat_public_ip}"
+  nat_ip                      = "${data.terraform_remote_state.vpc.nat_ip}"
+  nat_public_ip               = "${data.terraform_remote_state.vpc.nat_public_ip}"
   project_id                  = "${var.project_id}"
   server_count                = 1
   site                        = "org"
@@ -131,13 +121,4 @@ module "packet_workers_org" {
   worker_docker_image_php     = "${var.latest_docker_image_garnet}"
   worker_docker_image_python  = "${var.latest_docker_image_garnet}"
   worker_docker_image_ruby    = "${var.latest_docker_image_garnet}"
-}
-
-resource "aws_route53_record" "nat" {
-  zone_id = "${var.travisci_net_external_zone_id}"
-  name    = "nat-${var.env}-${var.index}.packet-ewr1.travisci.net"
-  type    = "A"
-  ttl     = 300
-
-  records = ["${module.packet_network_ewr1.nat_public_ip}"]
 }

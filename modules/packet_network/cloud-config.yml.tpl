@@ -36,8 +36,11 @@ write_files:
 runcmd:
 - [export, DEBIAN_FRONTEND=noninteractive]
 - [apt-get, update, -yqq]
-- [apt-get, install, -yqq, bzip2]
+- [apt-get, install, -yqq, bzip2, curl]
 - [tar, --no-same-permissions, --strip-components=1, -C, /, -xvf, /var/tmp/tfw.tar.bz2]
 - [bash, /var/tmp/travis-tfw-bootstrap.bash]
+- [curl, -sSLo, /usr/local/bin/tfw, 'https://raw.githubusercontent.com/travis-ci/tfw/712dad0fa0fe71597062a342cd346948128406de/tfw']
+- [chmod, +x, /usr/local/bin/tfw]
+- [tfw, admin-raid]
 - [bash, /var/tmp/travis-cloud-init.bash]
 - [run-parts, /var/lib/cloud/scripts/per-boot]
