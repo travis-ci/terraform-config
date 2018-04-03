@@ -1,0 +1,105 @@
+#!/usr/bin/env ruby
+
+require 'json'
+require 'net/http'
+require 'net/https'
+require 'optparse'
+
+def main
+  options = {
+    app: '',
+    dst_ignore: [],
+    heroku_api_hostname: 'api.heroku.com',
+    heroku_api_key: ENV.fetch('HEROKU_API_KEY', ''),
+    src_ignore: []
+  }
+
+  OptionParser.new do |opts|
+    opts.on(
+      '-a', '--app=APP',
+      'name of nat-conntracker heroku app'
+    ) { |v| options[:app] = v.strip }
+
+    opts.on(
+      '-d', '--dst-ignore=CIDRS',
+      'comma-delimited list of destination CIDRs to ignore'
+    ) { |v| options[:dst_ignore] = v.split(',').map(&:strip) }
+
+    opts.on(
+      '-s', '--src-ignore=CIDRS',
+      'comma-delimited list of source CIDRs to ignore'
+    ) { |v| options[:src_ignore] = v.split(',').map(&:strip) }
+
+    opts.on(
+      '--heroku-api-hostname=HOSTNAME',
+      'hostname of Heroku API from which to fetch stuff'
+    ) { |v| options[:heroku_api_hostname] = v.strip }
+
+    opts.on(
+      '--heroku-api-key=KEY',
+      'API key to use with Heroku API'
+    ) { |v| options[:heroku_api_key] = v.strip }
+  end.parse!
+
+  conn = heroku_conn(options[:heroku_api_hostname])
+  req = Net::HTTP::Get.new("/apps/#{options[:app]}/config-vars")
+  req['Authorization'] = "Bearer #{options[:heroku_api_key]}"
+  req['Accept'] = 'application/vnd.heroku+json; version=3'
+  response = conn.request(req)
+  if Integer(response.code) > 299
+    fail "could not fetch vars for #{options[:app]}"
+  end
+
+  expand_private!(options[:dst_ignore])
+  expand_private!(options[:src_ignore])
+
+  redis_url = JSON.parse(response.body).fetch('REDIS_URL')
+
+  unless Array(options[:dst_ignore]).empty?
+    dst_command = %W[
+      redis-cli -u #{redis_url} SADD nat-conntracker:dst-ignore
+    ] + Array(options[:dst_ignore])
+    $stderr.puts("---> #{dst_command.join(' ')}".gsub(redis_url, '[REDACTED]'))
+    system(*dst_command)
+  end
+
+  unless Array(options[:src_ignore]).empty?
+    src_command = %W[
+      redis-cli -u #{redis_url} SADD nat-conntracker:src-ignore
+    ] + Array(options[:src_ignore])
+    $stderr.puts("---> #{src_command.join(' ')}".gsub(redis_url, '[REDACTED]'))
+    system(*src_command)
+  end
+
+  0
+end
+
+def heroku_conn(heroku_api_hostname)
+  conn = Net::HTTP.new(heroku_api_hostname, 443)
+  conn.use_ssl = true
+  conn.verify_mode = OpenSSL::SSL::VERIFY_PEER
+  conn
+end
+
+def expand_private!(cidrs)
+  cidrs.map! do |cidr|
+    if cidr == 'private'
+      PRIVATE_SUBNETS
+    else
+      cidr
+    end
+  end
+  cidrs.flatten!
+  cidrs
+end
+
+PRIVATE_SUBNETS = %w[
+	10.0.0.0/8
+	127.0.0.0/8
+	169.254.0.0/16
+	172.16.0.0/12
+	192.0.2.0/24
+	192.168.0.0/16
+].freeze
+
+exit(main) if $PROGRAM_NAME == __FILE__

@@ -29,6 +29,16 @@ variable "index" {}
 variable "nat_config" {}
 variable "nat_conntracker_config" {}
 
+variable "nat_conntracker_dst_ignore" {
+  type    = "list"
+  default = ["private"]
+}
+
+variable "nat_conntracker_src_ignore" {
+  type    = "list"
+  default = ["127.0.0.0/8", "10.10.0.0/16"]
+}
+
 variable "nat_conntracker_self_image" {
   default = "travisci/nat-conntracker:0.5.0"
 }
@@ -423,6 +433,22 @@ resource "local_file" "nat_rolling_updater_config" {
 
   provisioner "local-exec" {
     command = "chmod 0644 ${local_file.nat_rolling_updater_config.filename}"
+  }
+}
+
+resource "null_resource" "nat_conntracker_dynamic_config" {
+  triggers {
+    dst_ignore = "${sha256(join("", sort(var.nat_conntracker_dst_ignore)))}"
+    src_ignore = "${sha256(join("", sort(var.nat_conntracker_src_ignore)))}"
+  }
+
+  provisioner "local-exec" {
+    command = <<EOF
+${path.module}/../../bin/nat-conntracker-configure \
+    --app "${heroku_app.nat_conntracker.name}" \
+    --dst-ignore "${join(",", sort(var.nat_conntracker_dst_ignore))}" \
+    --src-ignore "${join(",", sort(var.nat_conntracker_src_ignore))}"
+EOF
   }
 }
 
