@@ -335,7 +335,9 @@ __setup_privnet() {
 
   : "${TRAVIS_INSTANCE_INFRA_INDEX:=1}"
 
-  if [[ ! -f "${ETCDIR}/default/travis-network-local" ]]; then
+  eval "$(travis-tfw-combined-env travis-network)"
+
+  if [[ ! "${TRAVIS_NETWORK_VLAN_IP}" ]]; then
     local vlan_last_octet vlan_ip
     vlan_last_octet="$(
       ip -o addr | awk '/inet 10\.[^1][^0]/ {
@@ -346,7 +348,7 @@ __setup_privnet() {
     )"
     vlan_ip="192.168.${TRAVIS_INSTANCE_INFRA_INDEX}.${vlan_last_octet}"
     echo "export TRAVIS_NETWORK_VLAN_IP=${vlan_ip}" |
-      tee "${ETCDIR}/default/travis-network-local"
+      tee -a "${ETCDIR}/default/travis-network-local"
   fi
 
   eval "$(travis-tfw-combined-env travis-network)"
@@ -367,6 +369,11 @@ __setup_privnet() {
     if (\$0 ~ /bond-slaves/) {
       sub(/${TRAVIS_NETWORK_VLAN_INTERFACE}/, \"\", \$0);
       print \$0;
+    } else if (\$0 ~ /gateway /) {
+      if (\"${TRAVIS_NETWORK_VLAN_GATEWAY}\" != \"\") {
+        print \"# XXX: disabled\"
+        print \"# \" \$0
+      }
     } else if (\$0 ~ /iface ${TRAVIS_NETWORK_VLAN_INTERFACE}/) {
       sub(/manual/, \"static\", \$0);
       print \$0;
@@ -389,6 +396,10 @@ __setup_privnet() {
     --label "b/${conf}" "${tmpconf}" || true
 
   cp -v "${tmpconf}" "${conf}"
+  # FIXME: should this bit be dynamic?
+  # {
+  ip addr flush dev bond0 || true
+  # }
   ifdown "${TRAVIS_NETWORK_VLAN_INTERFACE}" || true
   ifup "${TRAVIS_NETWORK_VLAN_INTERFACE}" || true
 }
