@@ -22,7 +22,7 @@ variable "worker_instance_count_com" {}
 variable "worker_instance_count_org" {}
 
 variable "worker_zones" {
-  default = ["a", "b", "c", "f"]
+  default = ["a", "b", "f"]
 }
 
 terraform {
