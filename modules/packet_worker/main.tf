@@ -63,7 +63,7 @@ data "template_file" "network_env" {
   template = <<EOF
 export TRAVIS_NETWORK_NAT_IP=${var.nat_ip}
 export TRAVIS_NETWORK_ELASTIC_IP=${var.nat_public_ip}
-export TRAVIS_NETWORK_VLAN_GATEWAY=10.10.${var.index}.1
+export TRAVIS_NETWORK_VLAN_GATEWAY=192.168.${var.index}.1
 EOF
 }
 

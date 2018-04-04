@@ -39,7 +39,7 @@ EOF
 data "template_file" "network_env" {
   template = <<EOF
 export TRAVIS_NETWORK_ELASTIC_IP=${cidrhost(packet_reserved_ip_block.ips.cidr_notation, 0)}
-export TRAVIS_NETWORK_VLAN_IP=10.10.${var.index}.1
+export TRAVIS_NETWORK_VLAN_IP=192.168.${var.index}.1
 EOF
 }
 

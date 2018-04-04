@@ -344,7 +344,7 @@ __setup_privnet() {
       print $4
     }'
     )"
-    vlan_ip="10.10.${TRAVIS_INSTANCE_INFRA_INDEX}.${vlan_last_octet}"
+    vlan_ip="192.168.${TRAVIS_INSTANCE_INFRA_INDEX}.${vlan_last_octet}"
     echo "export TRAVIS_NETWORK_VLAN_IP=${vlan_ip}" |
       tee "${ETCDIR}/default/travis-network-local"
   fi
@@ -353,7 +353,7 @@ __setup_privnet() {
 
   : "${TRAVIS_NETWORK_VLAN_INTERFACE:=enp1s0f1}"
   : "${TRAVIS_NETWORK_VLAN_NETMASK:=255.255.255.255}"
-  : "${TRAVIS_NETWORK_VLAN_IP:=10.10.1.$((RANDOM % 254))}"
+  : "${TRAVIS_NETWORK_VLAN_IP:=192.168.1.$((RANDOM % 254))}"
   : "${TRAVIS_NETWORK_VLAN_GATEWAY:=}"
 
   if ! grep -q 'TRAVIS_NETWORK_VLAN_IP' \
