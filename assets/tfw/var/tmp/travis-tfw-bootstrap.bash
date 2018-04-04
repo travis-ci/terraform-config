@@ -352,7 +352,7 @@ __setup_privnet() {
   eval "$(travis-tfw-combined-env travis-network)"
 
   : "${TRAVIS_NETWORK_VLAN_INTERFACE:=enp1s0f1}"
-  : "${TRAVIS_NETWORK_VLAN_NETMASK:=255.255.255.255}"
+  : "${TRAVIS_NETWORK_VLAN_NETMASK:=255.255.255.0}"
   : "${TRAVIS_NETWORK_VLAN_IP:=192.168.1.$((RANDOM % 254))}"
   : "${TRAVIS_NETWORK_VLAN_GATEWAY:=}"
 
