@@ -11,6 +11,7 @@ main() {
   : "${RUNDIR:=/var/tmp/travis-run.d}"
 
   __setup_travis_user
+  __setup_terraform_user
   __install_packages
   __setup_sysctl
   __setup_networking
@@ -25,6 +26,32 @@ __setup_travis_user() {
   fi
 
   chown -R travis:travis "${RUNDIR}"
+}
+
+__setup_terraform_user() {
+  : "${VARTMP:=/var/tmp}"
+  if ! getent passwd terraform &>/dev/null; then
+    useradd terraform
+  fi
+
+  usermod -a -G sudo terraform
+
+  mkdir -p ~terraform/.ssh
+  chown -R terraform ~terraform/
+  chmod 0700 ~terraform/.ssh
+
+  if [[ -f "${VARTMP}/terraform_rsa.pub" ]]; then
+    cp "${VARTMP}/terraform_rsa.pub" ~terraform/.ssh/authorized_keys
+    chmod 0644 ~terraform/.ssh/authorized_keys
+  fi
+
+  if ! grep -q '^Match User terraform' "${ETCDIR}/ssh/sshd_config"; then
+    cat >>"${ETCDIR}/ssh/sshd_config" <<EOF
+Match User terraform
+  PasswordAuthentication no
+  ForceCommand /bin/bash -l
+EOF
+  fi
 }
 
 __install_packages() {

@@ -25,6 +25,11 @@ resource "packet_reserved_ip_block" "ips" {
   quantity   = 1
 }
 
+resource "tls_private_key" "terraform" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
+
 data "template_file" "duo_config" {
   template = <<EOF
 # Written by cloud-init :heart:
@@ -65,13 +70,14 @@ data "template_file" "cloud_config" {
 
   vars {
     assets           = "${path.module}/../../assets"
+    duo_config       = "${data.template_file.duo_config.rendered}"
     github_users_env = "export GITHUB_USERS='${var.github_users}'"
     here             = "${path.module}"
     instance_env     = "${data.template_file.instance_env.rendered}"
     librato_env      = "${data.template_file.librato_env.rendered}"
     network_env      = "${data.template_file.network_env.rendered}"
     syslog_address   = "${var.syslog_address}"
-    duo_config       = "${data.template_file.duo_config.rendered}"
+    terraform_pubkey = "${tls_private_key.terraform.public_key_openssh}"
   }
 }
 
@@ -90,7 +96,7 @@ resource "packet_device" "nat" {
   user_data        = "${data.template_file.cloud_config.rendered}"
 
   lifecycle {
-    ignore_changes = ["root_password"]
+    ignore_changes = ["root_password", "user_data"]
   }
 }
 
@@ -111,32 +117,32 @@ EOF
   }
 }
 
-# resource "null_resource" "user_data_copy" {
-#   triggers {
-#     user_data_sha1 = "${sha1(data.template_file.cloud_config.rendered)}"
-#   }
-#
-#   depends_on = ["packet_device.nat", "local_file.user_data_dump"]
-#
-#   provisioner "file" {
-#     source      = "${local_file.user_data_dump.filename}"
-#     destination = "/var/lib/cloud/instance/user-data.txt"
-#   }
-#
-#   provisioner "remote-exec" {
-#     inline = [
-#       "cloud-init modules --mode init",
-#       "cloud-init modules --mode config",
-#       "cloud-init modules --mode final",
-#     ]
-#   }
-#
-#   connection {
-#     type = "ssh"
-#     user = "root"
-#     host = "${packet_device.nat.access_public_ipv4}"
-#   }
-# }
+resource "null_resource" "user_data_copy" {
+  triggers {
+    user_data_sha1 = "${sha1(data.template_file.cloud_config.rendered)}"
+  }
+
+  depends_on = ["packet_device.nat", "local_file.user_data_dump"]
+
+  connection {
+    user        = "terraform"
+    host        = "${packet_device.nat.access_public_ipv4}"
+    private_key = "${tls_private_key.terraform.private_key_pem}"
+  }
+
+  provisioner "file" {
+    source      = "${local_file.user_data_dump.filename}"
+    destination = "/var/lib/cloud/instance/user-data.txt"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo cloud-init modules --mode init",
+      "sudo cloud-init modules --mode config",
+      "sudo cloud-init modules --mode final",
+    ]
+  }
+}
 
 resource "packet_ip_attachment" "nat" {
   device_id     = "${packet_device.nat.id}"
