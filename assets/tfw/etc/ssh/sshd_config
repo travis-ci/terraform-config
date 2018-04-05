@@ -19,6 +19,7 @@ Match Host *
   PasswordAuthentication no
   PubkeyAuthentication yes
 
-Match User *
+Match Group duo
   AllowTcpForwarding no
   X11Forwarding no
+  ForceCommand /usr/sbin/login_duo

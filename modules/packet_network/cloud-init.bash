@@ -8,19 +8,86 @@ main() {
     set -o xtrace
   fi
 
-  : "${RUNDIR:=/var/tmp/travis-run.d}"
+  logger 'msg="beginning cloud-init fun"'
 
-  __setup_travis_user
-  __setup_terraform_user
+  : "${ETCDIR:=/etc}"
+  : "${RUNDIR:=/var/tmp/travis-run.d}"
+  : "${USRLOCAL:=/usr/local}"
+  : "${VARTMP:=/var/tmp}"
+
+  chown nobody:nogroup "${VARTMP}"
+  chmod 0777 "${VARTMP}"
+
+  export DEBIAN_FRONTEND=noninteractive
+
   __install_packages
-  __setup_sysctl
-  __setup_networking
-  __setup_duo
+  __install_tfw
+  __extract_tfw_files
+  __run_tfw_bootstrap
+  __disable_unfriendly_services
+
+  for substep in \
+    travis_user \
+    terraform_user \
+    sysctl \
+    networking \
+    duo \
+    raid; do
+    logger "msg=\"running setup\" substep=\"${substep}\""
+    "__setup_${substep}"
+  done
+}
+
+__install_packages() {
+  for key in autosave_v{4,6}; do
+    echo "iptables-persistent iptables-persistent/${key} boolean true" |
+      debconf-set-selections
+  done
+  apt-get install -yqq iptables-persistent bzip2 curl
+}
+
+__install_tfw() {
+  curl -sSL \
+    -o "${VARTMP}/tfw" \
+    'https://raw.githubusercontent.com/travis-ci/tfw/master/tfw'
+  chmod +x "${VARTMP}/tfw"
+  mv -v "${VARTMP}/tfw" "${USRLOCAL}/bin/tfw"
+}
+
+__extract_tfw_files() {
+  if [[ ! -f "${VARTMP}/tfw.tar.bz2" ]]; then
+    logger 'msg="no tfw tarball found; skipping extraction"'
+    return
+  fi
+
+  tar \
+    --no-same-permissions \
+    --strip-components=1 \
+    -C / \
+    -xvf "${VARTMP}/tfw.tar.bz2"
+}
+
+__run_tfw_bootstrap() {
+  if [[ -f "${VARTMP}/travis-tfw-bootstrap.bash" ]]; then
+    logger "msg=\"found '${VARTMP}/travis-tfw-bootstrap.bash'\""
+    bash "${VARTMP}/travis-tfw-bootstrap.bash"
+  else
+    logger "msg=\"running tfw admin-bootstrap\""
+    tfw admin-bootstrap
+  fi
+}
+
+__disable_unfriendly_services() {
+  systemctl stop apt-daily-upgrade || true
+  systemctl disable apt-daily-upgrade || true
+  systemctl stop apt-daily || true
+  systemctl disable apt-daily || true
+  systemctl stop apparmor || true
+  systemctl disable apparmor || true
+  systemctl reset-failed
 }
 
 __setup_travis_user() {
-  : "${RUNDIR:=/var/tmp/travis-run.d}"
-
   if ! getent passwd travis &>/dev/null; then
     useradd travis
   fi
@@ -29,7 +96,6 @@ __setup_travis_user() {
 }
 
 __setup_terraform_user() {
-  : "${VARTMP:=/var/tmp}"
   if ! getent passwd terraform &>/dev/null; then
     useradd terraform
   fi
@@ -41,25 +107,9 @@ __setup_terraform_user() {
   chmod 0700 ~terraform/.ssh
 
   if [[ -f "${VARTMP}/terraform_rsa.pub" ]]; then
-    cp "${VARTMP}/terraform_rsa.pub" ~terraform/.ssh/authorized_keys
+    cp -v "${VARTMP}/terraform_rsa.pub" ~terraform/.ssh/authorized_keys
     chmod 0644 ~terraform/.ssh/authorized_keys
   fi
-
-  if ! grep -q '^Match User terraform' "${ETCDIR}/ssh/sshd_config"; then
-    cat >>"${ETCDIR}/ssh/sshd_config" <<EOF
-Match User terraform
-  PasswordAuthentication no
-  ForceCommand /bin/bash -l
-EOF
-  fi
-}
-
-__install_packages() {
-  for key in autosave_v{4,6}; do
-    echo "iptables-persistent iptables-persistent/${key} boolean true" |
-      debconf-set-selections
-  done
-  apt-get install -yqq iptables-persistent
 }
 
 __setup_sysctl() {
@@ -113,24 +163,32 @@ __find_public_interface() {
 }
 
 __find_elastic_ip() {
-  eval "$(travis-tfw-combined-env travis-network)"
+  eval "$(tfw printenv travis-network)"
   echo "${TRAVIS_NETWORK_ELASTIC_IP}"
 }
 
 __setup_duo() {
-  : "${ETCDIR:=/etc}"
   if [[ ! -f "${ETCDIR}/duo/login_duo.conf" ]]; then
     logger 'No login_duo.conf found; skipping duo setup'
     return
   fi
 
-  if grep -qE 'ForceCommand.*login_duo' "${ETCDIR}/ssh/sshd_config"; then
-    logger 'sshd already configured with login_duo'
-    return
-  fi
+  local sudo_users_string
+  sudo_users_string="$(getent group sudo | awk -F: '{ print $NF }')"
+  local sudo_users=()
+  IFS=, read -a sudo_users <<<"${sudo_users_string}"
 
-  echo 'ForceCommand /usr/sbin/login_duo' >>"${ETCDIR}/ssh/sshd_config"
-  service sshd restart
+  for u in "${sudo_users[@]}"; do
+    if [[ "${u}" == terraform ]]; then
+      continue
+    fi
+
+    usermod -a -G duo "${u}"
+  done
+}
+
+__setup_raid() {
+  tfw admin-raid
 }
 
 main "$@"

@@ -128,18 +128,18 @@ resource "null_resource" "user_data_copy" {
     user        = "terraform"
     host        = "${packet_device.nat.access_public_ipv4}"
     private_key = "${tls_private_key.terraform.private_key_pem}"
+    agent       = false
   }
 
   provisioner "file" {
     source      = "${local_file.user_data_dump.filename}"
-    destination = "/var/lib/cloud/instance/user-data.txt"
+    destination = "/var/tmp/cloud-config.yml"
   }
 
   provisioner "remote-exec" {
     inline = [
-      "sudo cloud-init modules --mode init",
-      "sudo cloud-init modules --mode config",
-      "sudo cloud-init modules --mode final",
+      "sudo cloud-init -d -f /var/tmp/cloud-config.yml single -n write_files --frequency always",
+      "sudo bash /var/tmp/travis-cloud-init.bash",
     ]
   }
 }

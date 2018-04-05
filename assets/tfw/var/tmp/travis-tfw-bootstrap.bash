@@ -398,7 +398,7 @@ __setup_privnet() {
   cp -v "${tmpconf}" "${conf}"
   # FIXME: should this bit be dynamic?
   # {
-  ip addr flush dev bond0 || true
+  # ip addr flush dev bond0 || true
   # }
   ifdown "${TRAVIS_NETWORK_VLAN_INTERFACE}" || true
   ifup "${TRAVIS_NETWORK_VLAN_INTERFACE}" || true
