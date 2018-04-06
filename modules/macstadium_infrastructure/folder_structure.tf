@@ -3,6 +3,16 @@ resource "vsphere_folder" "base_vms" {
   datacenter = "${var.datacenter}"
 }
 
+resource "vsphere_folder" "datacore_1_base_vms" {
+  path       = "Pod ${var.index} Base VMs"
+  datacenter = "${var.datacenter}"
+}
+
+resource "vsphere_folder" "datacore_2_base_vms" {
+  path       = "Pod ${var.index} Base VMs"
+  datacenter = "${var.datacenter}"
+}
+
 resource "vsphere_folder" "build_vms" {
   path       = "Build VMs"
   datacenter = "${var.datacenter}"
