@@ -176,7 +176,7 @@ __setup_duo() {
   local sudo_users_string
   sudo_users_string="$(getent group sudo | awk -F: '{ print $NF }')"
   local sudo_users=()
-  IFS=, read -a sudo_users <<<"${sudo_users_string}"
+  IFS=, read -r -a sudo_users <<<"${sudo_users_string}"
 
   for u in "${sudo_users[@]}"; do
     if [[ "${u}" == terraform ]]; then
