@@ -68,13 +68,8 @@ __extract_tfw_files() {
 }
 
 __run_tfw_bootstrap() {
-  if [[ -f "${VARTMP}/travis-tfw-bootstrap.bash" ]]; then
-    logger "msg=\"found '${VARTMP}/travis-tfw-bootstrap.bash'\""
-    bash "${VARTMP}/travis-tfw-bootstrap.bash"
-  else
-    logger "msg=\"running tfw admin-bootstrap\""
-    tfw admin-bootstrap
-  fi
+  logger "msg=\"running tfw admin-bootstrap\""
+  tfw admin-bootstrap
 }
 
 __disable_unfriendly_services() {
@@ -168,26 +163,12 @@ __find_elastic_ip() {
 }
 
 __setup_duo() {
-  if [[ ! -f "${ETCDIR}/duo/login_duo.conf" ]]; then
-    logger 'No login_duo.conf found; skipping duo setup'
-    return
-  fi
-
-  local sudo_users_string
-  sudo_users_string="$(getent group sudo | awk -F: '{ print $NF }')"
-  local sudo_users=()
-  IFS=, read -r -a sudo_users <<<"${sudo_users_string}"
-
-  for u in "${sudo_users[@]}"; do
-    if [[ "${u}" == terraform ]]; then
-      continue
-    fi
-
-    usermod -a -G duo "${u}"
-  done
+  logger "msg=\"running tfw admin-duo\""
+  tfw admin-duo
 }
 
 __setup_raid() {
+  logger "msg=\"running tfw admin-raid\""
   tfw admin-raid
 }
 
