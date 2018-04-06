@@ -17,3 +17,4 @@ variable "custom_2_name" {}
 variable "custom_4_name" {}
 variable "custom_5_name" {}
 variable "custom_6_name" {}
+variable "wjb_jobs_iface_mac" {}

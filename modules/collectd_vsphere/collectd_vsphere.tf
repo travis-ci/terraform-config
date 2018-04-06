@@ -1,6 +1,6 @@
 variable "ssh_host" {}
 variable "ssh_user" {}
-variable "version" {}
+variable "app_version" {}
 variable "config_path" {}
 variable "librato_email" {}
 variable "librato_token" {}
@@ -17,7 +17,7 @@ data "template_file" "collectd_vsphere_install" {
 
   vars {
     env     = "${var.env}"
-    version = "${var.version}"
+    version = "${var.app_version}"
     index   = "${var.index}"
   }
 }
@@ -62,7 +62,7 @@ data "template_file" "collectd_vsphere_upstart" {
 
 resource "null_resource" "collectd_vsphere" {
   triggers {
-    version                                           = "${var.version}"
+    app_version                                           = "${var.app_version}"
     config_signature                                  = "${sha256(file(var.config_path))}"
     install_script_signature                          = "${sha256(data.template_file.collectd_vsphere_install.rendered)}"
     librato_creds_signature                           = "${sha256(data.template_file.librato_conf.rendered)}"
