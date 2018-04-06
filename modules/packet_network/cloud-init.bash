@@ -15,16 +15,17 @@ main() {
   : "${USRLOCAL:=/usr/local}"
   : "${VARTMP:=/var/tmp}"
 
+  export DEBIAN_FRONTEND=noninteractive
   chown nobody:nogroup "${VARTMP}"
   chmod 0777 "${VARTMP}"
 
-  export DEBIAN_FRONTEND=noninteractive
-
+  __disable_unfriendly_services
   __install_packages
   __install_tfw
   __extract_tfw_files
   __run_tfw_bootstrap
-  __disable_unfriendly_services
+
+  systemctl stop fail2ban || true
 
   for substep in \
     travis_user \
