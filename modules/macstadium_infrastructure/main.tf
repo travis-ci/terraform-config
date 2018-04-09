@@ -18,6 +18,7 @@ variable "custom_4_name" {}
 variable "custom_5_name" {}
 variable "custom_6_name" {}
 variable "wjb_jobs_iface_mac" {}
+variable "dhcp_server_jobs_iface_mac" {}
 
 data "vsphere_virtual_machine" "internal_vanilla" {
   name          = "Vanilla VMs/travis-ci-ubuntu14.04-internal-vanilla-1516305382"
@@ -265,6 +266,8 @@ resource "vsphere_virtual_machine" "dhcp_server" {
 
   network_interface {
     network_id = "${var.jobs_network_id}"
+    mac_address    = "${var.wjb_jobs_iface_mac}"
+    use_static_mac = true
   }
 
   disk {
