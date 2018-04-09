@@ -62,7 +62,7 @@ data "template_file" "collectd_vsphere_upstart" {
 
 resource "null_resource" "collectd_vsphere" {
   triggers {
-    app_version                                           = "${var.app_version}"
+    app_version                                       = "${var.app_version}"
     config_signature                                  = "${sha256(file(var.config_path))}"
     install_script_signature                          = "${sha256(data.template_file.collectd_vsphere_install.rendered)}"
     librato_creds_signature                           = "${sha256(data.template_file.librato_conf.rendered)}"

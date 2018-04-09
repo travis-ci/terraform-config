@@ -27,7 +27,7 @@ data "template_file" "jupiter_brain_upstart" {
 
 resource "null_resource" "jupiter_brain" {
   triggers {
-    app_version                  = "${var.app_version}"
+    app_version              = "${var.app_version}"
     config_signature         = "${sha256(file(var.config_path))}"
     install_script_signature = "${sha256(data.template_file.jupiter_brain_install.rendered)}"
     upstart_script_signature = "${sha256(data.template_file.jupiter_brain_upstart.rendered)}"

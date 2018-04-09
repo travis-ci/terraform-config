@@ -28,7 +28,7 @@ data "template_file" "worker_upstart" {
 
 resource "null_resource" "worker" {
   triggers {
-    app_version                  = "${var.app_version}"
+    app_version              = "${var.app_version}"
     base_config_signature    = "${sha256(var.worker_base_config)}"
     env_config_signature     = "${sha256(var.worker_env_config)}"
     local_config             = "${var.worker_local_config}"

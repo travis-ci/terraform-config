@@ -26,7 +26,7 @@ data "template_file" "vsphere_janitor_upstart" {
 
 resource "null_resource" "vsphere_janitor" {
   triggers {
-    app_version                  = "${var.app_version}"
+    app_version              = "${var.app_version}"
     config_signature         = "${sha256(file(var.config_path))}"
     install_script_signature = "${sha256(data.template_file.vsphere_janitor_install.rendered)}"
     upstart_script_signature = "${sha256(data.template_file.vsphere_janitor_upstart.rendered)}"
