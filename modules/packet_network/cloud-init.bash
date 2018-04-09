@@ -44,7 +44,7 @@ __install_packages() {
     echo "iptables-persistent iptables-persistent/${key} boolean true" |
       debconf-set-selections
   done
-  apt-get install -yqq iptables-persistent bzip2 curl
+  apt-get install -yqq iptables-persistent bzip2 curl zsh
 }
 
 __install_tfw() {
@@ -66,11 +66,19 @@ __extract_tfw_files() {
     --strip-components=1 \
     -C / \
     -xvf "${VARTMP}/tfw.tar.bz2"
+  chown -R root:root "${ETCDIR}/sudoers" "${ETCDIR}/sudoers.d"
 }
 
 __run_tfw_bootstrap() {
   logger "msg=\"running tfw admin-bootstrap\""
   tfw admin-bootstrap
+
+  # FIXME: obviate this hack
+  if grep -q pam_cap "${ETCDIR}/pam.d/sshd" 2>/dev/null; then
+    sed -i '/pam_cap/d' "${ETCDIR}/pam.d/sshd"
+  fi
+
+  systemctl restart sshd || true
 }
 
 __disable_unfriendly_services() {

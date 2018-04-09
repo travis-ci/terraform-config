@@ -81,7 +81,7 @@ data "template_file" "cloud_config" {
   }
 }
 
-resource "local_file" "user_data_dump" {
+resource "local_file" "cloud_config_dump" {
   filename = "${path.module}/../../tmp/packet-${var.env}-${var.index}-nat-user-data.yml"
   content  = "${data.template_file.cloud_config.rendered}"
 }
@@ -93,7 +93,15 @@ resource "packet_device" "nat" {
   operating_system = "ubuntu_16_04"
   plan             = "${var.nat_server_plan}"
   project_id       = "${var.project_id}"
-  user_data        = "${data.template_file.cloud_config.rendered}"
+
+  user_data = <<EOUSERDATA
+#!/usr/bin/env bash
+cat >/var/tmp/terraform_rsa.pub <<EOPUBKEY
+${tls_private_key.terraform.public_key_openssh}
+EOPUBKEY
+
+${file("${path.module}/../../assets/bits/terraform-user-bootstrap.bash")}
+EOUSERDATA
 
   lifecycle {
     ignore_changes = ["root_password", "user_data"]
@@ -102,7 +110,7 @@ resource "packet_device" "nat" {
 
 resource "null_resource" "assign_private_network" {
   triggers {
-    user_data_sha1 = "${sha1(data.template_file.cloud_config.rendered)}"
+    cloud_config_sha1 = "${sha1(data.template_file.cloud_config.rendered)}"
   }
 
   depends_on = ["packet_device.nat"]
@@ -117,12 +125,12 @@ EOF
   }
 }
 
-resource "null_resource" "user_data_copy" {
+resource "null_resource" "cloud_config_copy" {
   triggers {
-    user_data_sha1 = "${sha1(data.template_file.cloud_config.rendered)}"
+    cloud_config_sha1 = "${sha1(data.template_file.cloud_config.rendered)}"
   }
 
-  depends_on = ["packet_device.nat", "local_file.user_data_dump"]
+  depends_on = ["packet_device.nat", "local_file.cloud_config_dump"]
 
   connection {
     user        = "terraform"
@@ -132,7 +140,7 @@ resource "null_resource" "user_data_copy" {
   }
 
   provisioner "file" {
-    source      = "${local_file.user_data_dump.filename}"
+    source      = "${local_file.cloud_config_dump.filename}"
     destination = "/var/tmp/cloud-config.yml"
   }
 
