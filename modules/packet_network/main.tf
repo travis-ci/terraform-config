@@ -19,17 +19,6 @@ variable "nat_server_plan" {
 variable "project_id" {}
 variable "syslog_address" {}
 
-resource "packet_reserved_ip_block" "ips" {
-  project_id = "${var.project_id}"
-  facility   = "${var.facility}"
-  quantity   = 1
-}
-
-resource "tls_private_key" "terraform" {
-  algorithm = "RSA"
-  rsa_bits  = 4096
-}
-
 data "template_file" "duo_config" {
   template = <<EOF
 # Written by cloud-init :heart:
@@ -79,6 +68,17 @@ data "template_file" "cloud_config" {
     syslog_address   = "${var.syslog_address}"
     terraform_pubkey = "${tls_private_key.terraform.public_key_openssh}"
   }
+}
+
+resource "packet_reserved_ip_block" "ips" {
+  project_id = "${var.project_id}"
+  facility   = "${var.facility}"
+  quantity   = 1
+}
+
+resource "tls_private_key" "terraform" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
 }
 
 resource "local_file" "cloud_config_dump" {

@@ -114,7 +114,12 @@ data "template_file" "cloud_config" {
   }
 }
 
-resource "local_file" "user_data_dump" {
+resource "tls_private_key" "terraform" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
+
+resource "local_file" "cloud_config_dump" {
   filename = "${path.module}/../../tmp/packet-${var.env}-${var.index}-worker-${var.site}-user-data.yml"
   content  = "${data.template_file.cloud_config.rendered}"
 }
@@ -128,10 +133,18 @@ resource "packet_device" "worker" {
   operating_system = "ubuntu_16_04"
   plan             = "${var.server_plan}"
   project_id       = "${var.project_id}"
-  user_data        = "${data.template_file.cloud_config.rendered}"
+
+  user_data = <<EOUSERDATA
+#!/usr/bin/env bash
+cat >/var/tmp/terraform_rsa.pub <<EOPUBKEY
+${tls_private_key.terraform.public_key_openssh}
+EOPUBKEY
+
+${file("${path.module}/../../assets/bits/terraform-user-bootstrap.bash")}
+EOUSERDATA
 
   lifecycle {
-    ignore_changes = ["root_password"]
+    ignore_changes = ["root_password", "user_data"]
   }
 }
 
@@ -152,30 +165,29 @@ EOF
   }
 }
 
-# resource "null_resource" "user_data_copy" {
-#   triggers {
-#     user_data_sha1 = "${sha1(data.template_file.cloud_config.rendered)}"
-#   }
-#
-#   depends_on = ["packet_device.worker", "local_file.user_data_dump"]
-#
-#   provisioner "file" {
-#     source      = "${local_file.user_data_dump.filename}"
-#     destination = "/var/lib/cloud/instance/user-data.txt"
-#   }
-#
-#   provisioner "remote-exec" {
-#     inline = [
-#       "cloud-init modules --mode init",
-#       "cloud-init modules --mode config",
-#       "cloud-init modules --mode final",
-#     ]
-#   }
-#
-#   connection {
-#     type = "ssh"
-#     user = "root"
-#     host = "${packet_device.worker.access_public_ipv4}"
-#   }
-# }
+resource "null_resource" "cloud_config_copy" {
+  triggers {
+    cloud_config_sha1 = "${sha1(data.template_file.cloud_config.rendered)}"
+  }
 
+  depends_on = ["packet_device.worker", "local_file.cloud_config_dump"]
+
+  connection {
+    user        = "terraform"
+    host        = "${packet_device.nat.access_public_ipv4}"
+    private_key = "${tls_private_key.terraform.private_key_pem}"
+    agent       = false
+  }
+
+  provisioner "file" {
+    source      = "${local_file.cloud_config_dump.filename}"
+    destination = "/var/tmp/cloud-config.yml"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo cloud-init -d -f /var/tmp/cloud-config.yml single -n write_files --frequency always",
+      "sudo bash /var/tmp/travis-cloud-init.bash",
+    ]
+  }
+}
