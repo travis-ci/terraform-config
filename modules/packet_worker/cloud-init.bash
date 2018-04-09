@@ -20,15 +20,13 @@ main() {
   chown nobody:nogroup "${VARTMP}"
   chmod 0777 "${VARTMP}"
 
-  __disable_unfriendly_services
-  __ensure_docker
-  __install_packages
-  __install_tfw
-  __extract_tfw_files
-
+  mkdir -p "${RUNDIR}"
   echo "___INSTANCE_ID___-$(hostname)" >"${RUNDIR}/instance-hostname.tmpl"
 
+  __install_tfw
   __run_tfw_bootstrap
+  __install_packages
+  __extract_tfw_files
 
   # FIXME: re-enable at some point after initial setup?
   systemctl stop fail2ban || true
@@ -97,19 +95,11 @@ __extract_tfw_files() {
 }
 
 __run_tfw_bootstrap() {
+  logger "msg=\"running tfw bootstrap\""
+  tfw bootstrap
   logger "msg=\"running tfw admin-bootstrap\""
   tfw admin-bootstrap
   systemctl restart sshd || true
-}
-
-__disable_unfriendly_services() {
-  systemctl stop apt-daily-upgrade || true
-  systemctl disable apt-daily-upgrade || true
-  systemctl stop apt-daily || true
-  systemctl disable apt-daily || true
-  systemctl stop apparmor || true
-  systemctl disable apparmor || true
-  systemctl reset-failed
 }
 
 __setup_travis_user() {
@@ -117,6 +107,7 @@ __setup_travis_user() {
     useradd travis
   fi
 
+  usermod -a -G docker travis
   chown -R travis:travis "${RUNDIR}"
 }
 

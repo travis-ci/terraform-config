@@ -174,7 +174,7 @@ resource "null_resource" "cloud_config_copy" {
 
   connection {
     user        = "terraform"
-    host        = "${packet_device.nat.access_public_ipv4}"
+    host        = "${packet_device.worker.access_public_ipv4}"
     private_key = "${tls_private_key.terraform.private_key_pem}"
     agent       = false
   }
