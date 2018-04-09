@@ -2,6 +2,7 @@
 # vim:filetype=sh
 set -o errexit
 set -o pipefail
+shopt -s nullglob
 
 main() {
   if [[ ! "${QUIET}" ]]; then
@@ -25,6 +26,7 @@ main() {
   __extract_tfw_files
   __run_tfw_bootstrap
 
+  # FIXME: re-enable at some point after initial setup?
   systemctl stop fail2ban || true
 
   for substep in \
@@ -44,7 +46,12 @@ __install_packages() {
     echo "iptables-persistent iptables-persistent/${key} boolean true" |
       debconf-set-selections
   done
-  apt-get install -yqq iptables-persistent bzip2 curl zsh
+  apt-get install -yqq \
+    bzip2 \
+    curl \
+    iptables-persistent \
+    libpam-cap \
+    zsh
 }
 
 __install_tfw() {
@@ -72,12 +79,6 @@ __extract_tfw_files() {
 __run_tfw_bootstrap() {
   logger "msg=\"running tfw admin-bootstrap\""
   tfw admin-bootstrap
-
-  # FIXME: obviate this hack
-  if grep -q pam_cap "${ETCDIR}/pam.d/sshd" 2>/dev/null; then
-    sed -i '/pam_cap/d' "${ETCDIR}/pam.d/sshd"
-  fi
-
   systemctl restart sshd || true
 }
 

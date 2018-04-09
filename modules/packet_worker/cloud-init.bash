@@ -9,50 +9,39 @@ main() {
     set -o xtrace
   fi
 
-  : "${ETCDIR:=/etc}"
-  : "${VARTMP:=/var/tmp}"
+  logger 'msg="beginning cloud-init fun"'
+
   : "${DEV:=/dev}"
+  : "${ETCDIR:=/etc}"
   : "${RUNDIR:=/var/tmp/travis-run.d}"
+  : "${VARTMP:=/var/tmp}"
 
-  if ! docker version 2>/dev/null; then
-    __install_docker
-  fi
+  export DEBIAN_FRONTEND=noninteractive
+  chown nobody:nogroup "${VARTMP}"
+  chmod 0777 "${VARTMP}"
 
-  if ! getent passwd travis; then
-    useradd travis
-  fi
-
-  groups travis | if ! grep -q docker; then
-    usermod -a -G docker travis
-  fi
-
-  __set_aio_max_nr
-
-  chown -R travis:travis "${RUNDIR}"
-
-  if [[ -d "${ETCDIR}/systemd/system" ]]; then
-    cp -v "${VARTMP}/travis-worker.service" \
-      "${ETCDIR}/systemd/system/travis-worker.service"
-    systemctl enable travis-worker || true
-  fi
-
-  systemctl stop travis-worker || true
-  systemctl start travis-worker || true
+  __disable_unfriendly_services
+  __ensure_docker
+  __install_packages
+  __install_tfw
+  __extract_tfw_files
 
   echo "___INSTANCE_ID___-$(hostname)" >"${RUNDIR}/instance-hostname.tmpl"
 
-  eval "$(travis-tfw-combined-env travis-network)"
+  __run_tfw_bootstrap
 
-  ## FIXME: this routing is not working but whyyyy
-  ## {
-  # if [[ "${TRAVIS_NETWORK_VLAN_GATEWAY}" ]]; then
-  #   ip route | if ! grep -q "^default via ${TRAVIS_NETWORK_VLAN_GATEWAY}"; then
-  #     ip route del default || true
-  #     sleep 5
-  #     ip route add default via "${TRAVIS_NETWORK_VLAN_GATEWAY}" || true
-  #   fi
-  # fi
-  ## }
+  # FIXME: re-enable at some point after initial setup?
+  systemctl stop fail2ban || true
+
+  for substep in \
+    travis_user \
+    terraform_user \
+    sysctl \
+    raid \
+    worker; do
+    logger "msg=\"running setup\" substep=\"${substep}\""
+    "__setup_${substep}"
+  done
 
   __wait_for_docker
 }
@@ -70,16 +59,103 @@ __wait_for_docker() {
   done
 }
 
-__install_docker() {
+__ensure_docker() {
+  if docker version &>/dev/null; then
+    return
+  fi
   curl -Ls https://get.docker.io | bash
 }
 
-__set_aio_max_nr() {
-  # NOTE: we do this mostly to ensure file IO chatty services like mysql will
-  # play nicely with others, such as when multiple containers are running mysql,
-  # which is the default on precise + trusty.  The value we set here is 16^5,
-  # which is one power higher than the default of 16^4 :sparkles:.
+__install_packages() {
+  apt-get install -yqq \
+    bzip2 \
+    curl \
+    libpam-cap \
+    zsh
+}
+
+__install_tfw() {
+  curl -sSL \
+    -o "${VARTMP}/tfw" \
+    'https://raw.githubusercontent.com/travis-ci/tfw/master/tfw'
+  chmod +x "${VARTMP}/tfw"
+  mv -v "${VARTMP}/tfw" "${USRLOCAL}/bin/tfw"
+}
+
+__extract_tfw_files() {
+  if [[ ! -f "${VARTMP}/tfw.tar.bz2" ]]; then
+    logger 'msg="no tfw tarball found; skipping extraction"'
+    return
+  fi
+
+  tar \
+    --no-same-permissions \
+    --strip-components=1 \
+    -C / \
+    -xvf "${VARTMP}/tfw.tar.bz2"
+  chown -R root:root "${ETCDIR}/sudoers" "${ETCDIR}/sudoers.d"
+}
+
+__run_tfw_bootstrap() {
+  logger "msg=\"running tfw admin-bootstrap\""
+  tfw admin-bootstrap
+  systemctl restart sshd || true
+}
+
+__disable_unfriendly_services() {
+  systemctl stop apt-daily-upgrade || true
+  systemctl disable apt-daily-upgrade || true
+  systemctl stop apt-daily || true
+  systemctl disable apt-daily || true
+  systemctl stop apparmor || true
+  systemctl disable apparmor || true
+  systemctl reset-failed
+}
+
+__setup_travis_user() {
+  if ! getent passwd travis &>/dev/null; then
+    useradd travis
+  fi
+
+  chown -R travis:travis "${RUNDIR}"
+}
+
+__setup_terraform_user() {
+  if ! getent passwd terraform &>/dev/null; then
+    useradd terraform
+  fi
+
+  usermod -a -G sudo terraform
+
+  mkdir -p ~terraform/.ssh
+  chown -R terraform ~terraform/
+  chmod 0700 ~terraform/.ssh
+
+  if [[ -f "${VARTMP}/terraform_rsa.pub" ]]; then
+    cp -v "${VARTMP}/terraform_rsa.pub" ~terraform/.ssh/authorized_keys
+    chmod 0644 ~terraform/.ssh/authorized_keys
+  fi
+}
+
+__setup_sysctl() {
+  echo 1048576 >/proc/sys/fs/aio-max-nr
   sysctl -w fs.aio-max-nr=1048576
+}
+
+__setup_raid() {
+  logger "msg=\"running tfw admin-raid\""
+  tfw admin-raid
+}
+
+__setup_worker() {
+  if [[ -d "${ETCDIR}/systemd/system" ]]; then
+    cp -v "${VARTMP}/travis-worker.service" \
+      "${ETCDIR}/systemd/system/travis-worker.service"
+    systemctl enable travis-worker || true
+  fi
+
+  systemctl stop travis-worker || true
+  systemctl start travis-worker || true
 }
 
 main "$@"

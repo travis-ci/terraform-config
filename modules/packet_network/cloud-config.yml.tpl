@@ -36,6 +36,3 @@ write_files:
   encoding: b64
   permissions: '0644'
   path: /var/tmp/tfw.tar.bz2
-
-runcmd:
-- [bash, /var/tmp/travis-cloud-init.bash]
