@@ -74,11 +74,11 @@ resource "vsphere_virtual_machine" "wjb" {
   folder           = "${vsphere_folder.internal_vms.path}"
   resource_pool_id = "${var.resource_pool_id}"
   datastore_id     = "${var.datastore_id}"
-    guest_id = "${data.vsphere_virtual_machine.internal_vanilla.guest_id}"
+  guest_id         = "${data.vsphere_virtual_machine.internal_vanilla.guest_id}"
 
   disk {
-  name             = "wjb-${var.index}.vmdk"
-  size = 10737
+    label        = "wjb-${var.index}.vmdk"
+    size         = 10737
     datastore_id = "${var.datastore_id}"
   }
 
@@ -179,11 +179,11 @@ resource "vsphere_virtual_machine" "util" {
   folder           = "${vsphere_folder.internal_vms.path}"
   resource_pool_id = "${var.resource_pool_id}"
   datastore_id     = "${var.datastore_id}"
-    guest_id = "${data.vsphere_virtual_machine.internal_vanilla.guest_id}"
+  guest_id         = "${data.vsphere_virtual_machine.internal_vanilla.guest_id}"
 
   disk {
-  name             = "util-${var.index}.vmdk"
-  size = 10737
+    label        = "util-${var.index}.vmdk"
+    size         = 10737
     datastore_id = "${var.datastore_id}"
   }
 
@@ -245,8 +245,8 @@ resource "vsphere_virtual_machine" "dhcp_server" {
   num_cpus         = 2
   memory           = 4096
   resource_pool_id = "${var.resource_pool_id}"
-  datastore_id = "${var.datastore_id}"
-    guest_id = "${data.vsphere_virtual_machine.internal_vanilla.guest_id}"
+  datastore_id     = "${var.datastore_id}"
+  guest_id         = "${data.vsphere_virtual_machine.internal_vanilla.guest_id}"
 
   network_interface {
     network_id = "${var.internal_network_id}"
