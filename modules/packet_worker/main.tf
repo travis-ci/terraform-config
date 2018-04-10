@@ -19,11 +19,12 @@ variable "nat_public_ip" {}
 variable "server_count" {}
 
 variable "server_plan" {
-  default = "baremetal_2"
+  default = "c2.medium.x86"
 }
 
 variable "site" {}
 variable "syslog_address" {}
+variable "terraform_privkey" {}
 variable "worker_config" {}
 variable "worker_docker_image_android" {}
 variable "worker_docker_image_default" {}
@@ -39,6 +40,10 @@ variable "worker_docker_image_ruby" {}
 
 variable "worker_docker_self_image" {
   default = "travisci/worker:v3.6.0"
+}
+
+data "tls_public_key" "terraform" {
+  private_key_pem = "${var.terraform_privkey}"
 }
 
 data "template_file" "cloud_init_env" {
@@ -63,7 +68,7 @@ data "template_file" "network_env" {
   template = <<EOF
 export TRAVIS_NETWORK_NAT_IP=${var.nat_ip}
 export TRAVIS_NETWORK_ELASTIC_IP=${var.nat_public_ip}
-export TRAVIS_NETWORK_VLAN_GATEWAY=10.10.${var.index}.1
+export TRAVIS_NETWORK_VLAN_GATEWAY=192.168.${var.index}.1
 EOF
 }
 
@@ -114,20 +119,43 @@ data "template_file" "cloud_config" {
   }
 }
 
-resource "local_file" "user_data_dump" {
+resource "local_file" "cloud_config_dump" {
   filename = "${path.module}/../../tmp/packet-${var.env}-${var.index}-worker-${var.site}-user-data.yml"
   content  = "${data.template_file.cloud_config.rendered}"
 }
 
 resource "packet_device" "worker" {
-  count            = "${var.server_count}"
+  count = "${var.server_count}"
+
   billing_cycle    = "${var.billing_cycle}"
   facility         = "${var.facility}"
   hostname         = "${format("${var.env}-${var.index}-worker-${var.site}-%02d", count.index + 1)}"
   operating_system = "ubuntu_16_04"
   plan             = "${var.server_plan}"
   project_id       = "${var.project_id}"
-  user_data        = "${data.template_file.cloud_config.rendered}"
+
+  user_data = <<EOUSERDATA
+#!/usr/bin/env bash
+cat >/var/tmp/terraform_rsa.pub <<EOPUBKEY
+${data.tls_public_key.terraform.public_key_openssh}
+EOPUBKEY
+
+cat >/etc/default/travis-network <<'EOENV'
+${data.template_file.network_env.rendered}
+EOENV
+
+cat >/etc/default/travis-instance <<'EOENV'
+${data.template_file.instance_env.rendered}
+EOENV
+
+${file("${path.module}/../../assets/bits/ensure-tfw.bash")}
+${file("${path.module}/../../assets/bits/terraform-user-bootstrap.bash")}
+${file("${path.module}/../../assets/bits/travis-packet-privnet-setup.bash")}
+EOUSERDATA
+
+  lifecycle {
+    ignore_changes = ["root_password", "user_data"]
+  }
 }
 
 resource "null_resource" "assign_private_network" {
@@ -147,30 +175,30 @@ EOF
   }
 }
 
-# resource "null_resource" "user_data_copy" {
-#   triggers {
-#     user_data_sha1 = "${sha1(data.template_file.cloud_config.rendered)}"
-#   }
-#
-#   depends_on = ["packet_device.worker", "local_file.user_data_dump"]
-#
-#   provisioner "file" {
-#     source      = "${local_file.user_data_dump.filename}"
-#     destination = "/var/lib/cloud/instance/user-data.txt"
-#   }
-#
-#   provisioner "remote-exec" {
-#     inline = [
-#       "cloud-init modules --mode init",
-#       "cloud-init modules --mode config",
-#       "cloud-init modules --mode final",
-#     ]
-#   }
-#
-#   connection {
-#     type = "ssh"
-#     user = "root"
-#     host = "${packet_device.worker.access_public_ipv4}"
-#   }
-# }
+resource "null_resource" "cloud_config_copy" {
+  triggers {
+    cloud_config_sha1 = "${sha1(data.template_file.cloud_config.rendered)}"
+  }
 
+  depends_on = ["packet_device.worker", "local_file.cloud_config_dump"]
+
+  connection {
+    agent        = false
+    bastion_host = "${var.nat_public_ip}"
+    host         = "192.168.${var.index}.${replace(packet_device.worker.access_private_ipv4, "/[0-9]+\\.[0-9]+\\.[0-9]+\\./", "")}"
+    private_key  = "${data.tls_public_key.terraform.private_key_pem}"
+    user         = "terraform"
+  }
+
+  provisioner "file" {
+    source      = "${local_file.cloud_config_dump.filename}"
+    destination = "/var/tmp/cloud-config.yml"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo cloud-init -d -f /var/tmp/cloud-config.yml single -n write_files --frequency always",
+      "sudo bash /var/tmp/travis-cloud-init.bash",
+    ]
+  }
+}

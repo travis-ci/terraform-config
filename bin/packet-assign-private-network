@@ -79,7 +79,7 @@ class PacketPrivateNetworkAssigner
     req['Accept'] = 'application/json'
     req['X-Auth-Token'] = auth_token
     response = conn.request(req)
-    assert_status!(200, response.code)
+    assert_status!(200, response.code, response.body)
   end
 
   private def fetch_vlan(network_name, facility_id)
@@ -88,7 +88,7 @@ class PacketPrivateNetworkAssigner
     req['Accept'] = 'application/json'
     req['X-Auth-Token'] = auth_token
     response = conn.request(req)
-    assert_status!(200, response.code)
+    assert_status!(200, response.code, response.body)
     found = JSON.parse(response.body).fetch('virtual_networks').find do |vlan|
       vlan['description'] == network_name &&
         vlan['facility_code'] == facility_id
@@ -108,7 +108,7 @@ class PacketPrivateNetworkAssigner
     req['Content-Type'] = 'application/json;charset=utf-8'
     req['X-Auth-Token'] = auth_token
     response = conn.request(req)
-    assert_status!(201, response.code)
+    assert_status!(201, response.code, response.body)
     JSON.parse(response.body).fetch('id')
   end
 
@@ -118,7 +118,7 @@ class PacketPrivateNetworkAssigner
     req['Accept'] = 'application/json'
     req['X-Auth-Token'] = auth_token
     response = conn.request(req)
-    assert_status!(200, response.code)
+    assert_status!(200, response.code, response.body)
     JSON.parse(response.body).fetch('network_ports').find do |port|
       port['name'] == device_interface_alias
     end
@@ -130,7 +130,7 @@ class PacketPrivateNetworkAssigner
     req['Accept'] = 'application/json'
     req['X-Auth-Token'] = auth_token
     response = conn.request(req)
-    assert_status!(200, response.code)
+    assert_status!(200, response.code, response.body)
   end
 
   private def packet_http_conn
@@ -141,8 +141,13 @@ class PacketPrivateNetworkAssigner
     conn
   end
 
-  private def assert_status!(expected, actual)
-    fail "borked status code #{actual}" if Integer(actual) != Integer(expected)
+  private def assert_status!(expected, actual, body)
+    return if Integer(actual) == Integer(expected)
+    msg = "borked status code #{actual}"
+    unless body.empty?
+      msg = msg + "\n#{body}"
+    end
+    fail msg
   end
 end
 
@@ -153,9 +158,9 @@ def parse_options!(argv: ARGV)
       ENV.fetch('PACKET_DEBUG_HTTP', 'no').downcase
     ),
     device_id: ENV['PACKET_DEVICE_ID'],
-    # device_interface: ENV.fetch('PACKET_DEVICE_INTERFACE', 'enp2s0d1'),
+    # device_interface: ENV.fetch('PACKET_DEVICE_INTERFACE', 'enp1s0f1'),
     device_interface_alias: ENV.fetch('PACKET_DEVICE_INTERFACE_ALIAS', 'eth1'),
-    facility_id: ENV.fetch('PACKET_PRIVATE_NETWORK_FACILITY', 'sjc1'),
+    facility_id: ENV.fetch('PACKET_PRIVATE_NETWORK_FACILITY', 'ewr1'),
     network_name: ENV.fetch('PACKET_PRIVATE_NETWORK_NAME', 'private'),
     project_id: ENV['PACKET_PROJECT_ID']
   }
