@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+set -o errexit
+
 terraform_user_bootstrap() {
   set -o xtrace
 

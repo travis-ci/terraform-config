@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+set -o errexit
+
 travis_packet_privnet_setup() {
   : "${ETCDIR:=/etc}"
   : "${RUNDIR:=/var/tmp/travis-run.d}"

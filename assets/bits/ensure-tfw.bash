@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+set -o errexit
+
 ensure_tfw() {
   : "${TMPDIR:=/var/tmp}"
   : "${USRLOCALDIR:=/usr/local}"
