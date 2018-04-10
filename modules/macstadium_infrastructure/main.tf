@@ -259,8 +259,8 @@ resource "vsphere_virtual_machine" "dhcp_server" {
   }
 
   disk {
-  name             = "dhcp-server-${var.index}.vmdk"
-  size = 10737
+    label        = "dhcp-server-${var.index}.vmdk"
+    size         = 10737
     datastore_id = "${var.datastore_id}"
   }
 
