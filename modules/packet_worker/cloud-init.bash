@@ -51,12 +51,6 @@ __wait_for_docker() {
 }
 
 __setup_tfw() {
-  curl -sSL \
-    -o "${VARTMP}/tfw" \
-    'https://raw.githubusercontent.com/travis-ci/tfw/master/tfw'
-  chmod +x "${VARTMP}/tfw"
-  mv -v "${VARTMP}/tfw" "${USRLOCAL}/bin/tfw"
-
   logger "msg=\"running tfw bootstrap\""
   tfw bootstrap
 
@@ -97,7 +91,6 @@ __setup_networking() {
   done
 
   apt-get install -yqq iptables-persistent
-  travis-packet-privnet-setup
 }
 
 __setup_raid() {

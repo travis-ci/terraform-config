@@ -81,6 +81,7 @@ module "packet_workers_com" {
   server_count                = 1
   site                        = "com"
   syslog_address              = "${var.syslog_address_com}"
+  terraform_privkey           = "${data.terraform_remote_state.vpc.terraform_privkey}"
   worker_config               = "${data.template_file.worker_config_com.rendered}"
   worker_docker_image_android = "${var.latest_docker_image_amethyst}"
   worker_docker_image_default = "${var.latest_docker_image_garnet}"
@@ -109,6 +110,7 @@ module "packet_workers_org" {
   server_count                = 1
   site                        = "org"
   syslog_address              = "${var.syslog_address_org}"
+  terraform_privkey           = "${data.terraform_remote_state.vpc.terraform_privkey}"
   worker_config               = "${data.template_file.worker_config_org.rendered}"
   worker_docker_image_android = "${var.latest_docker_image_amethyst}"
   worker_docker_image_default = "${var.latest_docker_image_garnet}"

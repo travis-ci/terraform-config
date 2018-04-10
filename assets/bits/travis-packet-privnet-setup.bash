@@ -1,10 +1,7 @@
-#!/usr/bin/env bash
-set -o errexit
-
-main() {
+travis_packet_privnet_setup() {
   : "${ETCDIR:=/etc}"
-  : "${TMPDIR:=/var/tmp}"
   : "${RUNDIR:=/var/tmp/travis-run.d}"
+  : "${TMPDIR:=/var/tmp}"
 
   local conf="${ETCDIR}/network/interfaces"
   local tmpconf="${TMPDIR}/network-interfaces.tmp"
@@ -57,13 +54,6 @@ main() {
     if (\$0 ~ /bond-slaves/) {
       sub(/${TRAVIS_NETWORK_VLAN_INTERFACE}/, \"\", \$0);
       print \$0;
-    # } else if (\$0 ~ /gateway /) {
-    #   if (\"${TRAVIS_NETWORK_VLAN_GATEWAY}\" != \"\") {
-    #     print \"# NOTE: gateway disabled via travis-packet-privnet-setup\"
-    #     print \"# {\"
-    #     print \"# \" \$0
-    #     print \"# }\"
-    #   }
     } else if (\$0 ~ /iface ${TRAVIS_NETWORK_VLAN_INTERFACE}/) {
       sub(/manual/, \"static\", \$0);
       print \$0;
@@ -75,10 +65,6 @@ main() {
 
       print \"    address ${TRAVIS_NETWORK_VLAN_IP}\"
       print \"    netmask ${TRAVIS_NETWORK_VLAN_NETMASK}\"
-      # if (\"${TRAVIS_NETWORK_VLAN_GATEWAY}\" != \"\") {
-      #   print \"    post-up ip route replace default via ${TRAVIS_NETWORK_VLAN_GATEWAY}\"
-      #   print \"    post-down ip route del default via ${TRAVIS_NETWORK_VLAN_GATEWAY}\"
-      # }
     } else {
       print \$0;
     }
@@ -92,6 +78,11 @@ main() {
   cp -v "${tmpconf}" "${conf}"
   ifdown "${TRAVIS_NETWORK_VLAN_INTERFACE}" || true
   ifup "${TRAVIS_NETWORK_VLAN_INTERFACE}" || true
+
+  if [[ "${TRAVIS_NETWORK_VLAN_GATEWAY}" ]]; then
+    ip route replace default via \
+      "${TRAVIS_NETWORK_VLAN_GATEWAY}" dev "${TRAVIS_NETWORK_VLAN_INTERFACE}"
+  fi
 }
 
-main "${@}"
+travis_packet_privnet_setup

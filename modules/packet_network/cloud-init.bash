@@ -33,12 +33,6 @@ main() {
 }
 
 __setup_tfw() {
-  curl -sSL \
-    -o "${VARTMP}/tfw" \
-    'https://raw.githubusercontent.com/travis-ci/tfw/master/tfw'
-  chmod +x "${VARTMP}/tfw"
-  mv -v "${VARTMP}/tfw" "${USRLOCAL}/bin/tfw"
-
   logger "msg=\"running tfw bootstrap\""
   tfw bootstrap
 
@@ -82,12 +76,12 @@ __setup_networking() {
 
   apt-get install -yqq iptables-persistent
 
-  travis-packet-privnet-setup
-
   local pub_iface priv_iface elastic_ip
   pub_iface="$(__find_public_interface)"
   priv_iface="$(__find_private_interface)"
   elastic_ip="$(__find_elastic_ip)"
+
+  iptables -P FORWARD ACCEPT
 
   if [[ -n "${elastic_ip}" ]]; then
     if ip address add "${elastic_ip}/32" dev lo; then
@@ -95,23 +89,13 @@ __setup_networking() {
     fi
   fi
 
-  iptables -t nat -S POSTROUTING | grep -v docker |
-    if ! grep -q MASQUERADE; then
-      # iptables -t nat -A POSTROUTING -o "${pub_iface}" -j MASQUERADE
-      iptables -t nat -A POSTROUTING -j MASQUERADE
-    fi
+  if ! iptables -t nat -C POSTROUTING -j MASQUERADE; then
+    iptables -t nat -A POSTROUTING -j MASQUERADE
+  fi
 
-  iptables -S FORWARD | grep -v docker |
-    if ! grep -q conntrack; then
-      # iptables -A FORWARD -i "${pub_iface}" -o "${priv_iface}" \
-      #   -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
-      iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
-    fi
-
-  # iptables -S FORWARD | grep -v docker |
-  #   if ! grep -q "i ${priv_iface} -o ${pub_iface}"; then
-  #     iptables -A FORWARD -i "${priv_iface}" -o "${pub_iface}" -j ACCEPT
-  #   fi
+  if ! iptables -C FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT; then
+    iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+  fi
 }
 
 __find_private_interface() {

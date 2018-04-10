@@ -100,7 +100,21 @@ cat >/var/tmp/terraform_rsa.pub <<EOPUBKEY
 ${tls_private_key.terraform.public_key_openssh}
 EOPUBKEY
 
+cat >/var/tmp/terraform_rsa <<EOPRIVKEY
+${tls_private_key.terraform.private_key_pem}
+EOPRIVKEY
+
+cat >/etc/default/travis-network <<'EOENV'
+${data.template_file.network_env.rendered}
+EOENV
+
+cat >/etc/default/travis-instance <<'EOENV'
+${data.template_file.instance_env.rendered}
+EOENV
+
+${file("${path.module}/../../assets/bits/ensure-tfw.bash")}
 ${file("${path.module}/../../assets/bits/terraform-user-bootstrap.bash")}
+${file("${path.module}/../../assets/bits/travis-packet-privnet-setup.bash")}
 EOUSERDATA
 
   lifecycle {
@@ -171,4 +185,8 @@ output "nat_maint_ip" {
 
 output "facility" {
   value = "${var.facility}"
+}
+
+output "terraform_privkey" {
+  value = "${tls_private_key.terraform.private_key_pem}"
 }

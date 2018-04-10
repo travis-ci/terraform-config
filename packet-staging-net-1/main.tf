@@ -73,3 +73,7 @@ output "nat_maint_ip" {
 output "nat_public_ip" {
   value = "${module.packet_network_ewr1.nat_public_ip}"
 }
+
+output "terraform_privkey" {
+  value = "${module.packet_network_ewr1.terraform_privkey}"
+}

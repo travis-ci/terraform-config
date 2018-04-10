@@ -24,6 +24,7 @@ variable "server_plan" {
 
 variable "site" {}
 variable "syslog_address" {}
+variable "terraform_privkey" {}
 variable "worker_config" {}
 variable "worker_docker_image_android" {}
 variable "worker_docker_image_default" {}
@@ -39,6 +40,10 @@ variable "worker_docker_image_ruby" {}
 
 variable "worker_docker_self_image" {
   default = "travisci/worker:v3.6.0"
+}
+
+data "tls_public_key" "terraform" {
+  private_key_pem = "${var.terraform_privkey}"
 }
 
 data "template_file" "cloud_init_env" {
@@ -114,11 +119,6 @@ data "template_file" "cloud_config" {
   }
 }
 
-resource "tls_private_key" "terraform" {
-  algorithm = "RSA"
-  rsa_bits  = 4096
-}
-
 resource "local_file" "cloud_config_dump" {
   filename = "${path.module}/../../tmp/packet-${var.env}-${var.index}-worker-${var.site}-user-data.yml"
   content  = "${data.template_file.cloud_config.rendered}"
@@ -137,10 +137,20 @@ resource "packet_device" "worker" {
   user_data = <<EOUSERDATA
 #!/usr/bin/env bash
 cat >/var/tmp/terraform_rsa.pub <<EOPUBKEY
-${tls_private_key.terraform.public_key_openssh}
+${data.tls_public_key.terraform.public_key_openssh}
 EOPUBKEY
 
+cat >/etc/default/travis-network <<'EOENV'
+${data.template_file.network_env.rendered}
+EOENV
+
+cat >/etc/default/travis-instance <<'EOENV'
+${data.template_file.instance_env.rendered}
+EOENV
+
+${file("${path.module}/../../assets/bits/ensure-tfw.bash")}
 ${file("${path.module}/../../assets/bits/terraform-user-bootstrap.bash")}
+${file("${path.module}/../../assets/bits/travis-packet-privnet-setup.bash")}
 EOUSERDATA
 
   lifecycle {
@@ -173,10 +183,11 @@ resource "null_resource" "cloud_config_copy" {
   depends_on = ["packet_device.worker", "local_file.cloud_config_dump"]
 
   connection {
-    user        = "terraform"
-    host        = "${packet_device.worker.access_public_ipv4}"
-    private_key = "${tls_private_key.terraform.private_key_pem}"
-    agent       = false
+    agent        = false
+    bastion_host = "${var.nat_public_ip}"
+    host         = "192.168.${var.index}.${replace(packet_device.worker.access_private_ipv4, "/[0-9]+\\.[0-9]+\\.[0-9]+\\./", "")}"
+    private_key  = "${data.tls_public_key.terraform.private_key_pem}"
+    user         = "terraform"
   }
 
   provisioner "file" {
