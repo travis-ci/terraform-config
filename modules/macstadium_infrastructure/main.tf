@@ -25,12 +25,6 @@ data "vsphere_virtual_machine" "internal_vanilla" {
   datacenter_id = "${var.datacenter_id}"
 }
 
-resource "vsphere_folder" "base_vms" {
-  path          = "Base VMs"
-  type          = "vm"
-  datacenter_id = "${var.datacenter_id}"
-}
-
 resource "vsphere_folder" "build_vms" {
   path          = "Build VMs"
   type          = "vm"
@@ -39,12 +33,6 @@ resource "vsphere_folder" "build_vms" {
 
 resource "vsphere_folder" "internal_vms" {
   path          = "Internal VMs"
-  type          = "vm"
-  datacenter_id = "${var.datacenter_id}"
-}
-
-resource "vsphere_folder" "vanilla_vms" {
-  path          = "Vanilla VMs"
   type          = "vm"
   datacenter_id = "${var.datacenter_id}"
 }
