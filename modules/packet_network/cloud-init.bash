@@ -76,9 +76,8 @@ __setup_networking() {
 
   apt-get install -yqq iptables-persistent
 
-  local pub_iface priv_iface elastic_ip
+  local pub_iface elastic_ip
   pub_iface="$(__find_public_interface)"
-  priv_iface="$(__find_private_interface)"
   elastic_ip="$(__find_elastic_ip)"
 
   iptables -P FORWARD ACCEPT
@@ -96,15 +95,6 @@ __setup_networking() {
   if ! iptables -C FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT; then
     iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
   fi
-}
-
-__find_private_interface() {
-  local iface=enp1s0f1
-  iface="$(
-    ip -o addr show | grep -E 'inet 10\.' |
-      grep -v bond | awk '{ print $2 }' | head -n 1
-  )"
-  echo "${iface:-enp1s0f1}"
 }
 
 __find_public_interface() {
