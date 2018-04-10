@@ -167,14 +167,6 @@ resource "null_resource" "worker" {
   }
 }
 
-output "wjb_ip" {
-  value = "${vsphere_virtual_machine.wjb.network_interface.0.ipv4_address}"
-}
-
-output "wjb_uuid" {
-  value = "${vsphere_virtual_machine.wjb.uuid}"
-}
-
 resource "vsphere_virtual_machine" "util" {
   name             = "util-${var.index}"
   num_cpus         = 4
@@ -234,14 +226,6 @@ resource "vsphere_virtual_machine" "util" {
       "curl -s -v 'https://app.threatstack.com/agents/script?key=${var.threatstack_key}' | sudo bash",
     ]
   }
-}
-
-output "util_ip" {
-  value = "${vsphere_virtual_machine.util.network_interface.0.ipv4_address}"
-}
-
-output "util_uuid" {
-  value = "${vsphere_virtual_machine.util.uuid}"
 }
 
 resource "vsphere_virtual_machine" "dhcp_server" {
@@ -308,14 +292,6 @@ resource "null_resource" "dhcp_server" {
   }
 }
 
-output "dhcp_server_ip" {
-  value = "${vsphere_virtual_machine.dhcp_server.network_interface.0.ipv4_address}"
-}
-
-output "dhcp_server_uuid" {
-  value = "${vsphere_virtual_machine.dhcp_server.uuid}"
-}
-
 resource "aws_route53_record" "vsphere" {
   zone_id = "${var.travisci_net_external_zone_id}"
   name    = "vsphere-${var.index}.macstadium-us-se-1.travisci.net"
@@ -346,4 +322,28 @@ resource "aws_route53_record" "dhcp_server" {
   type    = "A"
   ttl     = 300
   records = ["${vsphere_virtual_machine.dhcp_server.network_interface.0.ipv4_address}"]
+}
+
+output "wjb_ip" {
+  value = "${vsphere_virtual_machine.wjb.network_interface.0.ipv4_address}"
+}
+
+output "wjb_uuid" {
+  value = "${vsphere_virtual_machine.wjb.uuid}"
+}
+
+output "util_ip" {
+  value = "${vsphere_virtual_machine.util.network_interface.0.ipv4_address}"
+}
+
+output "util_uuid" {
+  value = "${vsphere_virtual_machine.util.uuid}"
+}
+
+output "dhcp_server_ip" {
+  value = "${vsphere_virtual_machine.dhcp_server.network_interface.0.ipv4_address}"
+}
+
+output "dhcp_server_uuid" {
+  value = "${vsphere_virtual_machine.dhcp_server.uuid}"
 }
