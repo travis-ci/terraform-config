@@ -20,18 +20,9 @@ main() {
   chown nobody:nogroup "${VARTMP}"
   chmod 0777 "${VARTMP}"
 
-  __disable_unfriendly_services
-  __install_packages
-  __install_tfw
-  __extract_tfw_files
-  __run_tfw_bootstrap
-
-  # FIXME: re-enable at some point after initial setup?
-  systemctl stop fail2ban || true
-
   for substep in \
+    tfw \
     travis_user \
-    terraform_user \
     sysctl \
     networking \
     duo \
@@ -41,17 +32,10 @@ main() {
   done
 }
 
-__install_packages() {
-  for key in autosave_v{4,6}; do
-    echo "iptables-persistent iptables-persistent/${key} boolean true" |
-      debconf-set-selections
-  done
-  apt-get install -yqq \
-    bzip2 \
-    curl \
-    iptables-persistent \
-    libpam-cap \
-    zsh
+__setup_tfw() {
+  __install_tfw
+  __extract_tfw_files
+  __run_tfw_bootstrap
 }
 
 __install_tfw() {
@@ -82,39 +66,12 @@ __run_tfw_bootstrap() {
   systemctl restart sshd || true
 }
 
-__disable_unfriendly_services() {
-  systemctl stop apt-daily-upgrade || true
-  systemctl disable apt-daily-upgrade || true
-  systemctl stop apt-daily || true
-  systemctl disable apt-daily || true
-  systemctl stop apparmor || true
-  systemctl disable apparmor || true
-  systemctl reset-failed
-}
-
 __setup_travis_user() {
   if ! getent passwd travis &>/dev/null; then
     useradd travis
   fi
 
   chown -R travis:travis "${RUNDIR}"
-}
-
-__setup_terraform_user() {
-  if ! getent passwd terraform &>/dev/null; then
-    useradd terraform
-  fi
-
-  usermod -a -G sudo terraform
-
-  mkdir -p ~terraform/.ssh
-  chown -R terraform ~terraform/
-  chmod 0700 ~terraform/.ssh
-
-  if [[ -f "${VARTMP}/terraform_rsa.pub" ]]; then
-    cp -v "${VARTMP}/terraform_rsa.pub" ~terraform/.ssh/authorized_keys
-    chmod 0644 ~terraform/.ssh/authorized_keys
-  fi
 }
 
 __setup_sysctl() {
@@ -126,6 +83,15 @@ __setup_sysctl() {
 }
 
 __setup_networking() {
+  for key in autosave_v{4,6}; do
+    echo "iptables-persistent iptables-persistent/${key} boolean true" |
+      debconf-set-selections
+  done
+
+  apt-get install -yqq iptables-persistent
+
+  travis-packet-privnet-setup
+
   local pub_iface priv_iface elastic_ip
   pub_iface="$(__find_public_interface)"
   priv_iface="$(__find_private_interface)"

@@ -23,18 +23,11 @@ main() {
   mkdir -p "${RUNDIR}"
   echo "___INSTANCE_ID___-$(hostname)" >"${RUNDIR}/instance-hostname.tmpl"
 
-  __install_tfw
-  __run_tfw_bootstrap
-  __install_packages
-  __extract_tfw_files
-
-  # FIXME: re-enable at some point after initial setup?
-  systemctl stop fail2ban || true
-
   for substep in \
+    tfw \
     travis_user \
-    terraform_user \
     sysctl \
+    networking \
     raid \
     worker; do
     logger "msg=\"running setup\" substep=\"${substep}\""
@@ -57,19 +50,10 @@ __wait_for_docker() {
   done
 }
 
-__ensure_docker() {
-  if docker version &>/dev/null; then
-    return
-  fi
-  curl -Ls https://get.docker.io | bash
-}
-
-__install_packages() {
-  apt-get install -yqq \
-    bzip2 \
-    curl \
-    libpam-cap \
-    zsh
+__setup_tfw() {
+  __install_tfw
+  __extract_tfw_files
+  __run_tfw_bootstrap
 }
 
 __install_tfw() {
@@ -111,26 +95,19 @@ __setup_travis_user() {
   chown -R travis:travis "${RUNDIR}"
 }
 
-__setup_terraform_user() {
-  if ! getent passwd terraform &>/dev/null; then
-    useradd terraform
-  fi
-
-  usermod -a -G sudo terraform
-
-  mkdir -p ~terraform/.ssh
-  chown -R terraform ~terraform/
-  chmod 0700 ~terraform/.ssh
-
-  if [[ -f "${VARTMP}/terraform_rsa.pub" ]]; then
-    cp -v "${VARTMP}/terraform_rsa.pub" ~terraform/.ssh/authorized_keys
-    chmod 0644 ~terraform/.ssh/authorized_keys
-  fi
-}
-
 __setup_sysctl() {
   echo 1048576 >/proc/sys/fs/aio-max-nr
   sysctl -w fs.aio-max-nr=1048576
+}
+
+__setup_networking() {
+  for key in autosave_v{4,6}; do
+    echo "iptables-persistent iptables-persistent/${key} boolean true" |
+      debconf-set-selections
+  done
+
+  apt-get install -yqq iptables-persistent
+  travis-packet-privnet-setup
 }
 
 __setup_raid() {
@@ -139,6 +116,9 @@ __setup_raid() {
 }
 
 __setup_worker() {
+  eval "$(tfw printenv travis-worker)"
+  tfw extract travis-worker "${TRAVIS_WORKER_SELF_IMAGE}"
+
   if [[ -d "${ETCDIR}/systemd/system" ]]; then
     cp -v "${VARTMP}/travis-worker.service" \
       "${ETCDIR}/systemd/system/travis-worker.service"
