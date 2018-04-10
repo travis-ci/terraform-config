@@ -21,10 +21,6 @@ write_files:
   encoding: b64
   permissions: '0600'
   path: /var/tmp/duo.conf
-- content: '${base64encode(terraform_pubkey)}'
-  encoding: b64
-  permissions: '0644'
-  path: /var/tmp/terraform_rsa.pub
 - content: '${base64encode(syslog_address)}'
   encoding: b64
   path: /var/tmp/travis-run.d/syslog-address

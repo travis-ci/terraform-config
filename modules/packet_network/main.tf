@@ -66,7 +66,6 @@ data "template_file" "cloud_config" {
     librato_env      = "${data.template_file.librato_env.rendered}"
     network_env      = "${data.template_file.network_env.rendered}"
     syslog_address   = "${var.syslog_address}"
-    terraform_pubkey = "${tls_private_key.terraform.public_key_openssh}"
   }
 }
 
