@@ -33,36 +33,28 @@ main() {
 }
 
 __setup_tfw() {
-  __install_tfw
-  __extract_tfw_files
-  __run_tfw_bootstrap
-}
-
-__install_tfw() {
   curl -sSL \
     -o "${VARTMP}/tfw" \
     'https://raw.githubusercontent.com/travis-ci/tfw/master/tfw'
   chmod +x "${VARTMP}/tfw"
   mv -v "${VARTMP}/tfw" "${USRLOCAL}/bin/tfw"
-}
 
-__extract_tfw_files() {
-  if [[ ! -f "${VARTMP}/tfw.tar.bz2" ]]; then
-    logger 'msg="no tfw tarball found; skipping extraction"'
-    return
+  logger "msg=\"running tfw bootstrap\""
+  tfw bootstrap
+
+  if [[ -f "${VARTMP}/tfw.tar.bz2" ]]; then
+    tar \
+      --no-same-permissions \
+      --strip-components=1 \
+      -C / \
+      -xvf "${VARTMP}/tfw.tar.bz2"
   fi
 
-  tar \
-    --no-same-permissions \
-    --strip-components=1 \
-    -C / \
-    -xvf "${VARTMP}/tfw.tar.bz2"
   chown -R root:root "${ETCDIR}/sudoers" "${ETCDIR}/sudoers.d"
-}
 
-__run_tfw_bootstrap() {
   logger "msg=\"running tfw admin-bootstrap\""
   tfw admin-bootstrap
+
   systemctl restart sshd || true
 }
 
@@ -103,18 +95,23 @@ __setup_networking() {
     fi
   fi
 
-  iptables -t nat -S POSTROUTING | if ! grep -q MASQUERADE; then
-    iptables -t nat -A POSTROUTING -o "${pub_iface}" -j MASQUERADE
-  fi
+  iptables -t nat -S POSTROUTING | grep -v docker |
+    if ! grep -q MASQUERADE; then
+      # iptables -t nat -A POSTROUTING -o "${pub_iface}" -j MASQUERADE
+      iptables -t nat -A POSTROUTING -j MASQUERADE
+    fi
 
-  iptables -S FORWARD | if ! grep -q conntrack; then
-    iptables -A FORWARD -i "${pub_iface}" -o "${priv_iface}" \
-      -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
-  fi
+  iptables -S FORWARD | grep -v docker |
+    if ! grep -q conntrack; then
+      # iptables -A FORWARD -i "${pub_iface}" -o "${priv_iface}" \
+      #   -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+      iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+    fi
 
-  iptables -S FORWARD | if ! grep -q "i ${priv_iface} -o ${pub_iface}"; then
-    iptables -A FORWARD -i "${priv_iface}" -o "${pub_iface}" -j ACCEPT
-  fi
+  # iptables -S FORWARD | grep -v docker |
+  #   if ! grep -q "i ${priv_iface} -o ${pub_iface}"; then
+  #     iptables -A FORWARD -i "${priv_iface}" -o "${pub_iface}" -j ACCEPT
+  #   fi
 }
 
 __find_private_interface() {
