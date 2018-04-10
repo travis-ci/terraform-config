@@ -265,8 +265,8 @@ resource "vsphere_virtual_machine" "dhcp_server" {
   }
 
   network_interface {
-    network_id = "${var.jobs_network_id}"
-    mac_address    = "${var.wjb_jobs_iface_mac}"
+    network_id     = "${var.jobs_network_id}"
+    mac_address    = "${var.dhcp_server_jobs_iface_mac}"
     use_static_mac = true
   }
 
@@ -343,4 +343,12 @@ resource "aws_route53_record" "util" {
   type    = "A"
   ttl     = 300
   records = ["${vsphere_virtual_machine.util.network_interface.0.ipv4_address}"]
+}
+
+resource "aws_route53_record" "dhcp_server" {
+  zone_id = "${var.travisci_net_external_zone_id}"
+  name    = "dhcp-server-${var.index}.macstadium-us-se-1.travisci.net"
+  type    = "A"
+  ttl     = 300
+  records = ["${vsphere_virtual_machine.dhcp_server.network_interface.0.ipv4_address}"]
 }
