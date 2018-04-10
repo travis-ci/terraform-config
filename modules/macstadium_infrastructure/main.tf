@@ -84,16 +84,19 @@ resource "vsphere_virtual_machine" "wjb" {
 
   network_interface {
     network_id = "${var.internal_network_id}"
+    adapter_type = "vmxnet3"
   }
 
   network_interface {
     network_id     = "${var.jobs_network_id}"
     mac_address    = "${var.wjb_jobs_iface_mac}"
     use_static_mac = true
+    adapter_type = "vmxnet3"
   }
 
   network_interface {
     network_id = "${var.esxi_network_id}"
+    adapter_type = "vmxnet3"
   }
 
   clone {
@@ -189,10 +192,12 @@ resource "vsphere_virtual_machine" "util" {
 
   network_interface {
     network_id = "${var.internal_network_id}"
+    adapter_type = "vmxnet3"
   }
 
   network_interface {
     network_id = "${var.esxi_network_id}"
+    adapter_type = "vmxnet3"
   }
 
   clone {
@@ -250,12 +255,14 @@ resource "vsphere_virtual_machine" "dhcp_server" {
 
   network_interface {
     network_id = "${var.internal_network_id}"
+    adapter_type = "vmxnet3"
   }
 
   network_interface {
     network_id     = "${var.jobs_network_id}"
     mac_address    = "${var.dhcp_server_jobs_iface_mac}"
     use_static_mac = true
+    adapter_type = "vmxnet3"
   }
 
   disk {
