@@ -14,6 +14,14 @@ variable "index" {
   default = 1
 }
 
+variable "nat_conntracker_src_ignore" {
+  type = "list"
+}
+
+variable "nat_conntracker_dst_ignore" {
+  type = "list"
+}
+
 variable "travisci_net_external_zone_id" {
   default = "Z2RI61YP4UWSIO"
 }
@@ -60,8 +68,10 @@ module "gce_net" {
   index                         = "${var.index}"
   nat_config                    = "${file("config/nat.env")}"
   nat_conntracker_config        = "${file("nat-conntracker.env")}"
+  nat_conntracker_dst_ignore    = ["${var.nat_conntracker_dst_ignore}"]
   nat_conntracker_redis_plan    = "hobby-dev"
   nat_conntracker_self_image    = "${var.latest_docker_image_nat_conntracker}"
+  nat_conntracker_src_ignore    = ["${var.nat_conntracker_src_ignore}"]
   nat_image                     = "${var.latest_gce_tfw_image}"
   nat_machine_type              = "g1-small"
   project                       = "travis-staging-1"

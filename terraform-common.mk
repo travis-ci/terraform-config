@@ -48,7 +48,7 @@ announce: .assert-ruby .assert-tf-version
 	@echo "👋 🎉  This is env=$(ENV_NAME) (short=$(ENV_SHORT) infra=$(INFRA) tail=$(ENV_TAIL))"
 
 .PHONY: apply
-apply: announce .config $(TRVS_TFVARS) $(TFSTATE)
+apply: announce .ensure-git .config $(TRVS_TFVARS) $(TFSTATE)
 	$(TERRAFORM) apply $(TFPLAN)
 	$(TOP)/bin/post-flight $(TOP)
 
@@ -108,6 +108,20 @@ list:
 .PHONY: check
 check:
 	$(TOP)/bin/pre-flight-checks $@
+
+.PHONY: .ensure-git
+.ensure-git:
+	@if [[ "$$(git rev-parse --abbrev-ref HEAD)" != "master" ]]; then \
+		echo "$$(tput setaf 1)WARN: You are about to deploy from a branch that is not master!$$(tput sgr 0)"; \
+		echo -n "If you are $$(tput setaf 1)SUPER DUPER SURE$$(tput sgr 0) you wish to do this, type yes: "; \
+		read -r answer; \
+		if [[ "$$answer" == "yes" ]]; then \
+			echo "Okay have fun!"; \
+		else \
+			echo "That's a good call too, better luck next time."; \
+			exit 1; \
+		fi; \
+	fi
 
 config/.written:
 	$(TOP)/bin/write-config-files \
