@@ -77,6 +77,19 @@ resource "aws_route53_record" "gce_nat" {
   ]
 }
 
+resource "aws_route53_record" "linux_containers_nat" {
+  zone_id = "${var.travisci_net_external_zone_id}"
+  name    = "nat.linux-containers.travisci.net"
+  type    = "A"
+  ttl     = 300
+
+  records = [
+    "${data.dns_a_record_set.aws_production_2_nat_com.addrs}",
+    "${data.dns_a_record_set.aws_production_2_nat_org.addrs}",
+    "${data.dns_a_record_set.packet_production_1_nat.addrs}",
+  ]
+}
+
 resource "aws_route53_record" "macstadium_nat" {
   zone_id = "${var.travisci_net_external_zone_id}"
   name    = "nat.macstadium-us-se-1.travisci.net"
