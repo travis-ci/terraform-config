@@ -36,14 +36,6 @@ __setup_tfw() {
   logger "msg=\"running tfw bootstrap\""
   tfw bootstrap
 
-  if [[ -f "${VARTMP}/tfw.tar.bz2" ]]; then
-    tar \
-      --no-same-permissions \
-      --strip-components=1 \
-      -C / \
-      -xvf "${VARTMP}/tfw.tar.bz2"
-  fi
-
   chown -R root:root "${ETCDIR}/sudoers" "${ETCDIR}/sudoers.d"
 
   logger "msg=\"running tfw admin-bootstrap\""

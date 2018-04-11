@@ -14,8 +14,7 @@ CONFIG_FILES := \
 	config/travis-com.env \
 	config/travis-org.env \
 	config/worker-com.env \
-	config/worker-org.env \
-	$(TFWBZ2)
+	config/worker-org.env
 
 .PHONY: .config
 .config: $(CONFIG_FILES) $(ENV_NAME).auto.tfvars

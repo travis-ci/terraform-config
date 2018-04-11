@@ -28,7 +28,3 @@ write_files:
   encoding: b64
   permissions: '0755'
   path: /var/tmp/travis-cloud-init.bash
-- content: '${base64encode(file("${assets}/tfw.tar.bz2"))}'
-  encoding: b64
-  permissions: '0644'
-  path: /var/tmp/tfw.tar.bz2

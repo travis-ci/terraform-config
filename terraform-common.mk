@@ -13,7 +13,6 @@ JOB_BOARD_HOST ?= job-board.travis-ci.com
 AMQP_URL_VARNAME ?= AMQP_URL
 TOP := $(shell git rev-parse --show-toplevel)
 
-TFWBZ2 := $(TOP)/assets/tfw.tar.bz2
 NATBZ2 := $(TOP)/assets/nat.tar.bz2
 
 PROD_TF_VERSION := v0.11.5
@@ -76,9 +75,6 @@ plandiff: $(TFPLAN)
 destroy: announce .config $(TRVS_TFVARS) $(TFSTATE)
 	$(TERRAFORM) plan -module-depth=-1 -destroy -out=$(TFPLAN)
 	$(TOP)/bin/post-flight $(TOP)
-
-$(TFWBZ2): $(wildcard $(TOP)/assets/tfw/**/*)
-	$(TAR) -C $(TOP)/assets -cjf $(TOP)/assets/tfw.tar.bz2 tfw
 
 $(NATBZ2): $(wildcard $(TOP)/assets/nat/**/*)
 	$(TAR) -C $(TOP)/assets -cjf $(TOP)/assets/nat.tar.bz2 nat
