@@ -2,37 +2,62 @@
 # vim:filetype=sh
 set -o errexit
 set -o pipefail
+shopt -s nullglob
 
 main() {
   if [[ ! "${QUIET}" ]]; then
     set -o xtrace
   fi
 
-  : "${RUNDIR:=/var/tmp/travis-run.d}"
+  logger 'msg="beginning cloud-init fun"'
 
-  __setup_travis_user
-  __install_packages
-  __setup_sysctl
-  __setup_networking
-  __setup_duo
+  : "${ETCDIR:=/etc}"
+  : "${RUNDIR:=/var/tmp/travis-run.d}"
+  : "${USRLOCAL:=/usr/local}"
+  : "${VARTMP:=/var/tmp}"
+
+  export DEBIAN_FRONTEND=noninteractive
+  chown nobody:nogroup "${VARTMP}"
+  chmod 0777 "${VARTMP}"
+
+  for substep in \
+    tfw \
+    travis_user \
+    sysctl \
+    networking \
+    duo \
+    raid; do
+    logger "msg=\"running setup\" substep=\"${substep}\""
+    "__setup_${substep}"
+  done
+}
+
+__setup_tfw() {
+  logger "msg=\"running tfw bootstrap\""
+  tfw bootstrap
+
+  if [[ -f "${VARTMP}/tfw.tar.bz2" ]]; then
+    tar \
+      --no-same-permissions \
+      --strip-components=1 \
+      -C / \
+      -xvf "${VARTMP}/tfw.tar.bz2"
+  fi
+
+  chown -R root:root "${ETCDIR}/sudoers" "${ETCDIR}/sudoers.d"
+
+  logger "msg=\"running tfw admin-bootstrap\""
+  tfw admin-bootstrap
+
+  systemctl restart sshd || true
 }
 
 __setup_travis_user() {
-  : "${RUNDIR:=/var/tmp/travis-run.d}"
-
   if ! getent passwd travis &>/dev/null; then
     useradd travis
   fi
 
   chown -R travis:travis "${RUNDIR}"
-}
-
-__install_packages() {
-  for key in autosave_v{4,6}; do
-    echo "iptables-persistent iptables-persistent/${key} boolean true" |
-      debconf-set-selections
-  done
-  apt-get install -yqq iptables-persistent
 }
 
 __setup_sysctl() {
@@ -44,10 +69,18 @@ __setup_sysctl() {
 }
 
 __setup_networking() {
-  local pub_iface priv_iface elastic_ip
+  for key in autosave_v{4,6}; do
+    echo "iptables-persistent iptables-persistent/${key} boolean true" |
+      debconf-set-selections
+  done
+
+  apt-get install -yqq iptables-persistent
+
+  local pub_iface elastic_ip
   pub_iface="$(__find_public_interface)"
-  priv_iface="$(__find_private_interface)"
   elastic_ip="$(__find_elastic_ip)"
+
+  iptables -P FORWARD ACCEPT
 
   if [[ -n "${elastic_ip}" ]]; then
     if ip address add "${elastic_ip}/32" dev lo; then
@@ -55,27 +88,13 @@ __setup_networking() {
     fi
   fi
 
-  iptables -t nat -S POSTROUTING | if ! grep -q MASQUERADE; then
-    iptables -t nat -A POSTROUTING -o "${pub_iface}" -j MASQUERADE
+  if ! iptables -t nat -C POSTROUTING -j MASQUERADE; then
+    iptables -t nat -A POSTROUTING -j MASQUERADE
   fi
 
-  iptables -S FORWARD | if ! grep -q conntrack; then
-    iptables -A FORWARD -i "${pub_iface}" -o "${priv_iface}" \
-      -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+  if ! iptables -C FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT; then
+    iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
   fi
-
-  iptables -S FORWARD | if ! grep -q "i ${priv_iface} -o ${pub_iface}"; then
-    iptables -A FORWARD -i "${priv_iface}" -o "${pub_iface}" -j ACCEPT
-  fi
-}
-
-__find_private_interface() {
-  local iface=enp2s0d1
-  iface="$(
-    ip -o addr show | grep -E 'inet 10\.' |
-      awk '{ print $2 }' | head -n 1
-  )"
-  echo "${iface:-enp2s0d1}"
 }
 
 __find_public_interface() {
@@ -86,24 +105,18 @@ __find_public_interface() {
 }
 
 __find_elastic_ip() {
-  eval "$(travis-tfw-combined-env travis-network)"
+  eval "$(tfw printenv travis-network)"
   echo "${TRAVIS_NETWORK_ELASTIC_IP}"
 }
 
 __setup_duo() {
-  : "${ETCDIR:=/etc}"
-  if [[ ! -f "${ETCDIR}/duo/login_duo.conf" ]]; then
-    logger 'No login_duo.conf found; skipping duo setup'
-    return
-  fi
+  logger "msg=\"running tfw admin-duo\""
+  tfw admin-duo
+}
 
-  if grep -qE 'ForceCommand.*login_duo' "${ETCDIR}/ssh/sshd_config"; then
-    logger 'sshd already configured with login_duo'
-    return
-  fi
-
-  echo 'ForceCommand /usr/sbin/login_duo' >>"${ETCDIR}/ssh/sshd_config"
-  service sshd restart
+__setup_raid() {
+  logger "msg=\"running tfw admin-raid\""
+  tfw admin-raid
 }
 
 main "$@"

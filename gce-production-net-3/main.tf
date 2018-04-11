@@ -18,6 +18,14 @@ variable "index" {
   default = 3
 }
 
+variable "nat_conntracker_src_ignore" {
+  type = "list"
+}
+
+variable "nat_conntracker_dst_ignore" {
+  type = "list"
+}
+
 variable "travisci_net_external_zone_id" {
   default = "Z2RI61YP4UWSIO"
 }
@@ -63,6 +71,8 @@ module "gce_net" {
   index                         = "${var.index}"
   nat_config                    = "${file("config/nat.env")}"
   nat_conntracker_config        = "${file("nat-conntracker.env")}"
+  nat_conntracker_dst_ignore    = ["${var.nat_conntracker_dst_ignore}"]
+  nat_conntracker_src_ignore    = ["${var.nat_conntracker_src_ignore}"]
   nat_image                     = "${var.gce_nat_image}"
   project                       = "travis-ci-prod-3"
   public_subnet_cidr_range      = "10.10.1.0/24"
