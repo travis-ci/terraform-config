@@ -139,8 +139,8 @@ module "macstadium_infrastructure" {
   custom_4_name                 = "${var.custom_4_name}"
   custom_5_name                 = "${var.custom_5_name}"
   custom_6_name                 = "${var.custom_6_name}"
-  wjb_jobs_iface_mac            = "00:50:56:84:0b:a2"
-  dhcp_server_jobs_iface_mac    = "00:50:56:84:b4:80"
+  wjb_jobs_iface_mac            = "00:50:56:84:0b:a3"
+  dhcp_server_jobs_iface_mac    = "00:50:56:84:b4:81"
 }
 
 module "vsphere_janitor_production_com" {

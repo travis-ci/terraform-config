@@ -82,6 +82,10 @@ resource "vsphere_virtual_machine" "wjb" {
     datastore_id = "${var.datastore_id}"
   }
 
+  cdrom {
+    client_device = true
+  }
+
   network_interface {
     network_id = "${var.internal_network_id}"
     adapter_type = "vmxnet3"
@@ -182,6 +186,10 @@ resource "vsphere_virtual_machine" "util" {
     datastore_id = "${var.datastore_id}"
   }
 
+  cdrom {
+    client_device = true
+  }
+
   network_interface {
     network_id = "${var.internal_network_id}"
     adapter_type = "vmxnet3"
@@ -253,6 +261,10 @@ resource "vsphere_virtual_machine" "dhcp_server" {
     label        = "dhcp-server-${var.index}.vmdk"
     size         = 10737
     datastore_id = "${var.datastore_id}"
+  }
+
+  cdrom {
+    client_device = true
   }
 
   clone {
