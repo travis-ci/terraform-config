@@ -100,7 +100,6 @@ __setup_worker() {
     systemctl enable travis-worker || true
   fi
 
-  systemctl stop travis-worker || true
   systemctl start travis-worker || true
 }
 
