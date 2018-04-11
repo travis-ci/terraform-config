@@ -1,4 +1,6 @@
-variable "cyclist_auth_token" {}
+variable "cyclist_auth_token" {
+  default = ""
+}
 
 variable "cyclist_aws_region" {
   default = "us-east-1"
@@ -6,6 +8,10 @@ variable "cyclist_aws_region" {
 
 variable "cyclist_debug" {
   default = "false"
+}
+
+variable "cyclist_instance_count" {
+  default = 1
 }
 
 variable "cyclist_redis_plan" {
@@ -131,6 +137,7 @@ variable "worker_subnets" {
   type = "list"
 }
 
+/*
 data "template_file" "cloud_init_env" {
   template = <<EOF
 export CYCLIST_AUTH_TOKEN="${var.cyclist_auth_token}"
@@ -297,6 +304,7 @@ resource "aws_autoscaling_group" "workers" {
     propagate_at_launch = true
   }
 }
+*/
 
 resource "aws_autoscaling_policy" "workers_remove_capacity" {
   name                      = "${var.env}-${var.index}-workers-${var.site}-remove-capacity"
