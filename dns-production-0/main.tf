@@ -46,6 +46,10 @@ data "dns_a_record_set" "gce_production_5_nat" {
   host = "nat-production-5.gce-us-central1.travisci.net"
 }
 
+data "dns_a_record_set" "packet_production_1_nat" {
+  host = "nat-production-1.packet-ewr1.travisci.net"
+}
+
 resource "aws_route53_record" "aws_nat" {
   zone_id = "${var.travisci_net_external_zone_id}"
   name    = "nat.aws-us-east-1.travisci.net"
@@ -82,6 +86,17 @@ resource "aws_route53_record" "macstadium_nat" {
   records = ["${var.macstadium_production_nat_addrs}"]
 }
 
+resource "aws_route53_record" "packet_nat" {
+  zone_id = "${var.travisci_net_external_zone_id}"
+  name    = "nat.packet-ewr1.travisci.net"
+  type    = "A"
+  ttl     = 300
+
+  records = [
+    "${data.dns_a_record_set.packet_production_1_nat.addrs}",
+  ]
+}
+
 resource "aws_route53_record" "nat" {
   zone_id = "${var.travisci_net_external_zone_id}"
   name    = "nat.travisci.net"
@@ -97,5 +112,6 @@ resource "aws_route53_record" "nat" {
     "${data.dns_a_record_set.gce_production_4_nat.addrs}",
     "${data.dns_a_record_set.gce_production_5_nat.addrs}",
     "${var.macstadium_production_nat_addrs}",
+    "${data.dns_a_record_set.packet_production_1_nat.addrs}",
   ]
 }
