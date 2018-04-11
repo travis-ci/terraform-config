@@ -21,7 +21,9 @@ main() {
   chmod 0777 "${VARTMP}"
 
   mkdir -p "${RUNDIR}"
-  echo "___INSTANCE_ID___-$(hostname)" >"${RUNDIR}/instance-hostname.tmpl"
+  if [[ ! -f "${RUNDIR}/instance-hostname.tmpl" ]]; then
+    echo "___INSTANCE_ID___-$(hostname)" >"${RUNDIR}/instance-hostname.tmpl"
+  fi
 
   for substep in \
     tfw \

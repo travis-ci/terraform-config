@@ -66,25 +66,25 @@ class TravisWorkerConfigVerifier
 
   def verify_var_tmp_travis_run_d_check_unregister_netdevice!(content)
     assert_identical_content!(
-      content, 'modules/aws_asg/check-unregister-netdevice.bash'
+      content, 'assets/travis-worker/check-unregister-netdevice.bash'
     )
   end
 
   def verify_etc_cron_d_unregister_netdevice!(content)
     assert_identical_content!(
-      content, 'modules/aws_asg/unregister-netdevice.crontab'
+      content, 'assets/travis-worker/unregister-netdevice.crontab'
     )
   end
 
   def verify_var_tmp_travis_run_d_check_docker_health!(content)
     assert_identical_content!(
-      content, 'modules/aws_asg/check-docker-health.bash'
+      content, 'assets/travis-worker/check-docker-health.bash'
     )
   end
 
   def verify_etc_cron_d_check_docker_health!(content)
     assert_identical_content!(
-      content, 'modules/aws_asg/check-docker-health-crontab'
+      content, 'assets/travis-worker/check-docker-health.crontab'
     )
   end
 

@@ -27,6 +27,41 @@ write_files:
   encoding: b64
   path: /usr/local/bin/travis-worker-wrapper
   permissions: '0755'
+- content: '${base64encode(file("${assets}/travis-worker/check-unregister-netdevice.bash"))}'
+  encoding: b64
+  owner: 'root:root'
+  path: /var/tmp/travis-run.d/check-unregister-netdevice
+  permissions: '0750'
+- content: '${base64encode(file("${assets}/travis-worker/check-docker-health.bash"))}'
+  encoding: b64
+  owner: 'root:root'
+  path: /var/tmp/travis-run.d/check-docker-health
+  permissions: '0750'
+- content: '${base64encode(file("${assets}/travis-worker/check-docker-health.crontab"))}'
+  encoding: b64
+  owner: 'root:root'
+  path: /etc/cron.d/check-docker-health.crontab
+  permissions: '0644'
+- content: '${base64encode(file("${assets}/travis-worker/kill-old-containers.bash"))}'
+  encoding: b64
+  owner: 'root:root'
+  path: /var/tmp/travis-run.d/kill-old-containers
+  permissions: '0750'
+- content: '${base64encode(file("${assets}/travis-worker/kill-old-containers.crontab"))}'
+  encoding: b64
+  owner: 'root:root'
+  path: /etc/cron.d/kill-old-containers.crontab
+  permissions: '0644'
+- content: '${base64encode(file("${assets}/travis-worker/high-cpu-check.bash"))}'
+  encoding: b64
+  owner: 'root:root'
+  path: /var/tmp/travis-run.d/high-cpu-check
+  permissions: '0750'
+- content: '${base64encode(file("${assets}/travis-worker/high-cpu-check.crontab"))}'
+  encoding: b64
+  owner: 'root:root'
+  path: /etc/cron.d/high-cpu-check.crontab
+  permissions: '0644'
 - content: '${base64encode(syslog_address)}'
   encoding: b64
   path: /var/tmp/travis-run.d/syslog-address
