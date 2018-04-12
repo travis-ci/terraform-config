@@ -30,6 +30,11 @@ variable "github_users" {}
 variable "heroku_org" {}
 variable "index" {}
 variable "project" {}
+
+variable "region" {
+  default = "us-central1"
+}
+
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
 variable "travisci_net_external_zone_id" {}
@@ -39,7 +44,7 @@ variable "worker_config_com" {}
 variable "worker_config_org" {}
 
 variable "worker_docker_self_image" {
-  default = "travisci/worker:v3.4.0"
+  default = "travisci/worker:v3.6.0"
 }
 
 variable "worker_image" {}
@@ -93,7 +98,7 @@ resource "google_compute_subnetwork" "public" {
   name          = "public"
   ip_cidr_range = "${var.public_subnet_cidr_range}"
   network       = "${google_compute_network.main.self_link}"
-  region        = "us-central1"
+  region        = "${var.region}"
 
   project = "${var.project}"
 }
@@ -106,7 +111,7 @@ resource "google_compute_subnetwork" "workers" {
   name          = "workers"
   ip_cidr_range = "${var.workers_subnet_cidr_range}"
   network       = "${google_compute_network.main.self_link}"
-  region        = "us-central1"
+  region        = "${var.region}"
 
   project = "${var.project}"
 }
@@ -115,7 +120,7 @@ resource "google_compute_subnetwork" "jobs_org" {
   name          = "jobs-org"
   ip_cidr_range = "${var.jobs_org_subnet_cidr_range}"
   network       = "${google_compute_network.main.self_link}"
-  region        = "us-central1"
+  region        = "${var.region}"
 
   project = "${var.project}"
 }
@@ -125,7 +130,7 @@ resource "google_compute_subnetwork" "build_org" {
   name          = "buildorg"
   ip_cidr_range = "${var.build_org_subnet_cidr_range}"
   network       = "${google_compute_network.main.self_link}"
-  region        = "us-central1"
+  region        = "${var.region}"
 
   project = "${var.project}"
 }
@@ -134,7 +139,7 @@ resource "google_compute_subnetwork" "jobs_com" {
   name          = "jobs-com"
   ip_cidr_range = "${var.jobs_com_subnet_cidr_range}"
   network       = "${google_compute_network.main.self_link}"
-  region        = "us-central1"
+  region        = "${var.region}"
 
   project = "${var.project}"
 }
@@ -144,7 +149,7 @@ resource "google_compute_subnetwork" "build_com" {
   name          = "buildcom"
   ip_cidr_range = "${var.build_com_subnet_cidr_range}"
   network       = "${google_compute_network.main.self_link}"
-  region        = "us-central1"
+  region        = "${var.region}"
 
   project = "${var.project}"
 }
@@ -152,6 +157,7 @@ resource "google_compute_subnetwork" "build_com" {
 resource "google_compute_firewall" "allow_public_ssh" {
   name          = "allow-public-ssh"
   network       = "${google_compute_network.main.name}"
+  direction     = "INGRESS"
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["bastion"]
 
@@ -166,6 +172,7 @@ resource "google_compute_firewall" "allow_public_ssh" {
 resource "google_compute_firewall" "allow_public_icmp" {
   name          = "allow-public-icmp"
   network       = "${google_compute_network.main.name}"
+  direction     = "INGRESS"
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["nat", "bastion"]
 
@@ -177,8 +184,9 @@ resource "google_compute_firewall" "allow_public_icmp" {
 }
 
 resource "google_compute_firewall" "allow_internal" {
-  name    = "allow-internal"
-  network = "${google_compute_network.main.name}"
+  name      = "allow-internal"
+  network   = "${google_compute_network.main.name}"
+  direction = "INGRESS"
 
   source_ranges = [
     "${google_compute_subnetwork.public.ip_cidr_range}",
@@ -201,8 +209,9 @@ resource "google_compute_firewall" "allow_internal" {
 }
 
 resource "google_compute_firewall" "allow_jobs_nat" {
-  name    = "allow-jobs-nat"
-  network = "${google_compute_network.main.name}"
+  name      = "allow-jobs-nat"
+  network   = "${google_compute_network.main.name}"
+  direction = "INGRESS"
 
   source_ranges = [
     "${google_compute_subnetwork.jobs_org.ip_cidr_range}",
@@ -236,7 +245,7 @@ resource "google_compute_firewall" "deny_target_ip" {
   project = "${var.project}"
 
   # highest priority
-  priority = "0"
+  priority = "1000"
 
   deny {
     protocol = "tcp"
@@ -253,7 +262,7 @@ resource "google_compute_firewall" "deny_target_ip" {
 
 resource "google_compute_address" "nat-b" {
   name    = "nat-b"
-  region  = "us-central1"
+  region  = "${var.region}"
   project = "${var.project}"
 }
 
@@ -270,7 +279,7 @@ resource "aws_route53_record" "nat-b" {
 
 resource "google_compute_address" "bastion-b" {
   name    = "bastion-b"
-  region  = "us-central1"
+  region  = "${var.region}"
   project = "${var.project}"
 }
 
@@ -309,6 +318,7 @@ resource "google_compute_instance" "bastion-b" {
     initialize_params {
       image = "${var.bastion_image}"
       type  = "pd-ssd"
+      size  = 10
     }
   }
 
@@ -340,13 +350,13 @@ module "gce_worker_a" {
   instance_count_org       = "${var.worker_instance_count_org / var.zone_count}"
   machine_type             = "g1-small"
   project                  = "${var.project}"
+  region                   = "${var.region}"
   subnetwork_workers       = "${google_compute_subnetwork.workers.self_link}"
   syslog_address_com       = "${var.syslog_address_com}"
   syslog_address_org       = "${var.syslog_address_org}"
   worker_docker_self_image = "${var.worker_docker_self_image}"
   worker_image             = "${var.worker_image}"
-  zone                     = "us-central1-a"
-  zone_suffix              = "a"
+  zones                    = ["a"]
 }
 
 module "gce_worker_b" {
@@ -363,13 +373,13 @@ module "gce_worker_b" {
   instance_count_org       = "${var.worker_instance_count_org / var.zone_count}"
   machine_type             = "g1-small"
   project                  = "${var.project}"
+  region                   = "${var.region}"
   subnetwork_workers       = "${google_compute_subnetwork.workers.self_link}"
   syslog_address_com       = "${var.syslog_address_com}"
   syslog_address_org       = "${var.syslog_address_org}"
   worker_docker_self_image = "${var.worker_docker_self_image}"
   worker_image             = "${var.worker_image}"
-  zone                     = "us-central1-b"
-  zone_suffix              = "b"
+  zones                    = ["b"]
 }
 
 module "gce_worker_c" {
@@ -386,13 +396,13 @@ module "gce_worker_c" {
   instance_count_org       = "${var.worker_instance_count_org / var.zone_count}"
   machine_type             = "g1-small"
   project                  = "${var.project}"
+  region                   = "${var.region}"
   subnetwork_workers       = "${google_compute_subnetwork.workers.self_link}"
   syslog_address_com       = "${var.syslog_address_com}"
   syslog_address_org       = "${var.syslog_address_org}"
   worker_docker_self_image = "${var.worker_docker_self_image}"
   worker_image             = "${var.worker_image}"
-  zone                     = "us-central1-c"
-  zone_suffix              = "c"
+  zones                    = ["c"]
 }
 
 module "gce_worker_f" {
@@ -414,8 +424,8 @@ module "gce_worker_f" {
   syslog_address_org       = "${var.syslog_address_org}"
   worker_docker_self_image = "${var.worker_docker_self_image}"
   worker_image             = "${var.worker_image}"
-  zone                     = "us-central1-f"
-  zone_suffix              = "f"
+  region                   = "${var.region}"
+  zones                    = ["f"]
 }
 
 resource "heroku_app" "gcloud_cleanup" {

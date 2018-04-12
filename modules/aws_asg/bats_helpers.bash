@@ -6,6 +6,7 @@ aws_asg_setup() {
   export VARTMP="${BATS_TMPDIR}/var/tmp"
   export MOCKLOG="${BATS_TMPDIR}/logs/mock.log"
   export KILL_COMMAND="${BATS_TMPDIR}/bin/kill_mocked"
+  export CREDS_FILE="/dev/null"
 
   mkdir -p \
     "${RUNDIR}" \
@@ -49,6 +50,7 @@ EOF
   for cmd in \
     awk \
     chown \
+    curl \
     dmesg \
     date \
     docker \

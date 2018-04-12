@@ -1,0 +1,101 @@
+#!/usr/bin/env ruby
+require 'optparse'
+
+def main
+  options = {
+    counts: {
+      com: Integer(ENV.fetch('COUNT_COM', '0')),
+      org: Integer(ENV.fetch('COUNT_ORG', '0')),
+    },
+    env: ENV.fetch('ENV', 'staging'),
+    index: ENV.fetch('INDEX', '1'),
+    module_name: ENV.fetch('MODULE_NAME', 'gce_worker_group'),
+    noop: false,
+    project: ENV.fetch('PROJECT', 'notset'),
+    region: ENV.fetch('REGION', 'us-central1'),
+    terraform: ENV.fetch('TERRAFORM', 'terraform'),
+    zones: ENV.fetch('ZONES', 'a,b,c,f').split(',').map(&:strip),
+  }
+
+  OptionParser.new do |opts|
+    opts.on('--count-com=COUNT_COM', Integer) do |v|
+      options[:counts][:com] = v
+    end
+
+    opts.on('--count-org=COUNT_ORG', Integer) do |v|
+      options[:counts][:org] = v
+    end
+
+    opts.on('-e', '--env=ENV') do |v|
+      options[:env] = v.strip
+    end
+
+    opts.on('-i', '--index=INDEX') do |v|
+      options[:index] = v.strip
+    end
+
+    opts.on('-m', '--module-name=MODULE_NAME') do |v|
+      options[:module_name] = v.strip
+    end
+
+    opts.on('-n', '--noop') do
+      options[:noop] = true
+    end
+
+    opts.on('-p', '--project=PROJECT') do |v|
+      options[:project] = v.strip
+    end
+
+    opts.on('-r', '--region=REGION') do |v|
+      options[:region] = v.strip
+    end
+
+    opts.on('-T', '--terraform=TERRAFORM') do |v|
+      options[:terraform] = v.strip
+    end
+
+    opts.on('-Z', '--zones=ZONES') do |v|
+      options[:zones] = v.split(',').map(&:strip)
+    end
+  end.parse!
+
+  counts = options.fetch(:counts)
+  env = options.fetch(:env)
+  index = options.fetch(:index)
+  module_name = options.fetch(:module_name)
+  noop = !!options.fetch(:noop)
+  project = options.fetch(:project)
+  region = options.fetch(:region)
+  terraform = options.fetch(:terraform)
+  zones = options.fetch(:zones)
+
+  to_import = {
+    'heroku_app.gcloud_cleanup' => "gcloud-cleanup-#{env}-#{index}",
+  }
+
+  %i[com org].each do |site|
+    counts.fetch(site).times do |n|
+      key = "module.gce_workers.google_compute_instance.worker_#{site}[#{n}]"
+      zone = zones[n % zones.length]
+      ic = (n / zones.length) + 1
+      to_import[key] = %W[
+        #{project}
+        #{region}-#{zone}
+        #{env}-#{index}-worker-#{site}-#{zone}-#{ic}-gce
+      ].join('/')
+    end
+  end
+
+  to_import.each do |resource, importable|
+    command = %W[
+      #{terraform} import module.#{module_name}.#{resource} #{importable}
+    ]
+    $stderr.puts("---> #{command.join(' ')}")
+    next if noop
+    system(*command) || $stderr.puts('---? already imported?')
+  end
+
+  0
+end
+
+exit(main) if $PROGRAM_NAME == __FILE__

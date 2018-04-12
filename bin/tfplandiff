@@ -1,0 +1,111 @@
+#!/usr/bin/env ruby
+
+def main
+  tfplan_filename = ARGV.first
+  fail 'Missing {tfplan} input as first argument' if tfplan_filename.nil?
+
+  differ = ENV.fetch('TFPLANDIFF_DIFFER', 'diff')
+
+  require 'base64'
+  require 'json'
+  require 'tmpdir'
+  require 'yaml'
+
+  tfplan = JSON.parse(`tfplan2json <#{tfplan_filename}`)
+
+  trunc_filename = tfplan_filename.sub(Dir.pwd, '.')
+  $stdout.puts <<~PREAMBLE
+    Terraform #{tfplan['TerraformVersion']} plandiff from #{trunc_filename}
+
+    Backend: #{tfplan['Backend']['type']}
+    Destroy?: #{tfplan['Destroy']}
+    State:
+      version=#{tfplan['State']['version']}
+      terraform_version=#{tfplan['State']['terraform_version']}
+      serial=#{tfplan['State']['serial']}
+      lineage=#{tfplan['State']['lineage']}
+
+  PREAMBLE
+
+  tfplan.fetch('Diff').fetch('Modules').each do |mod|
+    mod.fetch('Resources').each do |n, v|
+      $stdout.puts(gen_resource_diff(n, v, differ: differ))
+    end
+  end
+
+  0
+end
+
+def gen_resource_diff(resource_name, definition, differ: 'diff')
+  out = []
+
+  Dir.mktmpdir(%w[tfplandiff- -tmp]) do |tmpdir|
+    definition.fetch('Attributes').each do |attr_name, attr_def|
+      attr_def = expand_attribute(attr_name, attr_def)
+
+      a_name = File.join(tmpdir, "a-#{attr_name}")
+      b_name = File.join(tmpdir, "b-#{attr_name}")
+
+      File.write(a_name, attr_def.fetch('Old') + "\n")
+      File.write(b_name, attr_def.fetch('New') + "\n")
+
+      diff_command = %W[
+        #{differ} -U 5
+          --label a/#{resource_name}/#{attr_name}
+          #{a_name}
+          --label b/#{resource_name}/#{attr_name}
+          #{b_name}
+      ]
+      diff_bytes = `#{diff_command.join(' ')}`.chomp
+
+      out << (diff_bytes + "\n") unless diff_bytes.strip.empty?
+    end
+  end
+
+  out.join("\n")
+end
+
+def expand_attribute(attr_name, attr_def)
+  ATTRIBUTE_EXPANSIONS.each do |name_match, expander|
+    return expander.call(attr_def) if attr_name =~ name_match
+  end
+  attr_def
+end
+
+def expand_user_data(attr_def)
+  expanded = Marshal.load(Marshal.dump(attr_def))
+
+  %w[Old New].each do |key|
+    value = attr_def.fetch(key)
+
+    begin
+      loaded_yaml = YAML.load(value)
+
+      unless loaded_yaml.respond_to?(:key?) && loaded_yaml.key?('write_files')
+        expanded[key] = value
+        next
+      end
+
+      Array(loaded_yaml['write_files']).each_with_index do |filedef, i|
+        next unless filedef.fetch('encoding') == 'b64'
+
+        filedef['content'] = Base64.decode64(filedef['content'])
+        loaded_yaml['write_files'][i] = filedef
+      end
+
+      expanded[key] = YAML.dump(loaded_yaml)
+    rescue => e
+      warn e
+      expanded[key] = value
+    end
+  end
+
+  expanded
+end
+
+ATTRIBUTE_EXPANSIONS = {
+  /^metadata\.user-data$/i => method(:expand_user_data),
+  /user_data$/i => method(:expand_user_data),
+}.freeze
+
+exit(main) if $PROGRAM_NAME == __FILE__

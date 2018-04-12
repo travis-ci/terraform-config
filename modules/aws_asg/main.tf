@@ -118,7 +118,7 @@ variable "worker_docker_image_python" {}
 variable "worker_docker_image_ruby" {}
 
 variable "worker_docker_self_image" {
-  default = "travisci/worker:v3.4.0"
+  default = "travisci/worker:v3.6.0"
 }
 
 variable "worker_instance_type" {
@@ -177,7 +177,7 @@ data "template_file" "docker_daemon_json" {
     "dm.fs=xfs"
   ],
   "userns-remap": "default",
-  "debug": true
+  "debug": false
 }
 EOF
 }
@@ -217,6 +217,7 @@ resource "aws_launch_configuration" "workers" {
   name_prefix       = "${var.env}-${var.index}-workers-${var.site}-"
   image_id          = "${var.worker_ami}"
   instance_type     = "${var.worker_instance_type}"
+  key_name          = "aj"
   security_groups   = ["${var.security_groups}"]
   user_data         = "${data.template_cloudinit_config.cloud_config.rendered}"
   enable_monitoring = true
@@ -297,6 +298,7 @@ resource "aws_autoscaling_group" "workers" {
   }
 }
 
+/* Be sure to update modules/aws_asg/dashboards.tf when changing any of the bounds here. */
 resource "aws_autoscaling_policy" "workers_remove_capacity" {
   name                      = "${var.env}-${var.index}-workers-${var.site}-remove-capacity"
   adjustment_type           = "ChangeInCapacity"
@@ -309,13 +311,20 @@ resource "aws_autoscaling_policy" "workers_remove_capacity" {
   step_adjustment {
     scaling_adjustment          = "${var.worker_asg_scale_in_qty}"
     metric_interval_lower_bound = 1.0
-    metric_interval_upper_bound = "${ceil(var.worker_asg_scale_in_threshold / 2)}"
+    metric_interval_upper_bound = "${var.worker_asg_scale_in_threshold * 1.5}"
   }
 
   # Headroom is way above scale-in threshold; remove n * 2 instances
   step_adjustment {
     scaling_adjustment          = "${var.worker_asg_scale_in_qty * 2}"
-    metric_interval_lower_bound = "${ceil(var.worker_asg_scale_in_threshold / 2)}"
+    metric_interval_lower_bound = "${var.worker_asg_scale_in_threshold * 1.5}"
+    metric_interval_upper_bound = "${var.worker_asg_scale_in_threshold * 2}"
+  }
+
+  # Headroom is way above scale-in threshold; remove n * 3 instances
+  step_adjustment {
+    scaling_adjustment          = "${var.worker_asg_scale_in_qty * 3}"
+    metric_interval_lower_bound = "${var.worker_asg_scale_in_threshold * 2}"
   }
 }
 
@@ -323,7 +332,7 @@ resource "aws_cloudwatch_metric_alarm" "workers_remove_capacity" {
   alarm_name          = "${var.env}-${var.index}-workers-${var.site}-remove-capacity"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = "${var.worker_asg_scale_in_evaluation_periods}"
-  metric_name         = "v1.travis.rabbitmq.consumers.${var.env}.builds.${var.worker_queue}.headroom"
+  metric_name         = "v1.travis.rabbitmq.consumers.builds.${var.worker_queue}.headroom"
   namespace           = "${var.worker_asg_namespace}"
   period              = "${var.worker_asg_scale_in_period}"
   statistic           = "Maximum"
@@ -331,6 +340,7 @@ resource "aws_cloudwatch_metric_alarm" "workers_remove_capacity" {
   alarm_actions       = ["${aws_autoscaling_policy.workers_remove_capacity.arn}"]
 }
 
+/* Be sure to update modules/aws_asg/dashboards.tf when changing any of the bounds here. */
 resource "aws_autoscaling_policy" "workers_add_capacity" {
   name                      = "${var.env}-${var.index}-workers-${var.site}-add-capacity"
   adjustment_type           = "ChangeInCapacity"
@@ -363,7 +373,7 @@ resource "aws_cloudwatch_metric_alarm" "workers_add_capacity" {
   alarm_name          = "${var.env}-${var.index}-workers-${var.site}-add-capacity"
   comparison_operator = "LessThanThreshold"
   evaluation_periods  = "${var.worker_asg_scale_out_evaluation_periods}"
-  metric_name         = "v1.travis.rabbitmq.consumers.${var.env}.builds.${var.worker_queue}.headroom"
+  metric_name         = "v1.travis.rabbitmq.consumers.builds.${var.worker_queue}.headroom"
   namespace           = "${var.worker_asg_namespace}"
   period              = "${var.worker_asg_scale_out_period}"
   statistic           = "Maximum"

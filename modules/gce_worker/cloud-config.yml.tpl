@@ -42,10 +42,10 @@ write_files:
   encoding: b64
   owner: 'root:root'
   path: /var/tmp/travis-worker.conf
-- content: '${base64encode(file("${assets}/travis-worker/travis-worker.service"))}'
+- content: '${base64encode(file("${assets}/travis-worker/travis-worker@.service"))}'
   encoding: b64
   owner: 'root:root'
-  path: /var/tmp/travis-worker.service
+  path: /var/tmp/travis-worker@.service
 - content: '${base64encode(file("${assets}/travis-worker/rsyslog-watch-upstart.conf"))}'
   encoding: b64
   owner: 'root:root'

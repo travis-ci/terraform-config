@@ -76,6 +76,26 @@ write_files:
   owner: 'root:root'
   path: /etc/cron.d/check-docker-health-crontab
   permissions: '0644'
+- content: '${base64encode(file("${here}/kill-old-containers.bash"))}'
+  encoding: b64
+  owner: 'root:root'
+  path: /var/tmp/travis-run.d/kill-old-containers
+  permissions: '0750'
+- content: '${base64encode(file("${here}/kill-old-containers-crontab"))}'
+  encoding: b64
+  owner: 'root:root'
+  path: /etc/cron.d/kill-old-containers-crontab
+  permissions: '0644'
+- content: '${base64encode(file("${here}/high-cpu-check.bash"))}'
+  encoding: b64
+  owner: 'root:root'
+  path: /var/tmp/travis-run.d/high-cpu-check
+  permissions: '0750'
+- content: '${base64encode(file("${here}/high-cpu-check-crontab"))}'
+  encoding: b64
+  owner: 'root:root'
+  path: /etc/cron.d/high-cpu-check-crontab
+  permissions: '0644'
 - content: '${base64encode(file("${assets}/travis-worker/travis-worker.service"))}'
   encoding: b64
   owner: 'root:root'

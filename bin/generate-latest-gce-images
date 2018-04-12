@@ -1,0 +1,46 @@
+#!/usr/bin/env ruby
+require 'json'
+
+DEFAULT_GCE_PROJECT_ID = 'eco-emissary-99515'
+DEFAULT_IMAGE_PREFIXES = 'bastion nat tfw'
+
+def main(argv: ARGV)
+  if argv.include?('-h') || argv.include?('--help')
+    return usage
+  end
+
+  project = ENV['GCE_PROJECT_ID'] || DEFAULT_GCE_PROJECT_ID
+  prefixes = (
+    ENV['IMAGE_PREFIXES'] || DEFAULT_IMAGE_PREFIXES
+  ).split.map(&:strip)
+
+  prefixes.each do |prefix|
+    name = fetch_latest_image_name(prefix, project)
+    $stdout.puts %[latest_gce_#{prefix}_image = "#{name}"]
+  end
+
+  0
+end
+
+def fetch_latest_image_name(prefix, project)
+  command = %W[
+    gcloud compute images list
+    --project=#{project}
+    --filter='name~^#{prefix}-'
+    --format=json
+  ].join(' ')
+  images = JSON.parse(`#{command}`)
+  images.sort! { |a, b| a.fetch('name') <=> b.fetch('name') }
+  images.last.fetch('selfLink')
+end
+
+def usage
+  $stderr.puts <<~EOF
+    Usage: #{$PROGRAM_NAME} [-h|--help]
+
+    Generate a list of (some of) the latest known GCE images as tfvars.
+  EOF
+  2
+end
+
+exit(main) if $PROGRAM_NAME == __FILE__

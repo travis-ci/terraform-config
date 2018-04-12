@@ -9,52 +9,30 @@ main() {
     set -o xtrace
   fi
 
-  : "${ETCDIR:=/etc}"
-  : "${VARTMP:=/var/tmp}"
+  logger 'msg="beginning cloud-init fun"'
+
   : "${DEV:=/dev}"
+  : "${ETCDIR:=/etc}"
   : "${RUNDIR:=/var/tmp/travis-run.d}"
+  : "${VARTMP:=/var/tmp}"
 
-  if ! docker version 2>/dev/null; then
-    __install_docker
-  fi
+  export DEBIAN_FRONTEND=noninteractive
+  chown nobody:nogroup "${VARTMP}"
+  chmod 0777 "${VARTMP}"
 
-  if ! getent passwd travis; then
-    useradd travis
-  fi
-
-  groups travis | if ! grep -q docker; then
-    usermod -a -G docker travis
-  fi
-
-  __set_aio_max_nr
-
-  chown -R travis:travis "${RUNDIR}"
-
-  if [[ -d "${ETCDIR}/systemd/system" ]]; then
-    cp -v "${VARTMP}/travis-worker.service" \
-      "${ETCDIR}/systemd/system/travis-worker.service"
-    systemctl enable travis-worker || true
-  fi
-
-  if [[ ! -e "${DEV}/md0" ]]; then
-    mdadm --create "${DEV}/md0" --level=0 --raid-devices=4 \
-      "${DEV}/sdc" "${DEV}/sdd" "${DEV}/sde" "${DEV}/sdf"
-  fi
-
-  service travis-worker stop || true
-  service travis-worker start || true
-
+  mkdir -p "${RUNDIR}"
   echo "___INSTANCE_ID___-$(hostname)" >"${RUNDIR}/instance-hostname.tmpl"
 
-  eval "$(travis-tfw-combined-env travis-network)"
-
-  if [[ "${TRAVIS_NETWORK_VLAN_GATEWAY}" ]]; then
-    ip route | if ! grep -q "^default via ${TRAVIS_NETWORK_VLAN_GATEWAY}"; then
-      ip route del default || true
-      sleep 5
-      ip route add default via "${TRAVIS_NETWORK_VLAN_GATEWAY}" || true
-    fi
-  fi
+  for substep in \
+    tfw \
+    travis_user \
+    sysctl \
+    networking \
+    raid \
+    worker; do
+    logger "msg=\"running setup\" substep=\"${substep}\""
+    "__setup_${substep}"
+  done
 
   __wait_for_docker
 }
@@ -72,16 +50,57 @@ __wait_for_docker() {
   done
 }
 
-__install_docker() {
-  curl -Ls https://get.docker.io | bash
+__setup_tfw() {
+  logger "msg=\"running tfw bootstrap\""
+  tfw bootstrap
+
+  chown -R root:root "${ETCDIR}/sudoers" "${ETCDIR}/sudoers.d"
+
+  logger "msg=\"running tfw admin-bootstrap\""
+  tfw admin-bootstrap
+
+  systemctl restart sshd || true
 }
 
-__set_aio_max_nr() {
-  # NOTE: we do this mostly to ensure file IO chatty services like mysql will
-  # play nicely with others, such as when multiple containers are running mysql,
-  # which is the default on precise + trusty.  The value we set here is 16^5,
-  # which is one power higher than the default of 16^4 :sparkles:.
+__setup_travis_user() {
+  if ! getent passwd travis &>/dev/null; then
+    useradd travis
+  fi
+
+  usermod -a -G docker travis
+  chown -R travis:travis "${RUNDIR}"
+}
+
+__setup_sysctl() {
+  echo 1048576 >/proc/sys/fs/aio-max-nr
   sysctl -w fs.aio-max-nr=1048576
+}
+
+__setup_networking() {
+  for key in autosave_v{4,6}; do
+    echo "iptables-persistent iptables-persistent/${key} boolean true" |
+      debconf-set-selections
+  done
+
+  apt-get install -yqq iptables-persistent
+}
+
+__setup_raid() {
+  logger "msg=\"running tfw admin-raid\""
+  tfw admin-raid
+}
+
+__setup_worker() {
+  eval "$(tfw printenv travis-worker)"
+  tfw extract travis-worker "${TRAVIS_WORKER_SELF_IMAGE}"
+
+  if [[ -d "${ETCDIR}/systemd/system" ]]; then
+    cp -v "${VARTMP}/travis-worker.service" \
+      "${ETCDIR}/systemd/system/travis-worker.service"
+    systemctl enable travis-worker || true
+  fi
+
+  systemctl start travis-worker || true
 }
 
 main "$@"

@@ -14,7 +14,7 @@ resource "aws_cloudwatch_dashboard" "main" {
                 "view": "timeSeries",
                 "stacked": true,
                 "metrics": [
-                    [ "Travis/${var.site}${var.env == "staging" ? "-staging" : ""}", "v1.travis.rabbitmq.consumers.${var.env}.builds.ec2.headroom", { "color": "#2ca02c", "period": 60, "stat": "Average" } ]
+                    [ "Travis/${var.site}${var.env == "staging" ? "-staging" : ""}", "v1.travis.rabbitmq.consumers.builds.ec2.headroom", { "color": "#2ca02c", "period": 60, "stat": "Average" } ]
                 ],
                 "region": "us-east-1",
                 "annotations": {
@@ -31,11 +31,15 @@ resource "aws_cloudwatch_dashboard" "main" {
                         },
                         {
                             "label": "Remove ${var.worker_asg_scale_in_qty} instance",
-                            "value": "${var.worker_asg_scale_in_threshold}"
+                            "value": "${var.worker_asg_scale_in_threshold + 1}"
                         },
                         {
                             "label": "Remove ${var.worker_asg_scale_in_qty * 2} instances",
-                            "value": "${var.worker_asg_scale_in_threshold + ceil(var.worker_asg_scale_in_threshold / 2)}"
+                            "value": "${var.worker_asg_scale_in_threshold * 1.5}"
+                        },
+                        {
+                            "label": "Remove ${var.worker_asg_scale_in_qty * 3} instances",
+                            "value": "${var.worker_asg_scale_in_threshold * 2}"
                         },
                         {
                             "color": "#d62728",

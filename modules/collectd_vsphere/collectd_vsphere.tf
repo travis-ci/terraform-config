@@ -11,14 +11,6 @@ variable "collectd_vsphere_collectd_network_user" {}
 variable "collectd_vsphere_collectd_network_token" {}
 variable "fw_ip" {}
 variable "fw_snmp_community" {}
-variable "pfsense_1_ip" {}
-variable "pfsense_1_snmp_community" {}
-variable "pfsense_2_ip" {}
-variable "pfsense_2_snmp_community" {}
-variable "pfsense_2_1_ip" {}
-variable "pfsense_2_1_snmp_community" {}
-variable "pfsense_2_2_ip" {}
-variable "pfsense_2_2_snmp_community" {}
 
 data "template_file" "collectd_vsphere_install" {
   template = "${file("${path.module}/install-collectd-vsphere.sh")}"
@@ -32,13 +24,6 @@ data "template_file" "collectd_vsphere_install" {
 
 data "template_file" "collectd_conf" {
   template = "${file("${path.module}/collectd.conf.tpl")}"
-
-  vars {
-    pfsense_1_ip   = "${var.pfsense_1_ip}"
-    pfsense_2_ip   = "${var.pfsense_2_ip}"
-    pfsense_2_1_ip = "${var.pfsense_2_1_ip}"
-    pfsense_2_2_ip = "${var.pfsense_2_2_ip}"
-  }
 }
 
 data "template_file" "librato_conf" {
@@ -55,16 +40,8 @@ data "template_file" "snmp_conf" {
   template = "${file("${path.module}/snmp.conf.tpl")}"
 
   vars {
-    fw_ip                      = "${var.fw_ip}"
-    fw_snmp_community          = "${var.fw_snmp_community}"
-    pfsense_1_ip               = "${var.pfsense_1_ip}"
-    pfsense_1_snmp_community   = "${var.pfsense_1_snmp_community}"
-    pfsense_2_ip               = "${var.pfsense_2_ip}"
-    pfsense_2_snmp_community   = "${var.pfsense_2_snmp_community}"
-    pfsense_2_1_ip             = "${var.pfsense_2_1_ip}"
-    pfsense_2_1_snmp_community = "${var.pfsense_2_1_snmp_community}"
-    pfsense_2_2_ip             = "${var.pfsense_2_2_ip}"
-    pfsense_2_2_snmp_community = "${var.pfsense_2_2_snmp_community}"
+    fw_ip             = "${var.fw_ip}"
+    fw_snmp_community = "${var.fw_snmp_community}"
   }
 }
 
@@ -85,16 +62,18 @@ data "template_file" "collectd_vsphere_upstart" {
 
 resource "null_resource" "collectd_vsphere" {
   triggers {
-    version                               = "${var.version}"
-    config_signature                      = "${sha256(file(var.config_path))}"
-    install_script_signature              = "${sha256(data.template_file.collectd_vsphere_install.rendered)}"
-    librato_creds_signature               = "${sha256(data.template_file.librato_conf.rendered)}"
-    collectd_config_signature             = "${sha256(data.template_file.collectd_conf.rendered)}"
-    collectd_vsphere_init_signature       = "${sha256(data.template_file.collectd_vsphere_upstart.rendered)}"
-    collectd_network_token_file_signature = "${sha256(data.template_file.collectd_network_token_file.rendered)}"
-    collectd_snmp_config_signature        = "${sha256(data.template_file.snmp_conf.rendered)}"
-    name                                  = "${var.env}-${var.index}"
-    host_id                               = "${var.host_id}"
+    version                                           = "${var.version}"
+    config_signature                                  = "${sha256(file(var.config_path))}"
+    install_script_signature                          = "${sha256(data.template_file.collectd_vsphere_install.rendered)}"
+    librato_creds_signature                           = "${sha256(data.template_file.librato_conf.rendered)}"
+    collectd_config_signature                         = "${sha256(data.template_file.collectd_conf.rendered)}"
+    collectd_vsphere_collectd_network_username        = "${var.collectd_vsphere_collectd_network_user}"
+    collectd_vsphere_collectd_network_token_signature = "${sha256(var.collectd_vsphere_collectd_network_token)}"
+    collectd_vsphere_init_signature                   = "${sha256(data.template_file.collectd_vsphere_upstart.rendered)}"
+    collectd_network_token_file_signature             = "${sha256(data.template_file.collectd_network_token_file.rendered)}"
+    collectd_snmp_config_signature                    = "${sha256(data.template_file.snmp_conf.rendered)}"
+    name                                              = "${var.env}-${var.index}"
+    host_id                                           = "${var.host_id}"
   }
 
   connection {
@@ -104,7 +83,12 @@ resource "null_resource" "collectd_vsphere" {
   }
 
   provisioner "file" {
-    content     = "${file(var.config_path)}"
+    content = <<EOF
+${file(var.config_path)}
+export COLLECTD_VSPHERE_COLLECTD_USERNAME=${var.collectd_vsphere_collectd_network_user}
+export COLLECTD_VSPHERE_COLLECTD_PASSWORD=${var.collectd_vsphere_collectd_network_token}
+EOF
+
     destination = "/tmp/etc-default-collectd-vsphere-${var.env}"
   }
 

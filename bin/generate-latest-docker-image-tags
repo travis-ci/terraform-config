@@ -19,6 +19,8 @@ DEFAULT_STACKS = %w(
   garnet
 ).freeze
 
+GITSHA1 = /^[0-9a-f]{7}$/.freeze
+
 def main
   stacks = ENV['STACKS'].to_s.split.map(&:strip)
   stacks = DEFAULT_STACKS if stacks.empty?
@@ -26,8 +28,17 @@ def main
     tag = latest_docker_image_tag("travisci/ci-#{stack}")
     $stdout.puts(%(latest_docker_image_#{stack} = #{tag.to_s.inspect}))
   end
-  worker_tag = latest_docker_image_tag('travisci/worker')
-  $stdout.puts(%(latest_docker_image_worker = #{worker_tag.to_s.inspect}))
+
+  %w[
+    gesund
+    nat-conntracker
+    worker
+  ].each do |image|
+    tag = latest_docker_image_tag("travisci/#{image}")
+    $stdout.puts(
+      %(latest_docker_image_#{image.gsub('-', '_')} = #{tag.to_s.inspect})
+    )
+  end
 
   0
 end
@@ -48,6 +59,8 @@ def latest_docker_image_tag(image)
     headers: { 'Authorization' => "Bearer #{token}" }
   ).fetch('tags')
 
+  return "#{image}:#{tags.first}" if tags.all? { |t| t.match?(GITSHA1) }
+
   "#{image}:#{fancy_sorted(tags).reverse.fetch(0)}"
 end
 
@@ -55,7 +68,7 @@ def fancy_sorted(tags)
   tags.sort do |a, b|
     if a =~ /^packer/ && b =~ /^packer/
       Integer(a.split('-')[1]) <=> Integer(b.split('-')[1])
-    elsif a =~ /^v\d/ && b =~ /^v\d/
+    elsif a =~ /^v?\d/ && b =~ /^v?\d/
       vers2int(a) <=> vers2int(b)
     else
       a <=> b
@@ -64,6 +77,7 @@ def fancy_sorted(tags)
 end
 
 def vers2int(vers)
+  return 0 if vers.match?(GITSHA1)
   parts = vers.sub(/^v/, '').split('-')
   parts = parts.map { |part| part.split('.') }.flatten.compact
   parts.reject! { |part| part.start_with?('g') || part.start_with?('dirty') }

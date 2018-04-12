@@ -18,8 +18,8 @@ variable "syslog_address_com" {}
 variable "syslog_address_org" {}
 
 variable "worker_ami" {
-  # tfw 2018-01-08 20-33-18
-  default = "ami-3889d642"
+  # tfw 2018-03-08 00-09-18
+  default = "ami-07dd1aada92124d1e"
 }
 
 variable "amethyst_image" {
@@ -40,7 +40,9 @@ terraform {
   }
 }
 
-provider "aws" {}
+provider "aws" {
+  version = "~> 1.4"
+}
 
 provider "heroku" {
   version = "0.1.0"

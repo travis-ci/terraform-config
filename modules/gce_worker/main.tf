@@ -13,13 +13,16 @@ variable "machine_type" {
 }
 
 variable "project" {}
+variable "region" {}
 variable "subnetwork_workers" {}
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
 variable "worker_docker_self_image" {}
 variable "worker_image" {}
-variable "zone" {}
-variable "zone_suffix" {}
+
+variable "zones" {
+  default = ["a", "b", "c", "f"]
+}
 
 data "template_file" "cloud_init_env_com" {
   template = <<EOF
@@ -56,10 +59,11 @@ EOF
 }
 
 resource "google_compute_instance" "worker_com" {
-  count        = "${var.instance_count_com}"
-  name         = "${var.env}-${var.index}-worker-com-${var.zone_suffix}-${count.index + 1}-gce"
+  count = "${var.instance_count_com}"
+  name  = "${var.env}-${var.index}-worker-com-${element(var.zones, count.index % length(var.zones))}-${(count.index / length(var.zones)) + 1}-gce"
+
   machine_type = "${var.machine_type}"
-  zone         = "${var.zone}"
+  zone         = "${var.region}-${element(var.zones, count.index % length(var.zones))}"
   tags         = ["worker", "${var.env}", "com"]
   project      = "${var.project}"
 
@@ -127,10 +131,11 @@ EOF
 }
 
 resource "google_compute_instance" "worker_org" {
-  count        = "${var.instance_count_org}"
-  name         = "${var.env}-${var.index}-worker-org-${var.zone_suffix}-${count.index + 1}-gce"
+  count = "${var.instance_count_org}"
+  name  = "${var.env}-${var.index}-worker-org-${element(var.zones, count.index % length(var.zones))}-${(count.index / length(var.zones)) + 1}-gce"
+
   machine_type = "${var.machine_type}"
-  zone         = "${var.zone}"
+  zone         = "${var.region}-${element(var.zones, count.index % length(var.zones))}"
   tags         = ["worker", "${var.env}", "org"]
   project      = "${var.project}"
 

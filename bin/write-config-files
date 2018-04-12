@@ -35,6 +35,16 @@ def main(argv: ARGV)
     )
   end
 
+  if opts[:write_nat]
+    fwrite(
+      'config/nat.env',
+      trvs_gen(
+        "#{opts[:infra]}-nat", opts[:env_short],
+        pro: true, prefix: "#{opts[:infra].upcase}_NAT"
+      )
+    )
+  end
+
   {
     'config/travis-org.env' => "travis-#{opts[:env_short]}",
     'config/travis-build-org.env' => "travis-build-#{opts[:env_short]}",
@@ -103,7 +113,8 @@ def parse_argv(argv)
     build_org_host: '',
     job_board_host: '',
     amqp_url_varname: '',
-    write_bastion: false
+    write_bastion: false,
+    write_nat: false
   }
 
   OptionParser.new do |o|
@@ -137,6 +148,10 @@ def parse_argv(argv)
 
     o.on('--write-bastion') do
       opts[:write_bastion] = true
+    end
+
+    o.on('--write-nat') do
+      opts[:write_nat] = true
     end
   end.parse(argv)
 

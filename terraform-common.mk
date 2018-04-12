@@ -2,7 +2,9 @@ ENV_NAME := $(notdir $(shell cd $(PWD) && pwd))
 ENV_SHORT ?= $(word 2,$(subst -, ,$(ENV_NAME)))
 INFRA ?= $(word 1,$(subst -, ,$(ENV_NAME)))
 ENV_TAIL ?= $(subst $(INFRA)-,,$(ENV_NAME))
-TFVARS := $(PWD)/terraform.tfvars
+TRVS_INFRA_ENV_TFVARS := $(PWD)/trvs-$(INFRA)-$(ENV_SHORT).auto.tfvars
+TRVS_ENV_NAME_TFVARS := $(PWD)/trvs-$(ENV_NAME).auto.tfvars
+TRVS_TFVARS := $(TRVS_INFRA_ENV_TFVARS) $(TRVS_ENV_NAME_TFVARS)
 TFSTATE := $(PWD)/.terraform/terraform.tfstate
 TFPLAN := $(PWD)/$(ENV_NAME).tfplan
 TRAVIS_BUILD_COM_HOST ?= build.travis-ci.com
@@ -11,9 +13,9 @@ JOB_BOARD_HOST ?= job-board.travis-ci.com
 AMQP_URL_VARNAME ?= AMQP_URL
 TOP := $(shell git rev-parse --show-toplevel)
 
-TFWBZ2 := $(TOP)/assets/tfw.tar.bz2
+NATBZ2 := $(TOP)/assets/nat.tar.bz2
 
-PROD_TF_VERSION := v0.11.0
+PROD_TF_VERSION := v0.11.5
 TERRAFORM := $(HOME)/.cache/travis-terraform-config/terraform-$(PROD_TF_VERSION)
 TAR := tar
 
@@ -45,7 +47,7 @@ announce: .assert-ruby .assert-tf-version
 	@echo "👋 🎉  This is env=$(ENV_NAME) (short=$(ENV_SHORT) infra=$(INFRA) tail=$(ENV_TAIL))"
 
 .PHONY: apply
-apply: announce .config $(TFVARS) $(TFSTATE)
+apply: announce .ensure-git .config $(TRVS_TFVARS) $(TFSTATE)
 	$(TERRAFORM) apply $(TFPLAN)
 	$(TOP)/bin/post-flight $(TOP)
 
@@ -62,32 +64,27 @@ console: announce
 	$(TERRAFORM) console
 
 .PHONY: plan
-plan: announce .config $(TFVARS) $(TFSTATE)
-	$(TERRAFORM) plan \
-		-var-file=$(ENV_NAME).tfvars \
-		-var-file=$(TFVARS) \
-		-module-depth=-1 \
-		-out=$(TFPLAN)
+plan: announce .config $(TRVS_TFVARS) $(TFSTATE)
+	$(TERRAFORM) plan -module-depth=-1 -out=$(TFPLAN)
+
+.PHONY: plandiff
+plandiff: $(TFPLAN)
+	$(TOP)/bin/tfplandiff $^
 
 .PHONY: destroy
-destroy: announce .config $(TFVARS) $(TFSTATE)
-	$(TERRAFORM) plan \
-		-var-file=$(ENV_NAME).tfvars \
-		-var-file=$(TFVARS) \
-		-module-depth=-1 \
-		-destroy \
-		-out=$(TFPLAN)
+destroy: announce .config $(TRVS_TFVARS) $(TFSTATE)
+	$(TERRAFORM) plan -module-depth=-1 -destroy -out=$(TFPLAN)
 	$(TOP)/bin/post-flight $(TOP)
 
-$(TFWBZ2): $(wildcard $(TOP)/assets/tfw/**/*)
-	$(TAR) -C $(TOP)/assets -cjf $(TOP)/assets/tfw.tar.bz2 tfw
+$(NATBZ2): $(wildcard $(TOP)/assets/nat/**/*)
+	$(TAR) -C $(TOP)/assets -cjf $(TOP)/assets/nat.tar.bz2 nat
 
 $(TFSTATE):
 	$(TERRAFORM) init
 
 .PHONY: clean
 clean: announce
-	$(RM) -r config $(TFVARS) $(ENV_NAME).tfvars
+	$(RM) -r config $(TRVS_TFVARS) $(ENV_NAME).auto.tfvars
 
 .PHONY: distclean
 distclean: clean
@@ -97,7 +94,7 @@ distclean: clean
 graph:
 	$(TERRAFORM) graph -draw-cycles | dot -Tpng > graph.png
 
-$(ENV_NAME).tfvars:
+$(ENV_NAME).auto.tfvars:
 	$(TOP)/bin/generate-tfvars $@
 
 .PHONY: list
@@ -107,6 +104,20 @@ list:
 .PHONY: check
 check:
 	$(TOP)/bin/pre-flight-checks $@
+
+.PHONY: .ensure-git
+.ensure-git:
+	@if [[ "$$(git rev-parse --abbrev-ref HEAD)" != "master" ]]; then \
+		echo "$$(tput setaf 1)WARN: You are about to deploy from a branch that is not master!$$(tput sgr 0)"; \
+		echo -n "If you are $$(tput setaf 1)SUPER DUPER SURE$$(tput sgr 0) you wish to do this, type yes: "; \
+		read -r answer; \
+		if [[ "$$answer" == "yes" ]]; then \
+			echo "Okay have fun!"; \
+		else \
+			echo "That's a good call too, better luck next time."; \
+			exit 1; \
+		fi; \
+	fi
 
 config/.written:
 	$(TOP)/bin/write-config-files \

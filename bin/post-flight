@@ -2,33 +2,41 @@
 set -o errexit
 
 main() {
-  [ -n "${SLACK_WEBHOOK}" ] || {
-    echo "Missing SLACK_WEBHOOK variable"
+  [[ "${SLACK_WEBHOOK}" ]] || {
+    echo 'Missing SLACK_WEBHOOK variable'
     exit 1
   }
 
+  local graphname
+  graphname="$(basename "$(pwd)")"
+
+  if [[ "${graphname}" != *production* ]] && [[ "${graphname}" != *2* ]]; then
+    echo "Skipping Slack notification for '${graphname}'"
+    exit 0
+  fi
+
   local formatted_text
-  formatted_text="$(__format_text "$(ps -o args= "${PPID}")" "$(pwd)")"
+  formatted_text="$(__format_text "$(ps -o args= "${PPID}")" "${graphname}")"
   payload='{
     "channel": "#infra-terraform",
     "username": "terraform-config",
     "text": "'"${formatted_text}"'",
-    "icon_emoji":":computer:"
+    "icon_emoji": ":terraform:"
   }'
 
-  echo 'Sending Slack notification... '
+  echo "Sending Slack notification for ${graphname}... "
   curl -X POST --data-urlencode "payload=${payload}" "${SLACK_WEBHOOK}"
 }
 
 __format_text() {
   local cmd="${1}"
-  local dir="${2}"
+  local graphname="${2}"
   local user="${SLACK_USER:-$USER}"
 
   cat <<EOF
-*terraform action* :warning:
-  ${user} ran \`${cmd}\` in \`$(basename "${dir}")\`
-  on branch @ commit: \`$(__git_branch_at_commit)\`$(__format_dirty_files)
+*terraform action* :peridot-spin:
+  ${user} ran \`${cmd}\` in \`${graphname}\`
+  on: \`$(__git_branch_at_commit)\`$(__format_dirty_files)
 EOF
 }
 
@@ -54,4 +62,4 @@ __git_diff_names() {
   popd &>/dev/null
 }
 
-main "$@"
+main "${@}"
