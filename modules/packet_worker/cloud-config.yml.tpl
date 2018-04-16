@@ -32,16 +32,6 @@ write_files:
   owner: 'root:root'
   path: /var/tmp/travis-run.d/check-unregister-netdevice
   permissions: '0750'
-- content: '${base64encode(file("${assets}/travis-worker/check-docker-health.bash"))}'
-  encoding: b64
-  owner: 'root:root'
-  path: /var/tmp/travis-run.d/check-docker-health
-  permissions: '0750'
-- content: '${base64encode(file("${assets}/travis-worker/check-docker-health.crontab"))}'
-  encoding: b64
-  owner: 'root:root'
-  path: /etc/cron.d/check-docker-health.crontab
-  permissions: '0644'
 - content: '${base64encode(file("${assets}/travis-worker/kill-old-containers.bash"))}'
   encoding: b64
   owner: 'root:root'
@@ -50,7 +40,7 @@ write_files:
 - content: '${base64encode(file("${assets}/travis-worker/kill-old-containers.crontab"))}'
   encoding: b64
   owner: 'root:root'
-  path: /etc/cron.d/kill-old-containers.crontab
+  path: /etc/cron.d/travis-worker-kill-old-containers.crontab
   permissions: '0644'
 - content: '${base64encode(file("${assets}/travis-worker/high-cpu-check.bash"))}'
   encoding: b64
@@ -60,7 +50,7 @@ write_files:
 - content: '${base64encode(file("${assets}/travis-worker/high-cpu-check.crontab"))}'
   encoding: b64
   owner: 'root:root'
-  path: /etc/cron.d/high-cpu-check.crontab
+  path: /etc/cron.d/travis-worker-high-cpu-check.crontab
   permissions: '0644'
 - content: '${base64encode(syslog_address)}'
   encoding: b64
