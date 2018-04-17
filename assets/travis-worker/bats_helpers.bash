@@ -25,8 +25,7 @@ aws_asg_setup() {
     "${ETCDIR}/hosts" \
     "${ETCDIR}/hostname" \
     "${MOCKLOG}" \
-    "${VARTMP}/travis-worker.service" \
-    "${VARTMP}/travis-worker.conf"
+    "${VARTMP}/travis-worker.service"
 
   echo "i-${RANDOM}" >"${RUNDIR}/instance-id"
   echo "flibbity-flob-${RANDOM}.example.com" >"${RUNDIR}/registry-hostname"

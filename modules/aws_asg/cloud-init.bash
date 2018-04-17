@@ -36,19 +36,11 @@ main() {
 
   chown -R travis:travis "${RUNDIR}"
 
-  if [[ -d "${ETCDIR}/systemd/system" ]]; then
-    cp -v "${VARTMP}/travis-worker.service" \
-      "${ETCDIR}/systemd/system/travis-worker.service"
-    systemctl enable travis-worker || true
-  fi
-
-  if [[ -d "${ETCDIR}/init" ]]; then
-    cp -v "${VARTMP}/travis-worker.conf" \
-      "${ETCDIR}/init/travis-worker.conf"
-  fi
-
-  service travis-worker stop || true
-  service travis-worker start || true
+  cp -v "${VARTMP}/travis-worker.service" \
+    "${ETCDIR}/systemd/system/travis-worker.service"
+  systemctl enable travis-worker || true
+  systemctl stop travis-worker || true
+  systemctl start travis-worker || true
 
   # The command below drops any requests to the AWS metadata API.
   iptables -I FORWARD -d 169.254.169.254 -j REJECT
