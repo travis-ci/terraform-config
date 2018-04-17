@@ -4,7 +4,6 @@ load bats_helpers
 
 setup() {
   aws_asg_setup
-
 }
 
 teardown() {

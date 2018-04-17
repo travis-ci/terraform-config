@@ -70,7 +70,7 @@ write_files:
 - content: '${base64encode(file("${assets}/travis-worker/check-docker-health.crontab"))}'
   encoding: b64
   owner: 'root:root'
-  path: /etc/cron.d/check-docker-health.crontab
+  path: /etc/cron.d/travis-worker-check-docker-health
   permissions: '0644'
 - content: '${base64encode(file("${assets}/travis-worker/clean-up-containers.bash"))}'
   encoding: b64
@@ -80,7 +80,7 @@ write_files:
 - content: '${base64encode(file("${assets}/travis-worker/clean-up-containers.crontab"))}'
   encoding: b64
   owner: 'root:root'
-  path: /etc/cron.d/clean-up-containers.crontab
+  path: /etc/cron.d/travis-worker-clean-up-containers
   permissions: '0644'
 - content: '${base64encode(file("${assets}/travis-worker/high-cpu-check.bash"))}'
   encoding: b64
@@ -90,7 +90,7 @@ write_files:
 - content: '${base64encode(file("${assets}/travis-worker/high-cpu-check.crontab"))}'
   encoding: b64
   owner: 'root:root'
-  path: /etc/cron.d/high-cpu-check.crontab
+  path: /etc/cron.d/travis-worker-high-cpu-check
   permissions: '0644'
 - content: '${base64encode(file("${assets}/travis-worker/travis-worker.service"))}'
   encoding: b64
