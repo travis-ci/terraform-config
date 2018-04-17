@@ -66,3 +66,7 @@ write_files:
   encoding: b64
   permissions: '0755'
   path: /var/tmp/travis-cloud-init.bash
+- content: '${base64encode(file("${assets}/bits/travis-packet-privnet-setup.bash"))}'
+  encoding: b64
+  permissions: '0755'
+  path: /var/lib/cloud/scripts/per-boot/00-travis-packet-privnet-setup
