@@ -3,6 +3,10 @@ set -o errexit
 set -o pipefail
 
 main() {
+  if [[ "${DEBUG}" ]]; then
+    set -o xtrace
+  fi
+
   # shellcheck disable=SC2153
   : "${MAX_AGE:=12000}"
   : "${CREDS_FILE:=/etc/default/travis-worker}"
@@ -20,13 +24,9 @@ main() {
   local killed_count=0
   local not_killed_count=0
   local status=noop
-  local cids
-  read -r -a cids <<<"$(docker ps -q)"
 
-  if [[ ! "${LIBRATO_CREDENTIALS}" ]]; then
-    __logger error 'No Librato credentials defined, aborting'
-    __die error 1 0 0
-  fi
+  local cids
+  read -r -a cids <<<"$(docker ps -a -q | tr "\n" ' ')"
 
   if [[ "${#cids[@]}" -eq 0 ]]; then
     __logger warning 'No containers running, aborting'
@@ -43,8 +43,15 @@ main() {
     fi
 
     if ! __container_is_newer_than "${cid}" "${max_age}"; then
-      __logger info "${cid} is older than ${max_age}; killing it! (${cn})"
-      docker kill "${cid}"
+      __logger info "${cid} is older than ${max_age}; removing! (name=${cn})"
+
+      docker kill "${cid}" ||
+        __logger warning "failed to kill container name=${cn}"
+      docker stop "${cid}" ||
+        __logger warning "failed to stop container name=${cn}"
+      docker rm -f "${cid}" ||
+        __logger warning "failed to remove container name=${cn}"
+
       killed_count="$((killed_count + 1))"
       status=killed
     else
@@ -60,7 +67,7 @@ __logger() {
   local now
   now="$(date -u --iso-8601=seconds)"
   local log_msg="tag=cron time=${now} level=${level} msg=\"${msg}\" ${*}"
-  logger -t kill-old-containers "${log_msg}"
+  logger -t clean-up-containers "${log_msg}"
 }
 
 __die() {
@@ -78,6 +85,12 @@ __die() {
 }
 
 __report_kills() {
+  if [[ "${LIBRATO_CREDENTIALS}" == : ]] ||
+    [[ ! "${LIBRATO_CREDENTIALS}" ]]; then
+    __logger error 'No Librato credentials defined; not reporting'
+    return
+  fi
+
   local count_killed="${1}"
   local count_not_killed="${2}"
   local now
@@ -114,6 +127,7 @@ EOF
   )"
 
   curl \
+    -s \
     -u "${LIBRATO_CREDENTIALS}" \
     -H 'Content-Type: application/json' \
     -d $"${request_body}" \
