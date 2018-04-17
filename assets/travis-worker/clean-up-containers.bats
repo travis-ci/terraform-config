@@ -10,8 +10,8 @@ teardown() {
   aws_asg_teardown
 }
 
-run_kill_old_containers() {
-  bash "${BATS_TEST_DIRNAME}/kill-old-containers.bash"
+run_clean_up_containers() {
+  DEBUG=1 bash "${BATS_TEST_DIRNAME}/clean-up-containers.bash"
 }
 
 @test "is a no-op if there are no containers" {
@@ -22,10 +22,10 @@ EOF
 20171030T153252
 EOF
 
-  run run_kill_old_containers
+  run run_clean_up_containers
 
   [ "${status}" -eq 0 ]
-  assert_cmd "kill-old-containers tag=cron time=20171030T153252 level=info msg=\"cron finished\" status=warning killed=0 running=0"
+  assert_cmd "clean-up-containers tag=cron time=20171030T153252 level=info msg=\"cron finished\" status=warning killed=0 running=0"
 }
 
 @test "is a no-op if only travis-worker container is running" {
@@ -37,9 +37,9 @@ EOF
 /travis-worker
 EOF
 
-  run run_kill_old_containers
+  run run_clean_up_containers
 
   [ "${status}" -eq 0 ]
 
-  assert_cmd "kill-old-containers tag=cron time=20171030T153252 level=info msg=\"cron finished\" status=noop killed=0 running=1"
+  assert_cmd "clean-up-containers tag=cron time=20171030T153252 level=info msg=\"cron finished\" status=noop killed=0 running=1"
 }

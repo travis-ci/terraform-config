@@ -38,18 +38,10 @@ write_files:
 - content: '${base64encode(syslog_address)}'
   encoding: b64
   path: /var/tmp/travis-run.d/syslog-address
-- content: '${base64encode(file("${assets}/travis-worker/travis-worker.conf"))}'
-  encoding: b64
-  owner: 'root:root'
-  path: /var/tmp/travis-worker.conf
 - content: '${base64encode(file("${assets}/travis-worker/travis-worker@.service"))}'
   encoding: b64
   owner: 'root:root'
   path: /var/tmp/travis-worker@.service
-- content: '${base64encode(file("${assets}/travis-worker/rsyslog-watch-upstart.conf"))}'
-  encoding: b64
-  owner: 'root:root'
-  path: /etc/rsyslog.d/60-travis-worker.conf
 - content: '${base64encode(file("${assets}/rsyslog/rsyslog.conf"))}'
   encoding: b64
   owner: 'root:root'
