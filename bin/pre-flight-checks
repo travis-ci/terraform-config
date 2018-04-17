@@ -2,7 +2,7 @@
 set -o errexit
 
 die() {
-  stderr_echo "$@" && exit 1
+  stderr_echo "$(tput setaf 1)$@ $(tput sgr0)" && exit 1
 }
 
 stderr_echo() {
@@ -10,9 +10,10 @@ stderr_echo() {
 }
 
 check_github() {
-  echo "Attempting to authenticate with GitHub..."
+  # FIXME: not actually checking org membership here
   : "${GITHUB_ORG:=travis-infrastructure}"
   : "${GITHUB_TEAM:=2420497}"
+  echo "Attempting to authenticate with GitHub... (${GITHUB_ORG}/${GITHUB_TEAM})"
 
   auth="${GITHUB_USERNAME}:${GITHUB_TOKEN}"
   cmd="curl --silent \
@@ -21,7 +22,7 @@ check_github() {
     https://${auth}@api.github.com/teams/${GITHUB_TEAM}/members"
   status_code=$(eval "$cmd")
   if test "$status_code" -eq 200; then
-    stderr_echo " [OK] GitHub"
+    stderr_echo " [OK] GitHub (${GITHUB_ORG})"
   else
     die "[NOK] GitHub: Got status code ${status_code} when attempting to authenticate!
           This is the command I ran to check:
@@ -55,6 +56,20 @@ check_heroku() {
   done
 }
 
+check_gcloud() {
+  # See if we're authed to gcloud with an @travis-ci.org or @travis-ci.com address.
+  authed_account="$(gcloud auth list --filter=status:ACTIVE --format="value(account)")"
+  expected_substring="@travis-ci"
+  if ! [[ "${authed_account}" == *"${expected_substring}"* ]]; then
+    read -r -d '' VAR << EOM
+    [NOK] gcloud: Unknown or missing authed account "$authed_account".
+      Make sure that the command below produces output that includes the substring '${expected_substring}'
+        $ gcloud auth list --filter=status:ACTIVE --format="value(account)"
+EOM
+    die "${VAR}"
+  fi
+}
+
 DEPENDENCIES="
   jq
   terraform
@@ -62,12 +77,15 @@ DEPENDENCIES="
   shfmt
   shellcheck
   bats
+  aws
+  gcloud
+  ruby
 "
 check_dependencies() {
   STATUS=0
   for dependency in $DEPENDENCIES; do
     if ! command -v "$dependency" >/dev/null; then
-      echo "[NOK] Could not find dependency $dependency."
+      stderr_echo "[NOK] Could not find dependency $dependency."
       STATUS=1
     fi
   done
@@ -83,6 +101,7 @@ check_envvars() {
         GITHUB_USERNAME
         HEROKU_API_KEY
         TRAVIS_KEYCHAIN_DIR
+        SLACK_WEBHOOK
     "
 
   STATUS=0
@@ -102,8 +121,9 @@ check_envvars() {
 
 main() {
   check_dependencies || die "Aborting; see errors above." && stderr_echo " [OK] Dependencies"
+  check_gcloud && stderr_echo " [OK] gcloud"
   check_envvars || die "Aborting; see errors above." && stderr_echo " [OK] Envvars"
-  check_github && stderr_echo " [OK] GitHub"
+  GITHUB_ORG=travis-core check_github #&& stderr_echo " [OK] GitHub"
   check_heroku && stderr_echo " [OK] Heroku"
 }
 
