@@ -7,10 +7,13 @@ main() {
   docker stop "${name}" &>/dev/null || true
   docker rm -f "${name}" &>/dev/null || true
 
-  local run_dir=/var/tmp/travis-run.d
-  mkdir -p "${run_dir}"
-  local env_file="${run_dir}/${name}.env"
-  travis-combined-env travis-worker "${env_file}"
+  local env_file
+  if tfw --version 2>/dev/null; then
+    env_file="$(tfw writeenv travis-worker)"
+  else
+    env_file=/var/tmp/travis-run.d/travis-worker
+    travis-combined-env travis-worker "${env_file}"
+  fi
 
   set -o allexport
   # shellcheck source=/dev/null

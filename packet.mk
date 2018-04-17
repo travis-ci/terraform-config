@@ -3,6 +3,7 @@ SHELL := bash
 TOP := $(shell git rev-parse --show-toplevel)
 
 include $(TOP)/terraform-common.mk
+include $(TOP)/trvs.mk
 
 .PHONY: default
 default: hello
@@ -13,8 +14,7 @@ CONFIG_FILES := \
 	config/travis-com.env \
 	config/travis-org.env \
 	config/worker-com.env \
-	config/worker-org.env \
-	$(TFWBZ2)
+	config/worker-org.env
 
 .PHONY: .config
 .config: $(CONFIG_FILES) $(ENV_NAME).auto.tfvars

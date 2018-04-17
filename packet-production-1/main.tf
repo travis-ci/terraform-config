@@ -1,5 +1,5 @@
 variable "env" {
-  default = "staging"
+  default = "production"
 }
 
 variable "github_users" {}
@@ -8,19 +8,24 @@ variable "index" {
   default = 1
 }
 
-variable "latest_docker_image_amethyst" {}
-variable "latest_docker_image_garnet" {}
-variable "latest_docker_image_worker" {}
 variable "librato_email" {}
 variable "librato_token" {}
 variable "project_id" {}
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
 
+variable "amethyst_image" {
+  default = "travisci/ci-amethyst:packer-1512508255-986baf0"
+}
+
+variable "garnet_image" {
+  default = "travisci/ci-garnet:packer-1512502276-986baf0"
+}
+
 terraform {
   backend "s3" {
     bucket         = "travis-terraform-state"
-    key            = "terraform-config/packet-staging-1.tfstate"
+    key            = "terraform-config/packet-production-1.tfstate"
     region         = "us-east-1"
     encrypt        = "true"
     dynamodb_table = "travis-terraform-state"
@@ -35,7 +40,7 @@ data "terraform_remote_state" "vpc" {
 
   config {
     bucket         = "travis-terraform-state"
-    key            = "terraform-config/packet-staging-net-1.tfstate"
+    key            = "terraform-config/packet-production-net-1.tfstate"
     region         = "us-east-1"
     dynamodb_table = "travis-terraform-state"
   }
@@ -83,17 +88,17 @@ module "packet_workers_com" {
   syslog_address              = "${var.syslog_address_com}"
   terraform_privkey           = "${data.terraform_remote_state.vpc.terraform_privkey}"
   worker_config               = "${data.template_file.worker_config_com.rendered}"
-  worker_docker_image_android = "${var.latest_docker_image_amethyst}"
-  worker_docker_image_default = "${var.latest_docker_image_garnet}"
-  worker_docker_image_erlang  = "${var.latest_docker_image_amethyst}"
-  worker_docker_image_go      = "${var.latest_docker_image_garnet}"
-  worker_docker_image_haskell = "${var.latest_docker_image_amethyst}"
-  worker_docker_image_jvm     = "${var.latest_docker_image_garnet}"
-  worker_docker_image_node_js = "${var.latest_docker_image_garnet}"
-  worker_docker_image_perl    = "${var.latest_docker_image_amethyst}"
-  worker_docker_image_php     = "${var.latest_docker_image_garnet}"
-  worker_docker_image_python  = "${var.latest_docker_image_garnet}"
-  worker_docker_image_ruby    = "${var.latest_docker_image_garnet}"
+  worker_docker_image_android = "${var.amethyst_image}"
+  worker_docker_image_default = "${var.garnet_image}"
+  worker_docker_image_erlang  = "${var.amethyst_image}"
+  worker_docker_image_go      = "${var.garnet_image}"
+  worker_docker_image_haskell = "${var.amethyst_image}"
+  worker_docker_image_jvm     = "${var.garnet_image}"
+  worker_docker_image_node_js = "${var.garnet_image}"
+  worker_docker_image_perl    = "${var.amethyst_image}"
+  worker_docker_image_php     = "${var.garnet_image}"
+  worker_docker_image_python  = "${var.garnet_image}"
+  worker_docker_image_ruby    = "${var.garnet_image}"
 }
 
 module "packet_workers_org" {
@@ -112,15 +117,15 @@ module "packet_workers_org" {
   syslog_address              = "${var.syslog_address_org}"
   terraform_privkey           = "${data.terraform_remote_state.vpc.terraform_privkey}"
   worker_config               = "${data.template_file.worker_config_org.rendered}"
-  worker_docker_image_android = "${var.latest_docker_image_amethyst}"
-  worker_docker_image_default = "${var.latest_docker_image_garnet}"
-  worker_docker_image_erlang  = "${var.latest_docker_image_amethyst}"
-  worker_docker_image_go      = "${var.latest_docker_image_garnet}"
-  worker_docker_image_haskell = "${var.latest_docker_image_amethyst}"
-  worker_docker_image_jvm     = "${var.latest_docker_image_garnet}"
-  worker_docker_image_node_js = "${var.latest_docker_image_garnet}"
-  worker_docker_image_perl    = "${var.latest_docker_image_amethyst}"
-  worker_docker_image_php     = "${var.latest_docker_image_garnet}"
-  worker_docker_image_python  = "${var.latest_docker_image_garnet}"
-  worker_docker_image_ruby    = "${var.latest_docker_image_garnet}"
+  worker_docker_image_android = "${var.amethyst_image}"
+  worker_docker_image_default = "${var.garnet_image}"
+  worker_docker_image_erlang  = "${var.amethyst_image}"
+  worker_docker_image_go      = "${var.garnet_image}"
+  worker_docker_image_haskell = "${var.amethyst_image}"
+  worker_docker_image_jvm     = "${var.garnet_image}"
+  worker_docker_image_node_js = "${var.garnet_image}"
+  worker_docker_image_perl    = "${var.amethyst_image}"
+  worker_docker_image_php     = "${var.garnet_image}"
+  worker_docker_image_python  = "${var.garnet_image}"
+  worker_docker_image_ruby    = "${var.garnet_image}"
 }
