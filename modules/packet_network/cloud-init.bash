@@ -93,10 +93,10 @@ __setup_networking() {
     iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
   fi
 
-  if ! iptables -C INPUT --src ! "$(__find_local_subnet)" -j LOG --log-prefix "SPOOF"; then
-    iptables -A INPUT --src ! "$(__find_local_subnet)" -j LOG --log-prefix "SPOOF"
-    if ! iptables -C INPUT --src ! "$(__find_local_subnet)" -j DROP; then
-      iptables -A INPUT --src ! "$(__find_local_subnet)" -j DROP
+  if ! iptables -C INPUT --in-interface "$(__find_local_interface)" --src ! "$(__find_local_subnet)" -j LOG --log-prefix "SPOOF"; then
+    iptables -A INPUT --in-interface "$(__find_local_interface)" --src ! "$(__find_local_subnet)" -j LOG --log-prefix "SPOOF"
+    if ! iptables -C INPUT --in-interface "$(__find_local_interface)" --src ! "$(__find_local_subnet)" -j DROP; then
+      iptables -A INPUT --in-interface "$(__find_local_interface)" --src ! "$(__find_local_subnet)" -j DROP
     fi
   fi
 }
@@ -108,10 +108,16 @@ __find_public_interface() {
   echo "${iface:-bond0}"
 }
 
+__find_local_interface() {
+  local iface=enp1s0f1
+  subnet="$(ip -o addr show | grep -v inet6 | grep -v " lo " | grep -v "bond" |
+    grep -v "docker" | awk '{ print $2}')"
+  echo "${iface:-enp1s0f1}"
+}
+
 __find_local_subnet() {
   local subnet="192.168.0.1/24"
-  subnet="$(ip -o addr | grep -v inet6 | grep -v " lo " | grep -v "bond" |
-    grep -v "docker" | awk '{ print $4}')"
+  subnet="$(ip -o addr show $(__find_local_interface) | awk '{ print $4}')"
   echo "${subnet:-"192.168.0.1/24"}"
 }
 
