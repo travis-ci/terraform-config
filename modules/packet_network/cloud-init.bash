@@ -92,6 +92,13 @@ __setup_networking() {
   if ! iptables -C FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT; then
     iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
   fi
+
+  if ! iptables -C INPUT --src ! "$(__find_local_subnet)" -j LOG --log-prefix "SPOOF"; then
+    iptables -A INPUT --src ! "$(__find_local_subnet)" -j LOG --log-prefix "SPOOF"
+    if ! iptables -C INPUT --src ! "$(__find_local_subnet)" -j DROP; then
+      iptables -A INPUT --src ! "$(__find_local_subnet)" -j DROP
+    fi
+  fi
 }
 
 __find_public_interface() {
@@ -99,6 +106,13 @@ __find_public_interface() {
   iface="$(ip -o addr show | grep -vE 'inet (172|127|10|192)\.' | grep -v inet6 |
     awk '{ print $2 }' | grep -v '^lo$' | head -n 1)"
   echo "${iface:-bond0}"
+}
+
+__find_local_subnet() {
+  local subnet="192.168.0.1/24"
+  subnet="$(ip -o addr | grep -v inet6 | grep -v " lo " | grep -v "bond" |
+    grep -v "docker" | awk '{ print $4}')"
+  echo "${subnet:-"192.168.0.1/24"}"
 }
 
 __find_elastic_ip() {
