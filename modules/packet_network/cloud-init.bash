@@ -117,7 +117,7 @@ __find_local_interface() {
 
 __find_local_subnet() {
   local subnet="192.168.0.1/24"
-  subnet="$(ip -o addr show $(__find_local_interface) | awk '{ print $4}')"
+  subnet="$(ip -o addr show "$(__find_local_interface)" | awk '{ print $4}')"
   echo "${subnet:-"192.168.0.1/24"}"
 }
 
