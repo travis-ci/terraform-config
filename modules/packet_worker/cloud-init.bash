@@ -77,6 +77,12 @@ __setup_travis_user() {
 __setup_sysctl() {
   echo 1048576 >/proc/sys/fs/aio-max-nr
   sysctl -w fs.aio-max-nr=1048576
+
+  local poolsize="$(awk -F= '/TRAVIS_WORKER_POOL_SIZE/{print $2; exit}' /etc/default/travis-worker 2>/dev/null || true)"
+  local inotify_max="$(( 8192 * ${poolsize:-15} ))"
+  echo "$inotify_max" > /proc/sys/fs/inotify/max_user_instances
+  sysctl -w fs.inotify.max_user_instances="$inotify_max"
+
 }
 
 __setup_networking() {

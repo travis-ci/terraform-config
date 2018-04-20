@@ -34,6 +34,8 @@ main() {
 
   __set_aio_max_nr
 
+  __set_max_inotify_instances
+
   chown -R travis:travis "${RUNDIR}"
 
   cp -v "${VARTMP}/travis-worker.service" \
@@ -85,6 +87,13 @@ __set_aio_max_nr() {
   # which is the default on trusty.  The value we set here is 16^5, which is one
   # power higher than the default of 16^4 :sparkles:.
   sysctl -w fs.aio-max-nr=1048576
+}
+
+__set_max_inotify_instances() {
+  local poolsize="$(awk -F= '/TRAVIS_WORKER_POOL_SIZE/{print $2; exit}' /etc/default/travis-worker 2>/dev/null || true)"
+  local inotify_max="$(( 8192 * ${poolsize:-15} ))"
+  echo "$inotify_max" > /proc/sys/fs/inotify/max_user_instances
+  sysctl -w fs.inotify.max_user_instances="$inotify_max"
 }
 
 main "$@"
