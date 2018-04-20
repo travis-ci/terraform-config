@@ -93,7 +93,6 @@ __set_max_inotify_instances() {
   local poolsize inotify_max
   poolsize="$(awk -F= '/TRAVIS_WORKER_POOL_SIZE/{print $2; exit}' /etc/default/travis-worker 2>/dev/null || true)"
   inotify_max="$((8192 * ${poolsize:-15}))"
-  echo "$inotify_max" >/proc/sys/fs/inotify/max_user_instances
   sysctl -w fs.inotify.max_user_instances="$inotify_max"
 }
 
