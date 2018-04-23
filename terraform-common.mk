@@ -67,6 +67,10 @@ console: announce
 plan: announce .config $(TRVS_TFVARS) $(TFSTATE)
 	$(TERRAFORM) plan -module-depth=-1 -out=$(TFPLAN)
 
+.PHONY: pplan
+pplan: announce .config $(TRVS_TFVARS) $(TFSTATE)
+	$(TERRAFORM) plan -module-depth=-1 -out=$(TFPLAN) | ruby -ne 'puts $$_.gsub(/(metadata.user-data: *")(.*)(".*)/, "\\1blurp\\3")'
+
 .PHONY: plandiff
 plandiff: $(TFPLAN)
 	$(TOP)/bin/tfplandiff $^
