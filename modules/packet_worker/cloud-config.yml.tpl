@@ -27,6 +27,31 @@ write_files:
   encoding: b64
   path: /usr/local/bin/travis-worker-wrapper
   permissions: '0755'
+- content: '${base64encode(file("${assets}/travis-worker/check-unregister-netdevice.bash"))}'
+  encoding: b64
+  owner: 'root:root'
+  path: /var/tmp/travis-run.d/check-unregister-netdevice
+  permissions: '0750'
+- content: '${base64encode(file("${assets}/travis-worker/clean-up-containers.bash"))}'
+  encoding: b64
+  owner: 'root:root'
+  path: /var/tmp/travis-run.d/clean-up-containers
+  permissions: '0750'
+- content: '${base64encode(file("${assets}/travis-worker/clean-up-containers.crontab"))}'
+  encoding: b64
+  owner: 'root:root'
+  path: /etc/cron.d/travis-worker-clean-up-containers
+  permissions: '0644'
+- content: '${base64encode(file("${assets}/travis-worker/high-cpu-check.bash"))}'
+  encoding: b64
+  owner: 'root:root'
+  path: /var/tmp/travis-run.d/high-cpu-check
+  permissions: '0750'
+- content: '${base64encode(file("${assets}/travis-worker/high-cpu-check.crontab"))}'
+  encoding: b64
+  owner: 'root:root'
+  path: /etc/cron.d/travis-worker-high-cpu-check
+  permissions: '0644'
 - content: '${base64encode(syslog_address)}'
   encoding: b64
   path: /var/tmp/travis-run.d/syslog-address
@@ -41,3 +66,7 @@ write_files:
   encoding: b64
   permissions: '0755'
   path: /var/tmp/travis-cloud-init.bash
+- content: '${base64encode(file("${assets}/bits/travis-packet-privnet-setup.bash"))}'
+  encoding: b64
+  permissions: '0755'
+  path: /var/lib/cloud/scripts/per-boot/00-travis-packet-privnet-setup

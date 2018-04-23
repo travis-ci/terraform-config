@@ -26,8 +26,8 @@ run_cloud_init() {
 
 @test "restarts travis-worker" {
   run_cloud_init
-  assert_cmd 'service travis-worker stop'
-  assert_cmd 'service travis-worker start'
+  assert_cmd 'systemctl stop travis-worker'
+  assert_cmd 'systemctl start travis-worker'
 }
 
 @test "disables access to ec2 metadata api" {

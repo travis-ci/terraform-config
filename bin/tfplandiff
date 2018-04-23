@@ -104,8 +104,9 @@ def expand_user_data(attr_def)
 end
 
 ATTRIBUTE_EXPANSIONS = {
+  /user_data/i => method(:expand_user_data),
   /^metadata\.user-data$/i => method(:expand_user_data),
-  /user_data$/i => method(:expand_user_data),
+  /^content$/i => method(:expand_user_data),
 }.freeze
 
 exit(main) if $PROGRAM_NAME == __FILE__

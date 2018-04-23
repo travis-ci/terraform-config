@@ -159,6 +159,8 @@ EOUSERDATA
 }
 
 resource "null_resource" "assign_private_network" {
+  count = "${var.server_count}"
+
   triggers {
     user_data_sha1 = "${sha1(data.template_file.cloud_config.rendered)}"
   }
@@ -169,13 +171,15 @@ resource "null_resource" "assign_private_network" {
     command = <<EOF
 exec ${path.module}/../../bin/packet-assign-private-network \
     --project-id=${var.project_id} \
-    --device-id=${packet_device.worker.id} \
+    --device-id=${element(packet_device.worker.*.id, count.index)} \
     --facility-id=${var.facility}
 EOF
   }
 }
 
 resource "null_resource" "cloud_config_copy" {
+  count = "${var.server_count}"
+
   triggers {
     cloud_config_sha1 = "${sha1(data.template_file.cloud_config.rendered)}"
   }
@@ -185,7 +189,7 @@ resource "null_resource" "cloud_config_copy" {
   connection {
     agent        = false
     bastion_host = "${var.nat_public_ip}"
-    host         = "192.168.${var.index}.${replace(packet_device.worker.access_private_ipv4, "/[0-9]+\\.[0-9]+\\.[0-9]+\\./", "")}"
+    host         = "192.168.${var.index}.${replace(element(packet_device.worker.*.access_private_ipv4, count.index), "/[0-9]+\\.[0-9]+\\.[0-9]+\\./", "")}"
     private_key  = "${data.tls_public_key.terraform.private_key_pem}"
     user         = "terraform"
   }

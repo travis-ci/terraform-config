@@ -15,13 +15,16 @@ main() {
   : "${ETCDIR:=/etc}"
   : "${RUNDIR:=/var/tmp/travis-run.d}"
   : "${VARTMP:=/var/tmp}"
+  : "${VARLIBDIR:=/var/lib}"
 
   export DEBIAN_FRONTEND=noninteractive
   chown nobody:nogroup "${VARTMP}"
   chmod 0777 "${VARTMP}"
 
   mkdir -p "${RUNDIR}"
-  echo "___INSTANCE_ID___-$(hostname)" >"${RUNDIR}/instance-hostname.tmpl"
+  if [[ ! -f "${RUNDIR}/instance-hostname.tmpl" ]]; then
+    echo "___INSTANCE_ID___-$(hostname)" >"${RUNDIR}/instance-hostname.tmpl"
+  fi
 
   for substep in \
     tfw \
@@ -83,6 +86,8 @@ __setup_networking() {
   done
 
   apt-get install -yqq iptables-persistent
+
+  "${VARLIBDIR}/cloud/scripts/per-boot/00-travis-packet-privnet-setup" || true
 }
 
 __setup_raid() {

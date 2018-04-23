@@ -123,4 +123,5 @@ module "packet_workers_org" {
   worker_docker_image_php     = "${var.latest_docker_image_garnet}"
   worker_docker_image_python  = "${var.latest_docker_image_garnet}"
   worker_docker_image_ruby    = "${var.latest_docker_image_garnet}"
+  worker_docker_self_image    = "${var.latest_docker_image_worker}"
 }

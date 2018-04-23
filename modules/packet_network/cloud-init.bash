@@ -20,6 +20,11 @@ main() {
   chown nobody:nogroup "${VARTMP}"
   chmod 0777 "${VARTMP}"
 
+  mkdir -p "${RUNDIR}"
+  if [[ ! -f "${RUNDIR}/instance-hostname.tmpl" ]]; then
+    echo "___INSTANCE_ID___-$(hostname)" >"${RUNDIR}/instance-hostname.tmpl"
+  fi
+
   for substep in \
     tfw \
     travis_user \
