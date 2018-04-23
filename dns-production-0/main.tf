@@ -39,7 +39,7 @@ data "dns_a_record_set" "gce_production_3_nat" {
 }
 
 data "dns_a_record_set" "gce_production_4_nat" {
-  host = "nat-production-5.gce-us-central1.travisci.net"
+  host = "nat-production-4.gce-us-central1.travisci.net"
 }
 
 data "dns_a_record_set" "gce_production_5_nat" {
