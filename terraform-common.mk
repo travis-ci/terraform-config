@@ -107,11 +107,11 @@ check:
 
 .PHONY: .ensure-git
 .ensure-git:
-	@if [[ "$$(git rev-parse --abbrev-ref HEAD)" != "master" ]]; then \
+	@if [ "$$(git rev-parse --abbrev-ref HEAD)" != "master" ]; then \
 		echo "$$(tput setaf 1)WARN: You are about to deploy from a branch that is not master!$$(tput sgr 0)"; \
 		echo -n "If you are $$(tput setaf 1)SUPER DUPER SURE$$(tput sgr 0) you wish to do this, type yes: "; \
 		read -r answer; \
-		if [[ "$$answer" == "yes" ]]; then \
+		if [ "$$answer" == "yes" ]; then \
 			echo "Okay have fun!"; \
 		else \
 			echo "That's a good call too, better luck next time."; \
