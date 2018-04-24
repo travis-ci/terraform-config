@@ -35,7 +35,8 @@ provider "packet" {}
 provider "aws" {}
 
 module "packet_network_ewr1" {
-  source              = "../modules/packet_network"
+  source = "../modules/packet_network"
+
   duo_api_hostname    = "${var.duo_api_hostname}"
   duo_integration_key = "${var.duo_integration_key}"
   duo_secret_key      = "${var.duo_secret_key}"
@@ -55,25 +56,26 @@ resource "aws_route53_record" "nat" {
   type    = "A"
   ttl     = 300
 
-  records = ["${module.packet_network_ewr1.nat_public_ip}"]
+  records = ["${module.packet_network_ewr1.nat_public_ips}"]
 }
 
 output "facility" {
   value = "${module.packet_network_ewr1.facility}"
 }
 
-output "nat_ip" {
-  value = "${module.packet_network_ewr1.nat_ip}"
+output "nat_ips" {
+  value = ["${module.packet_network_ewr1.nat_ips}"]
 }
 
-output "nat_maint_ip" {
-  value = "${module.packet_network_ewr1.nat_maint_ip}"
+output "nat_maint_ips" {
+  value = ["${module.packet_network_ewr1.nat_maint_ips}"]
 }
 
-output "nat_public_ip" {
-  value = "${module.packet_network_ewr1.nat_public_ip}"
+output "nat_public_ips" {
+  value = ["${module.packet_network_ewr1.nat_public_ips}"]
 }
 
 output "terraform_privkey" {
-  value = "${module.packet_network_ewr1.terraform_privkey}"
+  value     = "${module.packet_network_ewr1.terraform_privkey}"
+  sensitive = true
 }

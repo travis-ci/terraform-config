@@ -14,8 +14,15 @@ variable "github_users" {}
 variable "index" {}
 
 variable "project_id" {}
-variable "nat_ip" {}
-variable "nat_public_ip" {}
+
+variable "nat_ips" {
+  type = "list"
+}
+
+variable "nat_public_ips" {
+  type = "list"
+}
+
 variable "server_count" {}
 
 variable "server_plan" {
@@ -65,9 +72,11 @@ EOF
 }
 
 data "template_file" "network_env" {
+  # TODO: use different NAT ips when multiples present?
+
   template = <<EOF
-export TRAVIS_NETWORK_NAT_IP=${var.nat_ip}
-export TRAVIS_NETWORK_ELASTIC_IP=${var.nat_public_ip}
+export TRAVIS_NETWORK_NAT_IP=${var.nat_ips[0]}
+export TRAVIS_NETWORK_ELASTIC_IP=${var.nat_public_ips[0]}
 export TRAVIS_NETWORK_VLAN_GATEWAY=192.168.${var.index}.1
 EOF
 }
@@ -79,6 +88,7 @@ export TRAVIS_INSTANCE_INFRA_INDEX=${var.index}
 export TRAVIS_INSTANCE_INFRA_NAME=packet
 export TRAVIS_INSTANCE_INFRA_REGION=${var.facility}
 export TRAVIS_INSTANCE_ROLE=worker
+export TRAVIS_INSTANCE_TERRAFORM_PASSWORD=${random_id.terraform.hex}
 EOF
 }
 
@@ -119,6 +129,14 @@ data "template_file" "cloud_config" {
   }
 }
 
+resource "random_id" "terraform" {
+  keepers {
+    pubkey = "${data.tls_public_key.terraform.public_key_openssh}"
+  }
+
+  byte_length = 16
+}
+
 resource "local_file" "cloud_config_dump" {
   filename = "${path.module}/../../tmp/packet-${var.env}-${var.index}-worker-${var.site}-user-data.yml"
   content  = "${data.template_file.cloud_config.rendered}"
@@ -148,7 +166,18 @@ cat >/etc/default/travis-instance <<'EOENV'
 ${data.template_file.instance_env.rendered}
 EOENV
 
+cat >/etc/default/travis-instance-cloud-init <<'EOENV'
+export TRAVIS_INSTANCE_NAME=${format("${var.env}-${var.index}-worker-${var.site}-%02d", count.index + 1)}
+export TRAVIS_INSTANCE_FQDN=${format("${var.env}-${var.index}-worker-${var.site}-%02d.packet-${var.facility}.travisci.net", count.index + 1)}
+EOENV
+
+source /etc/default/travis-instance
+
 ${file("${path.module}/../../assets/bits/ensure-tfw.bash")}
+
+tfw bootstrap
+systemctl stop fail2ban || true
+
 ${file("${path.module}/../../assets/bits/terraform-user-bootstrap.bash")}
 ${file("${path.module}/../../assets/bits/travis-packet-privnet-setup.bash")}
 EOUSERDATA
@@ -188,7 +217,7 @@ resource "null_resource" "cloud_config_copy" {
 
   connection {
     agent        = false
-    bastion_host = "${var.nat_public_ip}"
+    bastion_host = "${var.nat_public_ips[0]}"
     host         = "192.168.${var.index}.${replace(element(packet_device.worker.*.access_private_ipv4, count.index), "/[0-9]+\\.[0-9]+\\.[0-9]+\\./", "")}"
     private_key  = "${data.tls_public_key.terraform.private_key_pem}"
     user         = "terraform"

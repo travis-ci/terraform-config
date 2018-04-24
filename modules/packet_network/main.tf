@@ -12,6 +12,10 @@ variable "index" {}
 variable "librato_email" {}
 variable "librato_token" {}
 
+variable "nat_server_count" {
+  default = 1
+}
+
 variable "nat_server_plan" {
   default = "c2.medium.x86"
 }
@@ -21,19 +25,12 @@ variable "syslog_address" {}
 
 data "template_file" "duo_config" {
   template = <<EOF
-# Written by cloud-init :heart:
+# Written by terraform :heart:
 [duo]
 ikey = ${var.duo_integration_key}
 skey = ${var.duo_secret_key}
 host = ${var.duo_api_hostname}
 failmode = secure
-EOF
-}
-
-data "template_file" "network_env" {
-  template = <<EOF
-export TRAVIS_NETWORK_ELASTIC_IP=${cidrhost(packet_reserved_ip_block.ips.cidr_notation, 0)}
-export TRAVIS_NETWORK_VLAN_IP=192.168.${var.index}.1
 EOF
 }
 
@@ -44,27 +41,15 @@ export LIBRATO_TOKEN=${var.librato_token}
 EOF
 }
 
-data "template_file" "instance_env" {
-  template = <<EOF
-export TRAVIS_INSTANCE_INFRA_ENV=${var.env}
-export TRAVIS_INSTANCE_INFRA_INDEX=${var.index}
-export TRAVIS_INSTANCE_INFRA_NAME=packet
-export TRAVIS_INSTANCE_INFRA_REGION=${var.facility}
-export TRAVIS_INSTANCE_ROLE=nat
-EOF
-}
-
-data "template_file" "cloud_config" {
-  template = "${file("${path.module}/cloud-config.yml.tpl")}"
+data "template_file" "nat_dynamic_config" {
+  template = "${file("${path.module}/nat-dynamic-config.yml.tpl")}"
 
   vars {
     assets           = "${path.module}/../../assets"
     duo_config       = "${data.template_file.duo_config.rendered}"
     github_users_env = "export GITHUB_USERS='${var.github_users}'"
     here             = "${path.module}"
-    instance_env     = "${data.template_file.instance_env.rendered}"
     librato_env      = "${data.template_file.librato_env.rendered}"
-    network_env      = "${data.template_file.network_env.rendered}"
     syslog_address   = "${var.syslog_address}"
   }
 }
@@ -72,7 +57,7 @@ data "template_file" "cloud_config" {
 resource "packet_reserved_ip_block" "ips" {
   project_id = "${var.project_id}"
   facility   = "${var.facility}"
-  quantity   = 1
+  quantity   = "${var.nat_server_count}"
 }
 
 resource "tls_private_key" "terraform" {
@@ -80,41 +65,44 @@ resource "tls_private_key" "terraform" {
   rsa_bits  = 4096
 }
 
-resource "local_file" "cloud_config_dump" {
-  filename = "${path.module}/../../tmp/packet-${var.env}-${var.index}-nat-user-data.yml"
-  content  = "${data.template_file.cloud_config.rendered}"
+resource "random_id" "terraform" {
+  keepers {
+    pubkey = "${tls_private_key.terraform.public_key_openssh}"
+  }
+
+  byte_length = 16
+}
+
+data "template_file" "nat_user_data" {
+  count = "${var.nat_server_count}"
+
+  template = "${file("${path.module}/nat-user-data.bash.tpl")}"
+
+  vars {
+    assets                       = "${path.module}/../../assets"
+    elastic_ip                   = "${cidrhost(element(packet_reserved_ip_block.ips.*.cidr_notation, count.index), count.index)}"
+    env                          = "${var.env}"
+    facility                     = "${var.facility}"
+    index                        = "${var.index}"
+    instance_fqdn                = "${format("${var.env}-${var.index}-nat-%02d.packet-${var.facility}.travisci.net", count.index + 1)}"
+    instance_name                = "${format("${var.env}-${var.index}-nat-%02d", count.index + 1)}"
+    terraform_private_key_pem    = "${tls_private_key.terraform.private_key_pem}"
+    terraform_public_key_openssh = "${tls_private_key.terraform.public_key_openssh}"
+    terraform_password           = "${random_id.terraform.hex}"
+    vlan_ip                      = "192.168.${var.index}.${count.index + 1}"
+  }
 }
 
 resource "packet_device" "nat" {
+  count = "${var.nat_server_count}"
+
   billing_cycle    = "${var.billing_cycle}"
   facility         = "${var.facility}"
-  hostname         = "${var.env}-${var.index}-nat"
+  hostname         = "${format("${var.env}-${var.index}-nat-%02d", count.index + 1)}"
   operating_system = "ubuntu_16_04"
   plan             = "${var.nat_server_plan}"
   project_id       = "${var.project_id}"
-
-  user_data = <<EOUSERDATA
-#!/usr/bin/env bash
-cat >/var/tmp/terraform_rsa.pub <<EOPUBKEY
-${tls_private_key.terraform.public_key_openssh}
-EOPUBKEY
-
-cat >/var/tmp/terraform_rsa <<EOPRIVKEY
-${tls_private_key.terraform.private_key_pem}
-EOPRIVKEY
-
-cat >/etc/default/travis-network <<'EOENV'
-${data.template_file.network_env.rendered}
-EOENV
-
-cat >/etc/default/travis-instance <<'EOENV'
-${data.template_file.instance_env.rendered}
-EOENV
-
-${file("${path.module}/../../assets/bits/ensure-tfw.bash")}
-${file("${path.module}/../../assets/bits/terraform-user-bootstrap.bash")}
-${file("${path.module}/../../assets/bits/travis-packet-privnet-setup.bash")}
-EOUSERDATA
+  user_data        = "${element(data.template_file.nat_user_data.*.rendered, count.index)}"
 
   lifecycle {
     ignore_changes = ["root_password", "user_data"]
@@ -122,8 +110,10 @@ EOUSERDATA
 }
 
 resource "null_resource" "assign_private_network" {
+  count = "${var.nat_server_count}"
+
   triggers {
-    cloud_config_sha1 = "${sha1(data.template_file.cloud_config.rendered)}"
+    nat_dynamic_config_sha1 = "${sha1(data.template_file.nat_dynamic_config.rendered)}"
   }
 
   depends_on = ["packet_device.nat"]
@@ -132,54 +122,62 @@ resource "null_resource" "assign_private_network" {
     command = <<EOF
 exec ${path.module}/../../bin/packet-assign-private-network \
     --project-id=${var.project_id} \
-    --device-id=${packet_device.nat.id} \
+    --device-id=${element(packet_device.nat.*.id, count.index)} \
     --facility-id=${var.facility}
 EOF
   }
 }
 
-resource "null_resource" "cloud_config_copy" {
+resource "null_resource" "nat_dynamic_config_copy" {
+  count = "${var.nat_server_count}"
+
   triggers {
-    cloud_config_sha1 = "${sha1(data.template_file.cloud_config.rendered)}"
+    nat_dynamic_config_sha1 = "${sha1(data.template_file.nat_dynamic_config.rendered)}"
   }
 
-  depends_on = ["packet_device.nat", "local_file.cloud_config_dump"]
+  depends_on = ["packet_device.nat"]
 
   connection {
     user        = "terraform"
-    host        = "${packet_device.nat.access_public_ipv4}"
+    host        = "${element(packet_device.nat.*.access_public_ipv4, count.index)}"
     private_key = "${tls_private_key.terraform.private_key_pem}"
     agent       = false
   }
 
   provisioner "file" {
-    source      = "${local_file.cloud_config_dump.filename}"
-    destination = "/var/tmp/cloud-config.yml"
+    content     = "${data.template_file.nat_dynamic_config.rendered}"
+    destination = "/var/tmp/travis-nat-dynamic-config.yml"
   }
 
   provisioner "remote-exec" {
     inline = [
-      "sudo cloud-init -d -f /var/tmp/cloud-config.yml single -n write_files --frequency always",
-      "sudo bash /var/tmp/travis-cloud-init.bash",
+      "sudo cloud-init -d -f /var/tmp/travis-nat-dynamic-config.yml single -n write_files --frequency always",
+      "sudo bash /var/tmp/travis-nat-dynamic-config.bash",
     ]
   }
 }
 
 resource "packet_ip_attachment" "nat" {
-  device_id     = "${packet_device.nat.id}"
-  cidr_notation = "${packet_reserved_ip_block.ips.cidr_notation}"
+  count = "${var.nat_server_count}"
+
+  device_id     = "${element(packet_device.nat.*.id, count.index)}"
+  cidr_notation = "${cidrhost(packet_reserved_ip_block.ips.cidr_notation, count.index)}/32"
 }
 
-output "nat_ip" {
-  value = "${packet_device.nat.access_private_ipv4}"
+data "travis_expanded_cidr" "nat_public_ips" {
+  cidr = "${packet_reserved_ip_block.ips.cidr_notation}"
 }
 
-output "nat_public_ip" {
-  value = "${cidrhost(packet_ip_attachment.nat.cidr_notation, 0)}"
+output "nat_ips" {
+  value = ["${packet_device.nat.*.access_private_ipv4}"]
 }
 
-output "nat_maint_ip" {
-  value = "${packet_device.nat.access_public_ipv4}"
+output "nat_public_ips" {
+  value = ["${data.travis_expanded_cidr.nat_public_ips.addrs}"]
+}
+
+output "nat_maint_ips" {
+  value = ["${packet_device.nat.*.access_public_ipv4}"]
 }
 
 output "facility" {
@@ -187,5 +185,6 @@ output "facility" {
 }
 
 output "terraform_privkey" {
-  value = "${tls_private_key.terraform.private_key_pem}"
+  value     = "${tls_private_key.terraform.private_key_pem}"
+  sensitive = true
 }

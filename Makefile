@@ -1,6 +1,16 @@
 SHELLCHECK_URL := https://s3.amazonaws.com/travis-blue-public/binaries/ubuntu/14.04/x86_64/shellcheck-0.4.4.tar.bz2
 SHFMT_URL := mvdan.cc/sh/cmd/shfmt
 TFPLAN2JSON_URL := github.com/travis-ci/tfplan2json
+PROVIDER_TRAVIS_URL := github.com/travis-ci/terraform-provider-travis
+
+DEPS := \
+	.ensure-provider-travis \
+	.ensure-shellcheck \
+	.ensure-shfmt \
+	.ensure-terraforms \
+	.ensure-tfplan2json
+
+GOPATH_BIN := $(shell go env GOPATH | awk -F: '{ print $$1 }')/bin
 
 SHELL := bash
 
@@ -21,7 +31,7 @@ assert-clean:
 	$(GIT) diff --cached --exit-code
 
 .PHONY: deps
-deps: .ensure-terraforms .ensure-shellcheck .ensure-shfmt .ensure-tfplan2json
+deps: $(DEPS)
 
 .PHONY: .ensure-terraforms
 .ensure-terraforms:
@@ -46,3 +56,9 @@ deps: .ensure-terraforms .ensure-shellcheck .ensure-shfmt .ensure-tfplan2json
 .PHONY: .ensure-tfplan2json
 .ensure-tfplan2json:
 	$(GO) get -u "$(TFPLAN2JSON_URL)"
+
+.PHONY: .ensure-provider-travis
+.ensure-provider-travis:
+	$(GO) get -u "$(PROVIDER_TRAVIS_URL)"
+	mkdir -p $(HOME)/.terraform.d/plugins
+	cp -v $(GOPATH_BIN)/terraform-provider-travis $(HOME)/.terraform.d/plugins/

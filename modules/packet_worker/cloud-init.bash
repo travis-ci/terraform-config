@@ -37,6 +37,7 @@ main() {
     "__setup_${substep}"
   done
 
+  systemctl start fail2ban || true
   __wait_for_docker
 }
 
