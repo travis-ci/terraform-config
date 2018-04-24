@@ -1,6 +1,6 @@
 variable "ssh_host" {}
 variable "ssh_user" {}
-variable "version" {}
+variable "app_version" {}
 variable "env" {}
 variable "index" {}
 variable "host_id" {}
@@ -13,7 +13,7 @@ data "template_file" "worker_install" {
 
   vars {
     env     = "${var.env}"
-    version = "${var.version}"
+    version = "${var.app_version}"
     index   = "${var.index}"
   }
 }
@@ -28,7 +28,7 @@ data "template_file" "worker_upstart" {
 
 resource "null_resource" "worker" {
   triggers {
-    version                  = "${var.version}"
+    app_version              = "${var.app_version}"
     base_config_signature    = "${sha256(var.worker_base_config)}"
     env_config_signature     = "${sha256(var.worker_env_config)}"
     local_config             = "${var.worker_local_config}"

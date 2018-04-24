@@ -56,7 +56,7 @@ variable "vsphere_ip" {}
 terraform {
   backend "s3" {
     bucket         = "travis-terraform-state"
-    key            = "terraform-config/macstadium-pod-1-new-terraform.tfstate"
+    key            = "terraform-config/macstadium-pod-1-terraform.tfstate"
     region         = "us-east-1"
     encrypt        = "true"
     dynamodb_table = "travis-terraform-state"
@@ -74,16 +74,60 @@ provider "vsphere" {
   allow_unverified_ssl = true
 }
 
+data "vsphere_datacenter" "pod" {
+  name = "pod-1"
+}
+
+data "vsphere_datastore" "datacore1" {
+  name          = "DataCore1_1"
+  datacenter_id = "${data.vsphere_datacenter.pod.id}"
+}
+
+data "vsphere_datastore" "datacore2" {
+  name          = "DataCore1_2"
+  datacenter_id = "${data.vsphere_datacenter.pod.id}"
+}
+
+data "vsphere_datastore" "datacore3" {
+  name          = "DataCore1_3"
+  datacenter_id = "${data.vsphere_datacenter.pod.id}"
+}
+
+data "vsphere_datastore" "datacore4" {
+  name          = "DataCore1_4"
+  datacenter_id = "${data.vsphere_datacenter.pod.id}"
+}
+
+data "vsphere_resource_pool" "macpro_cluster" {
+  name          = "MacPro_Pod_1/Resources"
+  datacenter_id = "${data.vsphere_datacenter.pod.id}"
+}
+
+data "vsphere_network" "internal" {
+  name          = "Internal"
+  datacenter_id = "${data.vsphere_datacenter.pod.id}"
+}
+
+data "vsphere_network" "jobs" {
+  name          = "Jobs-1"
+  datacenter_id = "${data.vsphere_datacenter.pod.id}"
+}
+
+data "vsphere_network" "esxi" {
+  name          = "ESXi-MGMT"
+  datacenter_id = "${data.vsphere_datacenter.pod.id}"
+}
+
 module "macstadium_infrastructure" {
   source                        = "../modules/macstadium_infrastructure"
   index                         = "${var.index}"
   vanilla_image                 = "${var.macstadium_vanilla_image}"
-  datacenter                    = "pod-1"
-  cluster                       = "MacPro_Pod_1"
-  datastore                     = "DataCore1_1"
-  internal_network_label        = "Internal"
-  management_network_label      = "ESXi-MGMT"
-  jobs_network_label            = "${var.jobs_network_label}"
+  datacenter_id                 = "${data.vsphere_datacenter.pod.id}"
+  resource_pool_id              = "${data.vsphere_resource_pool.macpro_cluster.id}"
+  datastore_id                  = "${data.vsphere_datastore.datacore1.id}"
+  internal_network_id           = "${data.vsphere_network.internal.id}"
+  esxi_network_id               = "${data.vsphere_network.esxi.id}"
+  jobs_network_id               = "${data.vsphere_network.jobs.id}"
   jobs_network_subnet           = "${var.jobs_network_subnet}"
   ssh_user                      = "${var.ssh_user}"
   threatstack_key               = "${var.threatstack_key}"
@@ -95,6 +139,8 @@ module "macstadium_infrastructure" {
   custom_4_name                 = "${var.custom_4_name}"
   custom_5_name                 = "${var.custom_5_name}"
   custom_6_name                 = "${var.custom_6_name}"
+  wjb_jobs_iface_mac            = "00:50:56:84:0b:a3"
+  dhcp_server_jobs_iface_mac    = "00:50:56:84:b4:81"
 }
 
 module "vsphere_janitor_production_com" {
@@ -102,7 +148,7 @@ module "vsphere_janitor_production_com" {
   host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user    = "${var.ssh_user}"
-  version     = "${var.vsphere_janitor_version}"
+  app_version = "${var.vsphere_janitor_version}"
   config_path = "${path.module}/config/vsphere-janitor-production-com"
   env         = "production-com"
   index       = "${var.index}"
@@ -113,7 +159,7 @@ module "vsphere_janitor_staging_com" {
   host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user    = "${var.ssh_user}"
-  version     = "${var.vsphere_janitor_staging_version}"
+  app_version = "${var.vsphere_janitor_staging_version}"
   config_path = "${path.module}/config/vsphere-janitor-staging-com"
   env         = "staging-com"
   index       = "${var.index}"
@@ -124,7 +170,7 @@ module "vsphere_janitor_custom_1" {
   host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user    = "${var.ssh_user}"
-  version     = "${var.vsphere_janitor_version}"
+  app_version = "${var.vsphere_janitor_version}"
   config_path = "${path.module}/config/vsphere-janitor-custom-1"
   env         = "custom-1"
   index       = "${var.index}"
@@ -135,7 +181,7 @@ module "vsphere_janitor_custom_2" {
   host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user    = "${var.ssh_user}"
-  version     = "${var.vsphere_janitor_version}"
+  app_version = "${var.vsphere_janitor_version}"
   config_path = "${path.module}/config/vsphere-janitor-custom-2"
   env         = "custom-2"
   index       = "${var.index}"
@@ -146,7 +192,7 @@ module "vsphere_janitor_custom_4" {
   host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user    = "${var.ssh_user}"
-  version     = "${var.vsphere_janitor_version}"
+  app_version = "${var.vsphere_janitor_version}"
   config_path = "${path.module}/config/vsphere-janitor-custom-4"
   env         = "custom-4"
   index       = "${var.index}"
@@ -157,7 +203,7 @@ module "vsphere_janitor_custom_5" {
   host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user    = "${var.ssh_user}"
-  version     = "${var.vsphere_janitor_version}"
+  app_version = "${var.vsphere_janitor_version}"
   config_path = "${path.module}/config/vsphere-janitor-custom-5"
   env         = "custom-5"
   index       = "${var.index}"
@@ -168,7 +214,7 @@ module "vsphere_janitor_custom_6" {
   host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user    = "${var.ssh_user}"
-  version     = "${var.vsphere_janitor_version}"
+  app_version = "${var.vsphere_janitor_version}"
   config_path = "${path.module}/config/vsphere-janitor-custom-6"
   env         = "custom-6"
   index       = "${var.index}"
@@ -188,7 +234,7 @@ module "vsphere_monitor" {
   host_id     = "${module.macstadium_infrastructure.util_uuid}"
   ssh_host    = "${module.macstadium_infrastructure.util_ip}"
   ssh_user    = "${var.ssh_user}"
-  version     = "${var.vsphere_monitor_version}"
+  app_version = "${var.vsphere_monitor_version}"
   config_path = "${path.module}/config/vsphere-monitor"
   index       = "${var.index}"
 }
@@ -202,7 +248,7 @@ module "collectd-vsphere-common" {
   host_id                                 = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host                                = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user                                = "${var.ssh_user}"
-  version                                 = "${var.collectd_vsphere_version}"
+  app_version                             = "${var.collectd_vsphere_version}"
   config_path                             = "${path.module}/config/collectd-vsphere-common"
   librato_email                           = "${var.librato_email}"
   librato_token                           = "${var.librato_token}"

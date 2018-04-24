@@ -1,6 +1,6 @@
 include $(shell git rev-parse --show-toplevel)/terraform-common.mk
 
-PROD_TF_VERSION := v0.9.11
+PROD_TF_VERSION := v0.11.6
 TERRAFORM := $(HOME)/.cache/travis-terraform-config/terraform-$(PROD_TF_VERSION)
 
 .PHONY: default

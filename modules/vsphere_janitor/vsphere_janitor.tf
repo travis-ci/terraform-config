@@ -1,6 +1,6 @@
 variable "ssh_host" {}
 variable "ssh_user" {}
-variable "version" {}
+variable "app_version" {}
 variable "config_path" {}
 variable "env" {}
 variable "index" {}
@@ -11,7 +11,7 @@ data "template_file" "vsphere_janitor_install" {
 
   vars {
     env     = "${var.env}"
-    version = "${var.version}"
+    version = "${var.app_version}"
     index   = "${var.index}"
   }
 }
@@ -26,7 +26,7 @@ data "template_file" "vsphere_janitor_upstart" {
 
 resource "null_resource" "vsphere_janitor" {
   triggers {
-    version                  = "${var.version}"
+    app_version              = "${var.app_version}"
     config_signature         = "${sha256(file(var.config_path))}"
     install_script_signature = "${sha256(data.template_file.vsphere_janitor_install.rendered)}"
     upstart_script_signature = "${sha256(data.template_file.vsphere_janitor_upstart.rendered)}"
