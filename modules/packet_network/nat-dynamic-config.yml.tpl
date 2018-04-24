@@ -1,4 +1,3 @@
-#cloud-config
 # vim:filetype=yaml
 
 write_files:
@@ -8,12 +7,6 @@ write_files:
 - content: '${base64encode(librato_env)}'
   encoding: b64
   path: /etc/default/librato
-- content: '${base64encode(instance_env)}'
-  encoding: b64
-  path: /etc/default/travis-instance
-- content: '${base64encode(network_env)}'
-  encoding: b64
-  path: /etc/default/travis-network
 - content: '${base64encode(file("${assets}/rsyslog/rsyslog.conf"))}'
   encoding: b64
   path: /etc/rsyslog.conf
@@ -24,7 +17,7 @@ write_files:
 - content: '${base64encode(syslog_address)}'
   encoding: b64
   path: /var/tmp/travis-run.d/syslog-address
-- content: '${base64encode(file("${here}/cloud-init.bash"))}'
+- content: '${base64encode(file("${here}/nat-dynamic-config.bash"))}'
   encoding: b64
   permissions: '0755'
-  path: /var/tmp/travis-cloud-init.bash
+  path: /var/tmp/travis-nat-dynamic-config.bash

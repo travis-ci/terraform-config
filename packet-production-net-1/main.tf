@@ -75,5 +75,6 @@ output "nat_public_ip" {
 }
 
 output "terraform_privkey" {
-  value = "${module.packet_network_ewr1.terraform_privkey}"
+  value     = "${module.packet_network_ewr1.terraform_privkey}"
+  sensitive = true
 }
