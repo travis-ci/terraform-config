@@ -89,6 +89,11 @@ __setup_networking() {
   if ! iptables -C FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT; then
     iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
   fi
+
+  # Reject any forwarded packets destined for the Packet metadata API
+  if ! iptables -C FORWARD -d 192.80.8.124 -j REJECT; then
+    iptables -I FORWARD -d 192.80.8.124 -j REJECT
+  fi
 }
 
 __find_public_interface() {
