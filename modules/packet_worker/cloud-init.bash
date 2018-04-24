@@ -89,6 +89,11 @@ __setup_networking() {
   apt-get install -yqq iptables-persistent
 
   "${VARLIBDIR}/cloud/scripts/per-boot/00-travis-packet-privnet-setup" || true
+
+  # Reject any forwarded packets destined for the Packet metadata API
+  if ! iptables -C FORWARD -d 192.80.8.124 -j REJECT; then
+    iptables -I FORWARD -d 192.80.8.124 -j REJECT
+  fi
 }
 
 __setup_raid() {
