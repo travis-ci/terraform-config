@@ -80,8 +80,8 @@ module "packet_workers_com" {
   facility                    = "${data.terraform_remote_state.vpc.facility}"
   github_users                = "${var.github_users}"
   index                       = "${var.index}"
-  nat_ip                      = "${data.terraform_remote_state.vpc.nat_ip}"
-  nat_public_ip               = "${data.terraform_remote_state.vpc.nat_public_ip}"
+  nat_ips                     = ["${data.terraform_remote_state.vpc.nat_ips}"]
+  nat_public_ips              = ["${data.terraform_remote_state.vpc.nat_public_ips}"]
   project_id                  = "${var.project_id}"
   server_count                = 1
   site                        = "com"
@@ -109,8 +109,8 @@ module "packet_workers_org" {
   facility                    = "${data.terraform_remote_state.vpc.facility}"
   github_users                = "${var.github_users}"
   index                       = "${var.index}"
-  nat_ip                      = "${data.terraform_remote_state.vpc.nat_ip}"
-  nat_public_ip               = "${data.terraform_remote_state.vpc.nat_public_ip}"
+  nat_ips                     = ["${data.terraform_remote_state.vpc.nat_ips}"]
+  nat_public_ips              = ["${data.terraform_remote_state.vpc.nat_public_ips}"]
   project_id                  = "${var.project_id}"
   server_count                = 1
   site                        = "org"
