@@ -70,6 +70,21 @@ EOM
   fi
 }
 
+check_slack() {
+  payload='{
+    "channel": "#test",
+    "username": "terraform-config",
+    "text": "this is just a test",
+    "icon_emoji": ":terraform:"
+  }'
+
+  cmd='curl -o /dev/null --silent -w "%{http_code}" --data-urlencode "payload=${payload}" "${SLACK_WEBHOOK}"'
+  status_code=$(eval "$cmd")
+  if test "$status_code" -ne 200; then
+    die "[NOK] Slack: Got status code ${status_code} when attempting to test Slack webhook. Is SLACK_WEBHOOK set correctly?"
+  fi
+}
+
 DEPENDENCIES="
   jq
   terraform
@@ -121,8 +136,9 @@ check_envvars() {
 
 main() {
   check_dependencies || die "Aborting; see errors above." && stderr_echo " [OK] Dependencies"
-  check_gcloud && stderr_echo " [OK] gcloud"
   check_envvars || die "Aborting; see errors above." && stderr_echo " [OK] Envvars"
+  check_gcloud && stderr_echo " [OK] gcloud"
+  check_slack && stderr_echo " [OK] slack"
   GITHUB_ORG=travis-core check_github #&& stderr_echo " [OK] GitHub"
   check_heroku && stderr_echo " [OK] Heroku"
 }
