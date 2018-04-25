@@ -5,7 +5,7 @@ maybe_reboot() {
   : "${FIRSTBOOT:=/.first-boot}"
 
   if [[ -s "${FIRSTBOOT}" ]]; then
-    logger first boot detected: $(cat "${FIRSTBOOT}")
+    logger first boot detected: "$(cat "${FIRSTBOOT}")"
     return
   fi
 
