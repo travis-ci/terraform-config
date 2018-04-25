@@ -12,6 +12,7 @@ terraform_user_bootstrap() {
   fi
 
   usermod -a -G sudo terraform
+  echo "terraform:${TRAVIS_INSTANCE_TERRAFORM_PASSWORD}" | chpasswd || true
 
   cat >"${ETCSUDOERSD}/terraform" <<EOSUDOERS
 terraform ALL=(ALL) NOPASSWD:ALL
