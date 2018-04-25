@@ -45,17 +45,4 @@ systemctl stop fail2ban || true
 
 ${file("${assets}/bits/terraform-user-bootstrap.bash")}
 ${file("${assets}/bits/travis-packet-privnet-setup.bash")}
-
-maybe_reboot() {
-  : "${FIRSTBOOT:=/.first-boot}"
-
-  if [[ -s "${FIRSTBOOT}" ]]; then
-    logger first boot detected: $(cat "${FIRSTBOOT}")
-    return
-  fi
-
-  date -u >"${FIRSTBOOT}"
-  systemctl reboot
-}
-
-maybe_reboot
+${file("${assets}/bits/maybe-reboot.bash")}
