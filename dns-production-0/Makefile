@@ -4,8 +4,6 @@ INDEX := 0
 
 include $(shell git rev-parse --show-toplevel)/terraform-common.mk
 
-TERRAFORM := $(HOME)/.cache/travis-terraform-config/terraform-$(PROD_TF_VERSION)
-
 .PHONY: .config
 .config: $(ENV_NAME).auto.tfvars
 

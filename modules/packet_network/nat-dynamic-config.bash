@@ -9,7 +9,7 @@ main() {
     set -o xtrace
   fi
 
-  logger 'msg="beginning cloud-init fun"'
+  logger 'msg="beginning dynamic config fun"'
 
   : "${ETCDIR:=/etc}"
   : "${RUNDIR:=/var/tmp/travis-run.d}"
@@ -19,11 +19,6 @@ main() {
   export DEBIAN_FRONTEND=noninteractive
   chown nobody:nogroup "${VARTMP}"
   chmod 0777 "${VARTMP}"
-
-  mkdir -p "${RUNDIR}"
-  if [[ ! -f "${RUNDIR}/instance-hostname.tmpl" ]]; then
-    echo "___INSTANCE_ID___-$(hostname)" >"${RUNDIR}/instance-hostname.tmpl"
-  fi
 
   for substep in \
     tfw \
@@ -35,6 +30,8 @@ main() {
     logger "msg=\"running setup\" substep=\"${substep}\""
     "__setup_${substep}"
   done
+
+  systemctl start fail2ban || true
 }
 
 __setup_tfw() {
@@ -100,6 +97,10 @@ __setup_networking() {
     if ! iptables -C INPUT --in-interface "${loc_iface}" --src ! "${loc_subnet}" -j DROP; then
       iptables -A INPUT --in-interface "${loc_iface}" --src ! "${loc_subnet}" -j DROP
     fi
+
+  # Reject any forwarded packets destined for the Packet metadata API
+  if ! iptables -C FORWARD -d 192.80.8.124 -j REJECT; then
+    iptables -I FORWARD -d 192.80.8.124 -j REJECT
   fi
 }
 
