@@ -14,6 +14,8 @@ main() {
   : "${ETCDIR:=/etc}"
   : "${RUNDIR:=/var/tmp/travis-run.d}"
   : "${USRLOCAL:=/usr/local}"
+  : "${VARLIBDIR:=/var/lib}"
+  : "${VARLOGDIR:=/var/log}"
   : "${VARTMP:=/var/tmp}"
 
   export DEBIAN_FRONTEND=noninteractive
@@ -26,12 +28,11 @@ main() {
     sysctl \
     networking \
     duo \
-    raid; do
+    raid \
+    refail2ban; do
     logger "msg=\"running setup\" substep=\"${substep}\""
     "__setup_${substep}"
   done
-
-  systemctl start fail2ban || true
 }
 
 __setup_tfw() {
@@ -116,6 +117,19 @@ __setup_duo() {
 __setup_raid() {
   logger "msg=\"running tfw admin-raid\""
   tfw admin-raid
+}
+
+__setup_refail2ban() {
+  apt-get install -yqq sqlite3
+
+  if [[ -f "${VARLIBDIR}/fail2ban/fail2ban.sqlite3" ]]; then
+    sqlite3 "${VARLIBDIR}/fail2ban/fail2ban.sqlite3" 'DELETE FROM bans' || true
+  fi
+
+  cp -v "${VARLOGDIR}/auth.log"{,.$(date +%s)} || true
+  echo >"${VARLOGDIR}/auth.log"
+
+  systemctl start fail2ban || true
 }
 
 main "$@"
