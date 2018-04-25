@@ -11,12 +11,6 @@ write_files:
 - content: '${base64encode(cloud_init_env)}'
   encoding: b64
   path: /etc/default/travis-worker-cloud-init
-- content: '${base64encode(instance_env)}'
-  encoding: b64
-  path: /etc/default/travis-instance
-- content: '${base64encode(network_env)}'
-  encoding: b64
-  path: /etc/default/travis-network
 - content: '${base64encode(file("${assets}/rsyslog/rsyslog.conf"))}'
   encoding: b64
   path: /etc/rsyslog.conf
