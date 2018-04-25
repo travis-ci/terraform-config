@@ -9,7 +9,7 @@ main() {
     set -o xtrace
   fi
 
-  logger 'msg="beginning cloud-init fun"'
+  logger beginning dynamic config fun
 
   : "${DEV:=/dev}"
   : "${ETCDIR:=/etc}"
@@ -21,11 +21,6 @@ main() {
   chown nobody:nogroup "${VARTMP}"
   chmod 0777 "${VARTMP}"
 
-  mkdir -p "${RUNDIR}"
-  if [[ ! -f "${RUNDIR}/instance-hostname.tmpl" ]]; then
-    echo "___INSTANCE_ID___-$(hostname)" >"${RUNDIR}/instance-hostname.tmpl"
-  fi
-
   for substep in \
     tfw \
     travis_user \
@@ -33,7 +28,7 @@ main() {
     networking \
     raid \
     worker; do
-    logger "msg=\"running setup\" substep=\"${substep}\""
+    logger running setup substep="${substep}"
     "__setup_${substep}"
   done
 
@@ -55,12 +50,12 @@ __wait_for_docker() {
 }
 
 __setup_tfw() {
-  logger "msg=\"running tfw bootstrap\""
+  logger running tfw bootstrap
   tfw bootstrap
 
   chown -R root:root "${ETCDIR}/sudoers" "${ETCDIR}/sudoers.d"
 
-  logger "msg=\"running tfw admin-bootstrap\""
+  logger running tfw admin-bootstrap
   tfw admin-bootstrap
 
   systemctl restart sshd || true
@@ -97,7 +92,7 @@ __setup_networking() {
 }
 
 __setup_raid() {
-  logger "msg=\"running tfw admin-raid\""
+  logger running tfw admin-raid
   tfw admin-raid
 }
 
