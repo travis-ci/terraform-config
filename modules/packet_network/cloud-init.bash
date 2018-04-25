@@ -73,9 +73,11 @@ __setup_networking() {
 
   apt-get install -yqq iptables-persistent
 
-  local pub_iface elastic_ip
+  local pub_iface elastic_ip loc_iface loc_subnet
   pub_iface="$(__find_public_interface)"
   elastic_ip="$(__find_elastic_ip)"
+  loc_iface="$(__find_local_interface)"
+  loc_subnet="$(__find_local_subnet)"
 
   iptables -P FORWARD ACCEPT
 
@@ -93,10 +95,10 @@ __setup_networking() {
     iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
   fi
 
-  if ! iptables -C INPUT --in-interface "$(__find_local_interface)" --src ! "$(__find_local_subnet)" -j LOG --log-prefix "SPOOF"; then
-    iptables -A INPUT --in-interface "$(__find_local_interface)" --src ! "$(__find_local_subnet)" -j LOG --log-prefix "SPOOF"
-    if ! iptables -C INPUT --in-interface "$(__find_local_interface)" --src ! "$(__find_local_subnet)" -j DROP; then
-      iptables -A INPUT --in-interface "$(__find_local_interface)" --src ! "$(__find_local_subnet)" -j DROP
+  if ! iptables -C INPUT --in-interface "${loc_iface}" --src ! "${loc_subnet}" -j LOG --log-prefix "SPOOF"; then
+    iptables -A INPUT --in-interface "${loc_iface}" --src ! "${loc_subnet}" -j LOG --log-prefix "SPOOF"
+    if ! iptables -C INPUT --in-interface "${loc_iface}" --src ! "${loc_subnet}" -j DROP; then
+      iptables -A INPUT --in-interface "${loc_iface}" --src ! "${loc_subnet}" -j DROP
     fi
   fi
 }
