@@ -71,9 +71,11 @@ __setup_networking() {
 
   apt-get install -yqq iptables-persistent
 
-  local pub_iface elastic_ip
+  local pub_iface elastic_ip loc_iface loc_subnet
   pub_iface="$(__find_public_interface)"
   elastic_ip="$(__find_elastic_ip)"
+  loc_iface="$(__find_local_interface)"
+  loc_subnet="$(__find_local_subnet)"
 
   iptables -P FORWARD ACCEPT
 
@@ -91,6 +93,13 @@ __setup_networking() {
     iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
   fi
 
+  if ! iptables -C INPUT --in-interface "${loc_iface}" --src ! "${loc_subnet}" -j LOG --log-prefix "SPOOF"; then
+    iptables -A INPUT --in-interface "${loc_iface}" --src ! "${loc_subnet}" -j LOG --log-prefix "SPOOF"
+    if ! iptables -C INPUT --in-interface "${loc_iface}" --src ! "${loc_subnet}" -j DROP; then
+      iptables -A INPUT --in-interface "${loc_iface}" --src ! "${loc_subnet}" -j DROP
+    fi
+  fi
+
   # Reject any forwarded packets destined for the Packet metadata API
   if ! iptables -C FORWARD -d 192.80.8.124 -j REJECT; then
     iptables -I FORWARD -d 192.80.8.124 -j REJECT
@@ -102,6 +111,19 @@ __find_public_interface() {
   iface="$(ip -o addr show | grep -vE 'inet (172|127|10|192)\.' | grep -v inet6 |
     awk '{ print $2 }' | grep -v '^lo$' | head -n 1)"
   echo "${iface:-bond0}"
+}
+
+__find_local_interface() {
+  local iface=enp1s0f1
+  subnet="$(ip -o addr show | grep -v inet6 | grep -v " lo " | grep -v "bond" |
+    grep -v "docker" | awk '{ print $2}')"
+  echo "${iface:-enp1s0f1}"
+}
+
+__find_local_subnet() {
+  local subnet="192.168.1.1/24"
+  subnet="$(ip -o addr show "$(__find_local_interface)" | awk '{ print $4}')"
+  echo "${subnet:-"192.168.1.1/24"}"
 }
 
 __find_elastic_ip() {
