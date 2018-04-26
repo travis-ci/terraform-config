@@ -3,7 +3,8 @@ set -o errexit
 
 main() {
   #grab the dhcp server package
-  sudo apt-get install isc-dhcp-server
+  sudo apt-get update
+  sudo apt-get install -y isc-dhcp-server
 
   # Configure dhcpd
   sudo mv "/tmp/dhcpd.conf" "/etc/dhcp/dhcpd.conf"
