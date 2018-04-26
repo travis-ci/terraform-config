@@ -97,6 +97,7 @@ __setup_networking() {
     if ! iptables -C INPUT --in-interface "${loc_iface}" --src ! "${loc_subnet}" -j DROP; then
       iptables -A INPUT --in-interface "${loc_iface}" --src ! "${loc_subnet}" -j DROP
     fi
+  fi
 
   # Reject any forwarded packets destined for the Packet metadata API
   if ! iptables -C FORWARD -d 192.80.8.124 -j REJECT; then
@@ -121,7 +122,7 @@ __find_local_interface() {
 __find_local_subnet() {
   local subnet="192.168.1.1/24"
   subnet="$(ip -o addr show "$(__find_local_interface)" | awk '{ print $4}')"
-  echo "${subnet:-"192.168.0.1/24"}"
+  echo "${subnet:-"192.168.1.1/24"}"
 }
 
 __find_elastic_ip() {
