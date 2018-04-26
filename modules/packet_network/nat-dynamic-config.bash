@@ -9,7 +9,7 @@ main() {
     set -o xtrace
   fi
 
-  logger 'msg="beginning dynamic config fun"'
+  logger beginning dynamic config fun
 
   : "${ETCDIR:=/etc}"
   : "${RUNDIR:=/var/tmp/travis-run.d}"
@@ -30,18 +30,18 @@ main() {
     duo \
     raid \
     refail2ban; do
-    logger "msg=\"running setup\" substep=\"${substep}\""
+    logger running setup substep="${substep}"
     "__setup_${substep}"
   done
 }
 
 __setup_tfw() {
-  logger "msg=\"running tfw bootstrap\""
+  logger running tfw bootstrap
   tfw bootstrap
 
   chown -R root:root "${ETCDIR}/sudoers" "${ETCDIR}/sudoers.d"
 
-  logger "msg=\"running tfw admin-bootstrap\""
+  logger running tfw admin-bootstrap
   tfw admin-bootstrap
 
   systemctl restart sshd || true
@@ -110,12 +110,12 @@ __find_elastic_ip() {
 }
 
 __setup_duo() {
-  logger "msg=\"running tfw admin-duo\""
+  logger running tfw admin-duo
   tfw admin-duo
 }
 
 __setup_raid() {
-  logger "msg=\"running tfw admin-raid\""
+  logger running tfw admin-raid
   tfw admin-raid
 }
 
