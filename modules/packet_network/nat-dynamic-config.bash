@@ -126,7 +126,7 @@ __setup_refail2ban() {
     sqlite3 "${VARLIBDIR}/fail2ban/fail2ban.sqlite3" 'DELETE FROM bans' || true
   fi
 
-  cp -v "${VARLOGDIR}/auth.log"{,.$(date +%s)} || true
+  cp -v "${VARLOGDIR}/auth.log" "${VARLOGDIR}/auth.log.$(date +%s)" || true
   echo >"${VARLOGDIR}/auth.log"
 
   systemctl start fail2ban || true
