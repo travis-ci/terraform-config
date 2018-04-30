@@ -77,7 +77,7 @@ main() {
 
   {
     report_containers "${max_cpu}" | while read -r cid; do
-      echo "greedy cid: ${cid}"
+      echo "checking cid: ${cid}"
     done
   }
 }
