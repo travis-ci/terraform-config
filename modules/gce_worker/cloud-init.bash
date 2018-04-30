@@ -30,7 +30,7 @@ __wait_for_docker() {
     if [[ $i -gt 600 ]]; then
       exit 86
     fi
-    start docker &>/dev/null || true
+    systemctl start docker &>/dev/null || true
     sleep 10
     let i+=10
   done

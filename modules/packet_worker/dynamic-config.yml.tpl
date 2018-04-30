@@ -11,15 +11,6 @@ write_files:
 - content: '${base64encode(cloud_init_env)}'
   encoding: b64
   path: /etc/default/travis-worker-cloud-init
-- content: '${base64encode(instance_env)}'
-  encoding: b64
-  path: /etc/default/travis-instance
-- content: '${base64encode(network_env)}'
-  encoding: b64
-  path: /etc/default/travis-network
-- content: '${base64encode(docker_daemon_json)}'
-  encoding: b64
-  path: /etc/docker/daemon-direct-lvm.json
 - content: '${base64encode(file("${assets}/rsyslog/rsyslog.conf"))}'
   encoding: b64
   path: /etc/rsyslog.conf
@@ -52,10 +43,10 @@ write_files:
 - content: '${base64encode(file("${assets}/travis-worker/travis-worker.service"))}'
   encoding: b64
   path: /var/tmp/travis-worker.service
-- content: '${base64encode(file("${here}/cloud-init.bash"))}'
+- content: '${base64encode(file("${here}/dynamic-config.bash"))}'
   encoding: b64
   permissions: '0755'
-  path: /var/tmp/travis-cloud-init.bash
+  path: /var/tmp/travis-worker-dynamic-config.bash
 - content: '${base64encode(file("${assets}/bits/travis-packet-privnet-setup.bash"))}'
   encoding: b64
   permissions: '0755'
