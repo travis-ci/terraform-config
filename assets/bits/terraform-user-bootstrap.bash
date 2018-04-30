@@ -12,7 +12,12 @@ terraform_user_bootstrap() {
   fi
 
   usermod -a -G sudo terraform
-  echo "terraform:${TRAVIS_INSTANCE_TERRAFORM_PASSWORD}" | chpasswd || true
+
+  if [[ "${TRAVIS_INSTANCE_TERRAFORM_PASSWORD}" ]]; then
+    set +o xtrace
+    echo "terraform:${TRAVIS_INSTANCE_TERRAFORM_PASSWORD}" | chpasswd || true
+    set -o xtrace
+  fi
 
   cat >"${ETCSUDOERSD}/terraform" <<EOSUDOERS
 terraform ALL=(ALL) NOPASSWD:ALL
