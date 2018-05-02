@@ -75,6 +75,8 @@ module "packet_workers_com" {
   facility                    = "${data.terraform_remote_state.vpc.facility}"
   github_users                = "${var.github_users}"
   index                       = "${var.index}"
+  librato_email               = "${var.librato_email}"
+  librato_token               = "${var.librato_token}"
   nat_ips                     = ["${data.terraform_remote_state.vpc.nat_ips}"]
   nat_public_ips              = ["${data.terraform_remote_state.vpc.nat_public_ips}"]
   project_id                  = "${var.project_id}"
@@ -104,6 +106,8 @@ module "packet_workers_org" {
   facility                    = "${data.terraform_remote_state.vpc.facility}"
   github_users                = "${var.github_users}"
   index                       = "${var.index}"
+  librato_email               = "${var.librato_email}"
+  librato_token               = "${var.librato_token}"
   nat_ips                     = ["${data.terraform_remote_state.vpc.nat_ips}"]
   nat_public_ips              = ["${data.terraform_remote_state.vpc.nat_public_ips}"]
   project_id                  = "${var.project_id}"

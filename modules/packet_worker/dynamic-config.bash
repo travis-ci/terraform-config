@@ -9,22 +9,18 @@ main() {
     set -o xtrace
   fi
 
-  logger 'msg="beginning cloud-init fun"'
+  logger beginning dynamic config fun
 
   : "${DEV:=/dev}"
   : "${ETCDIR:=/etc}"
   : "${RUNDIR:=/var/tmp/travis-run.d}"
-  : "${VARTMP:=/var/tmp}"
   : "${VARLIBDIR:=/var/lib}"
+  : "${VARLOGDIR:=/var/log}"
+  : "${VARTMP:=/var/tmp}"
 
   export DEBIAN_FRONTEND=noninteractive
   chown nobody:nogroup "${VARTMP}"
   chmod 0777 "${VARTMP}"
-
-  mkdir -p "${RUNDIR}"
-  if [[ ! -f "${RUNDIR}/instance-hostname.tmpl" ]]; then
-    echo "___INSTANCE_ID___-$(hostname)" >"${RUNDIR}/instance-hostname.tmpl"
-  fi
 
   for substep in \
     tfw \
@@ -32,13 +28,13 @@ main() {
     sysctl \
     networking \
     raid \
-    worker; do
-    logger "msg=\"running setup\" substep=\"${substep}\""
+    worker \
+    refail2ban; do
+    logger running setup substep="${substep}"
     "__setup_${substep}"
   done
 
   systemctl start fail2ban || true
-  __wait_for_docker
 }
 
 __wait_for_docker() {
@@ -48,19 +44,19 @@ __wait_for_docker() {
     if [[ $i -gt 600 ]]; then
       exit 86
     fi
-    start docker &>/dev/null || true
+    systemctl start docker &>/dev/null || true
     sleep 10
     let i+=10
   done
 }
 
 __setup_tfw() {
-  logger "msg=\"running tfw bootstrap\""
+  logger running tfw bootstrap
   tfw bootstrap
 
   chown -R root:root "${ETCDIR}/sudoers" "${ETCDIR}/sudoers.d"
 
-  logger "msg=\"running tfw admin-bootstrap\""
+  logger running tfw admin-bootstrap
   tfw admin-bootstrap
 
   systemctl restart sshd || true
@@ -97,7 +93,7 @@ __setup_networking() {
 }
 
 __setup_raid() {
-  logger "msg=\"running tfw admin-raid\""
+  logger running tfw admin-raid
   tfw admin-raid
 }
 
@@ -111,7 +107,21 @@ __setup_worker() {
     systemctl enable travis-worker || true
   fi
 
+  __wait_for_docker
   systemctl start travis-worker || true
+}
+
+__setup_refail2ban() {
+  apt-get install -yqq sqlite3
+
+  if [[ -f "${VARLIBDIR}/fail2ban/fail2ban.sqlite3" ]]; then
+    sqlite3 "${VARLIBDIR}/fail2ban/fail2ban.sqlite3" 'DELETE FROM bans' || true
+  fi
+
+  cp -v "${VARLOGDIR}/auth.log" "${VARLOGDIR}/auth.log.$(date +%s)" || true
+  echo >"${VARLOGDIR}/auth.log"
+
+  systemctl start fail2ban || true
 }
 
 main "$@"
