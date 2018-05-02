@@ -1,6 +1,7 @@
 variable vsphere_user {}
 variable vsphere_password {}
 variable vsphere_server {}
+variable travisci_net_external_zone_id {}
 
 variable index {
   default = "1"
@@ -88,7 +89,7 @@ resource "vsphere_virtual_machine" "dhcp_server" {
   num_cpus         = 2
   memory           = 4096
   resource_pool_id = "${data.vsphere_resource_pool.macpro_cluster.id}"
-  guest_id = "ubuntu64Guest"
+  guest_id         = "ubuntu64Guest"
 
   network_interface {
     network_id = "${data.vsphere_network.internal.id}"
@@ -100,8 +101,8 @@ resource "vsphere_virtual_machine" "dhcp_server" {
 
   disk {
     datastore_id = "${data.vsphere_datastore.datacore1.id}"
-    label = "disk0"
-    size = "15000"
+    label        = "disk0"
+    size         = "15000"
   }
 
   cdrom {
@@ -116,13 +117,17 @@ resource "vsphere_virtual_machine" "dhcp_server" {
         host_name = "dhcp-server-${var.index}"
         domain    = "macstadium.travisci.net"
       }
-      network_interface {}
-      network_interface {}
+
+      # by including these blank network iface blocks, we set the machine up to get an IP from DHCP :)
+      network_interface = {}
+      network_interface = {}
     }
   }
 
+  vapp {} #this being here makes terraform quieter
+
   connection {
-    host  = "${vsphere_virtual_machine.dhcp_server.network_interface.0.ipv4_address}"
+    host  = "${vsphere_virtual_machine.dhcp_server.default_ip_address}"
     user  = "${var.ssh_user}"
     agent = true
   }
@@ -134,18 +139,22 @@ resource "null_resource" "dhcp_server" {
   }
 
   connection {
-    host  = "${vsphere_virtual_machine.dhcp_server.network_interface.0.ipv4_address}"
+    host  = "${vsphere_virtual_machine.dhcp_server.default_ip_address}"
     user  = "${var.ssh_user}"
     agent = true
   }
 }
 
-#output "dhcp_server_ip" {
-#  value = "${vsphere_virtual_machine.dhcp_server.network_interface.0.ipv4_address}"
-#}
 
+resource "aws_route53_record" "dhcp_server" {
+  zone_id = "${var.travisci_net_external_zone_id}"
+  name    = "dhcp-server-${var.index}.macstadium-us-se-1.travisci.net"
+  type    = "A"
+  ttl     = 300
+  records = ["${vsphere_virtual_machine.dhcp_server.default_ip_address}"]
+}
 
-#output "dhcp_server_uuid" {
-#  value = "${vsphere_virtual_machine.dhcp_server.uuid}"
-#}
-
+# tbh I don't know if we need to be outputting this right now
+# output "dhcp_server_ip" {
+#   value = "${vsphere_virtual_machine.dhcp_server.default_ip_address}"
+# }

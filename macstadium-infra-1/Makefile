@@ -17,8 +17,6 @@ include $(shell git rev-parse --show-toplevel)/trvs.mk
 .config: $(CONFIG_FILES) $(ENV_NAME).auto.tfvars trvs-collectd-vsphere.auto.tfvars
 
 $(CONFIG_FILES):
-	mkdir -p config
-	cp -v $$TRAVIS_KEYCHAIN_DIR/travis-keychain/macstadium/travis-vm-ssh-key config/
 
 .PHONY: plan
 plan: announce .config $(TRVS_TFVARS) $(TFSTATE)
