@@ -51,6 +51,8 @@ __wait_for_docker() {
 }
 
 __setup_tfw() {
+  "${VARLIBDIR}/cloud/scripts/per-boot/00-ensure-tfw" || true
+
   logger running tfw bootstrap
   tfw bootstrap
 
@@ -98,14 +100,20 @@ __setup_raid() {
 }
 
 __setup_worker() {
+  tfw gsub travis-worker "${VARTMP}/travis-worker.env.tmpl" \
+    "${ETCDIR}/default/travis-worker"
+  tfw gsub travis-worker "${VARTMP}/travis-worker-cloud-init.env.tmpl" \
+    "${ETCDIR}/default/travis-worker-cloud-init"
+
   eval "$(tfw printenv travis-worker)"
   tfw extract travis-worker "${TRAVIS_WORKER_SELF_IMAGE}"
 
-  if [[ -d "${ETCDIR}/systemd/system" ]]; then
-    cp -v "${VARTMP}/travis-worker.service" \
-      "${ETCDIR}/systemd/system/travis-worker.service"
-    systemctl enable travis-worker || true
-  fi
+  echo "${PUPCYCLER_URL}" >"${RUNDIR}/pupcycler-url"
+  echo "${PUPCYCLER_AUTH_TOKEN}" >"${RUNDIR}/pupcycler-auth-token"
+
+  cp -v "${VARTMP}/travis-worker.service" \
+    "${ETCDIR}/systemd/system/travis-worker.service"
+  systemctl enable travis-worker || true
 
   __wait_for_docker
   systemctl start travis-worker || true

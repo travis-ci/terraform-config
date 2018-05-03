@@ -103,6 +103,7 @@ resource "packet_device" "nat" {
   plan             = "${var.nat_server_plan}"
   project_id       = "${var.project_id}"
   user_data        = "${element(data.template_file.nat_user_data.*.rendered, count.index)}"
+  tags             = ["nat", "${var.env}"]
 
   lifecycle {
     ignore_changes = ["root_password", "user_data"]
