@@ -29,7 +29,7 @@ __die() {
   exit "${code}"
 }
 
-report_greedy_containers() {
+report_containers() {
   local max_cpu
   local instance_id
   local instance_ip
@@ -47,8 +47,8 @@ report_greedy_containers() {
     usage_as_int=${usage_as_float/.*/}
     [ -z "${usage_as_float}" ] && continue
     if [ "${usage_as_int}" -ge "${max_cpu}" ]; then
-      __logger "warning" \
-        "high cpu usage detected" \
+      __logger "info" \
+        "cpu usage detected" \
         "status=noop" \
         "instance_id=${instance_id}" \
         "instance_ip=${instance_ip}" \
@@ -70,14 +70,14 @@ report_greedy_containers() {
 
 main() {
   # shellcheck disable=SC2153
-  : "${MAX_CPU:=100}"
+  : "${MAX_CPU:=0}"
 
   local max_cpu
   max_cpu="${MAX_CPU}"
 
   {
-    report_greedy_containers "${max_cpu}" | while read -r greedy_cid; do
-      echo "greedy cid: ${greedy_cid}"
+    report_containers "${max_cpu}" | while read -r cid; do
+      echo "checking cid: ${cid}"
     done
   }
 }
