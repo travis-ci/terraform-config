@@ -23,12 +23,12 @@ main() {
 
   local repo_slug="${1}"
   local heroku_app="${2}"
-  local ps_scale="${3}"
+  local ps_scale=("${3//,/ }")
   local version="${4:-master}"
 
   __heroku_wait "${heroku_app}"
   __heroku_deploy "${repo_slug}" "${heroku_app}" "${version}"
-  __heroku_scale "${heroku_app}" "${ps_scale}"
+  __heroku_scale "${heroku_app}" "${ps_scale[@]}"
 }
 
 __heroku_wait() {
@@ -82,17 +82,19 @@ __make_deploy_request() {
 
 __heroku_scale() {
   local heroku_app="${1}"
-  local ps_scale="${2}"
-  local formation_type="${ps_scale%%=*}"
-  local formation_scale="${ps_scale##*=}"
-  local formation_scale_qty="${formation_scale%%:*}"
-  local formation_scale_size="${formation_scale##*:}"
+  shift
+  for ps_scale in "${@}"; do
+    local formation_type="${ps_scale%%=*}"
+    local formation_scale="${ps_scale##*=}"
+    local formation_scale_qty="${formation_scale%%:*}"
+    local formation_scale_size="${formation_scale##*:}"
 
-  __heroku_curl -s -X PATCH -d "{
-      \"quantity\": ${formation_scale_qty},
-      \"size\": \"${formation_scale_size}\"
-    }" \
-    "https://api.heroku.com/apps/${heroku_app}/formation/${formation_type}"
+    __heroku_curl -s -X PATCH -d "{
+        \"quantity\": ${formation_scale_qty},
+        \"size\": \"${formation_scale_size}\"
+      }" \
+      "https://api.heroku.com/apps/${heroku_app}/formation/${formation_type}"
+  done
 }
 
 __heroku_curl() {
