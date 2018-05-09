@@ -1,118 +1,182 @@
-#!/usr/bin/env bash
-set -o errexit
-set -o pipefail
+#!/usr/bin/env ruby
+require 'json'
+require 'net/http'
+require 'openssl'
+require 'optparse'
 
-main() {
-  local halp='^(-h|--help|help)$'
-  for arg in "${@}"; do
-    if [[ "${arg}" =~ $halp ]]; then
-      __usage
-      exit 0
-    fi
-  done
-
-  if [[ $# -lt 3 ]]; then
-    __usage
-    exit 1
-  fi
-
-  [[ "${HEROKU_API_KEY}" ]] || {
-    echo "Missing \$HEROKU_API_KEY" >&2
-    exit 2
+def main
+  options = {
+    repo_slug: '',
+    heroku_app: '',
+    ps_scale: [],
+    version: 'master'
   }
 
-  local repo_slug="${1}"
-  local heroku_app="${2}"
-  local ps_scale="${3}"
-  local version="${4:-master}"
+  OptionParser.new do |opts|
+    opts.on(
+      '-r', '--repo=REPO_SLUG'
+    ) { |v| options[:repo_slug] = v.strip }
 
-  __heroku_wait "${heroku_app}"
-  __heroku_deploy "${repo_slug}" "${heroku_app}" "${version}"
-  __heroku_scale "${heroku_app}" "${ps_scale}"
-}
+    opts.on(
+      '-a', '--app=HEROKU_APP'
+    ) { |v| options[:heroku_app] = v.strip }
 
-__heroku_wait() {
-  local heroku_app="${1}"
-  local timeout="${2:-120}"
-  local c=0
+    opts.on(
+      '-p', '--ps-scale=PS_SCALE'
+    ) { |v| options[:ps_scale] += v.split(/[ ,]/).map(&:strip) }
 
-  while ! __heroku_curl -fs "https://api.heroku.com/apps/${heroku_app}"; do
-    let c+=10
-    if [[ $c -gt ${timeout} ]]; then
-      exit 1
-    fi
+    opts.on(
+      '-V', '--deploy-version=VERSION'
+    ) { |v| options[:version] = v.strip }
+  end.parse!
+
+  fail 'Missing HEROKU_API_KEY' unless ENV.key?('HEROKU_API_KEY')
+
+  unless heroku_wait(options.fetch(:heroku_app))
+    $stderr.puts "---> timeout waiting for app=#{options.fetch(:heroku_app)}"
+    return 1
+  end
+
+  heroku_deploy(
+    options.fetch(:repo_slug),
+    options.fetch(:heroku_app),
+    options.fetch(:version)
+  )
+  heroku_scale(
+    options.fetch(:heroku_app),
+    options.fetch(:ps_scale)
+  )
+
+  0
+end
+
+def heroku_wait(heroku_app, timeout: 120)
+  c = 0
+
+  loop do
+    return true if heroku_get("/apps/#{heroku_app}")
+    return false if c >= timeout
     sleep 10
-  done
-}
+    c += 10
+  end
 
-__heroku_deploy() {
-  local repo_slug="${1}"
-  local heroku_app="${2}"
-  local version="${3}"
-  local tmp_dir
-  tmp_dir="$(mktemp -d)"
-  trap 'rm -rf '"${tmp_dir}" EXIT QUIT INT TERM
+  true
+end
 
-  printf "\nDeploying %s %s to %s\n" \
-    "${repo_slug}" "${version}" "${heroku_app}"
+def heroku_deploy(repo_slug, heroku_app, version)
+  $stderr.puts "\nDeploying #{repo_slug} #{version} to #{heroku_app}"
 
-  __make_deploy_request "${repo_slug}" "${heroku_app}" "${version}" |
-    tee "${tmp_dir}/deploy.json"
-
-  local output_stream_url
-  output_stream_url="$(jq -r .output_stream_url <"${tmp_dir}/deploy.json")"
-
-  printf "\nStreaming deploy output\n"
-  __heroku_curl -f "${output_stream_url}"
-}
-
-__make_deploy_request() {
-  local repo_slug="${1}"
-  local heroku_app="${2}"
-  local version="${3}"
-
-  __heroku_curl -s -X POST "https://api.heroku.com/apps/${heroku_app}/builds" \
-    -d "{
-      \"source_blob\": {
-        \"url\": \"https://github.com/${repo_slug}/archive/master.tar.gz\",
-        \"version\": \"${version}\"
+  response = heroku_post(
+    JSON.generate(
+      'source_blob' => {
+        'url' => "https://github.com/#{repo_slug}/archive/#{version}.tar.gz",
+        'version' => version
       }
-    }"
-}
+    ),
+    "/apps/#{heroku_app}/builds"
+  )
 
-__heroku_scale() {
-  local heroku_app="${1}"
-  local ps_scale="${2}"
-  local formation_type="${ps_scale%%=*}"
-  local formation_scale="${ps_scale##*=}"
-  local formation_scale_qty="${formation_scale%%:*}"
-  local formation_scale_size="${formation_scale##*:}"
+  fail 'Could not request a deployment' if response.nil?
 
-  __heroku_curl -s -X PATCH -d "{
-      \"quantity\": ${formation_scale_qty},
-      \"size\": \"${formation_scale_size}\"
-    }" \
-    "https://api.heroku.com/apps/${heroku_app}/formation/${formation_type}"
-}
+  $stderr.puts "\nStreaming deploy output"
 
-__heroku_curl() {
-  curl \
-    -n \
-    -H "Authorization: Bearer ${HEROKU_API_KEY}" \
-    -H "Content-Type: application/json" \
-    -H "Accept: application/vnd.heroku+json; version=3" \
-    "${@}"
-}
+  unless heroku_stream(URI(response.fetch('output_stream_url')))
+    fail 'Could not stream deployment output'
+  end
+end
 
-__usage() {
-  local prog
-  prog="$(basename "${0}")"
-  echo "Usage: ${prog} <slug> <app> <scale> [version]" >&2
-  echo >&2
-  echo "Deploy Heroku app named <app> from GitHub repo with <slug>" >&2
-  echo "at dyno <scale>, optionally at a specific [version], e.g.:" >&2
-  echo >&2
-  echo "${prog} travis-ci/flurb travis-flurb-prod web=1:Hobby fafafaf" >&2
-}
+def heroku_scale(heroku_app, ps_scales)
+  Array(ps_scales).each do |ps_scale|
+    formation = heroku_parse_formation(ps_scale)
+    response = heroku_patch(
+      JSON.generate(
+        'quantity' => formation.fetch(:qty),
+        'size' => formation.fetch(:size)
+      ),
+      "/apps/#{heroku_app}/formation/#{formation.fetch(:type)}"
+    )
+    if response.nil?
+      fail "Could not scale #{heroku_app} #{ps_scales.inspect}"
+    end
 
-main "${@}"
+    $stderr.puts "---> scaled #{heroku_app} #{ps_scale}:"
+    $stderr.puts JSON.pretty_generate(response)
+  end
+end
+
+def heroku_get(path)
+  heroku_request(Net::HTTP::Get.new(path))
+end
+
+def heroku_post(body, path)
+  req = Net::HTTP::Post.new(path)
+  req.body = body
+  heroku_request(req)
+end
+
+def heroku_patch(body, path)
+  req = Net::HTTP::Patch.new(path)
+  req.body = body
+  heroku_request(req)
+end
+
+def heroku_stream(uri)
+  start_params = [uri.host, uri.port]
+  if uri.scheme == 'https'
+    start_params += [
+      use_ssl: true,
+      verify_mode: OpenSSL::SSL::VERIFY_PEER
+    ]
+  end
+
+  Net::HTTP.start(*start_params) do |http|
+    req = Net::HTTP::Get.new(uri)
+    req['Accept'] = 'application/vnd.heroku+json; version=3'
+    req['Authorization'] = "Bearer #{ENV.fetch('HEROKU_API_KEY')}"
+    req['Content-Type'] = 'application/json'
+
+    http.request(req) do |response|
+      return false unless response.kind_of?(Net::HTTPSuccess)
+      response.read_body { |c| $stderr.puts c }
+    end
+  end
+
+  true
+end
+
+def heroku_request(req, host: 'api.heroku.com', headers: {})
+  req['Accept'] = 'application/vnd.heroku+json; version=3'
+  req['Authorization'] = "Bearer #{ENV.fetch('HEROKU_API_KEY')}"
+  req['Content-Type'] = 'application/json'
+
+  http = Net::HTTP.new(host, 443)
+  http.use_ssl = true
+  http.verify_mode = OpenSSL::SSL::VERIFY_PEER
+
+  headers.each do |key, value|
+    request[key] = value
+  end
+
+  response = http.request(req)
+  return nil unless response.kind_of?(Net::HTTPSuccess)
+  JSON.parse(response.body)
+end
+
+def heroku_parse_formation(ps_scale)
+  ret = {
+    type: '',
+    qty: 0,
+    size: ''
+  }
+
+  parts = ps_scale.split('=', 2)
+  ret[:type] = parts.fetch(0)
+
+  subparts = parts.fetch(1).split(':', 2)
+  ret[:qty] = Integer(subparts.fetch(0))
+  ret[:size] = subparts.fetch(1).strip
+
+  ret
+end
+
+exit(main) if $PROGRAM_NAME == __FILE__

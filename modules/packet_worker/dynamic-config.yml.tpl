@@ -5,12 +5,6 @@ write_files:
 - content: '${base64encode(github_users_env)}'
   encoding: b64
   path: /etc/default/github-users
-- content: '${base64encode(worker_config)}'
-  encoding: b64
-  path: /etc/default/travis-worker
-- content: '${base64encode(cloud_init_env)}'
-  encoding: b64
-  path: /etc/default/travis-worker-cloud-init
 - content: '${base64encode(file("${assets}/rsyslog/rsyslog.conf"))}'
   encoding: b64
   path: /etc/rsyslog.conf
@@ -40,6 +34,14 @@ write_files:
   encoding: b64
   path: /var/tmp/travis-run.d/travis-worker-prestart-hook
   permissions: '0750'
+- content: '${base64encode(file("${here}/start-hook.bash"))}'
+  encoding: b64
+  path: /var/tmp/travis-run.d/travis-worker-start-hook
+  permissions: '0750'
+- content: '${base64encode(file("${here}/stop-hook.bash"))}'
+  encoding: b64
+  path: /var/tmp/travis-run.d/travis-worker-stop-hook
+  permissions: '0750'
 - content: '${base64encode(file("${assets}/travis-worker/travis-worker.service"))}'
   encoding: b64
   path: /var/tmp/travis-worker.service
@@ -47,7 +49,17 @@ write_files:
   encoding: b64
   permissions: '0755'
   path: /var/tmp/travis-worker-dynamic-config.bash
+- content: '${base64encode(worker_config)}'
+  encoding: b64
+  path: /var/tmp/travis-worker.env.tmpl
+- content: '${base64encode(cloud_init_env)}'
+  encoding: b64
+  path: /var/tmp/travis-worker-cloud-init.env.tmpl
 - content: '${base64encode(file("${assets}/bits/travis-packet-privnet-setup.bash"))}'
   encoding: b64
   permissions: '0755'
   path: /var/lib/cloud/scripts/per-boot/00-travis-packet-privnet-setup
+- content: '${base64encode(file("${assets}/bits/ensure-tfw.bash"))}'
+  encoding: b64
+  permissions: '0755'
+  path: /var/lib/cloud/scripts/per-boot/00-ensure-tfw

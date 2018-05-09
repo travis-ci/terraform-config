@@ -20,6 +20,8 @@ variable "nat_public_ips" {
 }
 
 variable "project_id" {}
+variable "pupcycler_auth_token" {}
+variable "pupcycler_url" {}
 variable "server_count" {}
 
 variable "server_plan" {
@@ -52,6 +54,8 @@ data "tls_public_key" "terraform" {
 
 data "template_file" "cloud_init_env" {
   template = <<EOF
+export PUPCYCLER_AUTH_TOKEN="${var.pupcycler_auth_token}"
+export PUPCYCLER_URL="${var.pupcycler_url}"
 export TRAVIS_WORKER_DOCKER_IMAGE_ANDROID="${var.worker_docker_image_android}"
 export TRAVIS_WORKER_DOCKER_IMAGE_DEFAULT="${var.worker_docker_image_default}"
 export TRAVIS_WORKER_DOCKER_IMAGE_ERLANG="${var.worker_docker_image_erlang}"
@@ -64,6 +68,8 @@ export TRAVIS_WORKER_DOCKER_IMAGE_PHP="${var.worker_docker_image_php}"
 export TRAVIS_WORKER_DOCKER_IMAGE_PYTHON="${var.worker_docker_image_python}"
 export TRAVIS_WORKER_DOCKER_IMAGE_RUBY="${var.worker_docker_image_ruby}"
 export TRAVIS_WORKER_PRESTART_HOOK="/var/tmp/travis-run.d/travis-worker-prestart-hook"
+export TRAVIS_WORKER_START_HOOK="/var/tmp/travis-run.d/travis-worker-start-hook"
+export TRAVIS_WORKER_STOP_HOOK="/var/tmp/travis-run.d/travis-worker-stop-hook"
 export TRAVIS_WORKER_SELF_IMAGE="${var.worker_docker_self_image}"
 EOF
 }
@@ -129,6 +135,7 @@ resource "packet_device" "worker" {
   plan             = "${var.server_plan}"
   project_id       = "${var.project_id}"
   user_data        = "${element(data.template_file.user_data.*.rendered, count.index)}"
+  tags             = ["worker", "${var.site}", "${var.env}"]
 
   lifecycle {
     ignore_changes = ["root_password", "user_data"]
