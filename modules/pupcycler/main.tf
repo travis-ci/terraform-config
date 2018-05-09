@@ -56,10 +56,10 @@ resource "null_resource" "pupcycler" {
   provisioner "local-exec" {
     command = <<EOF
 exec ${path.module}/../../bin/heroku-wait-deploy-scale \
-  travis-ci/pupcycler \
-  ${heroku_app.pupcycler.id} \
-  ${join(",", var.scale)} \
-  ${var.version}
+  --repo=travis-ci/pupcycler \
+  --app=${heroku_app.pupcycler.id} \
+  --ps-scale=${join(",", var.scale)} \
+  --deploy-version=${var.version}
 EOF
   }
 }
