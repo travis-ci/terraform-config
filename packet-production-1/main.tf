@@ -13,6 +13,10 @@ variable "librato_token" {}
 variable "packet_auth_token" {}
 variable "packet_heroku_org" {}
 variable "packet_project_id" {}
+variable "rabbitmq_password_com" {}
+variable "rabbitmq_password_org" {}
+variable "rabbitmq_username_com" {}
+variable "rabbitmq_username_org" {}
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
 
@@ -65,6 +69,28 @@ module "pupcycler" {
   syslog_address    = "${var.syslog_address_com}"
 }
 
+module "rabbitmq_worker_config_com" {
+  source = "../modules/rabbitmq_user"
+
+  admin_password = "${var.rabbitmq_password_com}"
+  admin_username = "${var.rabbitmq_username_com}"
+  endpoint       = "https://${trimspace(file("${path.module}/config/CLOUDAMQP_URL_HOST_COM"))}"
+  scheme         = "${trimspace(file("${path.module}/config/CLOUDAMQP_URL_SCHEME_COM"))}"
+  username       = "travis-worker-packet-${var.env}-${var.index}"
+  vhost          = "${replace(trimspace("${file("${path.module}/config/CLOUDAMQP_URL_PATH_COM")}"), "/^//", "")}"
+}
+
+module "rabbitmq_worker_config_org" {
+  source = "../modules/rabbitmq_user"
+
+  admin_password = "${var.rabbitmq_password_org}"
+  admin_username = "${var.rabbitmq_username_org}"
+  endpoint       = "https://${trimspace(file("${path.module}/config/CLOUDAMQP_URL_HOST_ORG"))}"
+  scheme         = "${trimspace(file("${path.module}/config/CLOUDAMQP_URL_SCHEME_ORG"))}"
+  username       = "travis-worker-packet-${var.env}-${var.index}"
+  vhost          = "${replace(trimspace("${file("${path.module}/config/CLOUDAMQP_URL_PATH_ORG")}"), "/^//", "")}"
+}
+
 data "template_file" "worker_config_com" {
   template = <<EOF
 ### config/worker-com-local.env
@@ -74,6 +100,9 @@ ${file("${path.module}/config/worker-com.env")}
 ### worker.env
 ${file("${path.module}/worker.env")}
 
+export TRAVIS_WORKER_AMQP_URI=${module.rabbitmq_worker_config_com.uri}
+export TRAVIS_WORKER_DOCKER_INSPECT_INTERVAL=1000ms
+export TRAVIS_WORKER_HARD_TIMEOUT=2h
 export TRAVIS_WORKER_HEARTBEAT_URL="${replace(module.pupcycler.web_url, "/\\/$/", "")}/heartbeats/___INSTANCE_ID_FULL___"
 export TRAVIS_WORKER_HEARTBEAT_URL_AUTH_TOKEN="${random_id.pupcycler_auth.hex}"
 export TRAVIS_WORKER_TRAVIS_SITE=com
@@ -89,6 +118,9 @@ ${file("${path.module}/config/worker-org.env")}
 ### worker.env
 ${file("${path.module}/worker.env")}
 
+export TRAVIS_WORKER_AMQP_URI=${module.rabbitmq_worker_config_org.uri}
+export TRAVIS_WORKER_DOCKER_INSPECT_INTERVAL=1000ms
+export TRAVIS_WORKER_HARD_TIMEOUT=50m
 export TRAVIS_WORKER_HEARTBEAT_URL="${replace(module.pupcycler.web_url, "/\\/$/", "")}/heartbeats/___INSTANCE_ID_FULL___"
 export TRAVIS_WORKER_HEARTBEAT_URL_AUTH_TOKEN="${random_id.pupcycler_auth.hex}"
 export TRAVIS_WORKER_TRAVIS_SITE=org

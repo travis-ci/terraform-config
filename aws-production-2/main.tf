@@ -68,7 +68,8 @@ resource "random_id" "cyclist_token_org" {
 }
 
 module "rabbitmq_worker_config_com" {
-  source         = "../modules/rabbitmq_user"
+  source = "../modules/rabbitmq_user"
+
   admin_password = "${var.rabbitmq_password_com}"
   admin_username = "${var.rabbitmq_username_com}"
   endpoint       = "https://${trimspace(file("${path.module}/config/CLOUDAMQP_URL_HOST_COM"))}"
@@ -78,7 +79,8 @@ module "rabbitmq_worker_config_com" {
 }
 
 module "rabbitmq_worker_config_org" {
-  source         = "../modules/rabbitmq_user"
+  source = "../modules/rabbitmq_user"
+
   admin_password = "${var.rabbitmq_password_org}"
   admin_username = "${var.rabbitmq_username_org}"
   endpoint       = "https://${trimspace(file("${path.module}/config/CLOUDAMQP_URL_HOST_ORG"))}"
@@ -99,7 +101,6 @@ ${file("${path.module}/worker.env")}
 export TRAVIS_WORKER_AMQP_URI=${module.rabbitmq_worker_config_com.uri}
 export TRAVIS_WORKER_HARD_TIMEOUT=2h
 export TRAVIS_WORKER_TRAVIS_SITE=com
-export TRAVIS_WORKER_DOCKER_INSPECT_INTERVAL=1000ms
 EOF
 }
 
@@ -113,9 +114,8 @@ ${file("${path.module}/config/worker-org.env")}
 ${file("${path.module}/worker.env")}
 
 export TRAVIS_WORKER_AMQP_URI=${module.rabbitmq_worker_config_org.uri}
-export TRAVIS_WORKER_HARD_TIMEOUT=50m0s
+export TRAVIS_WORKER_HARD_TIMEOUT=50m
 export TRAVIS_WORKER_TRAVIS_SITE=org
-export TRAVIS_WORKER_DOCKER_INSPECT_INTERVAL=1000ms
 EOF
 }
 
