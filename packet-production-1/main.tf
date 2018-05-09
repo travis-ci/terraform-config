@@ -10,7 +10,9 @@ variable "index" {
 
 variable "librato_email" {}
 variable "librato_token" {}
-variable "project_id" {}
+variable "packet_auth_token" {}
+variable "packet_heroku_org" {}
+variable "packet_project_id" {}
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
 
@@ -34,6 +36,7 @@ terraform {
 
 provider "packet" {}
 provider "aws" {}
+provider "heroku" {}
 
 data "terraform_remote_state" "vpc" {
   backend = "s3"
@@ -46,6 +49,22 @@ data "terraform_remote_state" "vpc" {
   }
 }
 
+resource "random_id" "pupcycler_auth" {
+  byte_length = 16
+}
+
+module "pupcycler" {
+  source = "../modules/pupcycler"
+
+  auth_token        = "${random_id.pupcycler_auth.hex}"
+  env               = "${var.env}"
+  heroku_org        = "${var.packet_heroku_org}"
+  index             = "${var.index}"
+  packet_project_id = "${var.packet_project_id}"
+  packet_auth_token = "${var.packet_auth_token}"
+  syslog_address    = "${var.syslog_address_com}"
+}
+
 data "template_file" "worker_config_com" {
   template = <<EOF
 ### config/worker-com-local.env
@@ -55,6 +74,8 @@ ${file("${path.module}/config/worker-com.env")}
 ### worker.env
 ${file("${path.module}/worker.env")}
 
+export TRAVIS_WORKER_HEARTBEAT_URL="${replace(module.pupcycler.web_url, "/\\/$/", "")}/heartbeats/___INSTANCE_ID_FULL___"
+export TRAVIS_WORKER_HEARTBEAT_URL_AUTH_TOKEN="${random_id.pupcycler_auth.hex}"
 export TRAVIS_WORKER_TRAVIS_SITE=com
 EOF
 }
@@ -68,6 +89,8 @@ ${file("${path.module}/config/worker-org.env")}
 ### worker.env
 ${file("${path.module}/worker.env")}
 
+export TRAVIS_WORKER_HEARTBEAT_URL="${replace(module.pupcycler.web_url, "/\\/$/", "")}/heartbeats/___INSTANCE_ID_FULL___"
+export TRAVIS_WORKER_HEARTBEAT_URL_AUTH_TOKEN="${random_id.pupcycler_auth.hex}"
 export TRAVIS_WORKER_TRAVIS_SITE=org
 EOF
 }
@@ -84,7 +107,9 @@ module "packet_workers_com" {
   librato_token               = "${var.librato_token}"
   nat_ips                     = ["${data.terraform_remote_state.vpc.nat_ips}"]
   nat_public_ips              = ["${data.terraform_remote_state.vpc.nat_public_ips}"]
-  project_id                  = "${var.project_id}"
+  project_id                  = "${var.packet_project_id}"
+  pupcycler_auth_token        = "${random_id.pupcycler_auth.hex}"
+  pupcycler_url               = "${replace(module.pupcycler.web_url, "/\\/$/", "")}"
   server_count                = 1
   site                        = "com"
   syslog_address              = "${var.syslog_address_com}"
@@ -115,7 +140,9 @@ module "packet_workers_org" {
   librato_token               = "${var.librato_token}"
   nat_ips                     = ["${data.terraform_remote_state.vpc.nat_ips}"]
   nat_public_ips              = ["${data.terraform_remote_state.vpc.nat_public_ips}"]
-  project_id                  = "${var.project_id}"
+  project_id                  = "${var.packet_project_id}"
+  pupcycler_auth_token        = "${random_id.pupcycler_auth.hex}"
+  pupcycler_url               = "${replace(module.pupcycler.web_url, "/\\/$/", "")}"
   server_count                = 1
   site                        = "org"
   syslog_address              = "${var.syslog_address_org}"
