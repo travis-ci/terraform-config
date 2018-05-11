@@ -14,7 +14,7 @@ variable "index" {
 
 variable "librato_email" {}
 variable "librato_token" {}
-variable "project_id" {}
+variable "packet_project_id" {}
 variable "syslog_address_com" {}
 
 variable "travisci_net_external_zone_id" {
@@ -46,7 +46,7 @@ module "packet_network_ewr1" {
   index               = "${var.index}"
   librato_email       = "${var.librato_email}"
   librato_token       = "${var.librato_token}"
-  project_id          = "${var.project_id}"
+  project_id          = "${var.packet_project_id}"
   syslog_address      = "${var.syslog_address_com}"
 }
 
