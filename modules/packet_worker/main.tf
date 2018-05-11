@@ -114,8 +114,8 @@ data "template_file" "user_data" {
     env                          = "${var.env}"
     facility                     = "${var.facility}"
     index                        = "${var.index}"
-    instance_fqdn                = "${format("${var.env}-${var.index}-worker-${var.site}-%02d.packet-${var.facility}.travisci.net", count.index + 1)}"
-    instance_name                = "${format("${var.env}-${var.index}-worker-${var.site}-%02d", count.index + 1)}"
+    instance_fqdn                = "${format("${var.env}-${var.index}-worker-${var.site}-%02d-packet.packet-${var.facility}.travisci.net", count.index + 1)}"
+    instance_name                = "${format("${var.env}-${var.index}-worker-${var.site}-%02d-packet", count.index + 1)}"
     terraform_password           = "${random_id.terraform.hex}"
     terraform_public_key_openssh = "${data.tls_public_key.terraform.public_key_openssh}"
 
@@ -130,7 +130,7 @@ resource "packet_device" "worker" {
 
   billing_cycle    = "${var.billing_cycle}"
   facility         = "${var.facility}"
-  hostname         = "${format("${var.env}-${var.index}-worker-${var.site}-%02d", count.index + 1)}"
+  hostname         = "${format("${var.env}-${var.index}-worker-${var.site}-%02d-packet", count.index + 1)}"
   operating_system = "ubuntu_16_04"
   plan             = "${var.server_plan}"
   project_id       = "${var.project_id}"
