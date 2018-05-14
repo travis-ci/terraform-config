@@ -142,7 +142,7 @@ module "packet_workers_com" {
   project_id                  = "${var.packet_project_id}"
   pupcycler_auth_token        = "${random_id.pupcycler_auth.hex}"
   pupcycler_url               = "${replace(module.pupcycler.web_url, "/\\/$/", "")}"
-  server_count                = 1
+  server_count                = 4
   site                        = "com"
   syslog_address              = "${var.syslog_address_com}"
   terraform_privkey           = "${data.terraform_remote_state.vpc.terraform_privkey}"
@@ -175,7 +175,7 @@ module "packet_workers_org" {
   project_id                  = "${var.packet_project_id}"
   pupcycler_auth_token        = "${random_id.pupcycler_auth.hex}"
   pupcycler_url               = "${replace(module.pupcycler.web_url, "/\\/$/", "")}"
-  server_count                = 1
+  server_count                = 4
   site                        = "org"
   syslog_address              = "${var.syslog_address_org}"
   terraform_privkey           = "${data.terraform_remote_state.vpc.terraform_privkey}"

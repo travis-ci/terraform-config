@@ -27,6 +27,14 @@ write_files:
   owner: 'root:root'
   path: /etc/cron.d/travis-worker-clean-up-containers
   permissions: '0644'
+- content: '${base64encode(file("${assets}/bits/travis-packet-privnet-setup.bash"))}'
+  encoding: b64
+  permissions: '0755'
+  path: /var/lib/cloud/scripts/per-boot/00-travis-packet-privnet-setup
+- content: '${base64encode(file("${assets}/bits/ensure-tfw.bash"))}'
+  encoding: b64
+  permissions: '0755'
+  path: /var/lib/cloud/scripts/per-boot/00-ensure-tfw
 - content: '${base64encode(syslog_address)}'
   encoding: b64
   path: /var/tmp/travis-run.d/syslog-address
@@ -55,11 +63,3 @@ write_files:
 - content: '${base64encode(cloud_init_env)}'
   encoding: b64
   path: /var/tmp/travis-worker-cloud-init.env.tmpl
-- content: '${base64encode(file("${assets}/bits/travis-packet-privnet-setup.bash"))}'
-  encoding: b64
-  permissions: '0755'
-  path: /var/lib/cloud/scripts/per-boot/00-travis-packet-privnet-setup
-- content: '${base64encode(file("${assets}/bits/ensure-tfw.bash"))}'
-  encoding: b64
-  permissions: '0755'
-  path: /var/lib/cloud/scripts/per-boot/00-ensure-tfw
