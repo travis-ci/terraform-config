@@ -26,7 +26,7 @@ main() {
   local status=noop
 
   local cids
-  read -r -a cids <<<"$(docker ps -a -q | tr "\n" ' ')"
+  read -r -a cids <<<"$(__travis_job_cids)"
 
   if [[ "${#cids[@]}" -eq 0 ]]; then
     __logger warning 'No containers running, aborting'
@@ -37,13 +37,8 @@ main() {
     local cn
     cn="$(docker inspect "${cid}" --format '{{ .Name }}')"
 
-    if [[ "${cn}" == /travis-worker ]]; then
-      not_killed_count="$((not_killed_count + 1))"
-      continue
-    fi
-
-    if ! __container_is_newer_than "${cid}" "${max_age}"; then
-      __logger info "${cid} is older than ${max_age}; removing! (name=${cn})"
+    if __container_must_be_cleaned "${cid}" "${max_age}"; then
+      __logger info "${cid} must be cleaned; removing! (name=${cn})"
 
       docker kill "${cid}" ||
         __logger warning "failed to kill container name=${cn}"
@@ -135,6 +130,27 @@ EOF
     "${LIBRATO_API}/v1/metrics"
 }
 
+__container_must_be_cleaned() {
+  local cid="${1}"
+  local max_age="${2}"
+
+  if __container_has_active_exec "${cid}" &&
+    __container_is_newer_than "${cid}" "${max_age}"; then
+    return 1
+  fi
+}
+
+__container_has_active_exec() {
+  local cid="${1}"
+  local exec_ids
+
+  exec_ids="$(docker inspect --format='{{ .ExecIDs | json }}' "${cid}")"
+  if [[ "${exec_ids}" == null ]] &&
+    ! __container_is_newer_than "${cid}" 60; then
+    return 1
+  fi
+}
+
 __container_is_newer_than() {
   local cid="${1}"
   local max_age="${2}"
@@ -146,11 +162,19 @@ __container_is_newer_than() {
   created="$(date --date="$(docker inspect -f '{{ .Created }}' "${cid}")" +%s)"
   local age
   age="$(($(date +%s) - created))"
+
   if [[ "${age}" -gt "${max_age}" ]]; then
-    __logger info \
-      "Container ${cid} age ${age} is older than max_age of ${max_age}."
+    __logger info "container=${cid} age=${age}s max_age=${max_age}s."
     return 1
   fi
+}
+
+__travis_job_cids() {
+  docker ps \
+    --all \
+    --quiet \
+    --filter name='travis-job-*' |
+    tr "\n" ' '
 }
 
 main "${@}"
