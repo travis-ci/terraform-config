@@ -20,6 +20,8 @@ variable "nat_public_ips" {
 }
 
 variable "project_id" {}
+variable "pupcycler_auth_token" {}
+variable "pupcycler_url" {}
 variable "server_count" {}
 
 variable "server_plan" {
@@ -43,7 +45,7 @@ variable "worker_docker_image_python" {}
 variable "worker_docker_image_ruby" {}
 
 variable "worker_docker_self_image" {
-  default = "travisci/worker:v3.6.0"
+  default = "travisci/worker:v3.7.0"
 }
 
 data "tls_public_key" "terraform" {
@@ -52,6 +54,8 @@ data "tls_public_key" "terraform" {
 
 data "template_file" "cloud_init_env" {
   template = <<EOF
+export PUPCYCLER_AUTH_TOKEN="${var.pupcycler_auth_token}"
+export PUPCYCLER_URL="${var.pupcycler_url}"
 export TRAVIS_WORKER_DOCKER_IMAGE_ANDROID="${var.worker_docker_image_android}"
 export TRAVIS_WORKER_DOCKER_IMAGE_DEFAULT="${var.worker_docker_image_default}"
 export TRAVIS_WORKER_DOCKER_IMAGE_ERLANG="${var.worker_docker_image_erlang}"
@@ -64,6 +68,8 @@ export TRAVIS_WORKER_DOCKER_IMAGE_PHP="${var.worker_docker_image_php}"
 export TRAVIS_WORKER_DOCKER_IMAGE_PYTHON="${var.worker_docker_image_python}"
 export TRAVIS_WORKER_DOCKER_IMAGE_RUBY="${var.worker_docker_image_ruby}"
 export TRAVIS_WORKER_PRESTART_HOOK="/var/tmp/travis-run.d/travis-worker-prestart-hook"
+export TRAVIS_WORKER_START_HOOK="/var/tmp/travis-run.d/travis-worker-start-hook"
+export TRAVIS_WORKER_STOP_HOOK="/var/tmp/travis-run.d/travis-worker-stop-hook"
 export TRAVIS_WORKER_SELF_IMAGE="${var.worker_docker_self_image}"
 EOF
 }
@@ -108,8 +114,8 @@ data "template_file" "user_data" {
     env                          = "${var.env}"
     facility                     = "${var.facility}"
     index                        = "${var.index}"
-    instance_fqdn                = "${format("${var.env}-${var.index}-worker-${var.site}-%02d.packet-${var.facility}.travisci.net", count.index + 1)}"
-    instance_name                = "${format("${var.env}-${var.index}-worker-${var.site}-%02d", count.index + 1)}"
+    instance_fqdn                = "${format("${var.env}-${var.index}-worker-${var.site}-%02d-packet.packet-${var.facility}.travisci.net", count.index + 1)}"
+    instance_name                = "${format("${var.env}-${var.index}-worker-${var.site}-%02d-packet", count.index + 1)}"
     terraform_password           = "${random_id.terraform.hex}"
     terraform_public_key_openssh = "${data.tls_public_key.terraform.public_key_openssh}"
 
@@ -124,11 +130,12 @@ resource "packet_device" "worker" {
 
   billing_cycle    = "${var.billing_cycle}"
   facility         = "${var.facility}"
-  hostname         = "${format("${var.env}-${var.index}-worker-${var.site}-%02d", count.index + 1)}"
+  hostname         = "${format("${var.env}-${var.index}-worker-${var.site}-%02d-packet", count.index + 1)}"
   operating_system = "ubuntu_16_04"
   plan             = "${var.server_plan}"
   project_id       = "${var.project_id}"
   user_data        = "${element(data.template_file.user_data.*.rendered, count.index)}"
+  tags             = ["worker", "${var.site}", "${var.env}"]
 
   lifecycle {
     ignore_changes = ["root_password", "user_data"]

@@ -526,10 +526,10 @@ resource "null_resource" "cyclist" {
   provisioner "local-exec" {
     command = <<EOF
 exec ${path.module}/../../bin/heroku-wait-deploy-scale \
-  travis-ci/cyclist \
-  ${heroku_app.cyclist.id} \
-  ${var.cyclist_scale} \
-  ${var.cyclist_version}
+  --repo=travis-ci/cyclist \
+  --app=${heroku_app.cyclist.id} \
+  --ps-scale=${var.cyclist_scale} \
+  --deploy-version=${var.cyclist_version}
 EOF
   }
 }
