@@ -87,6 +87,7 @@ resource "null_resource" "collectd_vsphere" {
 ${file(var.config_path)}
 export COLLECTD_VSPHERE_COLLECTD_USERNAME=${var.collectd_vsphere_collectd_network_user}
 export COLLECTD_VSPHERE_COLLECTD_PASSWORD=${var.collectd_vsphere_collectd_network_token}
+export COLLECTD_VSPHERE_LIBRATO_SOURCE='collectd-vsphere-${var.env}-${var.index}'
 EOF
 
     destination = "/tmp/etc-default-collectd-vsphere-${var.env}"
