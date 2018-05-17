@@ -16,7 +16,7 @@ resource "vsphere_virtual_machine" "util" {
 
   network_interface {
     label              = "${var.management_network_label}"
-    ipv4_address       = "${cidrhost("10.88.208.0/23", 498 + var.index)}"
+    ipv4_address       = "${cidrhost("10.88.242.0/23", 498 + var.index)}"
     ipv4_prefix_length = "23"
   }
 
