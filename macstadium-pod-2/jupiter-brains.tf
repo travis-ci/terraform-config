@@ -175,7 +175,7 @@ module "jupiter_brain_custom_6" {
   config_path    = "${path.module}/config/jupiter-brain-custom-5-env"
   env            = "custom-6"
   index          = "${var.index}"
-  port_suffix    = 10
+  port_suffix    = 11
   token          = "${random_id.jupiter_brain_custom_6_token.hex}"
 }
 
