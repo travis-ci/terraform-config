@@ -178,4 +178,3 @@ module "jupiter_brain_custom_6" {
   port_suffix    = 11
   token          = "${random_id.jupiter_brain_custom_6_token.hex}"
 }
-
