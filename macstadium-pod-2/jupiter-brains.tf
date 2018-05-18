@@ -165,3 +165,17 @@ module "jupiter_brain_custom_5" {
   port_suffix    = 9
   token          = "${random_id.jupiter_brain_custom_5_token.hex}"
 }
+
+module "jupiter_brain_custom_6" {
+  source         = "../modules/jupiter_brain_bluegreen"
+  host_id        = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_ip_address = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user       = "${var.ssh_user}"
+  version        = "${var.jupiter_brain_custom-6_version}"
+  config_path    = "${path.module}/config/jupiter-brain-custom-5-env"
+  env            = "custom-6"
+  index          = "${var.index}"
+  port_suffix    = 10
+  token          = "${random_id.jupiter_brain_custom_6_token.hex}"
+}
+
