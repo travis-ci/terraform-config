@@ -1,7 +1,7 @@
 [Unit]
 Description=TFW Admin Clean Containers
-After=docker.service
-Requires=docker.service
+After=travis-worker.service
+Requires=travis-worker.service
 
 [Service]
 EnvironmentFile=/var/tmp/travis-run.d/travis-worker.env
