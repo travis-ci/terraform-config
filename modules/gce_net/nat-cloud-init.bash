@@ -4,9 +4,10 @@ set -o errexit
 set -o pipefail
 
 main() {
+  : "${ETCDIR:=/etc}"
+  : "${TMPDIR:=/var/tmp}"
   : "${USRLOCAL:=/usr/local}"
   : "${VARTMP:=/var/tmp}"
-  : "${ETCDIR:=/etc}"
 
   export DEBIAN_FRONTEND=noninteractive
   __disable_unfriendly_services
@@ -32,12 +33,14 @@ __disable_unfriendly_services() {
 }
 
 __install_tfw() {
-  curl -sSL \
-    -o "${VARTMP}/tfw" \
-    'https://raw.githubusercontent.com/travis-ci/tfw/master/tfw'
+  apt-get update -yqq
+  apt-get install -yqq curl make
 
-  chmod +x "${VARTMP}/tfw"
-  mv -v "${VARTMP}/tfw" "${USRLOCAL}/bin/tfw"
+  rm -rf "${TMPDIR}/tfw-install"
+  mkdir -p "${TMPDIR}/tfw-install"
+  curl -sSL https://api.github.com/repos/travis-ci/tfw/tarball/master |
+    tar -C "${TMPDIR}/tfw-install" --strip-components=1 -xzf -
+  make -C "${TMPDIR}/tfw-install" install PREFIX="${USRLOCAL}"
 }
 
 __write_librato_config() {
