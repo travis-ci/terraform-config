@@ -62,6 +62,12 @@ __setup_tfw() {
   tfw admin-bootstrap
 
   systemctl restart sshd || true
+
+  cp -v "${VARTMP}/tfw-admin-clean-containers.service" \
+    "${ETCDIR}/systemd/system/tfw-admin-clean-containers.service"
+
+  systemctl enable tfw-admin-clean-containers || true
+  systemctl start tfw-admin-clean-containers || true
 }
 
 __setup_travis_user() {

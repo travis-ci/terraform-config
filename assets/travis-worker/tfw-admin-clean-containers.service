@@ -1,0 +1,13 @@
+[Unit]
+Description=TFW Admin Clean Containers
+After=docker.service
+Requires=docker.service
+
+[Service]
+EnvironmentFile=/var/tmp/travis-run.d/travis-worker.env
+ExecStart=/usr/local/bin/tfw admin-clean-containers
+Restart=always
+WorkingDirectory=/
+
+[Install]
+WantedBy=multi-user.target
