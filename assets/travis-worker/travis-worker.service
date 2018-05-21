@@ -7,8 +7,9 @@ Requires=docker.service
 ExecStart=/usr/local/bin/travis-worker-wrapper
 ExecStopPost=/bin/sleep 5
 Restart=always
-WorkingDirectory=/
+SyslogIdentifier=travis-worker
 User=travis
+WorkingDirectory=/
 
 [Install]
 WantedBy=multi-user.target
