@@ -58,6 +58,7 @@ module "pupcycler" {
   packet_project_id = "${var.packet_project_id}"
   packet_auth_token = "${var.packet_auth_token}"
   syslog_address    = "${var.syslog_address_com}"
+  version           = "master"
 }
 
 data "template_file" "worker_config_com" {
