@@ -1,7 +1,14 @@
-variable vsphere_user {}
-variable vsphere_password {}
-variable vsphere_server {}
-variable travisci_net_external_zone_id {}
+variable "vsphere_user" {}
+variable "vsphere_password" {}
+variable "vsphere_server" {}
+variable "travisci_net_external_zone_id" {}
+variable "ssh_user" {}
+variable "jobs_network_subnet" {
+  default = "10.182.0.0/19"
+}
+variable "internal_network_subnet" {
+  default = "10.182.64.0/24"
+}
 
 variable index {
   default = "1"
@@ -97,6 +104,7 @@ resource "vsphere_virtual_machine" "dhcp_server" {
 
   network_interface {
     network_id = "${data.vsphere_network.jobs.id}"
+        mac_address  = "00:50:56:84:b4:81"
   }
 
   disk {
@@ -119,12 +127,22 @@ resource "vsphere_virtual_machine" "dhcp_server" {
       }
 
       # by including these blank network iface blocks, we set the machine up to get an IP from DHCP :)
-      network_interface = {}
-      network_interface = {}
+      network_interface = {
+        ipv4_address = "10.182.64.50"
+        ipv4_netmask = "18"
+      }
+      network_interface = {
+        ipv4_address = "10.182.0.50"
+        ipv4_netmask = "18"
+      }
     }
   }
 
-  vapp {} #this being here makes terraform quieter
+  vapp {
+    properties {
+      "user-data" = "asdf"
+    }
+  }
 
   connection {
     host  = "${vsphere_virtual_machine.dhcp_server.default_ip_address}"
@@ -133,7 +151,7 @@ resource "vsphere_virtual_machine" "dhcp_server" {
   }
 }
 
-resource "null_resource" "dhcp_server" {
+resource "null_resource" "dhcp_server_install" {
   triggers {
     host_id = "${vsphere_virtual_machine.dhcp_server.uuid}"
   }
@@ -158,3 +176,59 @@ resource "aws_route53_record" "dhcp_server" {
 # output "dhcp_server_ip" {
 #   value = "${vsphere_virtual_machine.dhcp_server.default_ip_address}"
 # }
+
+
+data "template_file" "dhcpd_install" {
+  template = "${file("${path.module}/install-dhcpd.sh")}"
+}
+
+data "template_file" "dhcpd_defaults" {
+  template = "${file("${path.module}/isc-dhcp-server-defaults")}"
+}
+
+resource "null_resource" "dhcp_server" {
+  triggers {
+    install_script_signature = "${sha256(data.template_file.dhcpd_install.rendered)}"
+    dhcpd_defaults_signature = "${sha256(data.template_file.dhcpd_defaults.rendered)}"
+    name                     = "dhcp_server-${var.index}"
+    host_id                  = "${vsphere_virtual_machine.dhcp_server.uuid}"
+  }
+
+  connection {
+    host  = "${vsphere_virtual_machine.dhcp_server.default_ip_address}"
+    user  = "${var.ssh_user}"
+    agent = true
+  }
+
+  provisioner "file"  {
+    content = <<EOF
+subnet ${cidrhost(var.jobs_network_subnet, 0)} netmask 255.255.224.0{
+  option domain-name "macstadium-us-se-1.travisci.net";
+  range ${cidrhost(var.jobs_network_subnet, 256)} ${cidrhost(var.jobs_network_subnet, -128)};
+  option routers ${cidrhost(var.jobs_network_subnet, 1)};
+  option domain-name-servers 8.8.8.8, 8.8.4.4;
+  default-lease-time 600;
+  max-lease-time 600;
+}
+
+subnet ${cidrhost(var.internal_network_subnet, 0)} netmask 255.255.255.0{
+  option domain-name "macstadium-us-se-1.travisci.net";
+  range ${cidrhost(var.internal_network_subnet, 100)} ${cidrhost(var.internal_network_subnet, -50)};
+  option routers ${cidrhost(var.internal_network_subnet, 1)};
+  option domain-name-servers 8.8.8.8, 8.8.4.4;
+  default-lease-time 600;
+  max-lease-time 600;
+}
+EOF
+    destination = "/tmp/dhcpd.conf"
+  }
+
+  provisioner "file"  {
+    content     = "${data.template_file.dhcpd_defaults.rendered}"
+    destination = "/tmp/isc-dhcp-server-defaults"
+  }
+
+  provisioner "remote-exec" {
+    inline = ["${data.template_file.dhcpd_install.rendered}"]
+  }
+}
