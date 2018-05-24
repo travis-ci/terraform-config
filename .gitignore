@@ -4,6 +4,7 @@
 *.tfvars
 
 !gce-*/instance-counts.auto.tfvars
+!packet-*/instance-counts.auto.tfvars
 
 .env
 .ruby-version

@@ -19,6 +19,8 @@ variable "rabbitmq_username_com" {}
 variable "rabbitmq_username_org" {}
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
+variable "worker_instance_count_com" {}
+variable "worker_instance_count_org" {}
 
 variable "amethyst_image" {
   default = "travisci/ci-amethyst:packer-1512508255-986baf0"
@@ -146,7 +148,7 @@ module "packet_workers_com" {
   project_id                  = "${var.packet_project_id}"
   pupcycler_auth_token        = "${random_id.pupcycler_auth.hex}"
   pupcycler_url               = "${replace(module.pupcycler.web_url, "/\\/$/", "")}"
-  server_count                = 4
+  server_count                = "${var.worker_instance_count_com}"
   site                        = "com"
   syslog_address              = "${var.syslog_address_com}"
   terraform_privkey           = "${data.terraform_remote_state.vpc.terraform_privkey}"
@@ -179,7 +181,7 @@ module "packet_workers_org" {
   project_id                  = "${var.packet_project_id}"
   pupcycler_auth_token        = "${random_id.pupcycler_auth.hex}"
   pupcycler_url               = "${replace(module.pupcycler.web_url, "/\\/$/", "")}"
-  server_count                = 4
+  server_count                = "${var.worker_instance_count_org}"
   site                        = "org"
   syslog_address              = "${var.syslog_address_org}"
   terraform_privkey           = "${data.terraform_remote_state.vpc.terraform_privkey}"
