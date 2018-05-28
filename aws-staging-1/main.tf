@@ -224,25 +224,25 @@ module "aws_asg_org_canary" {
     "${module.aws_az_1b2.workers_org_security_group_id}",
   ]
 
-  site                           = "org"
-  syslog_address                 = "${var.syslog_address_org}"
-  worker_ami                     = "${data.aws_ami.tfw.id}"
-  worker_asg_max_size            = 3
-  worker_asg_min_size            = 0
-  worker_config                  = "${data.template_file.worker_config_org.rendered}"
-  worker_docker_image_android    = "${var.latest_docker_image_amethyst}"
-  worker_docker_image_default    = "${var.latest_docker_image_garnet}"
-  worker_docker_image_erlang     = "${var.latest_docker_image_amethyst}"
-  worker_docker_image_go         = "${var.latest_docker_image_garnet}"
-  worker_docker_image_haskell    = "${var.latest_docker_image_amethyst}"
-  worker_docker_image_jvm        = "${var.latest_docker_image_garnet}"
-  worker_docker_image_node_js    = "${var.latest_docker_image_garnet}"
-  worker_docker_image_perl       = "${var.latest_docker_image_amethyst}"
-  worker_docker_image_php        = "${var.latest_docker_image_garnet}"
-  worker_docker_image_python     = "${var.latest_docker_image_garnet}"
-  worker_docker_image_ruby       = "${var.latest_docker_image_garnet}"
-  worker_docker_self_image       = "${var.latest_docker_image_worker}"
-  worker_queue                   = "ec2"
+  site                        = "org"
+  syslog_address              = "${var.syslog_address_org}"
+  worker_ami                  = "${data.aws_ami.tfw.id}"
+  worker_asg_max_size         = 3
+  worker_asg_min_size         = 0
+  worker_config               = "${data.template_file.worker_config_org.rendered}"
+  worker_docker_image_android = "${var.latest_docker_image_amethyst}"
+  worker_docker_image_default = "${var.latest_docker_image_garnet}"
+  worker_docker_image_erlang  = "${var.latest_docker_image_amethyst}"
+  worker_docker_image_go      = "${var.latest_docker_image_garnet}"
+  worker_docker_image_haskell = "${var.latest_docker_image_amethyst}"
+  worker_docker_image_jvm     = "${var.latest_docker_image_garnet}"
+  worker_docker_image_node_js = "${var.latest_docker_image_garnet}"
+  worker_docker_image_perl    = "${var.latest_docker_image_amethyst}"
+  worker_docker_image_php     = "${var.latest_docker_image_garnet}"
+  worker_docker_image_python  = "${var.latest_docker_image_garnet}"
+  worker_docker_image_ruby    = "${var.latest_docker_image_garnet}"
+  worker_docker_self_image    = "${var.latest_docker_image_worker}"
+  worker_queue                = "ec2"
 
   worker_subnets = [
     "${data.terraform_remote_state.vpc.workers_org_subnet_1b2_id}",
