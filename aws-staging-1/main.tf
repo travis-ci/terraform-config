@@ -47,6 +47,12 @@ data "aws_ami" "tfw" {
     values = ["hvm"]
   }
 
+  filter {
+    # tfw 2018-05-09 15-21-18
+    name   = "image-id"
+    values = ["ami-06e44e723219507ba"]
+  }
+
   owners = ["self"]
 }
 
