@@ -106,6 +106,8 @@ export TRAVIS_WORKER_HARD_TIMEOUT=2h
 export TRAVIS_WORKER_HEARTBEAT_URL="${replace(module.pupcycler.web_url, "/\\/$/", "")}/heartbeats/___INSTANCE_ID_FULL___"
 export TRAVIS_WORKER_HEARTBEAT_URL_AUTH_TOKEN="${random_id.pupcycler_auth.hex}"
 export TRAVIS_WORKER_TRAVIS_SITE=com
+
+export TFW_ADMIN_CLEAN_CONTAINERS_MAX_AGE=14400
 EOF
 }
 
@@ -124,6 +126,8 @@ export TRAVIS_WORKER_HARD_TIMEOUT=50m
 export TRAVIS_WORKER_HEARTBEAT_URL="${replace(module.pupcycler.web_url, "/\\/$/", "")}/heartbeats/___INSTANCE_ID_FULL___"
 export TRAVIS_WORKER_HEARTBEAT_URL_AUTH_TOKEN="${random_id.pupcycler_auth.hex}"
 export TRAVIS_WORKER_TRAVIS_SITE=org
+
+export TFW_ADMIN_CLEAN_CONTAINERS_MAX_AGE=3600
 EOF
 }
 

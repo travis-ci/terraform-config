@@ -17,7 +17,7 @@ variable "scale" {
 variable "syslog_address" {}
 
 variable "version" {
-  default = "master"
+  default = "v0.1.0"
 }
 
 resource "heroku_app" "pupcycler" {

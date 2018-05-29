@@ -58,6 +58,7 @@ module "pupcycler" {
   packet_project_id = "${var.packet_project_id}"
   packet_auth_token = "${var.packet_auth_token}"
   syslog_address    = "${var.syslog_address_com}"
+  version           = "master"
 }
 
 data "template_file" "worker_config_com" {
@@ -69,9 +70,13 @@ ${file("${path.module}/config/worker-com.env")}
 ### worker.env
 ${file("${path.module}/worker.env")}
 
+export TRAVIS_WORKER_DOCKER_INSPECT_INTERVAL=1000ms
+export TRAVIS_WORKER_HARD_TIMEOUT=2h
 export TRAVIS_WORKER_HEARTBEAT_URL="${replace(module.pupcycler.web_url, "/\\/$/", "")}/heartbeats/___INSTANCE_ID_FULL___"
 export TRAVIS_WORKER_HEARTBEAT_URL_AUTH_TOKEN="${random_id.pupcycler_auth.hex}"
 export TRAVIS_WORKER_TRAVIS_SITE=com
+
+export TFW_ADMIN_CLEAN_CONTAINERS_MAX_AGE=14400
 EOF
 }
 
@@ -84,9 +89,13 @@ ${file("${path.module}/config/worker-org.env")}
 ### worker.env
 ${file("${path.module}/worker.env")}
 
+export TRAVIS_WORKER_DOCKER_INSPECT_INTERVAL=1000ms
+export TRAVIS_WORKER_HARD_TIMEOUT=50m
 export TRAVIS_WORKER_HEARTBEAT_URL="${replace(module.pupcycler.web_url, "/\\/$/", "")}/heartbeats/___INSTANCE_ID_FULL___"
 export TRAVIS_WORKER_HEARTBEAT_URL_AUTH_TOKEN="${random_id.pupcycler_auth.hex}"
 export TRAVIS_WORKER_TRAVIS_SITE=org
+
+export TFW_ADMIN_CLEAN_CONTAINERS_MAX_AGE=3600
 EOF
 }
 

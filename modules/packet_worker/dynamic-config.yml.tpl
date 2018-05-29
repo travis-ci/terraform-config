@@ -17,16 +17,6 @@ write_files:
   owner: 'root:root'
   path: /var/tmp/travis-run.d/check-unregister-netdevice
   permissions: '0750'
-- content: '${base64encode(file("${assets}/travis-worker/clean-up-containers.bash"))}'
-  encoding: b64
-  owner: 'root:root'
-  path: /var/tmp/travis-run.d/clean-up-containers
-  permissions: '0750'
-- content: '${base64encode(file("${assets}/travis-worker/clean-up-containers.crontab"))}'
-  encoding: b64
-  owner: 'root:root'
-  path: /etc/cron.d/travis-worker-clean-up-containers
-  permissions: '0644'
 - content: '${base64encode(file("${assets}/bits/travis-packet-privnet-setup.bash"))}'
   encoding: b64
   permissions: '0755'
@@ -35,6 +25,10 @@ write_files:
   encoding: b64
   permissions: '0755'
   path: /var/lib/cloud/scripts/per-boot/00-ensure-tfw
+- content: '${base64encode(file("${assets}/travis-worker/tfw-admin-clean-containers.service"))}'
+  encoding: b64
+  owner: 'root:root'
+  path: '/var/tmp/tfw-admin-clean-containers.service'
 - content: '${base64encode(syslog_address)}'
   encoding: b64
   path: /var/tmp/travis-run.d/syslog-address
