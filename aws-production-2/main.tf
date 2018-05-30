@@ -292,7 +292,7 @@ module "aws_asg_org_canary" {
   syslog_address              = "${var.syslog_address_org}"
   worker_ami                  = "${var.worker_ami_canary}"
   worker_asg_max_size         = 3
-  worker_asg_min_size         = 1
+  worker_asg_min_size         = 0
   worker_config               = "${data.template_file.worker_config_org.rendered}"
   worker_docker_image_android = "${var.amethyst_image}"
   worker_docker_image_default = "${var.garnet_image}"
