@@ -651,3 +651,7 @@ resource "aws_cloudwatch_dashboard" "main" {
 output "user_data" {
   value = "${data.template_file.cloud_config.rendered}"
 }
+
+output "cyclist_url" {
+  value = "${replace(heroku_app.cyclist.web_url, "/\\/$/", "")}"
+}
