@@ -96,7 +96,7 @@ resource "vsphere_virtual_machine" "dhcp_server" {
   num_cpus         = 2
   memory           = 4096
   resource_pool_id = "${data.vsphere_resource_pool.macpro_cluster.id}"
-  guest_id         = "ubuntu64Guest"
+  guest_id         = "${data.vsphere_virtual_machine.internal_vanilla.guest_id}"
 
   network_interface {
     network_id = "${data.vsphere_network.internal.id}"
@@ -135,6 +135,7 @@ resource "vsphere_virtual_machine" "dhcp_server" {
         ipv4_address = "10.182.0.50"
         ipv4_netmask = "18"
       }
+        ipv4_gateway = "10.182.64.1"
     }
   }
 
