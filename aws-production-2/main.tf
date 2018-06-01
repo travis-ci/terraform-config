@@ -36,7 +36,7 @@ variable "garnet_image" {
 }
 
 variable "worker_image_canary" {
-  default = "travisci/worker:v3.7.0-29-gf54cf99"
+  default = "travisci/worker:v3.8.0"
 }
 
 terraform {
