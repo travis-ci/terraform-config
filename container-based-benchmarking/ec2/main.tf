@@ -70,8 +70,11 @@ data "template_file" "cloud_config" {
     assets             = "${path.module}/../../assets"
     cloud_init_env     = "${data.template_file.cloud_init_env.rendered}"
     docker_daemon_json = "${data.template_file.docker_daemon_json.rendered}"
-    github_users_env   = "export GITHUB_USERS='${var.github_users}'"
     here               = "${path.module}"
+
+    github_users_env = <<EOF
+export GITHUB_USERS='${var.github_users}'
+EOF
   }
 }
 
