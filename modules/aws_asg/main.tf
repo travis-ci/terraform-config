@@ -118,7 +118,7 @@ variable "worker_docker_image_python" {}
 variable "worker_docker_image_ruby" {}
 
 variable "worker_docker_self_image" {
-  default = "travisci/worker:v3.6.0"
+  default = "travisci/worker:v3.8.0"
 }
 
 variable "worker_instance_type" {
@@ -650,4 +650,8 @@ resource "aws_cloudwatch_dashboard" "main" {
 
 output "user_data" {
   value = "${data.template_file.cloud_config.rendered}"
+}
+
+output "cyclist_url" {
+  value = "${replace(heroku_app.cyclist.web_url, "/\\/$/", "")}"
 }
