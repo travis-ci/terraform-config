@@ -22,12 +22,21 @@ variable "worker_ami" {
   default = "ami-07dd1aada92124d1e"
 }
 
+variable "worker_ami_canary" {
+  # tfw 2018-03-08 00-09-18
+  default = "ami-07dd1aada92124d1e"
+}
+
 variable "amethyst_image" {
   default = "travisci/ci-amethyst:packer-1512508255-986baf0"
 }
 
 variable "garnet_image" {
   default = "travisci/ci-garnet:packer-1512502276-986baf0"
+}
+
+variable "worker_image_canary" {
+  default = "travisci/worker:v3.8.0"
 }
 
 terraform {
@@ -252,6 +261,53 @@ module "aws_asg_org" {
   worker_docker_image_ruby               = "${var.garnet_image}"
   worker_instance_type                   = "c3.8xlarge"
   worker_queue                           = "ec2"
+
+  worker_subnets = [
+    "${data.terraform_remote_state.vpc.workers_org_subnet_1b2_id}",
+    "${data.terraform_remote_state.vpc.workers_org_subnet_1b_id}",
+    "${data.terraform_remote_state.vpc.workers_org_subnet_1e2_id}",
+    "${data.terraform_remote_state.vpc.workers_org_subnet_1e_id}",
+  ]
+}
+
+module "aws_asg_org_canary" {
+  source                     = "../modules/aws_asg_canary"
+  cyclist_auth_token         = "${random_id.cyclist_token_org.hex}"
+  cyclist_url                = "${module.aws_asg_org.cyclist_url}"
+  docker_storage_dm_basesize = "19G"
+  env                        = "${var.env}"
+  env_short                  = "${var.env}"
+  github_users               = "${var.github_users}"
+  index                      = "${var.index}"
+  registry_hostname          = "${data.terraform_remote_state.vpc.registry_hostname}"
+
+  security_groups = [
+    "${module.aws_az_1b.workers_org_security_group_id}",
+    "${module.aws_az_1b2.workers_org_security_group_id}",
+    "${module.aws_az_1e.workers_org_security_group_id}",
+    "${module.aws_az_1e2.workers_org_security_group_id}",
+  ]
+
+  site                        = "org"
+  syslog_address              = "${var.syslog_address_org}"
+  worker_ami                  = "${var.worker_ami_canary}"
+  worker_asg_max_size         = 3
+  worker_asg_min_size         = 0
+  worker_config               = "${data.template_file.worker_config_org.rendered}"
+  worker_docker_image_android = "${var.amethyst_image}"
+  worker_docker_image_default = "${var.garnet_image}"
+  worker_docker_image_erlang  = "${var.amethyst_image}"
+  worker_docker_image_go      = "${var.garnet_image}"
+  worker_docker_image_haskell = "${var.amethyst_image}"
+  worker_docker_image_jvm     = "${var.garnet_image}"
+  worker_docker_image_node_js = "${var.garnet_image}"
+  worker_docker_image_perl    = "${var.amethyst_image}"
+  worker_docker_image_php     = "${var.garnet_image}"
+  worker_docker_image_python  = "${var.garnet_image}"
+  worker_docker_image_ruby    = "${var.garnet_image}"
+  worker_docker_self_image    = "${var.worker_image_canary}"
+  worker_instance_type        = "c3.8xlarge"
+  worker_queue                = "ec2"
 
   worker_subnets = [
     "${data.terraform_remote_state.vpc.workers_org_subnet_1b2_id}",
