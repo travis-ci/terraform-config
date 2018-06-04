@@ -45,12 +45,15 @@ data "template_file" "nat_dynamic_config" {
   template = "${file("${path.module}/nat-dynamic-config.yml.tpl")}"
 
   vars {
-    assets           = "${path.module}/../../assets"
-    duo_config       = "${data.template_file.duo_config.rendered}"
-    github_users_env = "export GITHUB_USERS='${var.github_users}'"
-    here             = "${path.module}"
-    librato_env      = "${data.template_file.librato_env.rendered}"
-    syslog_address   = "${var.syslog_address}"
+    assets         = "${path.module}/../../assets"
+    duo_config     = "${data.template_file.duo_config.rendered}"
+    here           = "${path.module}"
+    librato_env    = "${data.template_file.librato_env.rendered}"
+    syslog_address = "${var.syslog_address}"
+
+    github_users_env = <<EOF
+export GITHUB_USERS='${var.github_users}'
+EOF
   }
 }
 

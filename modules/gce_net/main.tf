@@ -271,10 +271,13 @@ data "template_file" "nat_cloud_config" {
   vars {
     assets            = "${path.module}/../../assets"
     cloud_init_bash   = "${file("${path.module}/nat-cloud-init.bash")}"
-    github_users_env  = "export GITHUB_USERS='${var.github_users}'"
     instance_hostname = "nat-${var.env}-${var.index}-___INSTANCE_ID___.gce-___REGION_ZONE___.travisci.net"
     nat_config        = "${var.nat_config}"
     syslog_address    = "${var.syslog_address}"
+
+    github_users_env = <<EOF
+export GITHUB_USERS='${var.github_users}'
+EOF
 
     docker_env = <<EOF
 export TRAVIS_DOCKER_DISABLE_DIRECT_LVM=1
@@ -475,10 +478,13 @@ data "template_file" "bastion_cloud_config" {
   template = "${file("${path.module}/bastion-cloud-config.yml.tpl")}"
 
   vars {
-    bastion_config   = "${var.bastion_config}"
-    cloud_init_bash  = "${file("${path.module}/bastion-cloud-init.bash")}"
-    github_users_env = "export GITHUB_USERS='${var.github_users}'"
-    syslog_address   = "${var.syslog_address}"
+    bastion_config  = "${var.bastion_config}"
+    cloud_init_bash = "${file("${path.module}/bastion-cloud-init.bash")}"
+    syslog_address  = "${var.syslog_address}"
+
+    github_users_env = <<EOF
+export GITHUB_USERS='${var.github_users}'
+EOF
   }
 }
 

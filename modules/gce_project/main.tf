@@ -298,10 +298,13 @@ data "template_file" "bastion_cloud_config" {
   template = "${file("${path.module}/bastion-cloud-config.yml.tpl")}"
 
   vars {
-    bastion_config   = "${var.bastion_config}"
-    cloud_init_bash  = "${file("${path.module}/bastion-cloud-init.bash")}"
-    github_users_env = "export GITHUB_USERS='${var.github_users}'"
-    syslog_address   = "${var.syslog_address_com}"
+    bastion_config  = "${var.bastion_config}"
+    cloud_init_bash = "${file("${path.module}/bastion-cloud-init.bash")}"
+    syslog_address  = "${var.syslog_address_com}"
+
+    github_users_env = <<EOF
+export GITHUB_USERS='${var.github_users}'
+EOF
   }
 }
 
