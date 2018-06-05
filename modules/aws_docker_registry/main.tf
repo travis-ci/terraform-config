@@ -109,10 +109,13 @@ data "template_file" "cloud_config" {
   template = "${file("${path.module}/cloud-config.yml.tpl")}"
 
   vars {
-    registry_env     = "${data.template_file.registry_env.rendered}"
-    cloud_init_bash  = "${file("${path.module}/cloud-init.bash")}"
-    github_users_env = "export GITHUB_USERS='${var.github_users}'"
-    hostname_tmpl    = "___INSTANCE_ID___-registry-${var.env}-${var.index}.aws-us-east-1.travisci.net"
+    registry_env    = "${data.template_file.registry_env.rendered}"
+    cloud_init_bash = "${file("${path.module}/cloud-init.bash")}"
+    hostname_tmpl   = "___INSTANCE_ID___-registry-${var.env}-${var.index}.aws-us-east-1.travisci.net"
+
+    github_users_env = <<EOF
+export GITHUB_USERS='${var.github_users}'
+EOF
   }
 }
 

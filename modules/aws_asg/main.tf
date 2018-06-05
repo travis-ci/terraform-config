@@ -190,12 +190,15 @@ data "template_file" "cloud_config" {
     cloud_init_env     = "${data.template_file.cloud_init_env.rendered}"
     cyclist_url        = "${replace(heroku_app.cyclist.web_url, "/\\/$/", "")}"
     docker_daemon_json = "${data.template_file.docker_daemon_json.rendered}"
-    github_users_env   = "export GITHUB_USERS='${var.github_users}'"
     here               = "${path.module}"
     hostname_tmpl      = "___INSTANCE_ID___-${var.env}-${var.index}-worker-${var.site}-${var.worker_queue}.travisci.net"
     registry_hostname  = "${var.registry_hostname}"
     syslog_address     = "${var.syslog_address}"
     worker_config      = "${var.worker_config}"
+
+    github_users_env = <<EOF
+export GITHUB_USERS='${var.github_users}'
+EOF
   }
 }
 

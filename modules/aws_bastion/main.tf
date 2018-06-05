@@ -59,10 +59,13 @@ data "template_file" "bastion_cloud_config" {
   template = "${file("${path.module}/cloud-config.yml.tpl")}"
 
   vars {
-    github_users_env = "export GITHUB_USERS='${var.github_users}'"
-    hostname_tmpl    = "bastion-${var.env}-${var.index}.aws-us-east-${var.az}.travisci.net"
-    syslog_address   = "${var.syslog_address}"
-    duo_config       = "${data.template_file.duo_config.rendered}"
+    hostname_tmpl  = "bastion-${var.env}-${var.index}.aws-us-east-${var.az}.travisci.net"
+    syslog_address = "${var.syslog_address}"
+    duo_config     = "${data.template_file.duo_config.rendered}"
+
+    github_users_env = <<EOF
+export GITHUB_USERS='${var.github_users}'
+EOF
   }
 }
 
