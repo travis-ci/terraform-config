@@ -1,4 +1,4 @@
-AMQP_URL_VARNAME := RABBITMQ_BIGWIG_RX_URL
+AMQP_URL_VARNAME := CLOUDAMQP_URL
 ENV_SHORT := staging
 
 include $(shell git rev-parse --show-toplevel)/aws.mk
