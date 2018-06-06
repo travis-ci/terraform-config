@@ -196,7 +196,7 @@ resource "null_resource" "whereami" {
 
   provisioner "local-exec" {
     command = <<EOF
-exec ${path.module}/../../bin/heroku-wait-deploy-scale \
+exec ${path.module}/../bin/heroku-wait-deploy-scale \
   --repo=travis-ci/whereami \
   --app=${heroku_app.whereami.id} \
   --ps-scale=${join(",", var.whereami_scale)} \
