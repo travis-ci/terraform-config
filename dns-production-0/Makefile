@@ -8,7 +8,7 @@ include $(shell git rev-parse --show-toplevel)/terraform-common.mk
 .config: $(ENV_NAME).auto.tfvars
 
 $(TRVS_INFRA_ENV_TFVARS):
-	@echo "{}" >$@
+	trvs generate-config -f json -a terraform-config -e terraform_common -o $@
 
 $(TRVS_ENV_NAME_TFVARS):
 	@echo "{}" >$@
