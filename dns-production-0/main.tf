@@ -158,6 +158,8 @@ resource "heroku_app" "whereami" {
   }
 
   config_vars {
+    MANAGED_VIA = "github.com/travis-ci/terraform-config"
+
     WHEREAMI_INFRA_EC2_IPS = "${
       join(",", data.dns_a_record_set.aws_production_2_nat_com.addrs)
     },${
