@@ -505,6 +505,7 @@ resource "heroku_app" "cyclist" {
     CYCLIST_DEBUG       = "${var.cyclist_debug}"
     CYCLIST_TOKEN_TTL   = "${var.cyclist_token_ttl}"
     GO_IMPORT_PATH      = "github.com/travis-ci/cyclist"
+    MANAGED_VIA         = "github.com/travis-ci/terraform-config"
   }
 }
 
