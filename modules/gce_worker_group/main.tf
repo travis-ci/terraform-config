@@ -98,6 +98,7 @@ resource "heroku_app" "gcloud_cleanup" {
     GCLOUD_PROJECT                  = "${var.project}"
     GCLOUD_ZONE                     = "${var.gcloud_zone}"
     GO_IMPORT_PATH                  = "github.com/travis-ci/gcloud-cleanup"
+    MANAGED_VIA                     = "github.com/travis-ci/terraform-config"
   }
 }
 
