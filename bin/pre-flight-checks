@@ -61,7 +61,7 @@ check_gcloud() {
   authed_account="$(gcloud auth list --filter=status:ACTIVE --format="value(account)")"
   expected_substring="@travis-ci"
   if ! [[ "${authed_account}" == *"${expected_substring}"* ]]; then
-    read -r -d '' VAR << EOM
+    read -r -d '' VAR <<EOM
     [NOK] gcloud: Unknown or missing authed account "$authed_account".
       Make sure that the command below produces output that includes the substring '${expected_substring}'
         $ gcloud auth list --filter=status:ACTIVE --format="value(account)"
