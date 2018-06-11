@@ -2,7 +2,7 @@ variable "env" {}
 variable "gcloud_cleanup_account_json" {}
 
 variable "gcloud_cleanup_instance_filters" {
-  default = "name eq ^(testing-gce|travis-job).*"
+  default = "name eq ^(testing-gce|travis-job|packer-).*"
 }
 
 variable "gcloud_cleanup_instance_max_age" {
@@ -98,6 +98,7 @@ resource "heroku_app" "gcloud_cleanup" {
     GCLOUD_PROJECT                  = "${var.project}"
     GCLOUD_ZONE                     = "${var.gcloud_zone}"
     GO_IMPORT_PATH                  = "github.com/travis-ci/gcloud-cleanup"
+    MANAGED_VIA                     = "github.com/travis-ci/terraform-config"
   }
 }
 
