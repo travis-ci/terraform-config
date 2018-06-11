@@ -79,11 +79,17 @@ check_slack() {
     "icon_emoji": ":terraform:"
   }'
 
+  slack_webhook="$(trvs generate-config -n --app terraform-config terraform_common | grep slack_webhook | awk '{print $2}')"
+  [[ "${slack_webhook}" ]] || {
+    echo 'slack_webhook could not be retrieved from keychain. Check output of "trvs generate-config -n --app terraform-config terraform_common"'
+    exit 1
+  }
+
   # shellcheck disable=SC2016
-  cmd='curl -o /dev/null --silent -w "%{http_code}" --data-urlencode "payload=${payload}" "${SLACK_WEBHOOK}"'
+  cmd='curl -o /dev/null --silent -w "%{http_code}" --data-urlencode "payload=${payload}" "${slack_webhook}"'
   status_code=$(eval "$cmd")
   if test "$status_code" -ne 200; then
-    die "[NOK] Slack: Got status code ${status_code} when attempting to test Slack webhook. Is SLACK_WEBHOOK set correctly?"
+    die "[NOK] Slack: Got status code ${status_code} when attempting to test Slack webhook. Is keychain up to date?"
   fi
 }
 
@@ -118,7 +124,6 @@ check_envvars() {
         GITHUB_USERNAME
         HEROKU_API_KEY
         TRAVIS_KEYCHAIN_DIR
-        SLACK_WEBHOOK
     "
 
   STATUS=0

@@ -51,7 +51,6 @@ our main cloud environments as well as some other services:
 * `GITHUB_TOKEN`
 * `GITHUB_USERNAME`
 * `HEROKU_API_KEY`
-* `SLACK_WEBHOOK` (may be retrieved via `trvs generate-config -n -f env terraform-config -p '' terraform_common`)
 * `TF_VAR_ssh_user`
 * `TRAVIS_KEYCHAIN_DIR` - should be the parent directory of your keychain repos
 
