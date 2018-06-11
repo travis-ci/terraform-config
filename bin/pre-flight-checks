@@ -2,7 +2,7 @@
 set -o errexit
 
 die() {
-  stderr_echo "$(tput setaf 1)$@ $(tput sgr0)" && exit 1
+  stderr_echo "$(tput setaf 1)$* $(tput sgr0)" && exit 1
 }
 
 stderr_echo() {
@@ -71,6 +71,7 @@ EOM
 }
 
 check_slack() {
+  # shellcheck disable=SC2034
   payload='{
     "channel": "#test",
     "username": "terraform-config",
@@ -78,6 +79,7 @@ check_slack() {
     "icon_emoji": ":terraform:"
   }'
 
+  # shellcheck disable=SC2016
   cmd='curl -o /dev/null --silent -w "%{http_code}" --data-urlencode "payload=${payload}" "${SLACK_WEBHOOK}"'
   status_code=$(eval "$cmd")
   if test "$status_code" -ne 200; then
