@@ -29,7 +29,7 @@ hello: announce
 
 .PHONY: .assert-ruby
 .assert-ruby:
-	@ruby -e "fail 'Ruby >= 2.3 required' unless RUBY_VERSION >= '2.3'"
+	@ruby -e "fail 'Ruby >= 2.4 required' unless RUBY_VERSION >= '2.4'"
 
 .PHONY: .echo-tf-version
 .echo-tf-version:
