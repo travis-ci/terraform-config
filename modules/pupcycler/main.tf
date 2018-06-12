@@ -29,6 +29,7 @@ resource "heroku_app" "pupcycler" {
   }
 
   config_vars {
+    MANAGED_VIA                 = "github.com/travis-ci/terraform-config"
     PUPCYCLER_AUTH_TOKENS       = "${var.auth_token}"
     PUPCYCLER_PACKET_AUTH_TOKEN = "${var.packet_auth_token}"
     PUPCYCLER_PACKET_PROJECT_ID = "${var.packet_project_id}"
