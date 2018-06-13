@@ -140,6 +140,8 @@ resource "packet_device" "worker" {
   user_data        = "${element(data.template_file.user_data.*.rendered, count.index)}"
   tags             = ["worker", "${var.site}", "${var.env}"]
 
+  hardware_reservation_id = "next-available"
+
   lifecycle {
     ignore_changes = ["root_password", "user_data"]
   }

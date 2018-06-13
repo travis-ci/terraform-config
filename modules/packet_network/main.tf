@@ -108,6 +108,8 @@ resource "packet_device" "nat" {
   user_data        = "${element(data.template_file.nat_user_data.*.rendered, count.index)}"
   tags             = ["nat", "${var.env}"]
 
+  hardware_reservation_id = "next-available"
+
   lifecycle {
     ignore_changes = ["root_password", "user_data"]
   }
