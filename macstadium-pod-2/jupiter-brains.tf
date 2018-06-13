@@ -172,7 +172,7 @@ module "jupiter_brain_custom_6" {
   ssh_ip_address = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user       = "${var.ssh_user}"
   version        = "${var.jupiter_brain_custom-6_version}"
-  config_path    = "${path.module}/config/jupiter-brain-custom-5-env"
+  config_path    = "${path.module}/config/jupiter-brain-custom-6-env"
   env            = "custom-6"
   index          = "${var.index}"
   port_suffix    = 11
