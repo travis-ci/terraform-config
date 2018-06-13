@@ -29,7 +29,7 @@ export TRAVIS_INSTANCE_INFRA_INDEX=${index}
 export TRAVIS_INSTANCE_INFRA_NAME=packet
 export TRAVIS_INSTANCE_INFRA_REGION=${facility}
 export TRAVIS_INSTANCE_NAME=${instance_name}
-export TRAVIS_INSTANCE_ROLE=nat
+export TRAVIS_INSTANCE_ROLE=worker
 export TRAVIS_INSTANCE_TERRAFORM_PASSWORD=${terraform_password}
 EOENV
 }
