@@ -190,12 +190,15 @@ data "template_file" "cloud_config" {
     cloud_init_env     = "${data.template_file.cloud_init_env.rendered}"
     cyclist_url        = "${replace(heroku_app.cyclist.web_url, "/\\/$/", "")}"
     docker_daemon_json = "${data.template_file.docker_daemon_json.rendered}"
-    github_users_env   = "export GITHUB_USERS='${var.github_users}'"
     here               = "${path.module}"
     hostname_tmpl      = "___INSTANCE_ID___-${var.env}-${var.index}-worker-${var.site}-${var.worker_queue}.travisci.net"
     registry_hostname  = "${var.registry_hostname}"
     syslog_address     = "${var.syslog_address}"
     worker_config      = "${var.worker_config}"
+
+    github_users_env = <<EOF
+export GITHUB_USERS='${var.github_users}'
+EOF
   }
 }
 
@@ -502,6 +505,7 @@ resource "heroku_app" "cyclist" {
     CYCLIST_DEBUG       = "${var.cyclist_debug}"
     CYCLIST_TOKEN_TTL   = "${var.cyclist_token_ttl}"
     GO_IMPORT_PATH      = "github.com/travis-ci/cyclist"
+    MANAGED_VIA         = "github.com/travis-ci/terraform-config"
   }
 }
 

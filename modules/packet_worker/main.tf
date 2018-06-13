@@ -85,13 +85,16 @@ data "template_file" "dynamic_config" {
   template = "${file("${path.module}/dynamic-config.yml.tpl")}"
 
   vars {
-    assets           = "${path.module}/../../assets"
-    cloud_init_env   = "${data.template_file.cloud_init_env.rendered}"
-    github_users_env = "export GITHUB_USERS='${var.github_users}'"
-    here             = "${path.module}"
-    librato_env      = "${data.template_file.librato_env.rendered}"
-    syslog_address   = "${var.syslog_address}"
-    worker_config    = "${var.worker_config}"
+    assets         = "${path.module}/../../assets"
+    cloud_init_env = "${data.template_file.cloud_init_env.rendered}"
+    here           = "${path.module}"
+    librato_env    = "${data.template_file.librato_env.rendered}"
+    syslog_address = "${var.syslog_address}"
+    worker_config  = "${var.worker_config}"
+
+    github_users_env = <<EOF
+export GITHUB_USERS='${var.github_users}'
+EOF
   }
 }
 

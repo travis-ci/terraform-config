@@ -36,12 +36,18 @@ data "template_file" "cloud_config_com" {
   vars {
     assets           = "${path.module}/../../assets"
     cloud_init_env   = "${data.template_file.cloud_init_env_com.rendered}"
-    docker_env       = "export TRAVIS_DOCKER_DISABLE_DIRECT_LVM=1"
     gce_account_json = "${var.account_json_com}"
-    github_users_env = "export GITHUB_USERS='${var.github_users}'"
     here             = "${path.module}"
     syslog_address   = "${var.syslog_address_com}"
     worker_config    = "${var.config_com}"
+
+    docker_env = <<EOF
+export TRAVIS_DOCKER_DISABLE_DIRECT_LVM=1
+EOF
+
+    github_users_env = <<EOF
+export GITHUB_USERS='${var.github_users}'
+EOF
   }
 }
 
@@ -108,12 +114,18 @@ data "template_file" "cloud_config_org" {
   vars {
     assets           = "${path.module}/../../assets"
     cloud_init_env   = "${data.template_file.cloud_init_env_org.rendered}"
-    docker_env       = "export TRAVIS_DOCKER_DISABLE_DIRECT_LVM=1"
     gce_account_json = "${var.account_json_org}"
-    github_users_env = "export GITHUB_USERS='${var.github_users}'"
     here             = "${path.module}"
     syslog_address   = "${var.syslog_address_org}"
     worker_config    = "${var.config_org}"
+
+    docker_env = <<EOF
+export TRAVIS_DOCKER_DISABLE_DIRECT_LVM=1
+EOF
+
+    github_users_env = <<EOF
+export GITHUB_USERS='${var.github_users}'
+EOF
   }
 }
 

@@ -28,10 +28,12 @@ __github_users() {
   local team="$3"
 
   local team_id
+  # FIXME: this fails in an unclear way if user hasn't been added to GitHub teams (?)
   team_id="$(
     __ghcurl "${auth}" "/orgs/${org}/teams" |
       jq -r ".[]|select(.name==\"${team}\")|.id"
   )"
+  # TODO: if this doesn't work, the user probably needs to be added to the travis-infrastructure organization.
   __ghcurl "${auth}" "/teams/${team_id}/members" | jq -r '.[]|.login' |
     LC_ALL=C sort |
     while read -r login; do

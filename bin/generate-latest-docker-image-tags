@@ -43,6 +43,7 @@ def main
   0
 end
 
+# FIXME: doesn't work if docker isn't installed
 def latest_docker_image_tag(image)
   qs = URI.encode_www_form(
     service: 'registry.docker.io',
@@ -54,11 +55,17 @@ def latest_docker_image_tag(image)
     host: 'auth.docker.io'
   ).fetch('token')
 
+  STDERR.puts docker_index_get(
+    "/v2/#{image}/tags/list",
+    headers: { 'Authorization' => "Bearer #{token}" }
+  )
+
   tags = docker_index_get(
     "/v2/#{image}/tags/list",
     headers: { 'Authorization' => "Bearer #{token}" }
   ).fetch('tags')
 
+  # FIXME: this fails if user is not a member of Docker Hub org/team
   return "#{image}:#{tags.first}" if tags.all? { |t| t.match?(GITSHA1) }
 
   "#{image}:#{fancy_sorted(tags).reverse.fetch(0)}"
