@@ -158,7 +158,9 @@ def heroku_request(req, host: 'api.heroku.com', headers: {})
   end
 
   response = http.request(req)
-  return nil unless response.kind_of?(Net::HTTPSuccess)
+
+  raise RuntimeError.new(response.body) unless response.kind_of?(Net::HTTPSuccess)
+
   JSON.parse(response.body)
 end
 
