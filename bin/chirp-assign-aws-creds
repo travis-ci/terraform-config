@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -o errexit
+
+main() {
+  local access_key_id="${1}"
+  shift
+  local secret_key="${1}"
+  shift
+
+  for repo in "${@}"; do
+    travis env set -r "${repo}" AWS_ACCESS_KEY "${access_key_id}"
+    travis env set -r "${repo}" AWS_SECRET_KEY "${secret_key}"
+  done
+}
+
+main "${@}"
