@@ -2,12 +2,16 @@ variable "chirp_artifacts_bucket_name" {
   default = "travis-ci-chirp-artifacts"
 }
 
+variable "chirp_com_production_repo" {
+  default = "travis-infrastructure/chirp-com-production"
+}
+
 variable "chirp_org_production_repo" {
   default = "travis-repos/chirp-org-production"
 }
 
-variable "chirp_com_production_repo" {
-  default = "travis-infrastructure/chirp-com-production"
+variable "chirp_repo" {
+  default = "travis-ci/chirp"
 }
 
 variable "env" {
@@ -74,6 +78,7 @@ resource "null_resource" "chirp_key_vars" {
 exec ${path.module}/../bin/chirp-assign-aws-creds \
   "${aws_iam_access_key.chirp.id}" \
   "${aws_iam_access_key.chirp.secret}" \
+  "${var.chirp_repo}" \
   "${var.chirp_org_production_repo}" \
   "${var.chirp_com_production_repo}"
 EOF
