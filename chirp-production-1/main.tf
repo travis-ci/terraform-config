@@ -26,6 +26,16 @@ variable "region" {
   default = "us-east-1"
 }
 
+terraform {
+  backend "s3" {
+    bucket         = "travis-terraform-state"
+    key            = "terraform-config/chirp-production-1.tfstate"
+    region         = "us-east-1"
+    encrypt        = "true"
+    dynamodb_table = "travis-terraform-state"
+  }
+}
+
 provider "aws" {}
 
 resource "aws_s3_bucket" "chirp_artifacts" {
