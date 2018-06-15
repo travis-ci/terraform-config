@@ -61,6 +61,9 @@ resource "aws_iam_user_policy" "chirp_actions" {
   "Statement": [
     {
       "Action": [
+        "s3:DeleteObject",
+        "s3:GetObject",
+        "s3:GetObjectAcl",
         "s3:PutObject",
         "s3:PutObjectAcl"
       ],
