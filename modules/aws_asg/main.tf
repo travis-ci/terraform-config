@@ -556,7 +556,7 @@ resource "aws_cloudwatch_dashboard" "main" {
         "metrics": [
           [
             "Travis/${var.site}${var.env == "staging" ? "-staging" : ""}",
-            "v1.travis.rabbitmq.consumers.builds.ec2.headroom",
+            "v1.travis.rabbitmq.consumers.builds.${var.worker_queue}.headroom",
             {
               "color": "#2ca02c",
               "period": 60,
