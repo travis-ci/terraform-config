@@ -6,7 +6,6 @@ variable "docker_storage_dm_basesize" {
 }
 
 variable "env" {}
-variable "env_short" {}
 
 variable "github_users" {
   default = ""
