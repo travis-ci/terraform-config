@@ -278,7 +278,7 @@ module "aws_asg_org" {
 module "aws_asg_org_canary" {
   source             = "../modules/aws_asg_canary"
   cyclist_auth_token = "${random_id.cyclist_token_org.hex}"
-  cyclist_url        = "${module.aws_cyclist_com.cyclist_url}"
+  cyclist_url        = "${module.aws_cyclist_org.cyclist_url}"
   env                = "${var.env}"
   github_users       = "${var.github_users}"
   index              = "${var.index}"
