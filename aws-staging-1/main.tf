@@ -136,15 +136,15 @@ module "aws_cyclist_com" {
 
 module "aws_cyclist_org" {
   source             = "../modules/aws_cyclist"
-  cyclist_auth_token = "${random_id.cyclist_token_com.hex}"
+  cyclist_auth_token = "${random_id.cyclist_token_org.hex}"
   cyclist_debug      = "true"
   cyclist_scale      = "web=1:standard-1X"
   cyclist_version    = "v0.5.0"
   env                = "${var.env}"
   heroku_org         = "${var.aws_heroku_org}"
   index              = "${var.index}"
-  site               = "com"
-  syslog_address     = "${var.syslog_address_com}"
+  site               = "org"
+  syslog_address     = "${var.syslog_address_org}"
 }
 
 module "aws_asg_com" {
