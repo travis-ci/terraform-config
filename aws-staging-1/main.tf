@@ -191,7 +191,7 @@ module "aws_asg_com" {
 }
 
 module "aws_asg_com_free" {
-  source             = "../modules/aws_asg"
+  source             = "../modules/aws_asg_queue"
   cyclist_auth_token = "${random_id.cyclist_token_com.hex}"
   cyclist_url        = "${module.aws_cyclist_com.cyclist_url}"
   env                = "${var.env}"
