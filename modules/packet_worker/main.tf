@@ -45,7 +45,7 @@ variable "worker_docker_image_python" {}
 variable "worker_docker_image_ruby" {}
 
 variable "worker_docker_self_image" {
-  default = "travisci/worker:v3.7.0"
+  default = "travisci/worker:v3.8.0"
 }
 
 data "tls_public_key" "terraform" {
