@@ -82,16 +82,6 @@ write_files:
   owner: 'root:root'
   path: /etc/cron.d/travis-worker-clean-up-containers
   permissions: '0644'
-- content: '${base64encode(file("${assets}/travis-worker/high-cpu-check.bash"))}'
-  encoding: b64
-  owner: 'root:root'
-  path: /var/tmp/travis-run.d/high-cpu-check
-  permissions: '0750'
-- content: '${base64encode(file("${assets}/travis-worker/high-cpu-check.crontab"))}'
-  encoding: b64
-  owner: 'root:root'
-  path: /etc/cron.d/travis-worker-high-cpu-check
-  permissions: '0644'
 - content: '${base64encode(file("${assets}/travis-worker/travis-worker.service"))}'
   encoding: b64
   owner: 'root:root'

@@ -121,16 +121,38 @@ module "aws_az_1b2" {
   vpc_id                    = "${data.terraform_remote_state.vpc.vpc_id}"
 }
 
-module "aws_asg_com" {
-  source             = "../modules/aws_asg"
+module "aws_cyclist_com" {
+  source             = "../modules/aws_cyclist"
   cyclist_auth_token = "${random_id.cyclist_token_com.hex}"
   cyclist_debug      = "true"
   cyclist_scale      = "web=1:standard-1X"
   cyclist_version    = "v0.5.0"
   env                = "${var.env}"
-  env_short          = "${var.env}"
-  github_users       = "${var.github_users}"
   heroku_org         = "${var.aws_heroku_org}"
+  index              = "${var.index}"
+  site               = "com"
+  syslog_address     = "${var.syslog_address_com}"
+}
+
+module "aws_cyclist_org" {
+  source             = "../modules/aws_cyclist"
+  cyclist_auth_token = "${random_id.cyclist_token_org.hex}"
+  cyclist_debug      = "true"
+  cyclist_scale      = "web=1:standard-1X"
+  cyclist_version    = "v0.5.0"
+  env                = "${var.env}"
+  heroku_org         = "${var.aws_heroku_org}"
+  index              = "${var.index}"
+  site               = "org"
+  syslog_address     = "${var.syslog_address_org}"
+}
+
+module "aws_asg_com" {
+  source             = "../modules/aws_asg"
+  cyclist_auth_token = "${random_id.cyclist_token_com.hex}"
+  cyclist_url        = "${module.aws_cyclist_com.cyclist_url}"
+  env                = "${var.env}"
+  github_users       = "${var.github_users}"
   index              = "${var.index}"
   registry_hostname  = "${data.terraform_remote_state.vpc.registry_hostname}"
 
@@ -171,13 +193,9 @@ module "aws_asg_com" {
 module "aws_asg_org" {
   source             = "../modules/aws_asg"
   cyclist_auth_token = "${random_id.cyclist_token_org.hex}"
-  cyclist_debug      = "true"
-  cyclist_scale      = "web=1:standard-1X"
-  cyclist_version    = "v0.5.0"
+  cyclist_url        = "${module.aws_cyclist_org.cyclist_url}"
   env                = "${var.env}"
-  env_short          = "${var.env}"
   github_users       = "${var.github_users}"
-  heroku_org         = "${var.aws_heroku_org}"
   index              = "${var.index}"
   registry_hostname  = "${data.terraform_remote_state.vpc.registry_hostname}"
 
@@ -217,9 +235,8 @@ module "aws_asg_org" {
 module "aws_asg_org_canary" {
   source             = "../modules/aws_asg_canary"
   cyclist_auth_token = "${random_id.cyclist_token_org.hex}"
-  cyclist_url        = "${module.aws_asg_org.cyclist_url}"
+  cyclist_url        = "${module.aws_cyclist_org.cyclist_url}"
   env                = "${var.env}"
-  env_short          = "${var.env}"
   github_users       = "${var.github_users}"
   index              = "${var.index}"
   registry_hostname  = "${data.terraform_remote_state.vpc.registry_hostname}"
