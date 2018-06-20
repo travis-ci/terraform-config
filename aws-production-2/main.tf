@@ -385,7 +385,7 @@ module "aws_cyclist_cs50" {
   source             = "../modules/aws_cyclist"
   cyclist_auth_token = "${random_id.cyclist_token_cs50.hex}"
   cyclist_version    = "v0.5.0"
-  env                = "${var.env}"
+  env                = "cs50-${var.env}"
   heroku_org         = "${var.aws_heroku_org}"
   index              = "${var.index}"
   site               = "com"
