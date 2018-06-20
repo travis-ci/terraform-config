@@ -84,6 +84,22 @@ ${file("${path.module}/config/worker-com.env")}
 ### worker.env
 ${file("${path.module}/worker.env")}
 
+export TRAVIS_WORKER_QUEUE_NAME=builds.ec2
+export TRAVIS_WORKER_TRAVIS_SITE=com
+export TRAVIS_WORKER_DOCKER_INSPECT_INTERVAL=1000ms
+EOF
+}
+
+data "template_file" "worker_config_com_free" {
+  template = <<EOF
+### config/worker-com-local.env
+${file("${path.module}/config/worker-com-local.env")}
+### config/worker-com.env
+${file("${path.module}/config/worker-com.env")}
+### worker.env
+${file("${path.module}/worker.env")}
+
+export TRAVIS_WORKER_QUEUE_NAME=builds.ec2-free
 export TRAVIS_WORKER_TRAVIS_SITE=com
 export TRAVIS_WORKER_DOCKER_INSPECT_INTERVAL=1000ms
 EOF
@@ -98,6 +114,7 @@ ${file("${path.module}/config/worker-org.env")}
 ### worker.env
 ${file("${path.module}/worker.env")}
 
+export TRAVIS_WORKER_QUEUE_NAME=builds.ec2
 export TRAVIS_WORKER_TRAVIS_SITE=org
 export TRAVIS_WORKER_DOCKER_INSPECT_INTERVAL=1000ms
 EOF
@@ -212,7 +229,7 @@ module "aws_asg_com_free" {
   worker_asg_namespace           = "Travis/com-staging"
   worker_asg_scale_in_threshold  = 16
   worker_asg_scale_out_threshold = 8
-  worker_config                  = "${data.template_file.worker_config_com.rendered}"
+  worker_config                  = "${data.template_file.worker_config_com_free.rendered}"
   worker_docker_image_android    = "${var.latest_docker_image_amethyst}"
   worker_docker_image_default    = "${var.latest_docker_image_garnet}"
   worker_docker_image_erlang     = "${var.latest_docker_image_amethyst}"
