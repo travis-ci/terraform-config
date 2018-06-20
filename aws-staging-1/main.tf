@@ -190,6 +190,49 @@ module "aws_asg_com" {
   ]
 }
 
+module "aws_asg_com_free" {
+  source             = "../modules/aws_asg"
+  cyclist_auth_token = "${random_id.cyclist_token_com.hex}"
+  cyclist_url        = "${module.aws_cyclist_com.cyclist_url}"
+  env                = "${var.env}"
+  github_users       = "${var.github_users}"
+  index              = "${var.index}"
+  registry_hostname  = "${data.terraform_remote_state.vpc.registry_hostname}"
+
+  security_groups = [
+    "${module.aws_az_1b.workers_com_security_group_id}",
+    "${module.aws_az_1b2.workers_com_security_group_id}",
+  ]
+
+  site                           = "com"
+  syslog_address                 = "${var.syslog_address_com}"
+  worker_ami                     = "${data.aws_ami.tfw.id}"
+  worker_asg_max_size            = 3
+  worker_asg_min_size            = 0
+  worker_asg_namespace           = "Travis/com-staging"
+  worker_asg_scale_in_threshold  = 16
+  worker_asg_scale_out_threshold = 8
+  worker_config                  = "${data.template_file.worker_config_com.rendered}"
+  worker_docker_image_android    = "${var.latest_docker_image_amethyst}"
+  worker_docker_image_default    = "${var.latest_docker_image_garnet}"
+  worker_docker_image_erlang     = "${var.latest_docker_image_amethyst}"
+  worker_docker_image_go         = "${var.latest_docker_image_garnet}"
+  worker_docker_image_haskell    = "${var.latest_docker_image_amethyst}"
+  worker_docker_image_jvm        = "${var.latest_docker_image_garnet}"
+  worker_docker_image_node_js    = "${var.latest_docker_image_garnet}"
+  worker_docker_image_perl       = "${var.latest_docker_image_amethyst}"
+  worker_docker_image_php        = "${var.latest_docker_image_garnet}"
+  worker_docker_image_python     = "${var.latest_docker_image_garnet}"
+  worker_docker_image_ruby       = "${var.latest_docker_image_garnet}"
+  worker_docker_self_image       = "${var.latest_docker_image_worker}"
+  worker_queue                   = "ec2-free"
+
+  worker_subnets = [
+    "${data.terraform_remote_state.vpc.workers_com_subnet_1b2_id}",
+    "${data.terraform_remote_state.vpc.workers_com_subnet_1b_id}",
+  ]
+}
+
 module "aws_asg_org" {
   source             = "../modules/aws_asg"
   cyclist_auth_token = "${random_id.cyclist_token_org.hex}"
