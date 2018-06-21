@@ -72,7 +72,7 @@ resource "google_compute_instance" "worker_com" {
 
   machine_type = "${var.machine_type}"
   zone         = "${var.region}-${element(var.zones, count.index % length(var.zones))}"
-  tags         = ["worker", "${var.env}", "com"]
+  tags         = ["worker", "${var.env}", "com", "paid"]
   project      = "${var.project}"
 
   boot_disk {
