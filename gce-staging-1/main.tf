@@ -81,7 +81,7 @@ module "gce_worker_group" {
   worker_zones = "${var.worker_zones}"
 
   worker_instance_count_com      = "${length(var.worker_zones)}"
-  worker_instance_count_com_free = "${length(var.worker_zones)}"
+  worker_instance_count_com_free = "1"
   worker_instance_count_org      = "${length(var.worker_zones)}"
 
   worker_config_com = <<EOF
