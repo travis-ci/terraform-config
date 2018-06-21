@@ -35,6 +35,7 @@ variable "travisci_net_external_zone_id" {}
 variable "worker_account_json_com" {}
 variable "worker_account_json_org" {}
 variable "worker_config_com" {}
+variable "worker_config_com_free" {}
 variable "worker_config_org" {}
 
 variable "worker_docker_self_image" {
@@ -43,6 +44,7 @@ variable "worker_docker_self_image" {
 
 variable "worker_image" {}
 variable "worker_instance_count_com" {}
+variable "worker_instance_count_com_free" {}
 variable "worker_instance_count_org" {}
 
 variable "worker_machine_type" {
@@ -61,11 +63,13 @@ module "gce_workers" {
   account_json_com         = "${var.worker_account_json_com}"
   account_json_org         = "${var.worker_account_json_org}"
   config_com               = "${var.worker_config_com}"
+  config_com_free          = "${var.worker_config_com_free}"
   config_org               = "${var.worker_config_org}"
   env                      = "${var.env}"
   github_users             = "${var.github_users}"
   index                    = "${var.index}"
   instance_count_com       = "${var.worker_instance_count_com}"
+  instance_count_com_free  = "${var.worker_instance_count_com_free}"
   instance_count_org       = "${var.worker_instance_count_org}"
   machine_type             = "${var.worker_machine_type}"
   project                  = "${var.project}"
