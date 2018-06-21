@@ -108,18 +108,6 @@ export TRAVIS_WORKER_HARD_TIMEOUT=120m
 export TRAVIS_WORKER_TRAVIS_SITE=com
 EOF
 
-  worker_config_com_free = <<EOF
-### worker.env
-${file("${path.module}/worker.env")}
-### config/worker-com.env
-${file("${path.module}/config/worker-com.env")}
-
-export TRAVIS_WORKER_QUEUE_NAME=builds.gce-free
-export TRAVIS_WORKER_GCE_SUBNETWORK=jobs-com
-export TRAVIS_WORKER_HARD_TIMEOUT=120m
-export TRAVIS_WORKER_TRAVIS_SITE=com
-EOF
-
   worker_config_org = <<EOF
 ### worker.env
 ${file("${path.module}/worker.env")}
