@@ -6,6 +6,7 @@ variable "travis_worker_version" {
 
 data "template_file" "worker_config_common" {
   template = <<EOF
+export TRAVIS_WORKER_AMQP_HEARTBEAT="60s"
 export TRAVIS_WORKER_BUILD_FIX_ETC_HOSTS="true"
 export TRAVIS_WORKER_BUILD_FIX_RESOLV_CONF="true"
 export TRAVIS_WORKER_BUILD_PARANOID="false"
