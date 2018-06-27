@@ -1,5 +1,8 @@
 variable "env" {}
-variable "gcloud_cleanup_account_json" {}
+
+variable "gcloud_cleanup_archive_retention_days" {
+  default = 8
+}
 
 variable "gcloud_cleanup_instance_filters" {
   default = "name eq ^(testing-gce|travis-job|packer-).*"
@@ -32,8 +35,6 @@ variable "region" {}
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
 variable "travisci_net_external_zone_id" {}
-variable "worker_account_json_com" {}
-variable "worker_account_json_org" {}
 variable "worker_config_com" {}
 variable "worker_config_com_free" {}
 variable "worker_config_org" {}
@@ -60,8 +61,6 @@ variable "worker_zones" {
 module "gce_workers" {
   source = "../gce_worker"
 
-  account_json_com         = "${var.worker_account_json_com}"
-  account_json_org         = "${var.worker_account_json_org}"
   config_com               = "${var.worker_config_com}"
   config_com_free          = "${var.worker_config_com_free}"
   config_org               = "${var.worker_config_org}"
@@ -82,6 +81,61 @@ module "gce_workers" {
   zones                    = "${var.worker_zones}"
 }
 
+resource "google_storage_bucket" "gcloud_cleanup_archive" {
+  name    = "gcloud-cleanup-${var.env}-${var.index}"
+  project = "${var.project}"
+
+  versioning {
+    enabled = false
+  }
+
+  lifecycle_rule {
+    action {
+      type = "Delete"
+    }
+
+    condition {
+      age = "${var.gcloud_cleanup_archive_retention_days}"
+    }
+  }
+}
+
+resource "google_project_iam_custom_role" "gcloud_cleanup_archiver" {
+  role_id     = "gcloud_cleanup_archiver"
+  title       = "Gcloud Cleanup Archiver"
+  description = "A gcloud-cleanup process that can archive stuff"
+
+  permissions = [
+    "storage.objects.create",
+    "storage.objects.update",
+  ]
+}
+
+resource "google_service_account" "gcloud_cleanup" {
+  account_id   = "gcloud-cleanup"
+  display_name = "Gcloud Cleanup"
+  project      = "${var.project}"
+}
+
+data "google_iam_policy" "gcloud_cleanup" {
+  binding {
+    role = "projects/${var.project}/roles/${google_project_iam_custom_role.gcloud_cleanup_archiver.role_id}"
+
+    members = [
+      "serviceAccount:${google_service_account.gcloud_cleanup.email}",
+    ]
+  }
+}
+
+resource "google_service_account_iam_policy" "gcloud_cleanup" {
+  service_account_id = "${google_service_account.gcloud_cleanup.name}"
+  policy_data        = "${data.google_iam_policy.gcloud_cleanup.policy_data}"
+}
+
+resource "google_service_account_key" "gcloud_cleanup" {
+  service_account_id = "${google_service_account.gcloud_cleanup.email}"
+}
+
 resource "heroku_app" "gcloud_cleanup" {
   name   = "gcloud-cleanup-${var.env}-${var.index}"
   region = "us"
@@ -92,7 +146,9 @@ resource "heroku_app" "gcloud_cleanup" {
 
   config_vars {
     BUILDPACK_URL                   = "https://github.com/travis-ci/heroku-buildpack-makey-go"
-    GCLOUD_CLEANUP_ACCOUNT_JSON     = "${var.gcloud_cleanup_account_json}"
+    GCLOUD_CLEANUP_ACCOUNT_JSON     = "${base64decode(google_service_account_key.gcloud_cleanup.private_key)}"
+    GCLOUD_CLEANUP_ARCHIVE_BUCKET   = "${google_storage_bucket.gcloud_cleanup_archive.name}"
+    GCLOUD_CLEANUP_ARCHIVE_SERIAL   = "true"
     GCLOUD_CLEANUP_ENTITIES         = "instances"
     GCLOUD_CLEANUP_INSTANCE_FILTERS = "${var.gcloud_cleanup_instance_filters}"
     GCLOUD_CLEANUP_INSTANCE_MAX_AGE = "${var.gcloud_cleanup_instance_max_age}"
@@ -123,4 +179,12 @@ exec ${path.module}/../../bin/heroku-wait-deploy-scale \
   --deploy-version=${var.gcloud_cleanup_version}
 EOF
   }
+}
+
+output "workers_service_account_email" {
+  value = "${module.gce_workers.workers_service_account_email}"
+}
+
+output "workers_service_account_name" {
+  value = "${module.gce_workers.workers_service_account_name}"
 }

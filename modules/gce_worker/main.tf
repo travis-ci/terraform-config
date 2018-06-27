@@ -1,5 +1,3 @@
-variable "account_json_com" {}
-variable "account_json_org" {}
 variable "config_com" {}
 variable "config_com_free" {}
 variable "config_org" {}
@@ -26,6 +24,31 @@ variable "zones" {
   default = ["a", "b", "c", "f"]
 }
 
+resource "google_service_account" "workers" {
+  account_id   = "workers"
+  display_name = "travis-worker processes"
+  project      = "${var.project}"
+}
+
+data "google_iam_policy" "workers" {
+  binding {
+    role = "roles/editor"
+
+    members = [
+      "serviceAccount:${google_service_account.workers.email}",
+    ]
+  }
+}
+
+resource "google_service_account_iam_policy" "workers" {
+  service_account_id = "${google_service_account.workers.name}"
+  policy_data        = "${data.google_iam_policy.workers.policy_data}"
+}
+
+resource "google_service_account_key" "workers" {
+  service_account_id = "${google_service_account.workers.email}"
+}
+
 data "template_file" "cloud_init_env_com" {
   template = <<EOF
 export TRAVIS_WORKER_SELF_IMAGE="${var.worker_docker_self_image}"
@@ -38,7 +61,7 @@ data "template_file" "cloud_config_com" {
   vars {
     assets           = "${path.module}/../../assets"
     cloud_init_env   = "${data.template_file.cloud_init_env_com.rendered}"
-    gce_account_json = "${var.account_json_com}"
+    gce_account_json = "${base64decode(google_service_account_key.workers.private_key)}"
     here             = "${path.module}"
     syslog_address   = "${var.syslog_address_com}"
     worker_config    = "${var.config_com}"
@@ -116,7 +139,7 @@ data "template_file" "cloud_config_com_free" {
   vars {
     assets           = "${path.module}/../../assets"
     cloud_init_env   = "${data.template_file.cloud_init_env_com_free.rendered}"
-    gce_account_json = "${var.account_json_com}"
+    gce_account_json = "${base64decode(google_service_account_key.workers.private_key)}"
     here             = "${path.module}"
     syslog_address   = "${var.syslog_address_com}"
     worker_config    = "${var.config_com_free}"
@@ -194,7 +217,7 @@ data "template_file" "cloud_config_org" {
   vars {
     assets           = "${path.module}/../../assets"
     cloud_init_env   = "${data.template_file.cloud_init_env_org.rendered}"
-    gce_account_json = "${var.account_json_org}"
+    gce_account_json = "${base64decode(google_service_account_key.workers.private_key)}"
     here             = "${path.module}"
     syslog_address   = "${var.syslog_address_org}"
     worker_config    = "${var.config_org}"
@@ -258,4 +281,12 @@ resource "google_compute_instance" "worker_org" {
   lifecycle {
     ignore_changes = ["disk", "boot_disk"]
   }
+}
+
+output "workers_service_account_email" {
+  value = "${google_service_account.workers.email}"
+}
+
+output "workers_service_account_name" {
+  value = "${google_service_account.workers.name}"
 }

@@ -40,9 +40,8 @@ terraform {
 }
 
 provider "google" {
-  credentials = "${file("config/gce-workers-production-1.json")}"
-  project     = "eco-emissary-99515"
-  region      = "us-central1"
+  project = "eco-emissary-99515"
+  region  = "us-central1"
 }
 
 provider "aws" {}
@@ -59,11 +58,21 @@ data "terraform_remote_state" "vpc" {
   }
 }
 
+data "terraform_remote_state" "staging-1" {
+  backend = "s3"
+
+  config {
+    bucket         = "travis-terraform-state"
+    key            = "terraform-config/gce-staging-1.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "travis-terraform-state"
+  }
+}
+
 module "gce_worker_group" {
   source = "../modules/gce_worker_group"
 
   env                           = "${var.env}"
-  gcloud_cleanup_account_json   = "${file("${path.module}/config/gce-cleanup-production-1.json")}"
   gcloud_cleanup_job_board_url  = "${var.job_board_url}"
   gcloud_zone                   = "${var.gce_gcloud_zone}"
   github_users                  = "${var.github_users}"
@@ -74,8 +83,6 @@ module "gce_worker_group" {
   syslog_address_com            = "${var.syslog_address_com}"
   syslog_address_org            = "${var.syslog_address_org}"
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
-  worker_account_json_com       = "${file("${path.module}/config/gce-workers-production-1.json")}"
-  worker_account_json_org       = "${file("${path.module}/config/gce-workers-production-1.json")}"
   worker_image                  = "${var.gce_worker_image}"
   worker_subnetwork             = "${data.terraform_remote_state.vpc.gce_subnetwork_workers}"
 
@@ -119,4 +126,19 @@ export TRAVIS_WORKER_QUEUE_NAME=builds.gce
 export TRAVIS_WORKER_GCE_SUBNETWORK=jobs-org
 export TRAVIS_WORKER_TRAVIS_SITE=org
 EOF
+}
+
+data "google_iam_policy" "staging-1-workers" {
+  binding {
+    role = "roles/compute.imageUser"
+
+    members = [
+      "serviceAccount:${data.terraform_remote_state.staging-1.workers_service_account_email}",
+    ]
+  }
+}
+
+resource "google_service_account_iam_policy" "staging-1-workers" {
+  service_account_id = "${data.terraform_remote_state.staging-1.workers_service_account_name}"
+  policy_data        = "${data.google_iam_policy.staging-1-workers.policy_data}"
 }
