@@ -100,12 +100,32 @@ resource "google_storage_bucket" "gcloud_cleanup_archive" {
   }
 }
 
-resource "google_project_iam_custom_role" "gcloud_cleanup_archiver" {
-  role_id     = "gcloud_cleanup_archiver"
-  title       = "Gcloud Cleanup Archiver"
-  description = "A gcloud-cleanup process that can archive stuff"
+resource "google_project_iam_custom_role" "gcloud_cleaner" {
+  role_id     = "gcloud_cleaner"
+  title       = "Gcloud Cleaner"
+  description = "A gcloud-cleanup process that can clean and archive stuff"
 
   permissions = [
+    "compute.disks.delete",
+    "compute.disks.get",
+    "compute.disks.list",
+    "compute.disks.update",
+    "compute.images.delete",
+    "compute.images.get",
+    "compute.images.list",
+    "compute.instances.delete",
+    "compute.instances.deleteAccessConfig",
+    "compute.instances.detachDisk",
+    "compute.instances.get",
+    "compute.instances.getSerialPortOutput",
+    "compute.instances.list",
+    "compute.instances.reset",
+    "compute.instances.stop",
+    "compute.instances.update",
+    "compute.regions.get",
+    "compute.regions.list",
+    "compute.zones.get",
+    "compute.zones.list",
     "storage.objects.create",
     "storage.objects.update",
   ]
@@ -119,7 +139,7 @@ resource "google_service_account" "gcloud_cleanup" {
 
 data "google_iam_policy" "gcloud_cleanup" {
   binding {
-    role = "projects/${var.project}/roles/${google_project_iam_custom_role.gcloud_cleanup_archiver.role_id}"
+    role = "projects/${var.project}/roles/${google_project_iam_custom_role.gcloud_cleaner.role_id}"
 
     members = [
       "serviceAccount:${google_service_account.gcloud_cleanup.email}",
@@ -127,9 +147,18 @@ data "google_iam_policy" "gcloud_cleanup" {
   }
 }
 
-resource "google_service_account_iam_policy" "gcloud_cleanup" {
-  service_account_id = "${google_service_account.gcloud_cleanup.name}"
-  policy_data        = "${data.google_iam_policy.gcloud_cleanup.policy_data}"
+resource "google_project_iam_policy" "gcloud_cleanup" {
+  project     = "${var.project}"
+  policy_data = "${data.google_iam_policy.gcloud_cleanup.policy_data}"
+}
+
+resource "google_project_iam_binding" "gcloud_cleaner" {
+  project = "${var.project}"
+  role    = "projects/${var.project}/roles/${google_project_iam_custom_role.gcloud_cleaner.role_id}"
+
+  members = [
+    "serviceAccount:${google_service_account.gcloud_cleanup.email}",
+  ]
 }
 
 resource "google_service_account_key" "gcloud_cleanup" {
@@ -164,10 +193,12 @@ resource "heroku_app" "gcloud_cleanup" {
 
 resource "null_resource" "gcloud_cleanup" {
   triggers {
-    config_signature = "${sha256(jsonencode(heroku_app.gcloud_cleanup.config_vars))}"
-    heroku_id        = "${heroku_app.gcloud_cleanup.id}"
-    ps_scale         = "${var.gcloud_cleanup_scale}"
-    version          = "${var.gcloud_cleanup_version}"
+    config_signature     = "${sha256(jsonencode(heroku_app.gcloud_cleanup.config_vars))}"
+    gce_policy_signature = "${sha256(data.google_iam_policy.gcloud_cleanup.policy_data)}"
+
+    heroku_id = "${heroku_app.gcloud_cleanup.id}"
+    ps_scale  = "${var.gcloud_cleanup_scale}"
+    version   = "${var.gcloud_cleanup_version}"
   }
 
   provisioner "local-exec" {

@@ -40,9 +40,18 @@ data "google_iam_policy" "workers" {
   }
 }
 
-resource "google_service_account_iam_policy" "workers" {
-  service_account_id = "${google_service_account.workers.name}"
-  policy_data        = "${data.google_iam_policy.workers.policy_data}"
+resource "google_project_iam_policy" "workers" {
+  project     = "${var.project}"
+  policy_data = "${data.google_iam_policy.workers.policy_data}"
+}
+
+resource "google_project_iam_binding" "workers" {
+  project = "${var.project}"
+  role    = "roles/editor"
+
+  members = [
+    "serviceAccount:${google_service_account.workers.email}",
+  ]
 }
 
 resource "google_service_account_key" "workers" {
