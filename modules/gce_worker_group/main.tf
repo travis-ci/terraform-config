@@ -137,28 +137,10 @@ resource "google_service_account" "gcloud_cleanup" {
   project      = "${var.project}"
 }
 
-data "google_iam_policy" "gcloud_cleanup" {
-  binding {
-    role = "projects/${var.project}/roles/${google_project_iam_custom_role.gcloud_cleaner.role_id}"
-
-    members = [
-      "serviceAccount:${google_service_account.gcloud_cleanup.email}",
-    ]
-  }
-}
-
-resource "google_project_iam_policy" "gcloud_cleanup" {
-  project     = "${var.project}"
-  policy_data = "${data.google_iam_policy.gcloud_cleanup.policy_data}"
-}
-
-resource "google_project_iam_binding" "gcloud_cleaner" {
+resource "google_project_iam_member" "gcloud_cleaner" {
   project = "${var.project}"
   role    = "projects/${var.project}/roles/${google_project_iam_custom_role.gcloud_cleaner.role_id}"
-
-  members = [
-    "serviceAccount:${google_service_account.gcloud_cleanup.email}",
-  ]
+  member  = "serviceAccount:${google_service_account.gcloud_cleanup.email}"
 }
 
 resource "google_service_account_key" "gcloud_cleanup" {
@@ -193,12 +175,10 @@ resource "heroku_app" "gcloud_cleanup" {
 
 resource "null_resource" "gcloud_cleanup" {
   triggers {
-    config_signature     = "${sha256(jsonencode(heroku_app.gcloud_cleanup.config_vars))}"
-    gce_policy_signature = "${sha256(data.google_iam_policy.gcloud_cleanup.policy_data)}"
-
-    heroku_id = "${heroku_app.gcloud_cleanup.id}"
-    ps_scale  = "${var.gcloud_cleanup_scale}"
-    version   = "${var.gcloud_cleanup_version}"
+    config_signature = "${sha256(jsonencode(heroku_app.gcloud_cleanup.config_vars))}"
+    heroku_id        = "${heroku_app.gcloud_cleanup.id}"
+    ps_scale         = "${var.gcloud_cleanup_scale}"
+    version          = "${var.gcloud_cleanup_version}"
   }
 
   provisioner "local-exec" {
