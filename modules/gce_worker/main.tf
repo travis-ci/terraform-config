@@ -108,6 +108,7 @@ resource "google_project_iam_custom_role" "worker" {
     "compute.regions.list",
     "compute.subnetworks.get",
     "compute.subnetworks.list",
+    "compute.subnetworks.use",
     "compute.zoneOperations.get",
     "compute.zoneOperations.list",
     "compute.zones.get",
