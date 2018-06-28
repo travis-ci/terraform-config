@@ -133,26 +133,8 @@ export TRAVIS_WORKER_TRAVIS_SITE=org
 EOF
 }
 
-data "google_iam_policy" "staging-1-workers" {
-  binding {
-    role = "roles/compute.imageUser"
-
-    members = [
-      "serviceAccount:${data.terraform_remote_state.staging-1.workers_service_account_email}",
-    ]
-  }
-}
-
-resource "google_project_iam_policy" "staging-1-workers" {
-  project     = "${var.project}"
-  policy_data = "${data.google_iam_policy.staging-1-workers.policy_data}"
-}
-
-resource "google_project_iam_binding" "staging-1-workers" {
+resource "google_project_iam_member" "staging_1_workers" {
   project = "${var.project}"
   role    = "roles/compute.imageUser"
-
-  members = [
-    "serviceAccount:${data.terraform_remote_state.staging-1.workers_service_account_email}",
-  ]
+  member  = "serviceAccount:${data.terraform_remote_state.staging-1.workers_service_account_email}"
 }
