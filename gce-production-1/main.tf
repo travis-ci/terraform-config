@@ -12,12 +12,17 @@ variable "gce_worker_image" {
 variable "github_users" {}
 variable "job_board_url" {}
 
-variable "travisci_net_external_zone_id" {
-  default = "Z2RI61YP4UWSIO"
+variable "project" {
+  default = "eco-emissary-99515"
 }
 
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
+
+variable "travisci_net_external_zone_id" {
+  default = "Z2RI61YP4UWSIO"
+}
+
 variable "worker_instance_count_com" {}
 variable "worker_instance_count_org" {}
 
@@ -78,7 +83,7 @@ module "gce_worker_group" {
   github_users                  = "${var.github_users}"
   heroku_org                    = "${var.gce_heroku_org}"
   index                         = "1"
-  project                       = "eco-emissary-99515"
+  project                       = "${var.project}"
   region                        = "us-central1"
   syslog_address_com            = "${var.syslog_address_com}"
   syslog_address_org            = "${var.syslog_address_org}"
@@ -138,7 +143,16 @@ data "google_iam_policy" "staging-1-workers" {
   }
 }
 
-resource "google_service_account_iam_policy" "staging-1-workers" {
-  service_account_id = "${data.terraform_remote_state.staging-1.workers_service_account_name}"
-  policy_data        = "${data.google_iam_policy.staging-1-workers.policy_data}"
+resource "google_project_iam_policy" "staging-1-workers" {
+  project     = "${var.project}"
+  policy_data = "${data.google_iam_policy.staging-1-workers.policy_data}"
+}
+
+resource "google_project_iam_binding" "staging-1-workers" {
+  project = "${var.project}"
+  role    = "roles/compute.imageUser"
+
+  members = [
+    "serviceAccount:${data.terraform_remote_state.staging-1.workers_service_account_email}",
+  ]
 }
