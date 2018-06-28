@@ -63,7 +63,7 @@ data "terraform_remote_state" "vpc" {
   }
 }
 
-data "terraform_remote_state" "staging-1" {
+data "terraform_remote_state" "staging_1" {
   backend = "s3"
 
   config {
@@ -136,5 +136,5 @@ EOF
 resource "google_project_iam_member" "staging_1_workers" {
   project = "${var.project}"
   role    = "roles/compute.imageUser"
-  member  = "serviceAccount:${data.terraform_remote_state.staging-1.workers_service_account_email}"
+  member  = "serviceAccount:${data.terraform_remote_state.staging_1.workers_service_account_email}"
 }
