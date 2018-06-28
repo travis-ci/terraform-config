@@ -1,5 +1,3 @@
-variable "account_json_com" {}
-variable "account_json_org" {}
 variable "config_com" {}
 variable "config_com_free" {}
 variable "config_org" {}
@@ -26,6 +24,108 @@ variable "zones" {
   default = ["a", "b", "c", "f"]
 }
 
+resource "google_service_account" "workers" {
+  account_id   = "workers"
+  display_name = "travis-worker processes"
+  project      = "${var.project}"
+}
+
+resource "google_project_iam_custom_role" "worker" {
+  role_id     = "worker"
+  title       = "travis-worker"
+  description = "A travis-worker process that can do travis-worky stuff"
+
+  permissions = [
+    "compute.acceleratorTypes.get",
+    "compute.acceleratorTypes.list",
+    "compute.addresses.create",
+    "compute.addresses.createInternal",
+    "compute.addresses.delete",
+    "compute.addresses.deleteInternal",
+    "compute.addresses.get",
+    "compute.addresses.list",
+    "compute.addresses.setLabels",
+    "compute.addresses.use",
+    "compute.addresses.useInternal",
+    "compute.diskTypes.get",
+    "compute.diskTypes.list",
+    "compute.disks.create",
+    "compute.disks.createSnapshot",
+    "compute.disks.delete",
+    "compute.disks.get",
+    "compute.disks.getIamPolicy",
+    "compute.disks.list",
+    "compute.disks.resize",
+    "compute.disks.setIamPolicy",
+    "compute.disks.setLabels",
+    "compute.disks.update",
+    "compute.disks.use",
+    "compute.disks.useReadOnly",
+    "compute.instances.addAccessConfig",
+    "compute.instances.addMaintenancePolicies",
+    "compute.instances.attachDisk",
+    "compute.instances.create",
+    "compute.instances.delete",
+    "compute.instances.deleteAccessConfig",
+    "compute.instances.detachDisk",
+    "compute.instances.get",
+    "compute.instances.getGuestAttributes",
+    "compute.instances.getIamPolicy",
+    "compute.instances.getSerialPortOutput",
+    "compute.instances.list",
+    "compute.instances.listReferrers",
+    "compute.instances.osAdminLogin",
+    "compute.instances.osLogin",
+    "compute.instances.removeMaintenancePolicies",
+    "compute.instances.reset",
+    "compute.instances.setDeletionProtection",
+    "compute.instances.setDiskAutoDelete",
+    "compute.instances.setIamPolicy",
+    "compute.instances.setLabels",
+    "compute.instances.setMachineResources",
+    "compute.instances.setMachineType",
+    "compute.instances.setMetadata",
+    "compute.instances.setMinCpuPlatform",
+    "compute.instances.setScheduling",
+    "compute.instances.setServiceAccount",
+    "compute.instances.setShieldedVmIntegrityPolicy",
+    "compute.instances.setTags",
+    "compute.instances.start",
+    "compute.instances.startWithEncryptionKey",
+    "compute.instances.stop",
+    "compute.instances.update",
+    "compute.instances.updateAccessConfig",
+    "compute.instances.updateNetworkInterface",
+    "compute.instances.updateShieldedVmConfig",
+    "compute.instances.use",
+    "compute.machineTypes.get",
+    "compute.machineTypes.list",
+    "compute.networks.get",
+    "compute.networks.list",
+    "compute.networks.use",
+    "compute.projects.get",
+    "compute.regions.get",
+    "compute.regions.list",
+    "compute.subnetworks.get",
+    "compute.subnetworks.list",
+    "compute.subnetworks.use",
+    "compute.zoneOperations.get",
+    "compute.zoneOperations.list",
+    "compute.zones.get",
+    "compute.zones.list",
+  ]
+}
+
+resource "google_project_iam_member" "workers" {
+  project = "${var.project}"
+  role    = "projects/${var.project}/roles/${google_project_iam_custom_role.worker.role_id}"
+  member  = "serviceAccount:${google_service_account.workers.email}"
+}
+
+resource "google_service_account_key" "workers" {
+  service_account_id = "${google_service_account.workers.email}"
+}
+
 data "template_file" "cloud_init_env_com" {
   template = <<EOF
 export TRAVIS_WORKER_SELF_IMAGE="${var.worker_docker_self_image}"
@@ -38,7 +138,7 @@ data "template_file" "cloud_config_com" {
   vars {
     assets           = "${path.module}/../../assets"
     cloud_init_env   = "${data.template_file.cloud_init_env_com.rendered}"
-    gce_account_json = "${var.account_json_com}"
+    gce_account_json = "${base64decode(google_service_account_key.workers.private_key)}"
     here             = "${path.module}"
     syslog_address   = "${var.syslog_address_com}"
     worker_config    = "${var.config_com}"
@@ -116,7 +216,7 @@ data "template_file" "cloud_config_com_free" {
   vars {
     assets           = "${path.module}/../../assets"
     cloud_init_env   = "${data.template_file.cloud_init_env_com_free.rendered}"
-    gce_account_json = "${var.account_json_com}"
+    gce_account_json = "${base64decode(google_service_account_key.workers.private_key)}"
     here             = "${path.module}"
     syslog_address   = "${var.syslog_address_com}"
     worker_config    = "${var.config_com_free}"
@@ -194,7 +294,7 @@ data "template_file" "cloud_config_org" {
   vars {
     assets           = "${path.module}/../../assets"
     cloud_init_env   = "${data.template_file.cloud_init_env_org.rendered}"
-    gce_account_json = "${var.account_json_org}"
+    gce_account_json = "${base64decode(google_service_account_key.workers.private_key)}"
     here             = "${path.module}"
     syslog_address   = "${var.syslog_address_org}"
     worker_config    = "${var.config_org}"
@@ -258,4 +358,12 @@ resource "google_compute_instance" "worker_org" {
   lifecycle {
     ignore_changes = ["disk", "boot_disk"]
   }
+}
+
+output "workers_service_account_email" {
+  value = "${google_service_account.workers.email}"
+}
+
+output "workers_service_account_name" {
+  value = "${google_service_account.workers.name}"
 }
