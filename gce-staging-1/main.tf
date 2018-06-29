@@ -18,12 +18,16 @@ variable "index" {
 variable "job_board_url" {}
 variable "latest_docker_image_worker" {}
 
-variable "travisci_net_external_zone_id" {
-  default = "Z2RI61YP4UWSIO"
+variable "project" {
+  default = "travis-staging-1"
 }
 
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
+
+variable "travisci_net_external_zone_id" {
+  default = "Z2RI61YP4UWSIO"
+}
 
 variable "worker_zones" {
   default = ["a", "b", "c", "f"]
@@ -40,7 +44,7 @@ terraform {
 }
 
 provider "google" {
-  project = "travis-staging-1"
+  project = "${var.project}"
   region  = "us-central1"
 }
 
@@ -69,7 +73,7 @@ module "gce_worker_group" {
   github_users                  = "${var.github_users}"
   heroku_org                    = "${var.gce_heroku_org}"
   index                         = "${var.index}"
-  project                       = "travis-staging-1"
+  project                       = "${var.project}"
   region                        = "us-central1"
   syslog_address_com            = "${var.syslog_address_com}"
   syslog_address_org            = "${var.syslog_address_org}"

@@ -12,6 +12,10 @@ variable "gce_worker_image" {
 variable "github_users" {}
 variable "job_board_url" {}
 
+variable "project" {
+  default = "travis-ci-prod-5"
+}
+
 variable "travisci_net_external_zone_id" {
   default = "Z2RI61YP4UWSIO"
 }
@@ -40,9 +44,8 @@ terraform {
 }
 
 provider "google" {
-  credentials = "${file("config/gce-workers-production-5.json")}"
-  project     = "travis-ci-prod-5"
-  region      = "us-central1"
+  project = "${var.project}"
+  region  = "us-central1"
 }
 
 provider "aws" {}
@@ -68,7 +71,7 @@ module "gce_worker_group" {
   github_users                  = "${var.github_users}"
   heroku_org                    = "${var.gce_heroku_org}"
   index                         = "5"
-  project                       = "travis-ci-prod-5"
+  project                       = "${var.project}"
   region                        = "us-central1"
   syslog_address_com            = "${var.syslog_address_com}"
   syslog_address_org            = "${var.syslog_address_org}"

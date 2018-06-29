@@ -45,7 +45,7 @@ terraform {
 }
 
 provider "google" {
-  project = "eco-emissary-99515"
+  project = "${var.project}"
   region  = "us-central1"
 }
 

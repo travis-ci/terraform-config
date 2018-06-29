@@ -1,3 +1,5 @@
+variable "deny_target_ip_ranges" {}
+
 variable "env" {
   default = "staging"
 }
@@ -22,8 +24,8 @@ variable "nat_conntracker_dst_ignore" {
   type = "list"
 }
 
-variable "travisci_net_external_zone_id" {
-  default = "Z2RI61YP4UWSIO"
+variable "project" {
+  default = "travis-staging-1"
 }
 
 variable "region" {
@@ -34,7 +36,9 @@ variable "rigaer_strasse_8_ipv4" {}
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
 
-variable "deny_target_ip_ranges" {}
+variable "travisci_net_external_zone_id" {
+  default = "Z2RI61YP4UWSIO"
+}
 
 terraform {
   backend "s3" {
@@ -47,7 +51,7 @@ terraform {
 }
 
 provider "google" {
-  project = "travis-staging-1"
+  project = "${var.project}"
   region  = "${var.region}"
 }
 
@@ -73,7 +77,7 @@ module "gce_net" {
   nat_conntracker_src_ignore    = ["${var.nat_conntracker_src_ignore}"]
   nat_image                     = "${var.latest_gce_tfw_image}"
   nat_machine_type              = "g1-small"
-  project                       = "travis-staging-1"
+  project                       = "${var.project}"
   rigaer_strasse_8_ipv4         = "${var.rigaer_strasse_8_ipv4}"
   syslog_address                = "${var.syslog_address_com}"
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
