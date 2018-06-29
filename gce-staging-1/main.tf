@@ -123,7 +123,3 @@ EOF
 output "workers_service_account_email" {
   value = "${module.gce_worker_group.workers_service_account_email}"
 }
-
-output "workers_service_account_name" {
-  value = "${module.gce_worker_group.workers_service_account_name}"
-}
