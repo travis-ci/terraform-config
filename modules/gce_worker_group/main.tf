@@ -110,6 +110,7 @@ resource "google_project_iam_custom_role" "gcloud_cleaner" {
     "compute.disks.get",
     "compute.disks.list",
     "compute.disks.update",
+    "compute.globalOperations.list",
     "compute.images.delete",
     "compute.images.get",
     "compute.images.list",
