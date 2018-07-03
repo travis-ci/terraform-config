@@ -111,6 +111,7 @@ resource "google_project_iam_custom_role" "worker" {
     "compute.subnetworks.get",
     "compute.subnetworks.list",
     "compute.subnetworks.use",
+    "compute.subnetworks.useExternalIp",
     "compute.zoneOperations.get",
     "compute.zoneOperations.list",
     "compute.zones.get",
