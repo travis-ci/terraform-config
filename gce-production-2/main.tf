@@ -12,12 +12,17 @@ variable "gce_worker_image" {
 variable "github_users" {}
 variable "job_board_url" {}
 
-variable "travisci_net_external_zone_id" {
-  default = "Z2RI61YP4UWSIO"
+variable "project" {
+  default = "travis-ci-prod-2"
 }
 
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
+
+variable "travisci_net_external_zone_id" {
+  default = "Z2RI61YP4UWSIO"
+}
+
 variable "worker_instance_count_com" {}
 variable "worker_instance_count_org" {}
 
@@ -40,9 +45,8 @@ terraform {
 }
 
 provider "google" {
-  credentials = "${file("config/gce-workers-production-2.json")}"
-  project     = "travis-ci-prod-2"
-  region      = "us-central1"
+  project = "${var.project}"
+  region  = "us-central1"
 }
 
 provider "aws" {}
@@ -63,19 +67,16 @@ module "gce_worker_group" {
   source = "../modules/gce_worker_group"
 
   env                           = "${var.env}"
-  gcloud_cleanup_account_json   = "${file("${path.module}/config/gce-cleanup-production-2.json")}"
   gcloud_cleanup_job_board_url  = "${var.job_board_url}"
   gcloud_zone                   = "${var.gce_gcloud_zone}"
   github_users                  = "${var.github_users}"
   heroku_org                    = "${var.gce_heroku_org}"
   index                         = "2"
-  project                       = "travis-ci-prod-2"
+  project                       = "${var.project}"
   region                        = "us-central1"
   syslog_address_com            = "${var.syslog_address_com}"
   syslog_address_org            = "${var.syslog_address_org}"
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
-  worker_account_json_com       = "${file("${path.module}/config/gce-workers-production-2.json")}"
-  worker_account_json_org       = "${file("${path.module}/config/gce-workers-production-2.json")}"
   worker_image                  = "${var.gce_worker_image}"
   worker_subnetwork             = "${data.terraform_remote_state.vpc.gce_subnetwork_workers}"
 
@@ -119,4 +120,8 @@ export TRAVIS_WORKER_QUEUE_NAME=builds.gce
 export TRAVIS_WORKER_GCE_SUBNETWORK=jobs-org
 export TRAVIS_WORKER_TRAVIS_SITE=org
 EOF
+}
+
+output "workers_service_account_email" {
+  value = "${module.gce_worker_group.workers_service_account_email}"
 }

@@ -1,3 +1,5 @@
+variable "deny_target_ip_ranges" {}
+
 variable "env" {
   default = "production"
 }
@@ -26,8 +28,8 @@ variable "nat_conntracker_dst_ignore" {
   type = "list"
 }
 
-variable "travisci_net_external_zone_id" {
-  default = "Z2RI61YP4UWSIO"
+variable "project" {
+  default = "eco-emissary-99515"
 }
 
 variable "region" {
@@ -38,7 +40,9 @@ variable "rigaer_strasse_8_ipv4" {}
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
 
-variable "deny_target_ip_ranges" {}
+variable "travisci_net_external_zone_id" {
+  default = "Z2RI61YP4UWSIO"
+}
 
 terraform {
   backend "s3" {
@@ -51,9 +55,8 @@ terraform {
 }
 
 provider "google" {
-  credentials = "${file("config/gce-workers-${var.env}-${var.index}.json")}"
-  project     = "eco-emissary-99515"
-  region      = "${var.region}"
+  project = "${var.project}"
+  region  = "${var.region}"
 }
 
 provider "aws" {}
@@ -75,7 +78,7 @@ module "gce_net" {
   nat_conntracker_src_ignore    = ["${var.nat_conntracker_src_ignore}"]
   nat_count_per_zone            = 2
   nat_image                     = "${var.gce_nat_image}"
-  project                       = "eco-emissary-99515"
+  project                       = "${var.project}"
   rigaer_strasse_8_ipv4         = "${var.rigaer_strasse_8_ipv4}"
   syslog_address                = "${var.syslog_address_com}"
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
