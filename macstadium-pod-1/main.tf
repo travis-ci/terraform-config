@@ -291,3 +291,28 @@ module "util-host-utilities" {
   ssh_host = "${module.macstadium_infrastructure.util_ip}"
   ssh_user = "${var.ssh_user}"
 }
+
+resource "vsphere_virtual_machine" "image-builder" {
+  name       = "image-builder"
+  folder     = "Internal VMs"
+  vcpu       = 2
+  memory     = 4096
+  datacenter = "pod-1"
+  cluster    = "MacPro_Pod_1"
+  domain     = "macstadium-us-se-1.travisci.net"
+
+  network_interface {
+    label = "Internal"
+  }
+
+  disk {
+    template  = "Vanilla VMs/${var.macstadium_vanilla_image}"
+    datastore = "DataCore1_1"
+  }
+
+  connection {
+    host  = "${vsphere_virtual_machine.image-builder.network_interface.0.ipv4_address}"
+    user  = "${var.ssh_user}"
+    agent = true
+  }
+}
