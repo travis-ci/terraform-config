@@ -22,6 +22,7 @@ create_packer_user() {
 
   echo ">>> Creating packer user"
   useradd -m -G ssh-user packer
+  mkdir /home/packer/bin
 }
 
 install_apt_packages() {
@@ -59,6 +60,7 @@ export PATH=$GOROOT/bin:$PATH
 EOF
 
   # make Go available in this script
+  # shellcheck disable=SC1091
   source /etc/profile.d/go.sh
 
   if ! grep -q 'export GOPATH' /home/packer/.profile; then
