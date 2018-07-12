@@ -2,8 +2,11 @@
 
 set -o errexit
 
+PACKER_USERS="matt ryn emma halle carmen"
+
 main() {
   create_packer_user
+  setup_ssh_access
   install_apt_packages
   install_go
   install_ruby
@@ -17,12 +20,24 @@ main() {
 create_packer_user() {
   if getent passwd packer >/dev/null; then
     echo ">>> Skipping creating packer user"
+    chsh -s /bin/bash packer
     return 0
   fi
 
   echo ">>> Creating packer user"
-  useradd -m -G ssh-user packer
+  useradd -m -G ssh-user -s /bin/bash packer
   mkdir /home/packer/bin
+}
+
+setup_ssh_access() {
+  echo ">>> Copying keys to packer user"
+  mkdir -p /home/packer/.ssh
+  rm -f /home/packer/.ssh/authorized_keys
+  touch /home/packer/.ssh/authorized_keys
+
+  for user in $PACKER_USERS; do
+    cat "/home/$user/.ssh/authorized_keys" >>/home/packer/.ssh/authorized_keys
+  done
 }
 
 install_apt_packages() {
@@ -50,7 +65,7 @@ install_go() {
 
     local go_archive="/tmp/go1.10.3.tar.gz"
 
-    curl "https://dl.google.com/go/go1.10.3.linux-amd64.tar.gz" -o $go_archive
+    curl -L "https://dl.google.com/go/go1.10.3.linux-amd64.tar.gz" -o $go_archive
     tar -C /usr/local -xzf $go_archive
   fi
 
@@ -64,7 +79,7 @@ EOF
   source /etc/profile.d/go.sh
 
   if ! grep -q 'export GOPATH' /home/packer/.profile; then
-    cat /home/packer/.profile <<'EOF'
+    cat >/home/packer/.profile <<'EOF'
 export GOPATH=$HOME/go
 export PATH=$(go env GOPATH)/bin:$PATH
 EOF
@@ -106,7 +121,7 @@ install_packer() {
 
   echo ">>> Installing packer"
   local packer_archive="packer1.2.4.zip"
-  curl "https://releases.hashicorp.com/packer/1.2.4/packer_1.2.4_linux_amd64.zip" -o $packer_archive
+  curl -L "https://releases.hashicorp.com/packer/1.2.4/packer_1.2.4_linux_amd64.zip" -o $packer_archive
   unzip $packer_archive -d /usr/local/bin
 }
 
@@ -114,11 +129,12 @@ install_packer_builder() {
   local packer_builder_dest="/usr/local/bin/packer-builder-vsphere-clone.linux"
   if [[ -f $packer_builder_dest ]]; then
     echo ">>> Skipping installing packer-builder-vsphere"
-    return 0
+  else
+    echo ">>> Installing packer-builder-vsphere"
+    curl -L "https://github.com/jetbrains-infra/packer-builder-vsphere/releases/download/v2.0/packer-builder-vsphere-clone.linux" -o $packer_builder_dest
   fi
 
-  echo ">>> Installing packer-builder-vsphere"
-  curl "https://github.com/jetbrains-infra/packer-builder-vsphere/releases/download/v2.0/packer-builder-vsphere-clone.linux" -o $packer_builder_dest
+  chmod +x $packer_builder_dest
 }
 
 clone_packer_templates() {

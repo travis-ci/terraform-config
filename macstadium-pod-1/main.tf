@@ -306,8 +306,30 @@ resource "vsphere_virtual_machine" "image-builder" {
   }
 
   disk {
-    template  = "Vanilla VMs/${var.macstadium_vanilla_image}"
+    template  = "Vanilla VMs/travis-ci-ubuntu14.04-internal-vanilla-1531412548"
     datastore = "DataCore1_1"
+  }
+
+  connection {
+    host  = "${vsphere_virtual_machine.image-builder.network_interface.0.ipv4_address}"
+    user  = "${var.ssh_user}"
+    agent = true
+  }
+}
+
+data "template_file" "image_builder_installer" {
+  template = "${file("install-image-builder.sh")}"
+}
+
+data "template_file" "build_macos_script" {
+  template = "${file("build-macos.sh")}"
+}
+
+resource "null_resource" "image-builder-environment" {
+  triggers {
+    host_id                  = "${vsphere_virtual_machine.image-builder.uuid}"
+    install_script_signature = "${sha256(data.template_file.image_builder_installer.rendered)}"
+    run_script_signature     = "${sha256(data.template_file.build_macos_script.rendered)}"
   }
 
   connection {
@@ -317,7 +339,7 @@ resource "vsphere_virtual_machine" "image-builder" {
   }
 
   provisioner "file" {
-    source      = "install-image-builder.sh"
+    content     = "${data.template_file.image_builder_installer.rendered}"
     destination = "/tmp/install-image-builder.sh"
   }
 
@@ -329,14 +351,23 @@ resource "vsphere_virtual_machine" "image-builder" {
   }
 
   provisioner "file" {
-    source      = "build-macos.sh"
-    destination = "/home/packer/bin/build-macos"
+    content     = "${data.template_file.build_macos_script.rendered}"
+    destination = "/tmp/build-macos.sh"
   }
 
   provisioner "remote-exec" {
     inline = [
+      "sudo cp /tmp/build-macos.sh /home/packer/bin/build-macos",
       "sudo chown packer:packer /home/packer/bin/build-macos",
       "sudo chmod +x /home/packer/bin/build-macos",
     ]
   }
+}
+
+resource "aws_route53_record" "image-builder" {
+  zone_id = "${var.travisci_net_external_zone_id}"
+  name    = "image-builder.macstadium-us-se-1.travisci.net"
+  type    = "A"
+  ttl     = 300
+  records = ["${vsphere_virtual_machine.image-builder.network_interface.0.ipv4_address}"]
 }
