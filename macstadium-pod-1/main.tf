@@ -317,10 +317,10 @@ resource "vsphere_virtual_machine" "image-builder" {
   }
 
   provisioner "file" {
-    source = "install-image-builder.sh"
+    source      = "install-image-builder.sh"
     destination = "/tmp/install-image-builder.sh"
   }
-  
+
   provisioner "remote-exec" {
     inline = [
       "chmod +x /tmp/install-image-builder.sh",
@@ -329,7 +329,7 @@ resource "vsphere_virtual_machine" "image-builder" {
   }
 
   provisioner "file" {
-    source = "build-macos.sh"
+    source      = "build-macos.sh"
     destination = "/home/packer/bin/build-macos"
   }
 

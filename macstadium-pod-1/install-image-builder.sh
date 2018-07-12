@@ -54,7 +54,7 @@ install_go() {
     tar -C /usr/local -xzf $go_archive
   fi
 
-  cat > /etc/profile.d/go.sh <<'EOF'
+  cat >/etc/profile.d/go.sh <<'EOF'
 export GOROOT=/usr/local/go
 export PATH=$GOROOT/bin:$PATH
 EOF
