@@ -138,7 +138,7 @@ resource "packet_device" "worker" {
   plan             = "${var.server_plan}"
   project_id       = "${var.project_id}"
   user_data        = "${element(data.template_file.user_data.*.rendered, count.index)}"
-  tags             = ["worker", "${var.site}", "${var.env}"]
+  tags             = ["worker", "${var.site}", "${var.env}", "pool-${var.index}"]
 
   hardware_reservation_id = "next-available"
 
