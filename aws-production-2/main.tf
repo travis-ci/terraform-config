@@ -107,6 +107,23 @@ ${file("${path.module}/config/worker-com.env")}
 ### worker.env
 ${file("${path.module}/worker.env")}
 
+export TRAVIS_WORKER_QUEUE_NAME=builds.ec2
+export TRAVIS_WORKER_AMQP_URI=${module.rabbitmq_worker_config_com.uri}
+export TRAVIS_WORKER_HARD_TIMEOUT=2h
+export TRAVIS_WORKER_TRAVIS_SITE=com
+EOF
+}
+
+data "template_file" "worker_config_com_free" {
+  template = <<EOF
+### config/worker-com-local.env
+${file("${path.module}/config/worker-com-local.env")}
+### config/worker-com.env
+${file("${path.module}/config/worker-com.env")}
+### worker.env
+${file("${path.module}/worker.env")}
+
+export TRAVIS_WORKER_QUEUE_NAME=builds.ec2-free
 export TRAVIS_WORKER_AMQP_URI=${module.rabbitmq_worker_config_com.uri}
 export TRAVIS_WORKER_HARD_TIMEOUT=2h
 export TRAVIS_WORKER_TRAVIS_SITE=com
@@ -122,6 +139,7 @@ ${file("${path.module}/config/worker-org.env")}
 ### worker.env
 ${file("${path.module}/worker.env")}
 
+export TRAVIS_WORKER_QUEUE_NAME=builds.ec2
 export TRAVIS_WORKER_AMQP_URI=${module.rabbitmq_worker_config_org.uri}
 export TRAVIS_WORKER_HARD_TIMEOUT=50m
 export TRAVIS_WORKER_TRAVIS_SITE=org
@@ -228,6 +246,59 @@ module "aws_asg_com" {
   worker_docker_image_ruby               = "${var.garnet_image}"
   worker_instance_type                   = "c3.8xlarge"
   worker_queue                           = "ec2"
+
+  worker_subnets = [
+    "${data.terraform_remote_state.vpc.workers_com_subnet_1b2_id}",
+    "${data.terraform_remote_state.vpc.workers_com_subnet_1b_id}",
+    "${data.terraform_remote_state.vpc.workers_com_subnet_1e2_id}",
+    "${data.terraform_remote_state.vpc.workers_com_subnet_1e_id}",
+  ]
+}
+
+module "aws_asg_com_free" {
+  source                     = "../modules/aws_asg_queue"
+  cyclist_auth_token         = "${random_id.cyclist_token_com.hex}"
+  cyclist_url                = "${module.aws_cyclist_com.cyclist_url}"
+  docker_storage_dm_basesize = "19G"
+  env                        = "${var.env}"
+  github_users               = "${var.github_users}"
+  index                      = "${var.index}"
+  registry_hostname          = "${data.terraform_remote_state.vpc.registry_hostname}"
+
+  security_groups = [
+    "${module.aws_az_1b.workers_com_security_group_id}",
+    "${module.aws_az_1b2.workers_com_security_group_id}",
+    "${module.aws_az_1e.workers_com_security_group_id}",
+    "${module.aws_az_1e2.workers_com_security_group_id}",
+  ]
+
+  # TODO: increase worker_asg_max_size to start accepting jobs to the com-free pool
+
+  site                                   = "com"
+  syslog_address                         = "${var.syslog_address_com}"
+  worker_ami                             = "${var.worker_ami}"
+  worker_asg_max_size                    = 0
+  worker_asg_min_size                    = 0
+  worker_asg_namespace                   = "Travis/com"
+  worker_asg_scale_in_threshold          = 120
+  worker_asg_scale_in_evaluation_periods = 3
+  worker_asg_scale_in_period             = 300
+  worker_asg_scale_out_threshold         = 80
+  worker_asg_scale_out_qty               = 3
+  worker_config                          = "${data.template_file.worker_config_com_free.rendered}"
+  worker_docker_image_android            = "${var.amethyst_image}"
+  worker_docker_image_default            = "${var.garnet_image}"
+  worker_docker_image_erlang             = "${var.amethyst_image}"
+  worker_docker_image_go                 = "${var.garnet_image}"
+  worker_docker_image_haskell            = "${var.amethyst_image}"
+  worker_docker_image_jvm                = "${var.garnet_image}"
+  worker_docker_image_node_js            = "${var.garnet_image}"
+  worker_docker_image_perl               = "${var.amethyst_image}"
+  worker_docker_image_php                = "${var.garnet_image}"
+  worker_docker_image_python             = "${var.garnet_image}"
+  worker_docker_image_ruby               = "${var.garnet_image}"
+  worker_instance_type                   = "c3.8xlarge"
+  worker_queue                           = "ec2-free"
 
   worker_subnets = [
     "${data.terraform_remote_state.vpc.workers_com_subnet_1b2_id}",
