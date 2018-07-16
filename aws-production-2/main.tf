@@ -299,7 +299,6 @@ module "aws_asg_com_free" {
   worker_docker_image_ruby               = "${var.garnet_image}"
   worker_instance_type                   = "c3.8xlarge"
   worker_queue                           = "ec2-free"
-
   worker_subnets = [
     "${data.terraform_remote_state.vpc.workers_com_subnet_1b2_id}",
     "${data.terraform_remote_state.vpc.workers_com_subnet_1b_id}",
@@ -396,6 +395,7 @@ module "aws_asg_org_canary" {
   worker_docker_self_image    = "${var.worker_image_canary}"
   worker_instance_type        = "c3.8xlarge"
   worker_queue                = "ec2"
+
   worker_subnets = [
     "${data.terraform_remote_state.vpc.workers_org_subnet_1b2_id}",
     "${data.terraform_remote_state.vpc.workers_org_subnet_1b_id}",
