@@ -178,6 +178,48 @@ export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-staging-com-macstadium-${var.
 EOF
 }
 
+module "worker_staging_com_free_1" {
+  source             = "../modules/macstadium_go_worker"
+  host_id            = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host           = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user           = "${var.ssh_user}"
+  version            = "${var.latest_travis_worker_version}"
+  env                = "staging-com-free-1"
+  index              = "${var.index}"
+  worker_base_config = "${data.template_file.worker_config_common.rendered}"
+  worker_env_config  = "${file("${path.module}/config/travis-worker-staging-com-common")}"
+
+  worker_local_config = <<EOF
+export TRAVIS_WORKER_HARD_TIMEOUT=120m
+export TRAVIS_WORKER_TRAVIS_SITE="com"
+export TRAVIS_WORKER_POOL_SIZE="2"
+export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_staging_com_token.hex}@127.0.0.1:8084/"
+export TRAVIS_WORKER_QUEUE_NAME="builds.macstadium6-free"
+export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-staging-com-free-macstadium-${var.index}-1-dc18"
+EOF
+}
+
+module "worker_staging_com_free_2" {
+  source             = "../modules/macstadium_go_worker"
+  host_id            = "${module.macstadium_infrastructure.wjb_uuid}"
+  ssh_host           = "${module.macstadium_infrastructure.wjb_ip}"
+  ssh_user           = "${var.ssh_user}"
+  version            = "${var.latest_travis_worker_version}"
+  env                = "staging-com-free-2"
+  index              = "${var.index}"
+  worker_base_config = "${data.template_file.worker_config_common.rendered}"
+  worker_env_config  = "${file("${path.module}/config/travis-worker-staging-com-common")}"
+
+  worker_local_config = <<EOF
+export TRAVIS_WORKER_HARD_TIMEOUT=120m
+export TRAVIS_WORKER_TRAVIS_SITE="com"
+export TRAVIS_WORKER_POOL_SIZE="2"
+export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_staging_com_token.hex}@127.0.0.1:8084/"
+export TRAVIS_WORKER_QUEUE_NAME="builds.macstadium6-free"
+export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-staging-com-free-macstadium-${var.index}-2-dc18"
+EOF
+}
+
 module "worker_custom_1" {
   source             = "../modules/macstadium_go_worker"
   host_id            = "${module.macstadium_infrastructure.wjb_uuid}"
