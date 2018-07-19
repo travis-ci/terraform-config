@@ -1,5 +1,5 @@
 SHELLCHECK_URL := https://s3.amazonaws.com/travis-blue-public/binaries/ubuntu/14.04/x86_64/shellcheck-0.4.4.tar.bz2
-SHFMT_URL := mvdan.cc/sh/...
+SHFMT_URL := https://github.com/mvdan/sh/releases/download/v2.5.0/shfmt_v2.5.0_linux_amd64
 TFPLAN2JSON_URL := github.com/travis-ci/tfplan2json
 PROVIDER_TRAVIS_URL := github.com/travis-ci/terraform-provider-travis
 
@@ -50,8 +50,11 @@ deps: $(DEPS)
 	fi
 
 .PHONY: .ensure-shfmt
-.ensure-shfmt:
-	$(GO) get -u "$(SHFMT_URL)"
+.ensure-shfmt: $(GOPATH_BIN)/shfmt
+
+$(GOPATH_BIN)/shfmt:
+	$(CURL) -sSL -o $@ $(SHFMT_URL)
+	chmod +x $@
 
 .PHONY: .ensure-tfplan2json
 .ensure-tfplan2json:
