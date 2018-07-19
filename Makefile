@@ -1,5 +1,5 @@
 SHELLCHECK_URL := https://s3.amazonaws.com/travis-blue-public/binaries/ubuntu/14.04/x86_64/shellcheck-0.4.4.tar.bz2
-SHFMT_URL := mvdan.cc/sh/cmd/shfmt
+SHFMT_URL := mvdan.cc/sh/...
 TFPLAN2JSON_URL := github.com/travis-ci/tfplan2json
 PROVIDER_TRAVIS_URL := github.com/travis-ci/terraform-provider-travis
 
