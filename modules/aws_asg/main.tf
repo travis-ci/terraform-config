@@ -331,16 +331,16 @@ resource "aws_autoscaling_policy" "workers_add_capacity" {
     metric_interval_lower_bound = "${floor(var.worker_asg_scale_out_threshold/-2.0)}"
   }
 
-  # Headroom is less than half of THRESHOLD; scale out twice as much
+  # Headroom is less than half of THRESHOLD; scale out 2x as much
   step_adjustment {
     scaling_adjustment          = "${var.worker_asg_scale_out_qty * 2}"
     metric_interval_upper_bound = "${floor(var.worker_asg_scale_out_threshold/-2.0)}"
     metric_interval_lower_bound = "${floor(var.worker_asg_scale_out_threshold/-1.0)}"
   }
 
-  # Headroom is 0; scale out three times as much
+  # Headroom is 0; scale out 4x as much
   step_adjustment {
-    scaling_adjustment          = "${var.worker_asg_scale_out_qty * 3}"
+    scaling_adjustment          = "${var.worker_asg_scale_out_qty * 4}"
     metric_interval_upper_bound = "${floor(var.worker_asg_scale_out_threshold/-1.0)}"
   }
 }
