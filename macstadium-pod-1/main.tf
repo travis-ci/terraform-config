@@ -325,11 +325,16 @@ data "template_file" "build_macos_script" {
   template = "${file("build-macos.sh")}"
 }
 
+data "template_file" "image_builder_env" {
+  template = "${file("config/image-builder")}"
+}
+
 resource "null_resource" "image-builder-environment" {
   triggers {
     host_id                  = "${vsphere_virtual_machine.image-builder.uuid}"
     install_script_signature = "${sha256(data.template_file.image_builder_installer.rendered)}"
     run_script_signature     = "${sha256(data.template_file.build_macos_script.rendered)}"
+    env_signature            = "${sha256(data.template_file.image_builder_env.rendered)}"
   }
 
   connection {
@@ -355,11 +360,18 @@ resource "null_resource" "image-builder-environment" {
     destination = "/tmp/build-macos.sh"
   }
 
+  provisioner "file" {
+    content     = "${data.template_file.image_builder_env.rendered}"
+    destination = "/tmp/packer-env"
+  }
+
   provisioner "remote-exec" {
     inline = [
       "sudo cp /tmp/build-macos.sh /home/packer/bin/build-macos",
       "sudo chown packer:packer /home/packer/bin/build-macos",
       "sudo chmod +x /home/packer/bin/build-macos",
+      "sudo mv /tmp/packer-env /home/packer/.packer-env",
+      "sudo chown packer:packer /home/packer/.packer-env",
     ]
   }
 }
