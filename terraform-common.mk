@@ -18,7 +18,7 @@ NATBZ2 := $(TOP)/assets/nat.tar.bz2
 
 PROD_TF_VERSION := v0.11.7
 TERRAFORM := $(HOME)/.cache/travis-terraform-config/terraform-$(PROD_TF_VERSION)
-TAR := tar
+TAR := LC_ALL=C tar
 
 .PHONY: hello
 hello: announce
@@ -78,7 +78,14 @@ destroy: announce .config $(TRVS_TFVARS) $(TFSTATE)
 	$(TOP)/bin/post-flight $(TOP)
 
 $(NATBZ2): $(wildcard $(TOP)/assets/nat/**/*)
-	$(TAR) -C $(TOP)/assets -cjf $(TOP)/assets/nat.tar.bz2 nat
+	$(TAR) -C $(TOP)/assets \
+      --mtime='1970-01-01 00:00:00 +0000' \
+      --mode='go=rX,u+rw,a-s' \
+      --owner=0 \
+      --group=0 \
+      --numeric-owner \
+      --sort=name \
+      -cjf $(TOP)/assets/nat.tar.bz2 nat
 
 $(TFSTATE):
 	$(TERRAFORM) init
