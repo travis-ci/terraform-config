@@ -13,7 +13,7 @@ else
   tmux send-keys -t packer-build.0 "source ~/.packer-env" C-m
 
   # Run the command the user provided
-  command="$*"
+  command=$(printf '%q ' "$@")
   tmux send-keys -lt packer-build.0 "$command"
   tmux send-keys -t packer-build.0 C-m
 
