@@ -45,7 +45,7 @@ variable "worker_docker_image_python" {}
 variable "worker_docker_image_ruby" {}
 
 variable "worker_docker_self_image" {
-  default = "travisci/worker:v3.10.1"
+  default = "travisci/worker:v4.0.0"
 }
 
 data "tls_public_key" "terraform" {
@@ -138,7 +138,7 @@ resource "packet_device" "worker" {
   plan             = "${var.server_plan}"
   project_id       = "${var.project_id}"
   user_data        = "${element(data.template_file.user_data.*.rendered, count.index)}"
-  tags             = ["worker", "${var.site}", "${var.env}"]
+  tags             = ["worker", "${var.site}", "${var.env}", "pool-${var.index}"]
 
   hardware_reservation_id = "next-available"
 

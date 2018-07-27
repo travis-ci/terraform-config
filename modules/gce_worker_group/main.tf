@@ -40,7 +40,7 @@ variable "worker_config_com_free" {}
 variable "worker_config_org" {}
 
 variable "worker_docker_self_image" {
-  default = "travisci/worker:v3.10.1"
+  default = "travisci/worker:v4.0.0"
 }
 
 variable "worker_image" {}
@@ -158,20 +158,21 @@ resource "heroku_app" "gcloud_cleanup" {
   }
 
   config_vars {
-    BUILDPACK_URL                   = "https://github.com/travis-ci/heroku-buildpack-makey-go"
-    GCLOUD_CLEANUP_ACCOUNT_JSON     = "${base64decode(google_service_account_key.gcloud_cleanup.private_key)}"
-    GCLOUD_CLEANUP_ARCHIVE_BUCKET   = "${google_storage_bucket.gcloud_cleanup_archive.name}"
-    GCLOUD_CLEANUP_ARCHIVE_SERIAL   = "true"
-    GCLOUD_CLEANUP_ENTITIES         = "instances"
-    GCLOUD_CLEANUP_INSTANCE_FILTERS = "${var.gcloud_cleanup_instance_filters}"
-    GCLOUD_CLEANUP_INSTANCE_MAX_AGE = "${var.gcloud_cleanup_instance_max_age}"
-    GCLOUD_CLEANUP_JOB_BOARD_URL    = "${var.gcloud_cleanup_job_board_url}"
-    GCLOUD_CLEANUP_LOOP_SLEEP       = "${var.gcloud_cleanup_loop_sleep}"
-    GCLOUD_LOG_HTTP                 = "no-log-http"
-    GCLOUD_PROJECT                  = "${var.project}"
-    GCLOUD_ZONE                     = "${var.gcloud_zone}"
-    GO_IMPORT_PATH                  = "github.com/travis-ci/gcloud-cleanup"
-    MANAGED_VIA                     = "github.com/travis-ci/terraform-config"
+    BUILDPACK_URL                      = "https://github.com/travis-ci/heroku-buildpack-makey-go"
+    GCLOUD_CLEANUP_ACCOUNT_JSON        = "${base64decode(google_service_account_key.gcloud_cleanup.private_key)}"
+    GCLOUD_CLEANUP_ARCHIVE_BUCKET      = "${google_storage_bucket.gcloud_cleanup_archive.name}"
+    GCLOUD_CLEANUP_ARCHIVE_SERIAL      = "true"
+    GCLOUD_CLEANUP_ARCHIVE_SAMPLE_RATE = "10"
+    GCLOUD_CLEANUP_ENTITIES            = "instances"
+    GCLOUD_CLEANUP_INSTANCE_FILTERS    = "${var.gcloud_cleanup_instance_filters}"
+    GCLOUD_CLEANUP_INSTANCE_MAX_AGE    = "${var.gcloud_cleanup_instance_max_age}"
+    GCLOUD_CLEANUP_JOB_BOARD_URL       = "${var.gcloud_cleanup_job_board_url}"
+    GCLOUD_CLEANUP_LOOP_SLEEP          = "${var.gcloud_cleanup_loop_sleep}"
+    GCLOUD_LOG_HTTP                    = "no-log-http"
+    GCLOUD_PROJECT                     = "${var.project}"
+    GCLOUD_ZONE                        = "${var.gcloud_zone}"
+    GO_IMPORT_PATH                     = "github.com/travis-ci/gcloud-cleanup"
+    MANAGED_VIA                        = "github.com/travis-ci/terraform-config"
   }
 }
 

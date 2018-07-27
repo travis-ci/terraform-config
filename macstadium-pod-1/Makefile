@@ -29,6 +29,7 @@ CONFIG_FILES := \
 		config/jupiter-brain-staging-com-env \
 		config/vsphere-monitor \
 		config/collectd-vsphere-common \
+		config/image-builder \
 		config/travis-vm-ssh-key
 
 INDEX ?= $(subst $(INFRA)-$(ENV_SHORT)-,,$(ENV_NAME))
@@ -65,6 +66,8 @@ $(CONFIG_FILES):
 		| sed 's/^/export /' >config/travis-worker-staging-com-common
 	trvs generate-config -n --pro -p TRAVIS_WORKER -f env macstadium-workers production-common \
 		| sed 's/^/export /' >config/travis-worker-production-com-common
+	trvs generate-config -n --env-prefix= -f env macstadium-image-builder image-builder \
+		| sed 's/^/export /' >config/image-builder
 	\
 	trvs generate-config --pro -p VSPHERE_JANITOR -f env vsphere-janitor production-$(INDEX) \
 		| sed 's/^/export /' >config/vsphere-janitor-production-com
