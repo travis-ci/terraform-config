@@ -10,7 +10,13 @@ main() {
   : "${RUNDIR:=/var/tmp/travis-run.d}"
   : "${WORKER_SUFFIXES:=a b c}"
 
+  tfw bootstrap
+  tfw admin-bootstrap
+
   chown -R travis:travis "${RUNDIR}"
+  usermod -a -G docker travis
+
+  __wait_for_docker
 
   cp -v "${VARTMP}/travis-worker@.service" \
     "${ETCDIR}/systemd/system/travis-worker@.service"
@@ -19,8 +25,6 @@ main() {
     systemctl enable "travis-worker@${worker_suffix}" || true
     systemctl start "travis-worker@${worker_suffix}" || true
   done
-
-  __wait_for_docker
 }
 
 __wait_for_docker() {

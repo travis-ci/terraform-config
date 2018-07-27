@@ -8,7 +8,7 @@ variable "latest_gce_tfw_image" {}
 variable "github_users" {}
 
 variable "gce_tfw_image" {
-  default = "https://www.googleapis.com/compute/v1/projects/eco-emissary-99515/global/images/tfw-1523464380-560dabd"
+  default = "https://www.googleapis.com/compute/v1/projects/eco-emissary-99515/global/images/tfw-1532723446-3d51b16"
 }
 
 variable "index" {
