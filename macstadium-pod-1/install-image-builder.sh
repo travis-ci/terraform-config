@@ -138,9 +138,9 @@ install_packer_builder() {
 }
 
 clone_packer_templates() {
-  if [[ -d "/home/packer/packer-templates" ]]; then
-    echo ">>> Updating packer-templates repository"
-    pushd /home/packer/packer-templates
+  if [[ -d "/home/packer/packer-templates-mac" ]]; then
+    echo ">>> Updating packer-templates-mac repository"
+    pushd /home/packer/packer-templates-mac
     git reset --hard
     git checkout master
     git pull
@@ -149,9 +149,9 @@ clone_packer_templates() {
     return 0
   fi
 
-  echo ">>> Cloning packer-templates repository"
+  echo ">>> Cloning packer-templates-mac repository"
   pushd /home/packer
-  git clone https://github.com/travis-ci/packer-templates.git
+  git clone https://github.com/travis-ci/packer-templates-mac.git
   popd
 }
 
