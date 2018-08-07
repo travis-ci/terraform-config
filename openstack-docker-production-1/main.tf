@@ -4,6 +4,7 @@ variable "os_password" {}
 variable "os_auth_url" {}
 variable "os_region" {}
 variable "key_name" {}
+variable "os_insecure" {}
 
 variable "availability_zone" {
   default = "nova"
@@ -43,6 +44,7 @@ provider "openstack" {
   password    = "${var.os_password}"
   auth_url    = "${var.os_auth_url}"
   region      = "${var.os_region}"
+  insecure    = "${var.os_insecure}"
 }
 
 module "os_worker" {
