@@ -4,7 +4,7 @@ variable "os_password" {}
 variable "os_auth_url" {}
 variable "os_region" {}
 variable "key_name" {}
-variable "os_insecure"{}
+variable "os_insecure" {}
 
 variable "availability_zone" {
   default = "nova"
