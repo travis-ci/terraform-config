@@ -6,7 +6,7 @@ if tmux has -t packer-build; then
   # We don't want to try to run a build if there might be one already running
   tmux attach -t packer-build
 else
-  cd ~/packer-templates
+  cd ~/packer-templates-mac
   tmux new -ds packer-build
 
   # Make sure we have our environment loaded
