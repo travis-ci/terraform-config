@@ -12,7 +12,7 @@ main() {
   install_ruby
   install_vsphere_images
   install_packer
-  install_packer_builder
+  install_packer_builders
   clone_packer_templates
   fix_ownership
 }
@@ -126,15 +126,21 @@ install_packer() {
 }
 
 install_packer_builder() {
-  local packer_builder_dest="/usr/local/bin/packer-builder-vsphere-clone.linux"
+  local builder_type=$1
+  local packer_builder_dest="/usr/local/bin/packer-builder-vsphere-$builder_type.linux"
   if [[ -f $packer_builder_dest ]]; then
-    echo ">>> Skipping installing packer-builder-vsphere"
+    echo ">>> Skipping installing packer-builder-vsphere-$builder_type"
   else
-    echo ">>> Installing packer-builder-vsphere"
-    curl -L "https://github.com/jetbrains-infra/packer-builder-vsphere/releases/download/v2.0/packer-builder-vsphere-clone.linux" -o $packer_builder_dest
+    echo ">>> Installing packer-builder-vsphere-$builder_type"
+    curl -L "https://github.com/jetbrains-infra/packer-builder-vsphere/releases/download/v2.0/packer-builder-vsphere-$builder_type.linux" -o "$packer_builder_dest"
   fi
 
-  chmod +x $packer_builder_dest
+  chmod +x "$packer_builder_dest"
+}
+
+install_packer_builders() {
+  install_packer_builder clone
+  install_packer_builder iso
 }
 
 clone_packer_templates() {
@@ -143,6 +149,7 @@ clone_packer_templates() {
     pushd /home/packer/packer-templates-mac
     git reset --hard
     git checkout master
+    git clean -df
     git pull
     popd
 
