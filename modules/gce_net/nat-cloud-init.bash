@@ -78,6 +78,9 @@ LoadPlugin write_http
   </Node>
 </Plugin>
 EOF
+
+  systemctl enable collectd || true
+  systemctl restart collectd
 }
 
 __expand_nat_tbz2() {
