@@ -40,7 +40,7 @@ variable "worker_config_com_free" {}
 variable "worker_config_org" {}
 
 variable "worker_docker_self_image" {
-  default = "travisci/worker:v4.0.0"
+  default = "travisci/worker:v4.0.1"
 }
 
 variable "worker_image" {}
