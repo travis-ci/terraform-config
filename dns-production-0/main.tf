@@ -212,5 +212,6 @@ resource "dnsimple_record" "whereami_cname" {
   domain = "travis-ci.com"
   name   = "whereami"
   value  = "whereami.travis-ci.com.herokudns.com"
+  ttl    = "60"
   type   = "CNAME"
 }
