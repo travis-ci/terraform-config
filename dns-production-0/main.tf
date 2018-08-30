@@ -37,6 +37,7 @@ terraform {
 
 provider "aws" {}
 provider "heroku" {}
+provider "dnsimple" {}
 
 data "dns_a_record_set" "aws_production_2_nat_com" {
   host = "workers-nat-com-shared-2.aws-us-east-1.travisci.net"
@@ -205,4 +206,11 @@ exec ${path.module}/../bin/heroku-wait-deploy-scale \
   --deploy-version=${var.whereami_version}
 EOF
   }
+}
+
+resource "dnsimple_record" "whereami_cname" {
+  domain = "travis-ci.com"
+  name   = "whereami"
+  value  = "whereami.travis-ci.com.herokudns.com"
+  type   = "CNAME"
 }
