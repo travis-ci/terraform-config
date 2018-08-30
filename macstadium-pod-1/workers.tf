@@ -1,7 +1,7 @@
 variable "latest_travis_worker_version" {}
 
 variable "travis_worker_version" {
-  default = "v4.0.1"
+  default = "v4.1.0"
 }
 
 data "template_file" "worker_config_common" {
