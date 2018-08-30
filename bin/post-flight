@@ -11,7 +11,7 @@ main() {
   local graphname
   graphname="$(basename "$(pwd)")"
 
-  if [[ "${graphname}" != *production* ]] && [[ "${graphname}" != *2* ]]; then
+  if [[ "${graphname}" != *production* ]] && [[ "${graphname}" != *macstadium-pod* ]]; then
     echo "Skipping Slack notification for '${graphname}'"
     exit 0
   fi
