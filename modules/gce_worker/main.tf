@@ -169,6 +169,56 @@ EOF
   }
 }
 
+resource "google_compute_instance_template" "worker_com" {
+  count          = "${length(var.zones)}"
+  name           = "${var.env}-${var.index}-worker-com-${element(var.zones, count.index)}-template-${substr(sha256("${var.worker_image}${data.template_file.cloud_config_com.rendered}"), 0, 7)}"
+
+  machine_type = "${var.machine_type}"
+  tags         = ["worker", "${var.env}", "com", "paid"]
+  project      = "${var.project}"
+
+  scheduling {
+    automatic_restart   = true
+    on_host_maintenance = "MIGRATE"
+  }
+
+  disk {
+    auto_delete  = true
+    boot         = true
+    source_image = "${var.worker_image}"
+  }
+
+  network_interface {
+    subnetwork = "${var.subnetwork_workers}"
+
+    access_config {
+      # ephemeral ip
+    }
+  }
+
+  metadata {
+    "block-project-ssh-keys" = "true"
+    "user-data"              = "${data.template_file.cloud_config_com.rendered}"
+  }
+
+  # TODO: port null_resource.worker_com_validation to instance group
+
+  lifecycle {
+    ignore_changes = ["disk", "boot_disk"]
+  }
+}
+
+resource "google_compute_instance_group_manager" "worker_com" {
+  count = "${length(var.zones)}"
+
+  base_instance_name = "${var.env}-${var.index}-worker-com-${element(var.zones, count.index)}"
+  instance_template  = "${element(google_compute_instance_template.worker_com.*.self_link, count.index)}"
+  name               = "worker-com-${element(var.zones, count.index)}"
+  target_size        = "${var.instance_count_com}"
+  update_strategy    = "NONE"
+  zone               = "${var.region}-${element(var.zones, count.index)}"
+}
+
 resource "google_compute_instance" "worker_com" {
   count = "${var.instance_count_com}"
   name  = "${var.env}-${var.index}-worker-com-${element(var.zones, count.index % length(var.zones))}-${(count.index / length(var.zones)) + 1}-gce"
@@ -247,6 +297,56 @@ EOF
   }
 }
 
+resource "google_compute_instance_template" "worker_com_free" {
+  count          = "${length(var.zones)}"
+  name           = "${var.env}-${var.index}-worker-com-free-${element(var.zones, count.index)}-template-${substr(sha256("${var.worker_image}${data.template_file.cloud_config_com_free.rendered}"), 0, 7)}"
+
+  machine_type = "${var.machine_type}"
+  tags         = ["worker", "${var.env}", "com", "free"]
+  project      = "${var.project}"
+
+  scheduling {
+    automatic_restart   = true
+    on_host_maintenance = "MIGRATE"
+  }
+
+  disk {
+    auto_delete  = true
+    boot         = true
+    source_image = "${var.worker_image}"
+  }
+
+  network_interface {
+    subnetwork = "${var.subnetwork_workers}"
+
+    access_config {
+      # ephemeral ip
+    }
+  }
+
+  metadata {
+    "block-project-ssh-keys" = "true"
+    "user-data"              = "${data.template_file.cloud_config_com_free.rendered}"
+  }
+
+  # TODO: port null_resource.worker_com_validation to instance group
+
+  lifecycle {
+    ignore_changes = ["disk", "boot_disk"]
+  }
+}
+
+resource "google_compute_instance_group_manager" "worker_com_free" {
+  count = "${length(var.zones)}"
+
+  base_instance_name = "${var.env}-${var.index}-worker-com-free-${element(var.zones, count.index)}"
+  instance_template  = "${element(google_compute_instance_template.worker_com_free.*.self_link, count.index)}"
+  name               = "worker-com-free-${element(var.zones, count.index)}"
+  target_size        = "${var.instance_count_com_free}"
+  update_strategy    = "NONE"
+  zone               = "${var.region}-${element(var.zones, count.index)}"
+}
+
 resource "google_compute_instance" "worker_com_free" {
   count = "${var.instance_count_com_free}"
   name  = "${var.env}-${var.index}-worker-com-free-${element(var.zones, count.index % length(var.zones))}-${(count.index / length(var.zones)) + 1}-gce"
@@ -323,6 +423,56 @@ exec ${path.module}/../../bin/travis-worker-verify-config \
   "${base64encode(data.template_file.cloud_config_org.rendered)}"
 EOF
   }
+}
+
+resource "google_compute_instance_template" "worker_org" {
+  count          = "${length(var.zones)}"
+  name           = "${var.env}-${var.index}-worker-org-${element(var.zones, count.index)}-template-${substr(sha256("${var.worker_image}${data.template_file.cloud_config_org.rendered}"), 0, 7)}"
+
+  machine_type = "${var.machine_type}"
+  tags         = ["worker", "${var.env}", "org"]
+  project      = "${var.project}"
+
+  scheduling {
+    automatic_restart   = true
+    on_host_maintenance = "MIGRATE"
+  }
+
+  disk {
+    auto_delete  = true
+    boot         = true
+    source_image = "${var.worker_image}"
+  }
+
+  network_interface {
+    subnetwork = "${var.subnetwork_workers}"
+
+    access_config {
+      # ephemeral ip
+    }
+  }
+
+  metadata {
+    "block-project-ssh-keys" = "true"
+    "user-data"              = "${data.template_file.cloud_config_org.rendered}"
+  }
+
+  # TODO: port null_resource.worker_org_validation to instance group
+
+  lifecycle {
+    ignore_changes = ["disk", "boot_disk"]
+  }
+}
+
+resource "google_compute_instance_group_manager" "worker_org" {
+  count = "${length(var.zones)}"
+
+  base_instance_name = "${var.env}-${var.index}-worker-org-${element(var.zones, count.index)}"
+  instance_template  = "${element(google_compute_instance_template.worker_org.*.self_link, count.index)}"
+  name               = "worker-org-${element(var.zones, count.index)}"
+  target_size        = "${var.instance_count_org}"
+  update_strategy    = "NONE"
+  zone               = "${var.region}-${element(var.zones, count.index)}"
 }
 
 resource "google_compute_instance" "worker_org" {
