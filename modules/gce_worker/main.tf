@@ -170,8 +170,8 @@ EOF
 }
 
 resource "google_compute_instance_template" "worker_com" {
-  count          = "${length(var.zones)}"
-  name           = "${var.env}-${var.index}-worker-com-${element(var.zones, count.index)}-template-${substr(sha256("${var.worker_image}${data.template_file.cloud_config_com.rendered}"), 0, 7)}"
+  count = "${length(var.zones)}"
+  name  = "${var.env}-${var.index}-worker-com-${element(var.zones, count.index)}-template-${substr(sha256("${var.worker_image}${data.template_file.cloud_config_com.rendered}"), 0, 7)}"
 
   machine_type = "${var.machine_type}"
   tags         = ["worker", "${var.env}", "com", "paid"]
@@ -298,8 +298,8 @@ EOF
 }
 
 resource "google_compute_instance_template" "worker_com_free" {
-  count          = "${length(var.zones)}"
-  name           = "${var.env}-${var.index}-worker-com-free-${element(var.zones, count.index)}-template-${substr(sha256("${var.worker_image}${data.template_file.cloud_config_com_free.rendered}"), 0, 7)}"
+  count = "${length(var.zones)}"
+  name  = "${var.env}-${var.index}-worker-com-free-${element(var.zones, count.index)}-template-${substr(sha256("${var.worker_image}${data.template_file.cloud_config_com_free.rendered}"), 0, 7)}"
 
   machine_type = "${var.machine_type}"
   tags         = ["worker", "${var.env}", "com", "free"]
@@ -426,8 +426,8 @@ EOF
 }
 
 resource "google_compute_instance_template" "worker_org" {
-  count          = "${length(var.zones)}"
-  name           = "${var.env}-${var.index}-worker-org-${element(var.zones, count.index)}-template-${substr(sha256("${var.worker_image}${data.template_file.cloud_config_org.rendered}"), 0, 7)}"
+  count = "${length(var.zones)}"
+  name  = "${var.env}-${var.index}-worker-org-${element(var.zones, count.index)}-template-${substr(sha256("${var.worker_image}${data.template_file.cloud_config_org.rendered}"), 0, 7)}"
 
   machine_type = "${var.machine_type}"
   tags         = ["worker", "${var.env}", "org"]
