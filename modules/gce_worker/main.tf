@@ -205,6 +205,8 @@ resource "google_compute_instance_template" "worker_com" {
 
   lifecycle {
     ignore_changes = ["disk", "boot_disk"]
+
+    create_before_destroy = true
   }
 }
 
@@ -333,6 +335,8 @@ resource "google_compute_instance_template" "worker_com_free" {
 
   lifecycle {
     ignore_changes = ["disk", "boot_disk"]
+
+    create_before_destroy = true
   }
 }
 
@@ -461,6 +465,8 @@ resource "google_compute_instance_template" "worker_org" {
 
   lifecycle {
     ignore_changes = ["disk", "boot_disk"]
+
+    create_before_destroy = true
   }
 }
 
