@@ -37,6 +37,7 @@ terraform {
 
 provider "aws" {}
 provider "heroku" {}
+provider "dnsimple" {}
 
 data "dns_a_record_set" "aws_production_2_nat_com" {
   host = "workers-nat-com-shared-2.aws-us-east-1.travisci.net"
@@ -205,4 +206,21 @@ exec ${path.module}/../bin/heroku-wait-deploy-scale \
   --deploy-version=${var.whereami_version}
 EOF
   }
+}
+
+resource "dnsimple_record" "whereami_cname" {
+  domain = "travis-ci.com"
+  name   = "whereami"
+  value  = "osaka-6117.herokussl.com"
+  ttl    = 60
+  type   = "CNAME"
+}
+
+resource "aws_route53_record" "whereami_cname" {
+  zone_id = "${var.travisci_net_external_zone_id}"
+  name    = "whereami.travis-ci.com"
+  ttl     = 60
+  type    = "CNAME"
+
+  records = ["osaka-6117.herokussl.com"]
 }
