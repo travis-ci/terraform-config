@@ -211,7 +211,16 @@ EOF
 resource "dnsimple_record" "whereami_cname" {
   domain = "travis-ci.com"
   name   = "whereami"
-  value  = "whereami.travis-ci.com.herokudns.com"
-  ttl    = "60"
+  value  = "osaka-6117.herokussl.com"
+  ttl    = 60
   type   = "CNAME"
+}
+
+resource "aws_route53_record" "whereami_cname" {
+  zone_id = "${var.travisci_net_external_zone_id}"
+  name    = "whereami.travis-ci.com"
+  ttl     = 60
+  type    = "CNAME"
+
+  records = ["osaka-6117.herokussl.com"]
 }
