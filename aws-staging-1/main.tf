@@ -87,6 +87,10 @@ ${file("${path.module}/worker.env")}
 export TRAVIS_WORKER_QUEUE_NAME=builds.ec2
 export TRAVIS_WORKER_TRAVIS_SITE=com
 export TRAVIS_WORKER_DOCKER_INSPECT_INTERVAL=1000ms
+
+export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_com.bucket}
+export AWS_ACCESS_KEY_ID=${module.aws_iam_user_s3_com.id}
+export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_com.secret}
 EOF
 }
 
@@ -102,6 +106,10 @@ ${file("${path.module}/worker.env")}
 export TRAVIS_WORKER_QUEUE_NAME=builds.ec2-free
 export TRAVIS_WORKER_TRAVIS_SITE=com
 export TRAVIS_WORKER_DOCKER_INSPECT_INTERVAL=1000ms
+
+export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_com.bucket}
+export AWS_ACCESS_KEY_ID=${module.aws_iam_user_s3_com.id}
+export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_com.secret}
 EOF
 }
 
@@ -117,7 +125,23 @@ ${file("${path.module}/worker.env")}
 export TRAVIS_WORKER_QUEUE_NAME=builds.ec2
 export TRAVIS_WORKER_TRAVIS_SITE=org
 export TRAVIS_WORKER_DOCKER_INSPECT_INTERVAL=1000ms
+
+export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_org.bucket}
+export AWS_ACCESS_KEY_ID=${module.aws_iam_user_s3_org.id}
+export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_org.secret}
 EOF
+}
+
+module "aws_iam_user_s3_com" {
+  source         = "../modules/aws_iam_user_s3"
+  iam_user_name  = "worker-ec2-${var.env}-${var.index}-com"
+  s3_bucket_name = "build-trace-staging.travis-ci.com"
+}
+
+module "aws_iam_user_s3_org" {
+  source         = "../modules/aws_iam_user_s3"
+  iam_user_name  = "worker-ec2-${var.env}-${var.index}-org"
+  s3_bucket_name = "build-trace-staging.travis-ci.org"
 }
 
 module "aws_az_1b" {
