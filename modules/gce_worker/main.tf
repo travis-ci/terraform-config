@@ -7,6 +7,9 @@ variable "index" {}
 variable "instance_count_com" {}
 variable "instance_count_com_free" {}
 variable "instance_count_org" {}
+variable "managed_instance_count_com" {}
+variable "managed_instance_count_com_free" {}
+variable "managed_instance_count_org" {}
 
 variable "machine_type" {
   default = "n1-standard-1"
@@ -211,7 +214,7 @@ resource "google_compute_region_instance_group_manager" "worker_com" {
   base_instance_name = "${var.env}-${var.index}-worker-com"
   instance_template  = "${google_compute_instance_template.worker_com.self_link}"
   name               = "worker-com"
-  target_size        = "${var.instance_count_com}"
+  target_size        = "${var.managed_instance_count_com}"
   update_strategy    = "NONE"
   region             = "${var.region}"
 
@@ -338,7 +341,7 @@ resource "google_compute_region_instance_group_manager" "worker_com_free" {
   base_instance_name = "${var.env}-${var.index}-worker-com-free"
   instance_template  = "${google_compute_instance_template.worker_com_free.self_link}"
   name               = "worker-com-free"
-  target_size        = "${var.instance_count_com_free}"
+  target_size        = "${var.managed_instance_count_com_free}"
   update_strategy    = "NONE"
   region             = "${var.region}"
 
@@ -465,7 +468,7 @@ resource "google_compute_region_instance_group_manager" "worker_org" {
   base_instance_name = "${var.env}-${var.index}-worker-org"
   instance_template  = "${google_compute_instance_template.worker_org.self_link}"
   name               = "worker-org"
-  target_size        = "${var.instance_count_org}"
+  target_size        = "${var.managed_instance_count_org}"
   update_strategy    = "NONE"
   region             = "${var.region}"
 
