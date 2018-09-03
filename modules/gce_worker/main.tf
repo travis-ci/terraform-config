@@ -200,7 +200,7 @@ resource "google_compute_instance_template" "worker_com" {
     "user-data"              = "${data.template_file.cloud_config_com.rendered}"
   }
 
-  # TODO: port null_resource.worker_com_validation to instance group
+  depends_on = ["null_resource.worker_com_validation"]
 
   lifecycle {
     create_before_destroy = true
@@ -327,7 +327,7 @@ resource "google_compute_instance_template" "worker_com_free" {
     "user-data"              = "${data.template_file.cloud_config_com_free.rendered}"
   }
 
-  # TODO: port null_resource.worker_com_validation to instance group
+  depends_on = ["null_resource.worker_com_free_validation"]
 
   lifecycle {
     create_before_destroy = true
@@ -454,7 +454,7 @@ resource "google_compute_instance_template" "worker_org" {
     "user-data"              = "${data.template_file.cloud_config_org.rendered}"
   }
 
-  # TODO: port null_resource.worker_org_validation to instance group
+  depends_on = ["null_resource.worker_org_validation"]
 
   lifecycle {
     create_before_destroy = true
