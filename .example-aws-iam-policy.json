@@ -24,7 +24,9 @@
                 "arn:aws:s3:::travis-terraform-state",
                 "arn:aws:s3:::travis-terraform-state/*",
                 "arn:aws:s3:::travis-shared-1-registry-images",
-                "arn:aws:s3:::travis-shared-1-registry-images/*"
+                "arn:aws:s3:::travis-shared-1-registry-images/*",
+                "arn:aws:s3:::travis-shared-2-registry-images",
+                "arn:aws:s3:::travis-shared-2-registry-images/*"
             ]
         },
         {
@@ -44,8 +46,10 @@
             "Resource": [
                 "arn:aws:iam::341288657826:role/*",
                 "arn:aws:iam::341288657826:user/registry-shared-1",
+                "arn:aws:iam::341288657826:user/registry-shared-2",
                 "arn:aws:iam::*:user/cyclist-*",
-                "arn:aws:iam::*:user/worker-*"
+                "arn:aws:iam::*:user/worker-*",
+                "arn:aws:iam::*:user/build-trace-*"
             ]
         },
         {
