@@ -240,6 +240,7 @@ resource "aws_vpc_endpoint" "s3" {
 
   route_table_ids = [
     "${aws_route_table.public_1b.id}",
+    "${aws_route_table.public_1e.id}",
     "${module.aws_az_1b.workers_com_route_table_id}",
     "${module.aws_az_1b.workers_org_route_table_id}",
     "${module.aws_az_1b2.workers_com_route_table_id}",
@@ -413,6 +414,7 @@ module "registry" {
 resource "null_resource" "outputs_signature" {
   triggers {
     bastion_security_group_1b_id = "${module.aws_bastion_1b.sg_id}"
+    bastion_security_group_1e_id = "${module.aws_bastion_1e.sg_id}"
     gateway_id                   = "${aws_internet_gateway.gw.id}"
     packer_build_subnet_cidr     = "${var.packer_build_subnet_cidr}"
     packer_build_subnet_id       = "${aws_subnet.packer_build.id}"
@@ -446,6 +448,10 @@ output "bastion_security_group_1b_id" {
   value = "${module.aws_bastion_1b.sg_id}"
 }
 
+output "bastion_security_group_1e_id" {
+  value = "${module.aws_bastion_1e.sg_id}"
+}
+
 output "gateway_id" {
   value = "${aws_internet_gateway.gw.id}"
 }
@@ -462,8 +468,8 @@ output "public_subnet_1b_cidr" {
   value = "${var.public_subnet_1b_cidr}"
 }
 
-output "public_subnet_1b_id" {
-  value = "${aws_subnet.public_1b.id}"
+output "public_subnet_1e_cidr" {
+  value = "${var.public_subnet_1e_cidr}"
 }
 
 output "registry_hostname" {
