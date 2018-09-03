@@ -24,7 +24,7 @@
                 "arn:aws:s3:::travis-terraform-state",
                 "arn:aws:s3:::travis-terraform-state/*",
                 "arn:aws:s3:::travis-shared-1-registry-images",
-                "arn:aws:s3:::travis-shared-1-registry-images/*"
+                "arn:aws:s3:::travis-shared-1-registry-images/*",
                 "arn:aws:s3:::travis-shared-2-registry-images",
                 "arn:aws:s3:::travis-shared-2-registry-images/*"
             ]
