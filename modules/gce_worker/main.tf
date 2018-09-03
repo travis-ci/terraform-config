@@ -170,8 +170,7 @@ EOF
 }
 
 resource "google_compute_instance_template" "worker_com" {
-  count = "${length(var.zones)}"
-  name  = "${var.env}-${var.index}-worker-com-${element(var.zones, count.index)}-template-${substr(sha256("${var.worker_image}${data.template_file.cloud_config_com.rendered}"), 0, 7)}"
+  name_prefix = "${var.env}-${var.index}-worker-com-template-"
 
   machine_type = "${var.machine_type}"
   tags         = ["worker", "${var.env}", "com", "paid"]
@@ -204,21 +203,19 @@ resource "google_compute_instance_template" "worker_com" {
   # TODO: port null_resource.worker_com_validation to instance group
 
   lifecycle {
-    ignore_changes = ["disk", "boot_disk"]
-
     create_before_destroy = true
   }
 }
 
-resource "google_compute_instance_group_manager" "worker_com" {
-  count = "${length(var.zones)}"
-
-  base_instance_name = "${var.env}-${var.index}-worker-com-${element(var.zones, count.index)}"
-  instance_template  = "${element(google_compute_instance_template.worker_com.*.self_link, count.index)}"
-  name               = "worker-com-${element(var.zones, count.index)}"
+resource "google_compute_region_instance_group_manager" "worker_com" {
+  base_instance_name = "${var.env}-${var.index}-worker-com"
+  instance_template  = "${google_compute_instance_template.worker_com.self_link}"
+  name               = "worker-com"
   target_size        = "${var.instance_count_com}"
   update_strategy    = "NONE"
-  zone               = "${var.region}-${element(var.zones, count.index)}"
+  region             = "${var.region}"
+
+  distribution_policy_zones = "${formatlist("${var.region}-%s", var.zones)}"
 }
 
 resource "google_compute_instance" "worker_com" {
@@ -300,11 +297,10 @@ EOF
 }
 
 resource "google_compute_instance_template" "worker_com_free" {
-  count = "${length(var.zones)}"
-  name  = "${var.env}-${var.index}-worker-com-free-${element(var.zones, count.index)}-template-${substr(sha256("${var.worker_image}${data.template_file.cloud_config_com_free.rendered}"), 0, 7)}"
+  name_prefix = "${var.env}-${var.index}-worker-com-free-template-"
 
   machine_type = "${var.machine_type}"
-  tags         = ["worker", "${var.env}", "com", "free"]
+  tags         = ["worker", "${var.env}", "com", "free", "foo"]
   project      = "${var.project}"
 
   scheduling {
@@ -334,21 +330,19 @@ resource "google_compute_instance_template" "worker_com_free" {
   # TODO: port null_resource.worker_com_validation to instance group
 
   lifecycle {
-    ignore_changes = ["disk", "boot_disk"]
-
     create_before_destroy = true
   }
 }
 
-resource "google_compute_instance_group_manager" "worker_com_free" {
-  count = "${length(var.zones)}"
-
-  base_instance_name = "${var.env}-${var.index}-worker-com-free-${element(var.zones, count.index)}"
-  instance_template  = "${element(google_compute_instance_template.worker_com_free.*.self_link, count.index)}"
-  name               = "worker-com-free-${element(var.zones, count.index)}"
+resource "google_compute_region_instance_group_manager" "worker_com_free" {
+  base_instance_name = "${var.env}-${var.index}-worker-com-free"
+  instance_template  = "${google_compute_instance_template.worker_com_free.self_link}"
+  name               = "worker-com-free"
   target_size        = "${var.instance_count_com_free}"
   update_strategy    = "NONE"
-  zone               = "${var.region}-${element(var.zones, count.index)}"
+  region             = "${var.region}"
+
+  distribution_policy_zones = "${formatlist("${var.region}-%s", var.zones)}"
 }
 
 resource "google_compute_instance" "worker_com_free" {
@@ -430,8 +424,7 @@ EOF
 }
 
 resource "google_compute_instance_template" "worker_org" {
-  count = "${length(var.zones)}"
-  name  = "${var.env}-${var.index}-worker-org-${element(var.zones, count.index)}-template-${substr(sha256("${var.worker_image}${data.template_file.cloud_config_org.rendered}"), 0, 7)}"
+  name_prefix = "${var.env}-${var.index}-worker-org-template-"
 
   machine_type = "${var.machine_type}"
   tags         = ["worker", "${var.env}", "org"]
@@ -464,21 +457,19 @@ resource "google_compute_instance_template" "worker_org" {
   # TODO: port null_resource.worker_org_validation to instance group
 
   lifecycle {
-    ignore_changes = ["disk", "boot_disk"]
-
     create_before_destroy = true
   }
 }
 
-resource "google_compute_instance_group_manager" "worker_org" {
-  count = "${length(var.zones)}"
-
-  base_instance_name = "${var.env}-${var.index}-worker-org-${element(var.zones, count.index)}"
-  instance_template  = "${element(google_compute_instance_template.worker_org.*.self_link, count.index)}"
-  name               = "worker-org-${element(var.zones, count.index)}"
+resource "google_compute_region_instance_group_manager" "worker_org" {
+  base_instance_name = "${var.env}-${var.index}-worker-org"
+  instance_template  = "${google_compute_instance_template.worker_org.self_link}"
+  name               = "worker-org"
   target_size        = "${var.instance_count_org}"
   update_strategy    = "NONE"
-  zone               = "${var.region}-${element(var.zones, count.index)}"
+  region             = "${var.region}"
+
+  distribution_policy_zones = "${formatlist("${var.region}-%s", var.zones)}"
 }
 
 resource "google_compute_instance" "worker_org" {
