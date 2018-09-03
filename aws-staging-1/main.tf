@@ -162,6 +162,24 @@ module "aws_az_1b2" {
   vpc_id                    = "${data.terraform_remote_state.vpc.vpc_id}"
 }
 
+module "aws_az_1e" {
+  source                    = "../modules/aws_workers_az"
+  az_group                  = "1e"
+  bastion_security_group_id = "${data.terraform_remote_state.vpc.bastion_security_group_1e_id}"
+  env                       = "${var.env}"
+  index                     = "${var.index}"
+  vpc_id                    = "${data.terraform_remote_state.vpc.vpc_id}"
+}
+
+module "aws_az_1e2" {
+  source                    = "../modules/aws_workers_az"
+  az_group                  = "1e"
+  bastion_security_group_id = "${data.terraform_remote_state.vpc.bastion_security_group_1e_id}"
+  env                       = "${var.env}"
+  index                     = "${var.index}"
+  vpc_id                    = "${data.terraform_remote_state.vpc.vpc_id}"
+}
+
 module "aws_cyclist_com" {
   source             = "../modules/aws_cyclist"
   cyclist_auth_token = "${random_id.cyclist_token_com.hex}"
@@ -200,6 +218,8 @@ module "aws_asg_com" {
   security_groups = [
     "${module.aws_az_1b.workers_com_security_group_id}",
     "${module.aws_az_1b2.workers_com_security_group_id}",
+    "${module.aws_az_1e.workers_com_security_group_id}",
+    "${module.aws_az_1e2.workers_com_security_group_id}",
   ]
 
   site                           = "com"
@@ -243,6 +263,8 @@ module "aws_asg_com_free" {
   security_groups = [
     "${module.aws_az_1b.workers_com_security_group_id}",
     "${module.aws_az_1b2.workers_com_security_group_id}",
+    "${module.aws_az_1e.workers_com_security_group_id}",
+    "${module.aws_az_1e2.workers_com_security_group_id}",
   ]
 
   site                           = "com"
@@ -286,6 +308,8 @@ module "aws_asg_org" {
   security_groups = [
     "${module.aws_az_1b.workers_org_security_group_id}",
     "${module.aws_az_1b2.workers_org_security_group_id}",
+    "${module.aws_az_1e.workers_org_security_group_id}",
+    "${module.aws_az_1e2.workers_org_security_group_id}",
   ]
 
   site                           = "org"
@@ -328,6 +352,8 @@ module "aws_asg_org_canary" {
   security_groups = [
     "${module.aws_az_1b.workers_org_security_group_id}",
     "${module.aws_az_1b2.workers_org_security_group_id}",
+    "${module.aws_az_1e.workers_org_security_group_id}",
+    "${module.aws_az_1e2.workers_org_security_group_id}",
   ]
 
   site                        = "org"
