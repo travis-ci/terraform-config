@@ -27,6 +27,10 @@ variable "public_subnet_1b_cidr" {
   default = "10.10.1.0/24"
 }
 
+variable "public_subnet_1e_cidr" {
+  default = "10.10.4.0/24"
+}
+
 variable "syslog_address_com" {}
 
 variable "travisci_net_external_zone_id" {
@@ -201,6 +205,35 @@ resource "aws_route_table_association" "public_1b" {
   route_table_id = "${aws_route_table.public_1b.id}"
 }
 
+resource "aws_subnet" "public_1e" {
+  vpc_id                  = "${aws_vpc.main.id}"
+  cidr_block              = "${var.public_subnet_1e_cidr}"
+  availability_zone       = "us-east-1e"
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name = "${var.env}-${var.index}-public-1e"
+  }
+}
+
+resource "aws_route_table" "public_1e" {
+  vpc_id = "${aws_vpc.main.id}"
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = "${aws_internet_gateway.gw.id}"
+  }
+
+  tags = {
+    Name = "${var.env}-${var.index}-public-1e"
+  }
+}
+
+resource "aws_route_table_association" "public_1e" {
+  subnet_id      = "${aws_subnet.public_1e.id}"
+  route_table_id = "${aws_route_table.public_1e.id}"
+}
+
 resource "aws_vpc_endpoint" "s3" {
   vpc_id       = "${aws_vpc.main.id}"
   service_name = "com.amazonaws.us-east-1.s3"
@@ -282,6 +315,23 @@ module "aws_bastion_1b" {
   github_users                  = "${var.github_users}"
   index                         = "${var.index}"
   public_subnet_id              = "${aws_subnet.public_1b.id}"
+  syslog_address                = "${var.syslog_address_com}"
+  travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
+  vpc_id                        = "${aws_vpc.main.id}"
+}
+
+module "aws_bastion_1e" {
+  source                        = "../modules/aws_bastion"
+  az                            = "1e"
+  bastion_ami                   = "${data.aws_ami.bastion.id}"
+  bastion_instance_type         = "t2.nano"
+  duo_api_hostname              = "${var.duo_api_hostname}"
+  duo_integration_key           = "${var.duo_integration_key}"
+  duo_secret_key                = "${var.duo_secret_key}"
+  env                           = "${var.env}"
+  github_users                  = "${var.github_users}"
+  index                         = "${var.index}"
+  public_subnet_id              = "${aws_subnet.public_1e.id}"
   syslog_address                = "${var.syslog_address_com}"
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
   vpc_id                        = "${aws_vpc.main.id}"
