@@ -300,7 +300,7 @@ resource "google_compute_instance_template" "worker_com_free" {
   name_prefix = "${var.env}-${var.index}-worker-com-free-template-"
 
   machine_type = "${var.machine_type}"
-  tags         = ["worker", "${var.env}", "com", "free", "foo"]
+  tags         = ["worker", "${var.env}", "com", "free"]
   project      = "${var.project}"
 
   scheduling {
