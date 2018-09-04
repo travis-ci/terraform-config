@@ -423,7 +423,7 @@ resource "null_resource" "image-builder-macbot" {
   provisioner "remote-exec" {
     inline = [
       "chmod +x /tmp/install-macbot.sh",
-      "sudo /tmp/install-macbot.sh"
+      "sudo /tmp/install-macbot.sh",
     ]
   }
 }
