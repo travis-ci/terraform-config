@@ -5,6 +5,7 @@ set -o errexit
 PACKER_USERS="matt ryn emma halle carmen"
 
 main() {
+  create_docker_group
   create_packer_user
   setup_ssh_access
   install_apt_packages
@@ -17,15 +18,26 @@ main() {
   fix_ownership
 }
 
+create_docker_group() {
+  if getent group docker >/dev/null; then
+    echo ">>> Skipping creating docker group"
+    return 0
+  fi
+
+  echo ">>> Creating docker group"
+  groupadd docker
+}
+
 create_packer_user() {
   if getent passwd packer >/dev/null; then
-    echo ">>> Skipping creating packer user"
+    echo ">>> Updating packer user"
     chsh -s /bin/bash packer
+    usermod -aG ssh-user,docker packer
     return 0
   fi
 
   echo ">>> Creating packer user"
-  useradd -m -G ssh-user -s /bin/bash packer
+  useradd -m -G ssh-user,docker -s /bin/bash packer
   mkdir /home/packer/bin
 }
 
@@ -43,12 +55,17 @@ setup_ssh_access() {
 install_apt_packages() {
   echo ">>> Installing apt packages"
 
+  # install docker from the official repo
+  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+  add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+
   # be able to install a recent Git version, trusty's is tremendously old
   add-apt-repository -y ppa:git-core/ppa
   apt-get update
 
   apt-get install -y \
     build-essential \
+    docker-ce \
     git \
     libssl-dev \
     libreadline-dev \
