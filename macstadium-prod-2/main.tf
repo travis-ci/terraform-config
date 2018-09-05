@@ -22,10 +22,6 @@ variable "vsphere_janitor_version" {
   default = "0a41b7f"
 }
 
-variable "vsphere_janitor_staging_version" {
-  default = "0a41b7f"
-}
-
 variable "vsphere_monitor_version" {
   default = "0a459b3"
 }
@@ -105,17 +101,6 @@ module "vsphere_janitor_production_com" {
   version     = "${var.vsphere_janitor_version}"
   config_path = "${path.module}/config/vsphere-janitor-production-com"
   env         = "production-com"
-  index       = "${var.index}"
-}
-
-module "vsphere_janitor_staging_com" {
-  source      = "../modules/vsphere_janitor"
-  host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
-  ssh_user    = "${var.ssh_user}"
-  version     = "${var.vsphere_janitor_staging_version}"
-  config_path = "${path.module}/config/vsphere-janitor-staging-com"
-  env         = "staging-com"
   index       = "${var.index}"
 }
 
@@ -228,22 +213,10 @@ module "haproxy" {
       backend_port_green = "10081"
     },
     {
-      name               = "jupiter-brain-staging-org"
-      frontend_port      = "8082"
-      backend_port_blue  = "9082"
-      backend_port_green = "10082"
-    },
-    {
       name               = "jupiter-brain-production-com"
       frontend_port      = "8083"
       backend_port_blue  = "9083"
       backend_port_green = "10083"
-    },
-    {
-      name               = "jupiter-brain-staging-com"
-      frontend_port      = "8084"
-      backend_port_blue  = "9084"
-      backend_port_green = "10084"
     },
     {
       name               = "jupiter-brain-custom-1"

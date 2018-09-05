@@ -1,4 +1,4 @@
-variable "jupiter_brain_staging_version" {
+variable "jupiter_brain_version" {
   default = "v1.0.0-18-ga1e73ab"
 }
 
@@ -15,7 +15,7 @@ module "jupiter_brain_staging_org" {
   host_id        = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_ip_address = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user       = "${var.ssh_user}"
-  version        = "${var.jupiter_brain_staging_version}"
+  version        = "${var.jupiter_brain_version}"
   config_path    = "${path.module}/config/jupiter-brain-staging-org-env"
   env            = "staging-org"
   index          = "${var.index}"
@@ -28,7 +28,7 @@ module "jupiter_brain_staging_com" {
   host_id        = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_ip_address = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user       = "${var.ssh_user}"
-  version        = "${var.jupiter_brain_staging_version}"
+  version        = "${var.jupiter_brain_version}"
   config_path    = "${path.module}/config/jupiter-brain-staging-com-env"
   env            = "staging-com"
   index          = "${var.index}"
