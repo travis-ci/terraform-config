@@ -47,7 +47,7 @@ variable "vsphere_ip" {}
 terraform {
   backend "s3" {
     bucket         = "travis-terraform-state"
-    key            = "terraform-config/macstadium-pod-1-hopethisworks-terraform.tfstate"
+    key            = "terraform-config/macstadium-staging-hopethisworks-terraform.tfstate"
     region         = "us-east-1"
     encrypt        = "true"
     dynamodb_table = "travis-terraform-state"
@@ -92,15 +92,6 @@ module "vsphere_janitor_staging_com" {
   config_path = "${path.module}/config/vsphere-janitor-staging-com"
   env         = "staging-com"
   index       = "${var.index}"
-}
-
-module "dhcp_server" {
-  source              = "../modules/macstadium_dhcp_server"
-  host_id             = "${module.macstadium_infrastructure.dhcp_server_uuid}"
-  index               = "${var.index}"
-  jobs_network_subnet = "${var.jobs_network_subnet}"
-  ssh_host            = "${module.macstadium_infrastructure.dhcp_server_ip}"
-  ssh_user            = "${var.ssh_user}"
 }
 
 module "vsphere_monitor" {
@@ -155,103 +146,4 @@ module "wjb-host-utilities" {
   host_id  = "${module.macstadium_infrastructure.wjb_uuid}"
   ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
   ssh_user = "${var.ssh_user}"
-}
-
-module "util-host-utilities" {
-  source   = "../modules/macstadium_host_utilities"
-  host_id  = "${module.macstadium_infrastructure.util_uuid}"
-  ssh_host = "${module.macstadium_infrastructure.util_ip}"
-  ssh_user = "${var.ssh_user}"
-}
-
-resource "vsphere_virtual_machine" "image-builder" {
-  name       = "image-builder"
-  folder     = "Internal VMs"
-  vcpu       = 2
-  memory     = 4096
-  datacenter = "pod-1"
-  cluster    = "MacPro_Staging_1"
-  domain     = "macstadium-us-se-1.travisci.net"
-
-  network_interface {
-    label = "Internal"
-  }
-
-  disk {
-    template  = "Vanilla VMs/travis-ci-ubuntu18.04-internal-vanilla-1525123339"
-    datastore = "DataCore1_1"
-  }
-
-  connection {
-    host  = "${vsphere_virtual_machine.image-builder.network_interface.0.ipv4_address}"
-    user  = "${var.ssh_user}"
-    agent = true
-  }
-}
-
-data "template_file" "image_builder_installer" {
-  template = "${file("install-image-builder.sh")}"
-}
-
-data "template_file" "build_macos_script" {
-  template = "${file("build-macos.sh")}"
-}
-
-data "template_file" "image_builder_env" {
-  template = "${file("config/image-builder")}"
-}
-
-resource "null_resource" "image-builder-environment" {
-  triggers {
-    host_id                  = "${vsphere_virtual_machine.image-builder.uuid}"
-    install_script_signature = "${sha256(data.template_file.image_builder_installer.rendered)}"
-    run_script_signature     = "${sha256(data.template_file.build_macos_script.rendered)}"
-    env_signature            = "${sha256(data.template_file.image_builder_env.rendered)}"
-  }
-
-  connection {
-    host  = "${vsphere_virtual_machine.image-builder.network_interface.0.ipv4_address}"
-    user  = "${var.ssh_user}"
-    agent = true
-  }
-
-  provisioner "file" {
-    content     = "${data.template_file.image_builder_installer.rendered}"
-    destination = "/tmp/install-image-builder.sh"
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "chmod +x /tmp/install-image-builder.sh",
-      "sudo /tmp/install-image-builder.sh",
-    ]
-  }
-
-  provisioner "file" {
-    content     = "${data.template_file.build_macos_script.rendered}"
-    destination = "/tmp/build-macos.sh"
-  }
-
-  provisioner "file" {
-    content     = "${data.template_file.image_builder_env.rendered}"
-    destination = "/tmp/packer-env"
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "sudo cp /tmp/build-macos.sh /home/packer/bin/build-macos",
-      "sudo chown packer:packer /home/packer/bin/build-macos",
-      "sudo chmod +x /home/packer/bin/build-macos",
-      "sudo mv /tmp/packer-env /home/packer/.packer-env",
-      "sudo chown packer:packer /home/packer/.packer-env",
-    ]
-  }
-}
-
-resource "aws_route53_record" "image-builder" {
-  zone_id = "${var.travisci_net_external_zone_id}"
-  name    = "image-builder.macstadium-us-se-1.travisci.net"
-  type    = "A"
-  ttl     = 300
-  records = ["${vsphere_virtual_machine.image-builder.network_interface.0.ipv4_address}"]
 }

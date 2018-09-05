@@ -14,7 +14,6 @@ CONFIG_FILES := \
 		config/jupiter-brain-staging-com-env \
 		config/vsphere-monitor \
 		config/collectd-vsphere-common \
-		config/image-builder \
 		config/travis-vm-ssh-key
 
 INDEX ?= $(subst $(INFRA)-$(ENV_SHORT)-,,$(ENV_NAME))
