@@ -1,0 +1,33 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+
+options = {
+  vms_per_host: 7.0,
+  org_percent: 0.6,
+  hosts: 36,
+  org_workers: 2,
+  com_workers: 2,
+  staging_workers: 4
+}
+
+OptionParser.new do |opts|
+  opts.on('--vms-per-host=NUM', Float, 'The maximum number of VMs to run on each host') do |vms_per_host|
+    options[:vms_per_host] = vms_per_host
+  end
+  opts.on('--org-percent=NUM', Float, 'The ratio of worker processors to run for .org jobs vs. .com jobs (between 0.0 and 1.0)') do |org_percent|
+    options[:org_percent] = org_percent
+  end
+  opts.on('--hosts=NUM', Integer, 'The number of hosts in the production cluster of the datacenter') do |hosts|
+    options[:hosts] = hosts
+  end
+end.parse!
+
+concurrent_vms = options[:hosts] * options[:vms_per_host] - options[:staging_workers]
+puts "Concurrent VMs:        #{concurrent_vms.round}"
+
+org_pool_size = (concurrent_vms * options[:org_percent]) / options[:org_workers]
+puts "Org Worker Pool Size:  #{org_pool_size.round}"
+
+com_pool_size = (concurrent_vms * (1.0 - options[:org_percent])) / options[:com_workers]
+puts "Com Worker Pool Size:  #{com_pool_size.round}"
