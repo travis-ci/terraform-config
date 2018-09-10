@@ -47,7 +47,7 @@ variable "vsphere_ip" {}
 terraform {
   backend "s3" {
     bucket         = "travis-terraform-state"
-    key            = "terraform-config/macstadium-staging-hopethisworks-terraform.tfstate"
+    key            = "terraform-config/macstadium-staging-terraform.tfstate"
     region         = "us-east-1"
     encrypt        = "true"
     dynamodb_table = "travis-terraform-state"
@@ -137,6 +137,12 @@ module "haproxy" {
       frontend_port      = "8082"
       backend_port_blue  = "9082"
       backend_port_green = "10082"
+    },
+    {
+      name               = "jupiter-brain-staging-com"
+      frontend_port      = "8084"
+      backend_port_blue  = "9084"
+      backend_port_green = "10084"
     },
   ]
 }

@@ -33,9 +33,6 @@ $(CONFIG_FILES):
 		| sed 's/^/export /' >config/travis-worker-staging-org-common
 	trvs generate-config -n --pro -p TRAVIS_WORKER -f env macstadium-workers staging-common \
 		| sed 's/^/export /' >config/travis-worker-staging-com-common
-	trvs generate-config -n --env-prefix= -f env macstadium-image-builder image-builder \
-		| sed 's/^/export /' >config/image-builder
-	\
 	trvs generate-config -n --pro -p VSPHERE_JANITOR -f env vsphere-janitor staging-$(INDEX) \
 		| sed 's/^/export /' >config/vsphere-janitor-staging-com
 	trvs generate-config -n -p VSPHERE_MONITOR -f env vsphere-monitor common-$(INDEX) \
