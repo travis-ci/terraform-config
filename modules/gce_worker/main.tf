@@ -300,7 +300,7 @@ EOF
 }
 
 resource "google_compute_instance_template" "worker_com_free" {
-  name_prefix = "worker-com-template-"
+  name_prefix = "worker-com-free-template-"
 
   machine_type = "${var.machine_type}"
   tags         = ["worker", "${var.env}", "com", "free"]
@@ -427,7 +427,7 @@ EOF
 }
 
 resource "google_compute_instance_template" "worker_org" {
-  name_prefix = "worker-com-template-"
+  name_prefix = "worker-org-template-"
 
   machine_type = "${var.machine_type}"
   tags         = ["worker", "${var.env}", "org"]
