@@ -7,7 +7,7 @@ variable "travisci_net_external_zone_id" {
 }
 
 variable "macstadium_vanilla_image" {
-  default = "travis-ci-ubuntu14.04-internal-vanilla-1534262009"
+  default = "travis-ci-ubuntu14.04-internal-vanilla-1536648375"
 }
 
 variable "jobs_network_subnet" {
