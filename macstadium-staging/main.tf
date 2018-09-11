@@ -7,7 +7,7 @@ variable "travisci_net_external_zone_id" {
 }
 
 variable "macstadium_vanilla_image" {
-  default = "travis-ci-ubuntu18.04-internal-vanilla-1525123339"
+  default = "travis-ci-ubuntu14.04-internal-vanilla-1534262009"
 }
 
 variable "jobs_network_subnet" {
@@ -34,6 +34,11 @@ variable "ssh_user" {
   description = "your username on the wjb instances"
 }
 
+variable "custom_1_name" {}
+variable "custom_2_name" {}
+variable "custom_4_name" {}
+variable "custom_5_name" {}
+variable "custom_6_name" {}
 variable "threatstack_key" {}
 variable "librato_email" {}
 variable "librato_token" {}
@@ -81,6 +86,11 @@ module "macstadium_infrastructure" {
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
   vsphere_ip                    = "${var.vsphere_ip}"
   vm_ssh_key_path               = "${path.module}/config/travis-vm-ssh-key"
+  custom_1_name                 = "${var.custom_1_name}"
+  custom_2_name                 = "${var.custom_2_name}"
+  custom_4_name                 = "${var.custom_4_name}"
+  custom_5_name                 = "${var.custom_5_name}"
+  custom_6_name                 = "${var.custom_6_name}"
 }
 
 module "vsphere_janitor_staging_com" {
