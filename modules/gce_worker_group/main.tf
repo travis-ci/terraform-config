@@ -124,6 +124,7 @@ resource "google_project_iam_custom_role" "gcloud_cleaner" {
   description = "A gcloud-cleanup process that can clean and archive stuff"
 
   permissions = [
+    "cloudtrace.traces.patch",
     "compute.disks.delete",
     "compute.disks.get",
     "compute.disks.list",
