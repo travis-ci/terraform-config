@@ -21,8 +21,8 @@ EOF
 
 module "worker_staging_org_1" {
   source             = "../modules/macstadium_go_worker"
-  host_id            = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host           = "${module.macstadium_infrastructure.wjb_ip}"
+  host_id            = "${module.macstadium_infrastructure_staging.wjb_uuid}"
+  ssh_host           = "${module.macstadium_infrastructure_staging.wjb_ip}"
   ssh_user           = "${var.ssh_user}"
   version            = "${var.travis_worker_version}"
   env                = "staging-org-1"
@@ -40,8 +40,8 @@ EOF
 
 module "worker_staging_org_2" {
   source             = "../modules/macstadium_go_worker"
-  host_id            = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host           = "${module.macstadium_infrastructure.wjb_ip}"
+  host_id            = "${module.macstadium_infrastructure_staging.wjb_uuid}"
+  ssh_host           = "${module.macstadium_infrastructure_staging.wjb_ip}"
   ssh_user           = "${var.ssh_user}"
   version            = "${var.travis_worker_version}"
   env                = "staging-org-2"
@@ -59,8 +59,8 @@ EOF
 
 module "worker_staging_com_1" {
   source             = "../modules/macstadium_go_worker"
-  host_id            = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host           = "${module.macstadium_infrastructure.wjb_ip}"
+  host_id            = "${module.macstadium_infrastructure_staging.wjb_uuid}"
+  ssh_host           = "${module.macstadium_infrastructure_staging.wjb_ip}"
   ssh_user           = "${var.ssh_user}"
   version            = "${var.travis_worker_version}"
   env                = "staging-com-1"
@@ -79,8 +79,8 @@ EOF
 
 module "worker_staging_com_2" {
   source             = "../modules/macstadium_go_worker"
-  host_id            = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host           = "${module.macstadium_infrastructure.wjb_ip}"
+  host_id            = "${module.macstadium_infrastructure_staging.wjb_uuid}"
+  ssh_host           = "${module.macstadium_infrastructure_staging.wjb_ip}"
   ssh_user           = "${var.ssh_user}"
   version            = "${var.travis_worker_version}"
   env                = "staging-com-2"
@@ -99,8 +99,8 @@ EOF
 
 module "worker_staging_com_free_1" {
   source             = "../modules/macstadium_go_worker"
-  host_id            = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host           = "${module.macstadium_infrastructure.wjb_ip}"
+  host_id            = "${module.macstadium_infrastructure_staging.wjb_uuid}"
+  ssh_host           = "${module.macstadium_infrastructure_staging.wjb_ip}"
   ssh_user           = "${var.ssh_user}"
   version            = "${var.travis_worker_version}"
   env                = "staging-com-free-1"
@@ -120,8 +120,8 @@ EOF
 
 module "worker_staging_com_free_2" {
   source             = "../modules/macstadium_go_worker"
-  host_id            = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host           = "${module.macstadium_infrastructure.wjb_ip}"
+  host_id            = "${module.macstadium_infrastructure_staging.wjb_uuid}"
+  ssh_host           = "${module.macstadium_infrastructure_staging.wjb_ip}"
   ssh_user           = "${var.ssh_user}"
   version            = "${var.travis_worker_version}"
   env                = "staging-com-free-2"

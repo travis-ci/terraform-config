@@ -70,8 +70,8 @@ provider "vsphere" {
   allow_unverified_ssl = true
 }
 
-module "macstadium_infrastructure" {
-  source                        = "../modules/macstadium_infrastructure"
+module "macstadium_infrastructure_staging" {
+  source                        = "../modules/macstadium_infrastructure_staging"
   index                         = "${var.index}"
   vanilla_image                 = "${var.macstadium_vanilla_image}"
   datacenter                    = "pod-1"
@@ -95,8 +95,8 @@ module "macstadium_infrastructure" {
 
 module "vsphere_janitor_staging_com" {
   source      = "../modules/vsphere_janitor"
-  host_id     = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host    = "${module.macstadium_infrastructure.wjb_ip}"
+  host_id     = "${module.macstadium_infrastructure_staging.wjb_uuid}"
+  ssh_host    = "${module.macstadium_infrastructure_staging.wjb_ip}"
   ssh_user    = "${var.ssh_user}"
   version     = "${var.vsphere_janitor_version}"
   config_path = "${path.module}/config/vsphere-janitor-staging-com"
@@ -106,8 +106,8 @@ module "vsphere_janitor_staging_com" {
 
 module "vsphere_monitor" {
   source      = "../modules/vsphere_monitor"
-  host_id     = "${module.macstadium_infrastructure.util_uuid}"
-  ssh_host    = "${module.macstadium_infrastructure.util_ip}"
+  host_id     = "${module.macstadium_infrastructure_staging.util_uuid}"
+  ssh_host    = "${module.macstadium_infrastructure_staging.util_ip}"
   ssh_user    = "${var.ssh_user}"
   version     = "${var.vsphere_monitor_version}"
   config_path = "${path.module}/config/vsphere-monitor"
@@ -120,8 +120,8 @@ resource "random_id" "collectd_vsphere_collectd_network_token" {
 
 module "collectd-vsphere-common" {
   source                                  = "../modules/collectd_vsphere"
-  host_id                                 = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host                                = "${module.macstadium_infrastructure.wjb_ip}"
+  host_id                                 = "${module.macstadium_infrastructure_staging.wjb_uuid}"
+  ssh_host                                = "${module.macstadium_infrastructure_staging.wjb_ip}"
   ssh_user                                = "${var.ssh_user}"
   version                                 = "${var.collectd_vsphere_version}"
   config_path                             = "${path.module}/config/collectd-vsphere-common"
@@ -137,8 +137,8 @@ module "collectd-vsphere-common" {
 
 module "haproxy" {
   source   = "../modules/haproxy"
-  host_id  = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
+  host_id  = "${module.macstadium_infrastructure_staging.wjb_uuid}"
+  ssh_host = "${module.macstadium_infrastructure_staging.wjb_ip}"
   ssh_user = "${var.ssh_user}"
 
   config = [
@@ -159,7 +159,7 @@ module "haproxy" {
 
 module "wjb-host-utilities" {
   source   = "../modules/macstadium_host_utilities"
-  host_id  = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
+  host_id  = "${module.macstadium_infrastructure_staging.wjb_uuid}"
+  ssh_host = "${module.macstadium_infrastructure_staging.wjb_ip}"
   ssh_user = "${var.ssh_user}"
 }

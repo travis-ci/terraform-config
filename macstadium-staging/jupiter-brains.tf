@@ -12,8 +12,8 @@ resource "random_id" "jupiter_brain_staging_com_token" {
 
 module "jupiter_brain_staging_org" {
   source         = "../modules/jupiter_brain_bluegreen"
-  host_id        = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_ip_address = "${module.macstadium_infrastructure.wjb_ip}"
+  host_id        = "${module.macstadium_infrastructure_staging.wjb_uuid}"
+  ssh_ip_address = "${module.macstadium_infrastructure_staging.wjb_ip}"
   ssh_user       = "${var.ssh_user}"
   version        = "${var.jupiter_brain_version}"
   config_path    = "${path.module}/config/jupiter-brain-staging-org-env"
@@ -25,8 +25,8 @@ module "jupiter_brain_staging_org" {
 
 module "jupiter_brain_staging_com" {
   source         = "../modules/jupiter_brain_bluegreen"
-  host_id        = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_ip_address = "${module.macstadium_infrastructure.wjb_ip}"
+  host_id        = "${module.macstadium_infrastructure_staging.wjb_uuid}"
+  ssh_ip_address = "${module.macstadium_infrastructure_staging.wjb_ip}"
   ssh_user       = "${var.ssh_user}"
   version        = "${var.jupiter_brain_version}"
   config_path    = "${path.module}/config/jupiter-brain-staging-com-env"
