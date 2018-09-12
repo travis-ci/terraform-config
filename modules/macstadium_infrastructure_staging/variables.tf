@@ -1,4 +1,5 @@
 variable "index" {}
+variable "name_suffix" {}
 variable "vanilla_image" {}
 variable "datacenter" {}
 variable "cluster" {}

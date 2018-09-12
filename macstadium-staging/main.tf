@@ -1,5 +1,9 @@
 variable "index" {
-  default = 0
+  default = 3
+}
+
+variable "name_suffix" {
+  default = "staging"
 }
 
 variable "travisci_net_external_zone_id" {
@@ -68,6 +72,7 @@ provider "vsphere" {
 module "macstadium_infrastructure_staging" {
   source                        = "../modules/macstadium_infrastructure_staging"
   index                         = "${var.index}"
+  name_suffix                   = "${var.name_suffix}"
   vanilla_image                 = "${var.macstadium_vanilla_image}"
   datacenter                    = "pod-1"
   cluster                       = "MacPro_Staging_1"

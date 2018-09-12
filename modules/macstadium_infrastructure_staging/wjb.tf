@@ -1,5 +1,5 @@
 resource "vsphere_virtual_machine" "wjb" {
-  name       = "wjb-${var.index}"
+  name       = "wjb-${var.name_suffix}"
   folder     = "${vsphere_folder.internal_vms.path}"
   vcpu       = 4
   memory     = 4096
