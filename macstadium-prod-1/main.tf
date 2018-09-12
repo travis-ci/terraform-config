@@ -22,6 +22,10 @@ variable "vsphere_janitor_version" {
   default = "98d5b98"
 }
 
+variable "vsphere_janitor_staging_version" {
+  default = "98d5b98"
+}
+
 variable "vsphere_monitor_version" {
   default = "0a459b3"
 }
