@@ -1,5 +1,5 @@
 variable "index" {
-  default = 1
+  default = 0
 }
 
 variable "travisci_net_external_zone_id" {
@@ -34,11 +34,6 @@ variable "ssh_user" {
   description = "your username on the wjb instances"
 }
 
-variable "custom_1_name" {}
-variable "custom_2_name" {}
-variable "custom_4_name" {}
-variable "custom_5_name" {}
-variable "custom_6_name" {}
 variable "threatstack_key" {}
 variable "librato_email" {}
 variable "librato_token" {}
@@ -86,11 +81,6 @@ module "macstadium_infrastructure_staging" {
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
   vsphere_ip                    = "${var.vsphere_ip}"
   vm_ssh_key_path               = "${path.module}/config/travis-vm-ssh-key"
-  custom_1_name                 = "${var.custom_1_name}"
-  custom_2_name                 = "${var.custom_2_name}"
-  custom_4_name                 = "${var.custom_4_name}"
-  custom_5_name                 = "${var.custom_5_name}"
-  custom_6_name                 = "${var.custom_6_name}"
 }
 
 module "vsphere_janitor_staging_com" {
@@ -101,16 +91,6 @@ module "vsphere_janitor_staging_com" {
   version     = "${var.vsphere_janitor_version}"
   config_path = "${path.module}/config/vsphere-janitor-staging-com"
   env         = "staging-com"
-  index       = "${var.index}"
-}
-
-module "vsphere_monitor" {
-  source      = "../modules/vsphere_monitor"
-  host_id     = "${module.macstadium_infrastructure_staging.util_uuid}"
-  ssh_host    = "${module.macstadium_infrastructure_staging.util_ip}"
-  ssh_user    = "${var.ssh_user}"
-  version     = "${var.vsphere_monitor_version}"
-  config_path = "${path.module}/config/vsphere-monitor"
   index       = "${var.index}"
 }
 
