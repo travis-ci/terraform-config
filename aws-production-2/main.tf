@@ -173,7 +173,6 @@ module "aws_iam_user_s3_org" {
   s3_bucket_name = "build-trace.travis-ci.org"
 }
 
-
 module "aws_az_1b" {
   source                    = "../modules/aws_workers_az"
   az_group                  = "1b"
