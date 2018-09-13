@@ -10,6 +10,11 @@ variable "gce_worker_image" {
 }
 
 variable "github_users" {}
+
+variable "index" {
+  default = 1
+}
+
 variable "job_board_url" {}
 
 variable "project" {
@@ -135,7 +140,7 @@ module "gce_worker_group" {
   gcloud_zone                   = "${var.gce_gcloud_zone}"
   github_users                  = "${var.github_users}"
   heroku_org                    = "${var.gce_heroku_org}"
-  index                         = "1"
+  index                         = "${var.index}"
   project                       = "${var.project}"
   region                        = "us-central1"
   syslog_address_com            = "${var.syslog_address_com}"
