@@ -115,6 +115,18 @@ data "terraform_remote_state" "production_5" {
   }
 }
 
+module "aws_iam_user_s3_com" {
+  source = "../modules/aws_iam_user_s3"
+  iam_user_name  = "worker-gce-${var.env}-${var.index}-com"
+  s3_bucket_name = "build-trace.travis-ci.com"
+}
+
+module "aws_iam_user_s3_org" {
+  source = "../modules/aws_iam_user_s3"
+  iam_user_name  = "worker-gce-${var.env}-${var.index}-org"
+  s3_bucket_name = "build-trace.travis-ci.org"
+}
+
 module "gce_worker_group" {
   source = "../modules/gce_worker_group"
 
@@ -148,6 +160,10 @@ export TRAVIS_WORKER_QUEUE_NAME=builds.gce
 export TRAVIS_WORKER_GCE_SUBNETWORK=jobs-com
 export TRAVIS_WORKER_HARD_TIMEOUT=120m
 export TRAVIS_WORKER_TRAVIS_SITE=com
+
+export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_com.bucket}
+export AWS_ACCESS_KEY_ID=${module.aws_iam_user_s3_com.id}
+export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_com.secret}
 EOF
 
   worker_config_com_free = <<EOF
@@ -160,6 +176,10 @@ export TRAVIS_WORKER_QUEUE_NAME=builds.gce-free
 export TRAVIS_WORKER_GCE_SUBNETWORK=jobs-com
 export TRAVIS_WORKER_HARD_TIMEOUT=120m
 export TRAVIS_WORKER_TRAVIS_SITE=com
+
+export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_com.bucket}
+export AWS_ACCESS_KEY_ID=${module.aws_iam_user_s3_com.id}
+export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_com.secret}
 EOF
 
   worker_config_org = <<EOF
@@ -171,6 +191,10 @@ ${file("${path.module}/config/worker-org.env")}
 export TRAVIS_WORKER_QUEUE_NAME=builds.gce
 export TRAVIS_WORKER_GCE_SUBNETWORK=jobs-org
 export TRAVIS_WORKER_TRAVIS_SITE=org
+
+export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_org.bucket}
+export AWS_ACCESS_KEY_ID=${module.aws_iam_user_s3_org.id}
+export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_org.secret}
 EOF
 }
 
