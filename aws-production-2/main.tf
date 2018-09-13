@@ -164,13 +164,13 @@ EOF
 module "aws_iam_user_s3_com" {
   source         = "../modules/aws_iam_user_s3"
   iam_user_name  = "worker-ec2-${var.env}-${var.index}-com"
-  s3_bucket_name = "build-trace-staging.travis-ci.com"
+  s3_bucket_name = "build-trace.travis-ci.com"
 }
 
 module "aws_iam_user_s3_org" {
   source         = "../modules/aws_iam_user_s3"
   iam_user_name  = "worker-ec2-${var.env}-${var.index}-org"
-  s3_bucket_name = "build-trace-staging.travis-ci.org"
+  s3_bucket_name = "build-trace.travis-ci.org"
 }
 
 
