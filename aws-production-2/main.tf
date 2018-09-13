@@ -115,7 +115,6 @@ export TRAVIS_WORKER_TRAVIS_SITE=com
 export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_com.bucket}
 export AWS_ACCESS_KEY_ID=${module.aws_iam_user_s3_com.id}
 export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_com.secret}
-
 EOF
 }
 
@@ -136,7 +135,6 @@ export TRAVIS_WORKER_TRAVIS_SITE=com
 export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_com.bucket}
 export AWS_ACCESS_KEY_ID=${module.aws_iam_user_s3_com.id}
 export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_com.secret}
-
 EOF
 }
 
