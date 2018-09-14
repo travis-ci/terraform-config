@@ -61,15 +61,15 @@ resource "aws_route53_record" "dockerd_org" {
 }
 
 resource "tls_private_key" "dockerd_org_server" {
-  algorithm = "ECDSA"
+  algorithm = "RSA"
 }
 
 resource "tls_private_key" "dockerd_org_client" {
-  algorithm = "ECDSA"
+  algorithm = "RSA"
 }
 
 resource "tls_cert_request" "dockerd_org_server" {
-  key_algorithm   = "ECDSA"
+  key_algorithm   = "RSA"
   private_key_pem = "${tls_private_key.dockerd_org_server.private_key_pem}"
 
   dns_names = [
@@ -87,7 +87,7 @@ resource "tls_cert_request" "dockerd_org_server" {
 }
 
 resource "tls_cert_request" "dockerd_org_client" {
-  key_algorithm   = "ECDSA"
+  key_algorithm   = "RSA"
   private_key_pem = "${tls_private_key.dockerd_org_client.private_key_pem}"
 
   subject {
@@ -97,7 +97,7 @@ resource "tls_cert_request" "dockerd_org_client" {
 
 resource "tls_locally_signed_cert" "dockerd_org_server" {
   cert_request_pem   = "${tls_cert_request.dockerd_org_server.cert_request_pem}"
-  ca_key_algorithm   = "ECDSA"
+  ca_key_algorithm   = "RSA"
   ca_private_key_pem = "${file("config/docker-ca-key.pem")}"
   ca_cert_pem        = "${file("config/docker-ca.pem")}"
 
@@ -109,8 +109,8 @@ resource "tls_locally_signed_cert" "dockerd_org_server" {
 }
 
 resource "tls_locally_signed_cert" "dockerd_org_client" {
-  cert_request_pem   = "TODO from tls_cert_request"
-  ca_key_algorithm   = "ECDSA"
+  cert_request_pem   = "${tls_cert_request.dockerd_org_client.cert_request_pem}"
+  ca_key_algorithm   = "RSA"
   ca_private_key_pem = "${file("config/docker-ca-key.pem")}"
   ca_cert_pem        = "${file("config/docker-ca.pem")}"
 
@@ -200,5 +200,9 @@ resource "null_resource" "dockerd_org_client_config" {
     client_cert_signature = "${tls_locally_signed_cert.dockerd_org_client.cert_pem}"
   }
 
-  provisioner "local-shell" {}
+  provisioner "local-exec" {
+    command = <<EOF
+echo travis env set something
+EOF
+  }
 }

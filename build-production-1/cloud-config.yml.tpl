@@ -5,7 +5,7 @@ write_files:
 - content: '${base64encode(github_users_env)}'
   encoding: b64
   path: /etc/default/github-users
-- content: '${base64encode(dockerd_config)}'
+- content: '${base64encode(docker_config)}'
   encoding: b64
   path: /etc/default/docker
 - content: '${base64encode(file("${here}/cloud-init.bash"))}'
