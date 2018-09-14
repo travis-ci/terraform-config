@@ -21,9 +21,9 @@ write_files:
 - content: '${base64encode(file("${here}/config/docker-ca.pem"))}'
   encoding: b64
   path: /var/tmp/docker-certs/ca.pem
-- content: '${base64encode(file("${here}/config/docker-server-cert.pem"))}'
+- content: '${base64encode(docker_server_cert_pem)}'
   encoding: b64
   path: /var/tmp/docker-certs/server-cert.pem
-- content: '${base64encode(file("${here}/config/docker-server-key.pem"))}'
+- content: '${base64encode(docker_server_key_pem)}'
   encoding: b64
   path: /var/tmp/docker-certs/server-key.pem
