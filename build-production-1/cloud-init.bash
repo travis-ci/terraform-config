@@ -16,6 +16,7 @@ main() {
 
   eval "$(tfw printenv docker)"
   __tfw_bootstrap
+  __setup_docker
 }
 
 __disable_unfriendly_services() {
@@ -42,6 +43,17 @@ __install_tfw() {
 __tfw_bootstrap() {
   tfw admin-bootstrap
   tfw bootstrap
+}
+
+__setup_docker() {
+  if [[ -f "${VARTMP}/daemon-direct-lvm.json" ]]; then
+    cp -v "${VARTMP}/daemon-direct-lvm.json" "${ETCDIR}/docker/"
+    chmod 0644 "${ETCDIR}/docker/daemon-direct-lvm.json"
+  fi
+
+  if [[ -d "${VARTMP}/docker-certs" ]]; then
+    rsync -av "${VARTMP}/docker-certs/" "${ETCDIR}/docker/"
+  fi
 }
 
 main "${@}"

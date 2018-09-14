@@ -1,0 +1,21 @@
+{
+  "data-root": "/mnt/docker",
+  "hosts": [
+    "tcp://0.0.0.0:2376",
+    "unix:///var/run/docker.sock"
+  ],
+  "icc": false,
+  "storage-driver": "devicemapper",
+  "storage-opts": [
+    "dm.basesize=19G",
+    "dm.datadev=/dev/direct-lvm/data",
+    "dm.metadatadev=/dev/direct-lvm/metadata",
+    "dm.fs=xfs"
+  ],
+  "userns-remap": "default",
+  "tls": true,
+  "tlsverify": true,
+  "tlscacert": "/etc/docker/ca.pem",
+  "tlscert": "/etc/docker/server-cert.pem",
+  "tlskey": "/etc/docker/server-key.pem"
+}

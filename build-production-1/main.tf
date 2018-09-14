@@ -45,36 +45,33 @@ provider "google" {
   region  = "${var.region}"
 }
 
-resource "google_compute_address" "build_dockerd" {
-  name    = "${var.env}-${var.index}-build-dockerd"
+resource "google_compute_address" "dockerd_org" {
+  name    = "${var.env}-${var.index}-dockerd-org"
   region  = "${var.region}"
   project = "${var.project}"
 }
 
-resource "aws_route53_record" "build_dockerd" {
+resource "aws_route53_record" "dockerd_org" {
   zone_id = "${var.travisci_net_external_zone_id}"
-  name    = "${var.env}-${var.index}-build-dockerd.gce-${var.zone}.travisci.net"
+  name    = "${var.env}-${var.index}-dockerd-org.gce-${var.region}.travisci.net"
   type    = "A"
   ttl     = 60
 
-  records = ["${google_compute_address.build_dockerd.address}"]
+  records = ["${google_compute_address.dockerd_org.address}"]
 }
 
-data "template_file" "build_dockerd_cloud_config" {
+data "template_file" "dockerd_org_cloud_config" {
   template = "${file("${path.module}/cloud-config.yml.tpl")}"
 
   vars {
-    cloud_init_bash        = "${file("${path.module}/cloud-init.bash")}"
-    docker_ca_pem          = "${file("${path.module}/config/docker-ca.pem")}"
-    docker_server_cert_pem = "${file("${path.module}/config/docker-server-cert.pem")}"
-    docker_server_key_pem  = "${file("${path.module}/config/docker-server-key.pem")}"
+    here = "${path.module}"
 
     docker_config = <<EOF
 ### docker.env
 ${file("${path.module}/docker.env")}
 
 ### in-line
-export TRAVIS_DOCKER_HOSTNAME=${var.env}-${var.index}-build-dockerd.gce-${var.zone}.travisci.net
+export TRAVIS_DOCKER_HOSTNAME=${var.env}-${var.index}-dockerd-org.gce-${var.region}.travisci.net
 EOF
 
     github_users_env = <<EOF
@@ -85,19 +82,20 @@ EOF
   }
 }
 
-resource "google_compute_disk" "build_dockerd" {
-  name = "${var.env}-${var.index}-build-dockerd-lvm"
+resource "google_compute_disk" "dockerd_org" {
+  name = "${var.env}-${var.index}-dockerd-lvm"
   type = "pd-ssd"
   zone = "${var.zone}"
   size = 500
 
   labels {
     environment = "${var.env}"
+    site        = "org"
   }
 }
 
-resource "google_compute_instance" "build_dockerd" {
-  name = "${var.env}-${var.index}-build-dockerd"
+resource "google_compute_instance" "dockerd_org" {
+  name = "${var.env}-${var.index}-dockerd-org"
 
   machine_type = "n1-standard-1"
   zone         = "${var.zone}"
@@ -114,19 +112,19 @@ resource "google_compute_instance" "build_dockerd" {
   }
 
   attached_disk {
-    source = "${google_compute_disk.build_dockerd.self_link}"
+    source = "${google_compute_disk.dockerd_org.self_link}"
   }
 
   network_interface {
     subnetwork = "public"
 
     access_config {
-      nat_ip = "${google_compute_address.build_dockerd.address}"
+      nat_ip = "${google_compute_address.dockerd_org.address}"
     }
   }
 
   metadata {
     "block-project-ssh-keys" = "true"
-    "user-data"              = "${data.template_file.build_dockerd_cloud_config.rendered}"
+    "user-data"              = "${data.template_file.dockerd_org_cloud_config.rendered}"
   }
 }
