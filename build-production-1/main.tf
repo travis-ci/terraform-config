@@ -273,10 +273,10 @@ resource "null_resource" "dockerd_org_travis_env_assignment" {
 
   provisioner "local-exec" {
     command = <<EOF
-exec ${path.module}/../bin/assign-docker-config-travis-env-secrets \
+exec ${path.module}/../bin/travis-env-set-docker-config-secrets \
   --repository ${element(var.repos, count.index)} \
   --client-config-url https://s3.amazonaws.com/${aws_s3_bucket_object.dockerd_org_client_config.bucket}/${aws_s3_bucket_object.dockerd_org_client_config.key} \
-  --docker-host tcp://${var.env}-${var.index}-dockerd-org.gce-${var.region}.travisci.net \
+  --docker-host tcp://${var.env}-${var.index}-dockerd-org.gce-${var.region}.travisci.net:2376 \
   --iv ${path.module}/config/openssl-iv \
   --key ${path.module}/config/openssl-key \
   --salt ${path.module}/config/openssl-salt
