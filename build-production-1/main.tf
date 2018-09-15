@@ -20,6 +20,10 @@ variable "region" {
   default = "us-central1"
 }
 
+variable "repo" {
+  default = "travis-ci/travis-build"
+}
+
 variable "syslog_address_com" {}
 
 variable "travisci_net_external_zone_id" {
@@ -43,6 +47,10 @@ terraform {
 provider "google" {
   project = "${var.project}"
   region  = "${var.region}"
+}
+
+resource "random_id" "dockerd_org_client_secret" {
+  byte_length = 32
 }
 
 resource "google_compute_address" "dockerd_org" {
@@ -193,16 +201,78 @@ resource "google_compute_instance" "dockerd_org" {
   }
 }
 
+resource "local_file" "dockerd_org_client_cert" {
+  content  = "${tls_locally_signed_cert.dockerd_org_client.cert_pem}"
+  filename = "${path.module}/config/docker-client-cert.pem"
+}
+
+resource "local_file" "dockerd_org_client_key" {
+  content  = "${tls_private_key.dockerd_org_client.private_key_pem}"
+  filename = "${path.module}/config/docker-client-key.pem"
+}
+
 resource "null_resource" "dockerd_org_client_config" {
   triggers {
     ca_pem_signature      = "${sha256(file("config/docker-ca.pem"))}"
-    client_key_signature  = "${tls_private_key.dockerd_org_client.private_key_pem}"
-    client_cert_signature = "${tls_locally_signed_cert.dockerd_org_client.cert_pem}"
+    client_key_signature  = "${sha256(tls_private_key.dockerd_org_client.private_key_pem)}"
+    client_cert_signature = "${sha256(tls_locally_signed_cert.dockerd_org_client.cert_pem)}"
   }
 
   provisioner "local-exec" {
     command = <<EOF
-echo travis env set something
+exec ${path.module}/../bin/generate-openssl-secret-cnf \
+  ${random_id.dockerd_org_client_secret.hex} \
+  ${path.module}/config/
 EOF
   }
+
+  provisioner "local-exec" {
+    command = <<EOF
+exec ${path.module}/../bin/write-docker-client-config \
+  --ca-pem ${path.module}/config/docker-ca.pem \
+  --key-pem ${local_file.dockerd_org_client_key.filename} \
+  --cert-pem ${local_file.dockerd_org_client_cert.filename} \
+  --enc-config ${path.module}/config/ \
+  --out ${path.module}/config/${var.env}-${var.index}-dockerd-org-client-config.tar.bz2.enc
+EOF
+  }
+
+  depends_on = [
+    "local_file.dockerd_org_client_cert",
+    "local_file.dockerd_org_client_key",
+  ]
+}
+
+resource "aws_s3_bucket" "docker_client_configs" {
+  bucket = "travis-docker-client-configs"
+  acl    = "public-read"
+}
+
+data "local_file" "dockerd_org_client_config" {
+  filename   = "${path.module}/config/${var.env}-${var.index}-dockerd-org-client-config.tar.bz2.enc"
+  depends_on = ["null_resource.dockerd_org_client_config"]
+}
+
+resource "aws_s3_bucket_object" "dockerd_org_client_config" {
+  key    = "${var.env}-${var.index}-dockerd-org-client-config.tar.bz2"
+  bucket = "${aws_s3_bucket.docker_client_configs.id}"
+  source = "${path.module}/config/${var.env}-${var.index}-dockerd-org-client-config.tar.bz2.enc"
+
+  acl = "public-read"
+
+  depends_on = ["null_resource.dockerd_org_client_config"]
+}
+
+resource "null_resource" "dockerd_org_travis_env_assignment" {
+  provisioner "local-exec" {
+    command = <<EOF
+exec ${path.module}/../bin/assign-docker-config-travis-env-secrets \
+  --repository ${var.repo} \
+  --iv ${path.module}/config/openssl-iv \
+  --key ${path.module}/config/openssl-key \
+  --salt ${path.module}/config/openssl-salt
+EOF
+  }
+
+  depends_on = ["null_resource.dockerd_org_client_config"]
 }
