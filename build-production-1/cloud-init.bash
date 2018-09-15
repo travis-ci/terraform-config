@@ -9,7 +9,6 @@ main() {
   : "${USRLOCAL:=/usr/local}"
   : "${VARTMP:=/var/tmp}"
 
-
   export DEBIAN_FRONTEND=noninteractive
   __disable_unfriendly_services
   __install_tfw
