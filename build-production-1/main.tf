@@ -222,15 +222,10 @@ resource "null_resource" "dockerd_org_client_config" {
 
   provisioner "local-exec" {
     command = <<EOF
-exec ${path.module}/../bin/generate-openssl-secret-cnf \
+${path.module}/../bin/generate-openssl-secret-cnf \
   ${random_id.dockerd_org_client_secret.hex} \
-  ${path.module}/config/
-EOF
-  }
-
-  provisioner "local-exec" {
-    command = <<EOF
-exec ${path.module}/../bin/write-docker-client-config \
+  ${path.module}/config/ &&
+${path.module}/../bin/write-docker-client-config \
   --ca-pem ${path.module}/config/docker-ca.pem \
   --key-pem ${local_file.dockerd_org_client_key.filename} \
   --cert-pem ${local_file.dockerd_org_client_cert.filename} \
@@ -256,7 +251,7 @@ data "local_file" "dockerd_org_client_config" {
 }
 
 resource "aws_s3_bucket_object" "dockerd_org_client_config" {
-  key    = "${var.env}-${var.index}-dockerd-org-client-config.tar.bz2"
+  key    = "${var.env}-${var.index}-dockerd-org-client-config.tar.bz2.enc"
   bucket = "${aws_s3_bucket.docker_client_configs.id}"
   source = "${path.module}/config/${var.env}-${var.index}-dockerd-org-client-config.tar.bz2.enc"
 
