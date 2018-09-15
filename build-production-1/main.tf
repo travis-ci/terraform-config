@@ -20,8 +20,10 @@ variable "region" {
   default = "us-central1"
 }
 
-variable "repo" {
-  default = "travis-ci/travis-build"
+variable "repos" {
+  default = [
+    "travis-ci/travis-build",
+  ]
 }
 
 variable "syslog_address_com" {}
@@ -264,10 +266,22 @@ resource "aws_s3_bucket_object" "dockerd_org_client_config" {
 }
 
 resource "null_resource" "dockerd_org_travis_env_assignment" {
+  count = "${length(var.repos)}"
+
+  triggers {
+    ca_pem_signature        = "${sha256(file("config/docker-ca.pem"))}"
+    client_cert_signature   = "${sha256(tls_locally_signed_cert.dockerd_org_client.cert_pem)}"
+    client_config_signature = "${sha256("${aws_s3_bucket_object.dockerd_org_client_config.bucket},${aws_s3_bucket_object.dockerd_org_client_config.key}")}"
+    client_key_signature    = "${sha256(tls_private_key.dockerd_org_client.private_key_pem)}"
+    repos_signature         = "${sha256(join(",", var.repos))}"
+  }
+
   provisioner "local-exec" {
     command = <<EOF
 exec ${path.module}/../bin/assign-docker-config-travis-env-secrets \
-  --repository ${var.repo} \
+  --repository ${element(var.repos, count.index)} \
+  --client-config-url https://s3.amazonaws.com/${aws_s3_bucket_object.dockerd_org_client_config.bucket}/${aws_s3_bucket_object.dockerd_org_client_config.key} \
+  --docker-host tcp://${var.env}-${var.index}-dockerd-org.gce-${var.region}.travisci.net \
   --iv ${path.module}/config/openssl-iv \
   --key ${path.module}/config/openssl-key \
   --salt ${path.module}/config/openssl-salt
