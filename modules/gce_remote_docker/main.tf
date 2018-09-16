@@ -1,3 +1,7 @@
+variable "client_config_bucket" {
+  default = "travis-docker-client-configs"
+}
+
 variable "docker_ca_key_pem" {}
 variable "docker_ca_pem" {}
 variable "env" {}
@@ -179,79 +183,62 @@ resource "google_compute_instance" "instance" {
   }
 }
 
-resource "local_file" "client_cert" {
-  content  = "${tls_locally_signed_cert.client.cert_pem}"
-  filename = "${path.cwd}/config/docker-client-cert.pem"
-}
+data "archive_file" "client_config" {
+  type        = "zip"
+  output_path = "${path.cwd}/config/${var.env}-${var.index}-docker-${var.name}-client-config.zip"
 
-resource "local_file" "client_key" {
-  content  = "${tls_private_key.client.private_key_pem}"
-  filename = "${path.cwd}/config/docker-client-key.pem"
-}
-
-resource "null_resource" "client_config" {
-  triggers {
-    ca_pem_signature      = "${sha256(var.docker_ca_pem)}"
-    client_key_signature  = "${sha256(tls_private_key.client.private_key_pem)}"
-    client_cert_signature = "${sha256(tls_locally_signed_cert.client.cert_pem)}"
+  source {
+    content  = "${tls_locally_signed_cert.client.cert_pem}"
+    filename = ".docker/cert.pem"
   }
 
-  provisioner "local-exec" {
-    command = <<EOF
-${path.module}/../../bin/generate-openssl-secret-cnf \
-  ${random_id.client_secret.hex} \
-  ${path.cwd}/config/ &&
-${path.module}/../../bin/write-docker-client-config \
-  --ca-pem ${path.cwd}/config/docker-ca.pem \
-  --key-pem ${local_file.client_key.filename} \
-  --cert-pem ${local_file.client_cert.filename} \
-  --enc-config ${path.cwd}/config/ \
-  --out ${path.cwd}/config/${var.env}-${var.index}-dockerd-${var.name}-client-config.tar.bz2.enc
-EOF
+  source {
+    content  = "${tls_private_key.client.private_key_pem}"
+    filename = ".docker/key.pem"
   }
 
-  depends_on = [
-    "local_file.client_cert",
-    "local_file.client_key",
-  ]
+  source {
+    content  = "${path.cwd}/config/docker-ca.pem"
+    filename = ".docker/ca.pem"
+  }
 }
 
-data "aws_s3_bucket" "docker_client_configs" {
-  bucket = "travis-docker-client-configs"
+resource "google_service_account" "client_config_signer" {
+  account_id   = "${var.env}-${var.index}-docker-${var.name}"
+  display_name = "Docker Client Config signer"
 }
 
-resource "aws_s3_bucket_object" "client_config" {
-  key    = "${var.env}-${var.index}-dockerd-${var.name}-client-config.tar.bz2.enc"
-  bucket = "${data.aws_s3_bucket.docker_client_configs.id}"
-  source = "${path.cwd}/config/${var.env}-${var.index}-dockerd-${var.name}-client-config.tar.bz2.enc"
+resource "google_service_account_key" "client_config_signer" {
+  service_account_id = "${google_service_account.client_config_signer.name}"
+}
 
-  acl = "public-read"
+resource "google_storage_bucket_object" "client_config" {
+  name   = "${var.env}-${var.index}-docker-${var.name}-client-config.zip"
+  source = "${path.cwd}/config/${var.env}-${var.index}-docker-${var.name}-client-config.zip"
+  bucket = "${var.client_config_bucket}"
+}
 
-  depends_on = ["null_resource.client_config"]
+data "google_storage_object_signed_url" "client_config" {
+  bucket      = "${var.client_config_bucket}"
+  path        = "${var.env}-${var.index}-docker-${var.name}-client-config.zip"
+  duration    = "8760h"
+  credentials = "${base64decode(google_service_account_key.client_config_signer.private_key)}"
 }
 
 resource "null_resource" "travis_env_assignment" {
   count = "${length(var.repos)}"
 
   triggers {
-    ca_pem_signature        = "${sha256(var.docker_ca_pem)}"
-    client_cert_signature   = "${sha256(tls_locally_signed_cert.client.cert_pem)}"
-    client_config_signature = "${sha256("${aws_s3_bucket_object.client_config.bucket},${aws_s3_bucket_object.client_config.key}")}"
-    client_key_signature    = "${sha256(tls_private_key.client.private_key_pem)}"
-    repos_signature         = "${sha256(join(",", var.repos))}"
+    client_config_url_signature = "${sha256("${data.google_storage_object_signed_url.client_config.signed_url}")}"
+    repos_signature             = "${sha256(join(",", var.repos))}"
   }
 
   provisioner "local-exec" {
     command = <<EOF
 exec ${path.module}/../../bin/travis-env-set-docker-config-secrets \
   --repository ${element(var.repos, count.index)} \
-  --client-config-url https://s3.amazonaws.com/${aws_s3_bucket_object.client_config.bucket}/${aws_s3_bucket_object.client_config.key} \
+  --client-config-url '${data.google_storage_object_signed_url.client_config.signed_url}' \
   --docker-host tcp://${var.env}-${var.index}-dockerd-${var.name}.gce-${var.region}.${data.aws_route53_zone.travisci_net.name}:2376 \
-  --iv ${path.cwd}/config/openssl-iv \
-  --key ${path.cwd}/config/openssl-key \
-  --salt ${path.cwd}/config/openssl-salt
 EOF
   }
-
-  depends_on = ["null_resource.client_config"]
 }
