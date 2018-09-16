@@ -18,10 +18,6 @@ variable "region" {
 
 variable "syslog_address_com" {}
 
-variable "travisci_net_external_zone_id" {
-  default = "Z2RI61YP4UWSIO"
-}
-
 variable "zone" {
   default = "us-central1-f"
 }
@@ -44,15 +40,14 @@ provider "google" {
 module "remote_docker" {
   source = "../modules/gce_remote_docker"
 
-  docker_ca_key_pem             = "${file("config/docker-ca-key.pem")}"
-  docker_ca_pem                 = "${file("config/docker-ca.pem")}"
-  env                           = "${var.env}"
-  github_users                  = "${var.github_users}"
-  index                         = "${var.index}"
-  name                          = "build"
-  region                        = "${var.region}"
-  repos                         = ["travis-ci/travis-build"]
-  syslog_address                = "${var.syslog_address_com}"
-  travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
-  zone                          = "${var.zone}"
+  docker_ca_key_pem = "${file("config/docker-ca-key.pem")}"
+  docker_ca_pem     = "${file("config/docker-ca.pem")}"
+  env               = "${var.env}"
+  github_users      = "${var.github_users}"
+  index             = "${var.index}"
+  name              = "build"
+  region            = "${var.region}"
+  repos             = ["travis-ci/travis-build"]
+  syslog_address    = "${var.syslog_address_com}"
+  zone              = "${var.zone}"
 }

@@ -19,7 +19,6 @@ variable "repos" {
 }
 
 variable "syslog_address" {}
-variable "travisci_net_external_zone_id" {}
 
 variable "zone" {
   default = "us-central1-f"
@@ -34,8 +33,12 @@ resource "google_compute_address" "addr" {
   region = "${var.region}"
 }
 
+data "aws_route53_zone" "travisci_net" {
+  name = "travisci.net."
+}
+
 resource "aws_route53_record" "a_rec" {
-  zone_id = "${var.travisci_net_external_zone_id}"
+  zone_id = "${data.aws_route53_zone.travisci_net.zone_id}"
   name    = "${var.env}-${var.index}-dockerd-${var.name}.gce-${var.region}.travisci.net"
   type    = "A"
   ttl     = 60
