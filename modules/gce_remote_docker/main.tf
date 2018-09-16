@@ -198,7 +198,7 @@ data "archive_file" "client_config" {
   }
 
   source {
-    content  = "${path.cwd}/config/docker-ca.pem"
+    content  = "${var.docker_ca_pem}"
     filename = ".docker/ca.pem"
   }
 }
