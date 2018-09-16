@@ -18,7 +18,7 @@ write_files:
 - content: '${base64encode(file("${here}/daemon-direct-lvm.json"))}'
   encoding: b64
   path: /var/tmp/daemon-direct-lvm.json
-- content: '${base64encode(file("${here}/config/docker-ca.pem"))}'
+- content: '${base64encode(docker_ca_pem)}'
   encoding: b64
   path: /var/tmp/docker-certs/ca.pem
 - content: '${base64encode(docker_server_cert_pem)}'
