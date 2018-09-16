@@ -84,6 +84,24 @@ module "gce_net" {
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
 }
 
+data "google_compute_network" "main" {
+  name = "main"
+}
+
+resource "google_compute_firewall" "allow_docker_tls" {
+  name    = "allow-docker-tls"
+  network = "${data.google_compute_network.main.name}"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["2376"]
+  }
+
+  priority = 500
+
+  source_tags = ["dockerd"]
+}
+
 output "gce_subnetwork_workers" {
   value = "${module.gce_net.gce_subnetwork_workers}"
 }
