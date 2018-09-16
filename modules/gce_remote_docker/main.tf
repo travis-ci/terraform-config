@@ -39,7 +39,7 @@ data "aws_route53_zone" "travisci_net" {
 
 resource "aws_route53_record" "a_rec" {
   zone_id = "${data.aws_route53_zone.travisci_net.zone_id}"
-  name    = "${var.env}-${var.index}-dockerd-${var.name}.gce-${var.region}.travisci.net"
+  name    = "${var.env}-${var.index}-dockerd-${var.name}.gce-${var.region}.${data.aws_route53_zone.travisci_net.name}"
   type    = "A"
   ttl     = 60
 
@@ -59,7 +59,7 @@ resource "tls_cert_request" "server" {
   private_key_pem = "${tls_private_key.server.private_key_pem}"
 
   dns_names = [
-    "${var.env}-${var.index}-dockerd-${var.name}.gce-${var.region}.travisci.net",
+    "${var.env}-${var.index}-dockerd-${var.name}.gce-${var.region}.${data.aws_route53_zone.travisci_net.name}",
   ]
 
   ip_addresses = [
@@ -67,7 +67,7 @@ resource "tls_cert_request" "server" {
   ]
 
   subject {
-    common_name  = "${var.env}-${var.index}-dockerd-${var.name}.gce-${var.region}.travisci.net"
+    common_name  = "${var.env}-${var.index}-dockerd-${var.name}.gce-${var.region}.${data.aws_route53_zone.travisci_net.name}"
     organization = "Travis CI GmbH"
   }
 }
@@ -122,7 +122,7 @@ data "template_file" "cloud_config" {
 ${file("${path.module}/docker.env")}
 
 ### in-line
-export TRAVIS_DOCKER_HOSTNAME=${var.env}-${var.index}-dockerd-${var.name}.gce-${var.region}.travisci.net
+export TRAVIS_DOCKER_HOSTNAME=${var.env}-${var.index}-dockerd-${var.name}.gce-${var.region}.${data.aws_route53_zone.travisci_net.name}
 EOF
 
     github_users_env = <<EOF
@@ -246,7 +246,7 @@ resource "null_resource" "travis_env_assignment" {
 exec ${path.module}/../../bin/travis-env-set-docker-config-secrets \
   --repository ${element(var.repos, count.index)} \
   --client-config-url https://s3.amazonaws.com/${aws_s3_bucket_object.client_config.bucket}/${aws_s3_bucket_object.client_config.key} \
-  --docker-host tcp://${var.env}-${var.index}-dockerd-${var.name}.gce-${var.region}.travisci.net:2376 \
+  --docker-host tcp://${var.env}-${var.index}-dockerd-${var.name}.gce-${var.region}.${data.aws_route53_zone.travisci_net.name}:2376 \
   --iv ${path.cwd}/config/openssl-iv \
   --key ${path.cwd}/config/openssl-key \
   --salt ${path.cwd}/config/openssl-salt
