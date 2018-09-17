@@ -16,7 +16,7 @@ TOP := $(shell git rev-parse --show-toplevel)
 
 NATBZ2 := $(TOP)/assets/nat.tar.bz2
 
-PROD_TF_VERSION := v0.11.7
+PROD_TF_VERSION := v0.11.8
 TERRAFORM := $(HOME)/.cache/travis-terraform-config/terraform-$(PROD_TF_VERSION)
 TAR := tar
 
