@@ -246,9 +246,9 @@ resource "null_resource" "travis_env_assignment" {
   provisioner "local-exec" {
     command = <<EOF
 exec ${path.module}/../../bin/travis-env-set-docker-config-secrets \
-  --repository ${element(var.repos, count.index)} \
-  --client-config-url '${data.google_storage_object_signed_url.client_config.signed_url}' \
-  --docker-host tcp://${var.env}-${var.index}-dockerd-${var.name}.gce-${var.region}.${var.dns_domain}:2376 \
+  --repository=${element(var.repos, count.index)} \
+  --client-config-url-base64=${base64encode(data.google_storage_object_signed_url.client_config.signed_url)} \
+  --docker-host=tcp://${var.env}-${var.index}-dockerd-${var.name}.gce-${var.region}.${var.dns_domain}:2376 \
 EOF
   }
 }
