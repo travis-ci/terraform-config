@@ -1,7 +1,7 @@
 variable "latest_travis_worker_version" {}
 
 variable "travis_worker_version" {
-  default = "v4.1.0"
+  default = "v4.1.2"
 }
 
 resource "random_id" "travis_worker_production_org_token" {
