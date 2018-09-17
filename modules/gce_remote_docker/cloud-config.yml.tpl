@@ -10,7 +10,7 @@ write_files:
   path: /etc/default/docker
 - content: '${base64encode(file("${here}/cloud-init.bash"))}'
   encoding: b64
-  path: /var/lib/cloud/scripts/per-instance/99-bastion-cloud-init
+  path: /var/lib/cloud/scripts/per-instance/99-travis-cloud-init
   permissions: '0750'
 - content: '${base64encode(syslog_address)}'
   encoding: b64

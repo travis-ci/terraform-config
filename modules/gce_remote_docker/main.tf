@@ -2,6 +2,10 @@ variable "client_config_bucket" {
   default = "travis-docker-client-configs"
 }
 
+variable "dns_domain" {
+  default = "travisci.net"
+}
+
 variable "docker_ca_key_pem" {}
 variable "docker_ca_pem" {}
 variable "env" {}
@@ -38,12 +42,12 @@ resource "google_compute_address" "addr" {
 }
 
 data "aws_route53_zone" "travisci_net" {
-  name = "travisci.net."
+  name = "${var.dns_domain}."
 }
 
 resource "aws_route53_record" "a_rec" {
   zone_id = "${data.aws_route53_zone.travisci_net.zone_id}"
-  name    = "${var.env}-${var.index}-dockerd-${var.name}.gce-${var.region}.${data.aws_route53_zone.travisci_net.name}"
+  name    = "${var.env}-${var.index}-dockerd-${var.name}.gce-${var.region}.${var.dns_domain}"
   type    = "A"
   ttl     = 60
 
@@ -63,7 +67,7 @@ resource "tls_cert_request" "server" {
   private_key_pem = "${tls_private_key.server.private_key_pem}"
 
   dns_names = [
-    "${var.env}-${var.index}-dockerd-${var.name}.gce-${var.region}.${data.aws_route53_zone.travisci_net.name}",
+    "${var.env}-${var.index}-dockerd-${var.name}.gce-${var.region}.${var.dns_domain}",
   ]
 
   ip_addresses = [
@@ -71,7 +75,7 @@ resource "tls_cert_request" "server" {
   ]
 
   subject {
-    common_name  = "${var.env}-${var.index}-dockerd-${var.name}.gce-${var.region}.${data.aws_route53_zone.travisci_net.name}"
+    common_name  = "${var.env}-${var.index}-dockerd-${var.name}.gce-${var.region}.${var.dns_domain}"
     organization = "Travis CI GmbH"
   }
 }
@@ -126,7 +130,7 @@ data "template_file" "cloud_config" {
 ${file("${path.module}/docker.env")}
 
 ### in-line
-export TRAVIS_DOCKER_HOSTNAME=${var.env}-${var.index}-dockerd-${var.name}.gce-${var.region}.${data.aws_route53_zone.travisci_net.name}
+export TRAVIS_DOCKER_HOSTNAME=${var.env}-${var.index}-dockerd-${var.name}.gce-${var.region}.${var.dns_domain}
 EOF
 
     github_users_env = <<EOF
@@ -218,6 +222,12 @@ resource "google_storage_bucket_object" "client_config" {
   bucket = "${var.client_config_bucket}"
 }
 
+resource "google_storage_bucket_iam_member" "client_config" {
+  bucket = "${var.client_config_bucket}"
+  role   = "roles/storage.objectViewer"
+  member = "serviceAccount:${google_service_account.client_config_signer.email}"
+}
+
 data "google_storage_object_signed_url" "client_config" {
   bucket      = "${var.client_config_bucket}"
   path        = "${var.env}-${var.index}-docker-${var.name}-client-config.zip"
@@ -238,7 +248,7 @@ resource "null_resource" "travis_env_assignment" {
 exec ${path.module}/../../bin/travis-env-set-docker-config-secrets \
   --repository ${element(var.repos, count.index)} \
   --client-config-url '${data.google_storage_object_signed_url.client_config.signed_url}' \
-  --docker-host tcp://${var.env}-${var.index}-dockerd-${var.name}.gce-${var.region}.${data.aws_route53_zone.travisci_net.name}:2376 \
+  --docker-host tcp://${var.env}-${var.index}-dockerd-${var.name}.gce-${var.region}.${var.dns_domain}:2376 \
 EOF
   }
 }
