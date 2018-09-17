@@ -32,6 +32,10 @@ variable "worker_instance_count_com" {}
 variable "worker_instance_count_org" {}
 variable "worker_instance_count_com_free" {}
 
+variable "worker_managed_instance_count_com" {}
+variable "worker_managed_instance_count_org" {}
+variable "worker_managed_instance_count_com_free" {}
+
 variable "worker_zones" {
   default = ["a", "b", "f"]
 }
@@ -156,6 +160,10 @@ module "gce_worker_group" {
   worker_instance_count_com      = "${var.worker_instance_count_com}"
   worker_instance_count_com_free = "${var.worker_instance_count_com_free}"
   worker_instance_count_org      = "${var.worker_instance_count_org}"
+
+  worker_managed_instance_count_com      = "${var.worker_managed_instance_count_com}"
+  worker_managed_instance_count_com_free = "${var.worker_managed_instance_count_com_free}"
+  worker_managed_instance_count_org      = "${var.worker_managed_instance_count_org}"
 
   worker_config_com = <<EOF
 ### worker.env
