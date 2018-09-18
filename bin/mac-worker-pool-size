@@ -6,8 +6,8 @@ options = {
   vms_per_host: 7.0,
   org_percent: 0.6,
   hosts: 36,
-  org_workers: 2,
-  com_workers: 2,
+  org_workers: 4,
+  com_workers: 4,
   staging_workers: 4
 }
 

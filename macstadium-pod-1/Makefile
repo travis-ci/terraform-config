@@ -70,7 +70,7 @@ $(CONFIG_FILES):
 	trvs generate-config -n --env-prefix= -f env macstadium-image-builder packer \
 		| sed 's/^/export /' >config/image-builder-packer-env
 	trvs generate-config -n --env-prefix= -f env macstadium-image-builder macbot \
-		| sed 's/\\!/!/' >config/image-builder-macbot-env
+		| sed 's/\\!/!/' | sed 's/\\(/(/' >config/image-builder-macbot-env
 	\
 	trvs generate-config --pro -p VSPHERE_JANITOR -f env vsphere-janitor production-$(INDEX) \
 		| sed 's/^/export /' >config/vsphere-janitor-production-com
