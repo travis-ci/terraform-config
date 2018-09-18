@@ -173,7 +173,7 @@ EOF
 }
 
 resource "google_compute_instance_template" "worker_com" {
-  name_prefix = "${var.env}-${var.index}-worker-com-template-"
+  name_prefix = "${var.env}-${var.index}-worker-com-"
 
   machine_type = "${var.machine_type}"
   tags         = ["worker", "${var.env}", "com", "paid"]
@@ -211,7 +211,7 @@ resource "google_compute_instance_template" "worker_com" {
 }
 
 resource "google_compute_region_instance_group_manager" "worker_com" {
-  base_instance_name = "${var.env}-${var.index}-worker-com"
+  base_instance_name = "${var.env}-${var.index}-worker-com-gce"
   instance_template  = "${google_compute_instance_template.worker_com.self_link}"
   name               = "worker-com"
   target_size        = "${var.managed_instance_count_com}"
@@ -300,7 +300,7 @@ EOF
 }
 
 resource "google_compute_instance_template" "worker_com_free" {
-  name_prefix = "${var.env}-${var.index}-worker-com-free-template-"
+  name_prefix = "${var.env}-${var.index}-worker-com-free-"
 
   machine_type = "${var.machine_type}"
   tags         = ["worker", "${var.env}", "com", "free"]
@@ -338,7 +338,7 @@ resource "google_compute_instance_template" "worker_com_free" {
 }
 
 resource "google_compute_region_instance_group_manager" "worker_com_free" {
-  base_instance_name = "${var.env}-${var.index}-worker-com-free"
+  base_instance_name = "${var.env}-${var.index}-worker-com-free-gce"
   instance_template  = "${google_compute_instance_template.worker_com_free.self_link}"
   name               = "worker-com-free"
   target_size        = "${var.managed_instance_count_com_free}"
@@ -427,7 +427,7 @@ EOF
 }
 
 resource "google_compute_instance_template" "worker_org" {
-  name_prefix = "${var.env}-${var.index}-worker-org-template-"
+  name_prefix = "${var.env}-${var.index}-worker-org-"
 
   machine_type = "${var.machine_type}"
   tags         = ["worker", "${var.env}", "org"]
@@ -465,7 +465,7 @@ resource "google_compute_instance_template" "worker_org" {
 }
 
 resource "google_compute_region_instance_group_manager" "worker_org" {
-  base_instance_name = "${var.env}-${var.index}-worker-org"
+  base_instance_name = "${var.env}-${var.index}-worker-org-gce"
   instance_template  = "${google_compute_instance_template.worker_org.self_link}"
   name               = "worker-org"
   target_size        = "${var.managed_instance_count_org}"
