@@ -61,3 +61,30 @@ provider "google" {
 
 provider "aws" {}
 provider "heroku" {}
+
+module "gce_net" {
+  source = "../modules/gce_net"
+
+  bastion_config                = "${file("config/bastion.env")}"
+  bastion_image                 = "${var.gce_bastion_image}"
+  deny_target_ip_ranges         = ["${split(",", var.deny_target_ip_ranges)}"]
+  env                           = "${var.env}"
+  github_users                  = "${var.github_users}"
+  heroku_org                    = "${var.gce_heroku_org}"
+  index                         = "${var.index}"
+  nat_config                    = "${file("config/nat.env")}"
+  nat_conntracker_config        = "${file("nat-conntracker.env")}"
+  nat_conntracker_dst_ignore    = ["${var.nat_conntracker_dst_ignore}"]
+  nat_conntracker_src_ignore    = ["${var.nat_conntracker_src_ignore}"]
+  nat_image                     = "${var.gce_nat_image}"
+  project                       = "${var.project}"
+  public_subnet_cidr_range      = "10.10.1.0/24"
+  rigaer_strasse_8_ipv4         = "${var.rigaer_strasse_8_ipv4}"
+  syslog_address                = "${var.syslog_address_com}"
+  travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
+  workers_subnet_cidr_range     = "10.10.16.0/22"
+}
+
+output "gce_subnetwork_workers" {
+  value = "${module.gce_net.gce_subnetwork_workers}"
+}
