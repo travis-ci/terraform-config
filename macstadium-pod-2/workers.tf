@@ -52,7 +52,7 @@ module "worker_production_org_1" {
 export TRAVIS_WORKER_TRAVIS_SITE="org"
 export TRAVIS_WORKER_POOL_SIZE="${var.worker_org_pool_size}"
 export TRAVIS_WORKER_PPROF_PORT="7070"
-export TRAVIS_WORKER_HTTP_API_AUTH="${random_id.travis_worker_production_org_token.hex}"
+export TRAVIS_WORKER_HTTP_API_AUTH="macstadium-worker:${random_id.travis_worker_production_org_token.hex}"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_production_org_token.hex}@127.0.0.1:8081/"
 export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-production-org-macstadium-${var.index}-1-dc18"
 EOF
@@ -73,7 +73,7 @@ module "worker_production_org_2" {
 export TRAVIS_WORKER_TRAVIS_SITE="org"
 export TRAVIS_WORKER_POOL_SIZE="${var.worker_org_pool_size}"
 export TRAVIS_WORKER_PPROF_PORT="7071"
-export TRAVIS_WORKER_HTTP_API_AUTH="${random_id.travis_worker_production_org_token.hex}"
+export TRAVIS_WORKER_HTTP_API_AUTH="macstadium-worker:${random_id.travis_worker_production_org_token.hex}"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_production_org_token.hex}@127.0.0.1:8081/"
 export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-production-org-macstadium-${var.index}-2-dc18"
 EOF
@@ -94,7 +94,7 @@ module "worker_production_org_3" {
 export TRAVIS_WORKER_TRAVIS_SITE="org"
 export TRAVIS_WORKER_POOL_SIZE="${var.worker_org_pool_size}"
 export TRAVIS_WORKER_PPROF_PORT="7072"
-export TRAVIS_WORKER_HTTP_API_AUTH="${random_id.travis_worker_production_org_token.hex}"
+export TRAVIS_WORKER_HTTP_API_AUTH="macstadium-worker:${random_id.travis_worker_production_org_token.hex}"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_production_org_token.hex}@127.0.0.1:8081/"
 export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-production-org-macstadium-${var.index}-3-dc18"
 EOF
@@ -115,7 +115,7 @@ module "worker_production_org_4" {
 export TRAVIS_WORKER_TRAVIS_SITE="org"
 export TRAVIS_WORKER_POOL_SIZE="${var.worker_org_pool_size}"
 export TRAVIS_WORKER_PPROF_PORT="7073"
-export TRAVIS_WORKER_HTTP_API_AUTH="${random_id.travis_worker_production_org_token.hex}"
+export TRAVIS_WORKER_HTTP_API_AUTH="macstadium-worker:${random_id.travis_worker_production_org_token.hex}"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_production_org_token.hex}@127.0.0.1:8081/"
 export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-production-org-macstadium-${var.index}-4-dc18"
 EOF
@@ -175,7 +175,7 @@ export TRAVIS_WORKER_HARD_TIMEOUT=120m
 export TRAVIS_WORKER_TRAVIS_SITE="com"
 export TRAVIS_WORKER_POOL_SIZE="${var.worker_com_pool_size}"
 export TRAVIS_WORKER_PPROF_PORT="7080"
-export TRAVIS_WORKER_HTTP_API_AUTH="${random_id.travis_worker_production_com_token.hex}"
+export TRAVIS_WORKER_HTTP_API_AUTH="macstadium-worker:${random_id.travis_worker_production_com_token.hex}"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_production_com_token.hex}@127.0.0.1:8083/"
 export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-production-com-macstadium-${var.index}-1-dc18"
 EOF
@@ -197,7 +197,7 @@ export TRAVIS_WORKER_HARD_TIMEOUT=120m
 export TRAVIS_WORKER_TRAVIS_SITE="com"
 export TRAVIS_WORKER_POOL_SIZE="${var.worker_com_pool_size}"
 export TRAVIS_WORKER_PPROF_PORT="7081"
-export TRAVIS_WORKER_HTTP_API_AUTH="${random_id.travis_worker_production_com_token.hex}"
+export TRAVIS_WORKER_HTTP_API_AUTH="macstadium-worker:${random_id.travis_worker_production_com_token.hex}"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_production_com_token.hex}@127.0.0.1:8083/"
 export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-production-com-macstadium-${var.index}-2-dc18"
 EOF
@@ -219,7 +219,7 @@ export TRAVIS_WORKER_HARD_TIMEOUT=120m
 export TRAVIS_WORKER_TRAVIS_SITE="com"
 export TRAVIS_WORKER_POOL_SIZE="${var.worker_com_pool_size}"
 export TRAVIS_WORKER_PPROF_PORT="7082"
-export TRAVIS_WORKER_HTTP_API_AUTH="${random_id.travis_worker_production_com_token.hex}"
+export TRAVIS_WORKER_HTTP_API_AUTH="macstadium-worker:${random_id.travis_worker_production_com_token.hex}"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_production_com_token.hex}@127.0.0.1:8083/"
 export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-production-com-macstadium-${var.index}-3-dc18"
 EOF
@@ -241,7 +241,7 @@ export TRAVIS_WORKER_HARD_TIMEOUT=120m
 export TRAVIS_WORKER_TRAVIS_SITE="com"
 export TRAVIS_WORKER_POOL_SIZE="${var.worker_com_pool_size}"
 export TRAVIS_WORKER_PPROF_PORT="7083"
-export TRAVIS_WORKER_HTTP_API_AUTH="${random_id.travis_worker_production_com_token.hex}"
+export TRAVIS_WORKER_HTTP_API_AUTH="macstadium-worker:${random_id.travis_worker_production_com_token.hex}"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_production_com_token.hex}@127.0.0.1:8083/"
 export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-production-com-macstadium-${var.index}-4-dc18"
 EOF
