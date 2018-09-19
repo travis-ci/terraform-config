@@ -91,17 +91,6 @@ data "terraform_remote_state" "production_2" {
   }
 }
 
-data "terraform_remote_state" "production_3" {
-  backend = "s3"
-
-  config {
-    bucket         = "travis-terraform-state"
-    key            = "terraform-config/gce-production-3.tfstate"
-    region         = "us-east-1"
-    dynamodb_table = "travis-terraform-state"
-  }
-}
-
 module "aws_iam_user_s3_com" {
   source = "../modules/aws_iam_user_s3"
 
@@ -201,10 +190,4 @@ resource "google_project_iam_member" "production_2_workers" {
   project = "${var.project}"
   role    = "roles/compute.imageUser"
   member  = "serviceAccount:${data.terraform_remote_state.production_2.workers_service_account_email}"
-}
-
-resource "google_project_iam_member" "production_3_workers" {
-  project = "${var.project}"
-  role    = "roles/compute.imageUser"
-  member  = "serviceAccount:${data.terraform_remote_state.production_3.workers_service_account_email}"
 }
