@@ -5,12 +5,25 @@ require 'json'
 def main
   options = { env: '', noop: false }
   OptionParser.new do |opts|
+    opts.banner = <<-HEREDOC
+
+  Recreates the NAT instances managed by the instance groups specified using the GCE_NAT_GROUPS environment variable.
+  Also requires GCE_NAT_PROJECT and GCE_NAT_REGION to be set.
+  
+  Usage: gcloud-recreate-nat-instances [options]
+
+  HEREDOC
     opts.on('-E', '--env=ENV_FILE') do |f|
       options[:env] = f.strip
     end
 
     opts.on('-n', '--noop') do
       options[:noop] = true
+    end
+
+    opts.on('--help') do
+      puts opts
+      exit
     end
   end.parse!
 
@@ -27,7 +40,7 @@ def main
   groups_zones = Hash[groups_zones]
 
   groups_zones.each do |instance_group, zone|
-    instance_list = JSON.parse(`gcloud compute instance-groups list-instances #{instance_group} --zone=#{zone} --project=travis-staging-1 --format=json`)
+    instance_list = JSON.parse(`gcloud compute instance-groups list-instances #{instance_group} --zone=#{zone} --project=#{project} --format=json`)
     instances = instance_list.map{|x| x['instance'].split('/').last}
     command = %W[
       gcloud compute instance-groups managed recreate-instances
