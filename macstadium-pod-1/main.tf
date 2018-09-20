@@ -19,11 +19,11 @@ variable "jobs_network_label" {
 }
 
 variable "vsphere_janitor_version" {
-  default = "98d5b98"
+  default = "546c432"
 }
 
 variable "vsphere_janitor_staging_version" {
-  default = "98d5b98"
+  default = "546c432"
 }
 
 variable "vsphere_monitor_version" {
@@ -367,7 +367,8 @@ resource "null_resource" "image-builder-environment" {
 
   provisioner "remote-exec" {
     inline = [
-      "sudo cp /tmp/build-macos.sh /home/packer/bin/build-macos",
+      "sudo rm /tmp/install-image-builder.sh",
+      "sudo mv /tmp/build-macos.sh /home/packer/bin/build-macos",
       "sudo chown packer:packer /home/packer/bin/build-macos",
       "sudo chmod +x /home/packer/bin/build-macos",
       "sudo mv /tmp/packer-env /home/packer/.packer-env",
@@ -424,6 +425,7 @@ resource "null_resource" "image-builder-macbot" {
     inline = [
       "chmod +x /tmp/install-macbot.sh",
       "sudo /tmp/install-macbot.sh",
+      "sudo rm /tmp/install-macbot.sh",
     ]
   }
 }

@@ -40,7 +40,7 @@ variable "worker_config_com_free" {}
 variable "worker_config_org" {}
 
 variable "worker_docker_self_image" {
-  default = "travisci/worker:v4.1.0-17-gbb60707"
+  default = "travisci/worker:v4.1.2"
 }
 
 variable "worker_image" {}
@@ -124,6 +124,7 @@ resource "google_project_iam_custom_role" "gcloud_cleaner" {
   description = "A gcloud-cleanup process that can clean and archive stuff"
 
   permissions = [
+    "cloudtrace.traces.patch",
     "compute.disks.delete",
     "compute.disks.get",
     "compute.disks.list",
