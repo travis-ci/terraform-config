@@ -88,6 +88,10 @@ data "google_compute_network" "main" {
   name = "main"
 }
 
+data "google_compute_network" "default" {
+  name = "default"
+}
+
 resource "google_compute_firewall" "allow_docker_tls" {
   name    = "allow-docker-tls"
   network = "${data.google_compute_network.main.name}"
@@ -100,6 +104,34 @@ resource "google_compute_firewall" "allow_docker_tls" {
   priority = 500
 
   source_tags = ["dockerd"]
+}
+
+resource "google_compute_firewall" "allow_ssh_to_packer_templates_builds" {
+  name    = "allow-ssh-to-packer-templates-builds"
+  network = "${data.google_compute_network.default.name}"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["22"]
+  }
+
+  priority = 1000
+
+  source_tags = ["travis-ci-packer-templates"]
+}
+
+resource "google_compute_firewall" "allow_winrm_to_packer_templates_builds" {
+  name    = "allow-winrm-to-packer-templates-builds"
+  network = "${data.google_compute_network.default.name}"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["5986"]
+  }
+
+  priority = 1000
+
+  source_tags = ["travis-ci-packer-templates"]
 }
 
 output "gce_subnetwork_workers" {
