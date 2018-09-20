@@ -103,12 +103,14 @@ resource "google_compute_firewall" "allow_docker_tls" {
 
   priority = 500
 
-  source_tags = ["dockerd"]
+  source_ranges = ["0.0.0.0/0"]
+  target_tags   = ["dockerd"]
 }
 
 resource "google_compute_firewall" "allow_ssh_to_packer_templates_builds" {
-  name    = "allow-ssh-to-packer-templates-builds"
-  network = "${data.google_compute_network.default.name}"
+  name        = "allow-ssh-to-packer-templates-builds"
+  network     = "${data.google_compute_network.default.name}"
+  description = "Allows SSH from testing VMs to packer-templates build VMs"
 
   allow {
     protocol = "tcp"
@@ -117,7 +119,8 @@ resource "google_compute_firewall" "allow_ssh_to_packer_templates_builds" {
 
   priority = 1000
 
-  source_tags = ["travis-ci-packer-templates"]
+  source_ranges = ["0.0.0.0/0"]
+  target_tags   = ["travis-ci-packer-templates"]
 }
 
 resource "google_compute_firewall" "allow_winrm_to_packer_templates_builds" {
@@ -131,7 +134,8 @@ resource "google_compute_firewall" "allow_winrm_to_packer_templates_builds" {
 
   priority = 1000
 
-  source_tags = ["travis-ci-packer-templates"]
+  source_ranges = ["0.0.0.0/0"]
+  target_tags   = ["travis-ci-packer-templates"]
 }
 
 output "gce_subnetwork_workers" {
