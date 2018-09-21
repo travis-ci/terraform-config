@@ -78,6 +78,7 @@ module "gce_net" {
   nat_conntracker_src_ignore    = ["${var.nat_conntracker_src_ignore}"]
   nat_count_per_zone            = 2
   nat_image                     = "${var.gce_nat_image}"
+  nat_machine_type              = "n1-standard-4"
   project                       = "${var.project}"
   rigaer_strasse_8_ipv4         = "${var.rigaer_strasse_8_ipv4}"
   syslog_address                = "${var.syslog_address_com}"
