@@ -78,6 +78,7 @@ module "gce_net" {
   nat_conntracker_src_ignore    = ["${var.nat_conntracker_src_ignore}"]
   nat_count_per_zone            = 2
   nat_image                     = "${var.gce_nat_image}"
+  nat_machine_type              = "n1-standard-4"
   project                       = "${var.project}"
   rigaer_strasse_8_ipv4         = "${var.rigaer_strasse_8_ipv4}"
   syslog_address                = "${var.syslog_address_com}"
@@ -86,6 +87,10 @@ module "gce_net" {
 
 data "google_compute_network" "main" {
   name = "main"
+}
+
+data "google_compute_network" "default" {
+  name = "default"
 }
 
 resource "google_compute_firewall" "allow_docker_tls" {
@@ -99,7 +104,39 @@ resource "google_compute_firewall" "allow_docker_tls" {
 
   priority = 500
 
-  source_tags = ["dockerd"]
+  source_ranges = ["0.0.0.0/0"]
+  target_tags   = ["dockerd"]
+}
+
+resource "google_compute_firewall" "allow_ssh_to_packer_templates_builds" {
+  name        = "allow-ssh-to-packer-templates-builds"
+  network     = "${data.google_compute_network.default.name}"
+  description = "Allows SSH from testing VMs to packer-templates build VMs"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["22"]
+  }
+
+  priority = 1000
+
+  source_ranges = ["0.0.0.0/0"]
+  target_tags   = ["travis-ci-packer-templates"]
+}
+
+resource "google_compute_firewall" "allow_winrm_to_packer_templates_builds" {
+  name    = "allow-winrm-to-packer-templates-builds"
+  network = "${data.google_compute_network.default.name}"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["5986"]
+  }
+
+  priority = 1000
+
+  source_ranges = ["0.0.0.0/0"]
+  target_tags   = ["travis-ci-packer-templates"]
 }
 
 output "gce_subnetwork_workers" {
