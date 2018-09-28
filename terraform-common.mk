@@ -98,7 +98,7 @@ TAR := LC_ALL=C $(TAR) \
       --group=0 \
       --numeric-owner \
       --sort=name \
-	  -cj
+      -cj
 
 $(NATBZ2): tar $(wildcard $(TOP)/assets/nat/**/*)
 	$(TAR) -C $(TOP)/assets -f $(TOP)/assets/nat.tar.bz2 nat
