@@ -20,7 +20,9 @@ variable "gcloud_cleanup_loop_sleep" {
 
 variable "gcloud_cleanup_opencensus_sampling_rate" {}
 
-variable "gcloud_cleanup_opencensus_tracing_enabled" {}
+variable "gcloud_cleanup_opencensus_tracing_enabled" {
+  default = "false"
+}
 
 variable "gcloud_cleanup_scale" {
   default = "worker=1:Standard-1X"
