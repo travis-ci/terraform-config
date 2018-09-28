@@ -88,7 +88,7 @@ module "gce_worker_group" {
 
   env                                       = "${var.env}"
   gcloud_cleanup_job_board_url              = "${var.job_board_url}"
-  gcloud_cleanup_opencensus_sampling_rate   = "15"
+  gcloud_cleanup_opencensus_sampling_rate   = "10"
   gcloud_cleanup_opencensus_tracing_enabled = "true"
   gcloud_zone                               = "${var.gce_gcloud_zone}"
   github_users                              = "${var.github_users}"
