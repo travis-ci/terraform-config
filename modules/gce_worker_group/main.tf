@@ -18,6 +18,10 @@ variable "gcloud_cleanup_loop_sleep" {
   default = "1s"
 }
 
+variable "gcloud_cleanup_opencensus_sampling_rate" {}
+
+variable "gcloud_cleanup_opencensus_tracing_enabled" {}
+
 variable "gcloud_cleanup_scale" {
   default = "worker=1:Standard-1X"
 }
@@ -187,8 +191,8 @@ resource "heroku_app" "gcloud_cleanup" {
     GCLOUD_CLEANUP_INSTANCE_MAX_AGE           = "${var.gcloud_cleanup_instance_max_age}"
     GCLOUD_CLEANUP_JOB_BOARD_URL              = "${var.gcloud_cleanup_job_board_url}"
     GCLOUD_CLEANUP_LOOP_SLEEP                 = "${var.gcloud_cleanup_loop_sleep}"
-    GCLOUD_CLEANUP_OPENCENSUS_SAMPLING_RATE   = "200"
-    GCLOUD_CLEANUP_OPENCENSUS_TRACING_ENABLED = "true"
+    GCLOUD_CLEANUP_OPENCENSUS_SAMPLING_RATE   = "${var.gcloud_cleanup_opencensus_sampling_rate}"
+    GCLOUD_CLEANUP_OPENCENSUS_TRACING_ENABLED = "${var.gcloud_cleanup_opencensus_tracing_enabled}"
     GCLOUD_LOG_HTTP                           = "no-log-http"
     GCLOUD_PROJECT                            = "${var.project}"
     GCLOUD_ZONE                               = "${var.gcloud_zone}"
