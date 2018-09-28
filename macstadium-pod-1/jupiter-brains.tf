@@ -1,29 +1,29 @@
 variable "jupiter_brain_production_version" {
-  default = "v0.2.0-58-gce0b45a"
+  default = "v1.0.0-18-ga1e73ab"
 }
 
 variable "jupiter_brain_custom-1_version" {
-  default = "v0.2.0-58-gce0b45a"
+  default = "v1.0.0-18-ga1e73ab"
 }
 
 variable "jupiter_brain_custom-2_version" {
-  default = "v0.2.0-58-gce0b45a"
+  default = "v1.0.0-18-ga1e73ab"
 }
 
 variable "jupiter_brain_custom-4_version" {
-  default = "v0.2.0-58-gce0b45a"
+  default = "v1.0.0-18-ga1e73ab"
 }
 
 variable "jupiter_brain_custom-5_version" {
-  default = "v0.2.0-58-gce0b45a"
+  default = "v1.0.0-18-ga1e73ab"
 }
 
 variable "jupiter_brain_custom-6_version" {
-  default = "v0.2.0-58-gce0b45a"
+  default = "v1.0.0-18-ga1e73ab"
 }
 
 variable "jupiter_brain_staging_version" {
-  default = "v1.0.0-3-g9665e76"
+  default = "v1.0.0-18-ga1e73ab"
 }
 
 resource "random_id" "jupiter_brain_production_org_token" {

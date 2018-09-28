@@ -61,21 +61,29 @@ provider "heroku" {}
 module "gce_net" {
   source = "../modules/gce_net"
 
-  bastion_config                = "${file("config/bastion.env")}"
-  bastion_image                 = "${var.latest_gce_bastion_image}"
-  deny_target_ip_ranges         = ["${split(",", var.deny_target_ip_ranges)}"]
-  env                           = "${var.env}"
-  gesund_self_image             = "${var.latest_docker_image_gesund}"
-  github_users                  = "${var.github_users}"
-  heroku_org                    = "${var.gce_heroku_org}"
-  index                         = "${var.index}"
-  nat_config                    = "${file("config/nat.env")}"
-  nat_conntracker_config        = "${file("nat-conntracker.env")}"
-  nat_conntracker_dst_ignore    = ["${var.nat_conntracker_dst_ignore}"]
-  nat_conntracker_redis_plan    = "hobby-dev"
-  nat_conntracker_self_image    = "${var.latest_docker_image_nat_conntracker}"
-  nat_conntracker_src_ignore    = ["${var.nat_conntracker_src_ignore}"]
-  nat_image                     = "${var.latest_gce_tfw_image}"
+  bastion_config        = "${file("config/bastion.env")}"
+  bastion_image         = "${var.latest_gce_bastion_image}"
+  deny_target_ip_ranges = ["${split(",", var.deny_target_ip_ranges)}"]
+  env                   = "${var.env}"
+
+  # TODO: replace with var.latest_docker_image_gesund when
+  # https://github.com/travis-ci/packer-templates/issues/640 is fixed
+  gesund_self_image = "travisci/gesund:0.1.0"
+
+  github_users               = "${var.github_users}"
+  heroku_org                 = "${var.gce_heroku_org}"
+  index                      = "${var.index}"
+  nat_config                 = "${file("config/nat.env")}"
+  nat_conntracker_config     = "${file("nat-conntracker.env")}"
+  nat_conntracker_dst_ignore = ["${var.nat_conntracker_dst_ignore}"]
+  nat_conntracker_redis_plan = "hobby-dev"
+  nat_conntracker_self_image = "${var.latest_docker_image_nat_conntracker}"
+  nat_conntracker_src_ignore = ["${var.nat_conntracker_src_ignore}"]
+
+  # TODO: replace with var.latest_gce_tfw_image when
+  # https://github.com/travis-ci/packer-templates/issues/640 is fixed
+  nat_image = "https://www.googleapis.com/compute/v1/projects/eco-emissary-99515/global/images/tfw-1520467760-573cd26"
+
   nat_machine_type              = "g1-small"
   project                       = "${var.project}"
   rigaer_strasse_8_ipv4         = "${var.rigaer_strasse_8_ipv4}"

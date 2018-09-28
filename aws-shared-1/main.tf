@@ -258,6 +258,18 @@ resource "aws_route_table_association" "packer_build" {
   route_table_id = "${aws_route_table.packer_build.id}"
 }
 
+module "aws_iam_user_s3_com" {
+  source         = "../modules/aws_iam_user_s3"
+  iam_user_name  = "build-trace-${var.env}-${var.index}-com"
+  s3_bucket_name = "build-trace-staging.travis-ci.com"
+}
+
+module "aws_iam_user_s3_org" {
+  source         = "../modules/aws_iam_user_s3"
+  iam_user_name  = "build-trace-${var.env}-${var.index}-org"
+  s3_bucket_name = "build-trace-staging.travis-ci.org"
+}
+
 module "aws_bastion_1b" {
   source                        = "../modules/aws_bastion"
   az                            = "1b"
@@ -458,4 +470,20 @@ output "workers_org_subnet_1b_id" {
 
 output "workers_org_subnet_1b2_id" {
   value = "${module.aws_az_1b2.workers_org_subnet_id}"
+}
+
+output "shared_build_tracing_s3_user_com_id" {
+  value = "${module.aws_iam_user_s3_com.id}"
+}
+
+output "shared_build_tracing_s3_user_com_secret" {
+  value = "${module.aws_iam_user_s3_com.secret}"
+}
+
+output "shared_build_tracing_s3_user_org_id" {
+  value = "${module.aws_iam_user_s3_org.id}"
+}
+
+output "shared_build_tracing_s3_user_org_secret" {
+  value = "${module.aws_iam_user_s3_org.secret}"
 }

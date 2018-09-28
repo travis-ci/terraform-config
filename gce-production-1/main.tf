@@ -10,6 +10,11 @@ variable "gce_worker_image" {
 }
 
 variable "github_users" {}
+
+variable "index" {
+  default = 1
+}
+
 variable "job_board_url" {}
 
 variable "project" {
@@ -26,6 +31,10 @@ variable "travisci_net_external_zone_id" {
 variable "worker_instance_count_com" {}
 variable "worker_instance_count_org" {}
 variable "worker_instance_count_com_free" {}
+
+variable "worker_managed_instance_count_com" {}
+variable "worker_managed_instance_count_org" {}
+variable "worker_managed_instance_count_com_free" {}
 
 variable "worker_zones" {
   default = ["a", "b", "f"]
@@ -82,37 +91,18 @@ data "terraform_remote_state" "production_2" {
   }
 }
 
-data "terraform_remote_state" "production_3" {
-  backend = "s3"
+module "aws_iam_user_s3_com" {
+  source = "../modules/aws_iam_user_s3"
 
-  config {
-    bucket         = "travis-terraform-state"
-    key            = "terraform-config/gce-production-3.tfstate"
-    region         = "us-east-1"
-    dynamodb_table = "travis-terraform-state"
-  }
+  iam_user_name  = "worker-gce-${var.env}-${var.index}-com"
+  s3_bucket_name = "build-trace.travis-ci.com"
 }
 
-data "terraform_remote_state" "production_4" {
-  backend = "s3"
+module "aws_iam_user_s3_org" {
+  source = "../modules/aws_iam_user_s3"
 
-  config {
-    bucket         = "travis-terraform-state"
-    key            = "terraform-config/gce-production-4.tfstate"
-    region         = "us-east-1"
-    dynamodb_table = "travis-terraform-state"
-  }
-}
-
-data "terraform_remote_state" "production_5" {
-  backend = "s3"
-
-  config {
-    bucket         = "travis-terraform-state"
-    key            = "terraform-config/gce-production-5.tfstate"
-    region         = "us-east-1"
-    dynamodb_table = "travis-terraform-state"
-  }
+  iam_user_name  = "worker-gce-${var.env}-${var.index}-org"
+  s3_bucket_name = "build-trace.travis-ci.org"
 }
 
 module "gce_worker_group" {
@@ -123,7 +113,7 @@ module "gce_worker_group" {
   gcloud_zone                   = "${var.gce_gcloud_zone}"
   github_users                  = "${var.github_users}"
   heroku_org                    = "${var.gce_heroku_org}"
-  index                         = "1"
+  index                         = "${var.index}"
   project                       = "${var.project}"
   region                        = "us-central1"
   syslog_address_com            = "${var.syslog_address_com}"
@@ -138,6 +128,10 @@ module "gce_worker_group" {
   worker_instance_count_com_free = "${var.worker_instance_count_com_free}"
   worker_instance_count_org      = "${var.worker_instance_count_org}"
 
+  worker_managed_instance_count_com      = "${var.worker_managed_instance_count_com}"
+  worker_managed_instance_count_com_free = "${var.worker_managed_instance_count_com_free}"
+  worker_managed_instance_count_org      = "${var.worker_managed_instance_count_org}"
+
   worker_config_com = <<EOF
 ### worker.env
 ${file("${path.module}/worker.env")}
@@ -148,6 +142,10 @@ export TRAVIS_WORKER_QUEUE_NAME=builds.gce
 export TRAVIS_WORKER_GCE_SUBNETWORK=jobs-com
 export TRAVIS_WORKER_HARD_TIMEOUT=120m
 export TRAVIS_WORKER_TRAVIS_SITE=com
+
+export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_com.bucket}
+export AWS_ACCESS_KEY_ID=${module.aws_iam_user_s3_com.id}
+export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_com.secret}
 EOF
 
   worker_config_com_free = <<EOF
@@ -160,6 +158,10 @@ export TRAVIS_WORKER_QUEUE_NAME=builds.gce-free
 export TRAVIS_WORKER_GCE_SUBNETWORK=jobs-com
 export TRAVIS_WORKER_HARD_TIMEOUT=120m
 export TRAVIS_WORKER_TRAVIS_SITE=com
+
+export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_com.bucket}
+export AWS_ACCESS_KEY_ID=${module.aws_iam_user_s3_com.id}
+export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_com.secret}
 EOF
 
   worker_config_org = <<EOF
@@ -171,6 +173,10 @@ ${file("${path.module}/config/worker-org.env")}
 export TRAVIS_WORKER_QUEUE_NAME=builds.gce
 export TRAVIS_WORKER_GCE_SUBNETWORK=jobs-org
 export TRAVIS_WORKER_TRAVIS_SITE=org
+
+export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_org.bucket}
+export AWS_ACCESS_KEY_ID=${module.aws_iam_user_s3_org.id}
+export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_org.secret}
 EOF
 }
 
@@ -184,22 +190,4 @@ resource "google_project_iam_member" "production_2_workers" {
   project = "${var.project}"
   role    = "roles/compute.imageUser"
   member  = "serviceAccount:${data.terraform_remote_state.production_2.workers_service_account_email}"
-}
-
-resource "google_project_iam_member" "production_3_workers" {
-  project = "${var.project}"
-  role    = "roles/compute.imageUser"
-  member  = "serviceAccount:${data.terraform_remote_state.production_3.workers_service_account_email}"
-}
-
-resource "google_project_iam_member" "production_4_workers" {
-  project = "${var.project}"
-  role    = "roles/compute.imageUser"
-  member  = "serviceAccount:${data.terraform_remote_state.production_4.workers_service_account_email}"
-}
-
-resource "google_project_iam_member" "production_5_workers" {
-  project = "${var.project}"
-  role    = "roles/compute.imageUser"
-  member  = "serviceAccount:${data.terraform_remote_state.production_5.workers_service_account_email}"
 }

@@ -19,11 +19,11 @@ variable "jobs_network_label" {
 }
 
 variable "vsphere_janitor_version" {
-  default = "0a41b7f"
+  default = "8af7743"
 }
 
 variable "vsphere_janitor_staging_version" {
-  default = "0a41b7f"
+  default = "8af7743"
 }
 
 variable "vsphere_monitor_version" {
@@ -290,4 +290,150 @@ module "util-host-utilities" {
   host_id  = "${module.macstadium_infrastructure.util_uuid}"
   ssh_host = "${module.macstadium_infrastructure.util_ip}"
   ssh_user = "${var.ssh_user}"
+}
+
+resource "vsphere_virtual_machine" "image-builder" {
+  name       = "image-builder"
+  folder     = "Internal VMs"
+  vcpu       = 2
+  memory     = 4096
+  datacenter = "pod-1"
+  cluster    = "MacPro_Pod_1"
+  domain     = "macstadium-us-se-1.travisci.net"
+
+  network_interface {
+    label = "Internal"
+  }
+
+  disk {
+    template  = "Vanilla VMs/travis-ci-ubuntu14.04-internal-vanilla-1531412548"
+    datastore = "DataCore1_1"
+  }
+
+  connection {
+    host  = "${vsphere_virtual_machine.image-builder.network_interface.0.ipv4_address}"
+    user  = "${var.ssh_user}"
+    agent = true
+  }
+}
+
+data "template_file" "image_builder_installer" {
+  template = "${file("install-image-builder.sh")}"
+}
+
+data "template_file" "build_macos_script" {
+  template = "${file("build-macos.sh")}"
+}
+
+data "template_file" "image_builder_packer_env" {
+  template = "${file("config/image-builder-packer-env")}"
+}
+
+resource "null_resource" "image-builder-environment" {
+  triggers {
+    host_id                  = "${vsphere_virtual_machine.image-builder.uuid}"
+    install_script_signature = "${sha256(data.template_file.image_builder_installer.rendered)}"
+    run_script_signature     = "${sha256(data.template_file.build_macos_script.rendered)}"
+    packer_env_signature     = "${sha256(data.template_file.image_builder_packer_env.rendered)}"
+  }
+
+  connection {
+    host  = "${vsphere_virtual_machine.image-builder.network_interface.0.ipv4_address}"
+    user  = "${var.ssh_user}"
+    agent = true
+  }
+
+  provisioner "file" {
+    content     = "${data.template_file.image_builder_installer.rendered}"
+    destination = "/tmp/install-image-builder.sh"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "chmod +x /tmp/install-image-builder.sh",
+      "sudo /tmp/install-image-builder.sh",
+    ]
+  }
+
+  provisioner "file" {
+    content     = "${data.template_file.build_macos_script.rendered}"
+    destination = "/tmp/build-macos.sh"
+  }
+
+  provisioner "file" {
+    content     = "${data.template_file.image_builder_packer_env.rendered}"
+    destination = "/tmp/packer-env"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo rm /tmp/install-image-builder.sh",
+      "sudo mv /tmp/build-macos.sh /home/packer/bin/build-macos",
+      "sudo chown packer:packer /home/packer/bin/build-macos",
+      "sudo chmod +x /home/packer/bin/build-macos",
+      "sudo mv /tmp/packer-env /home/packer/.packer-env",
+      "sudo chown packer:packer /home/packer/.packer-env",
+    ]
+  }
+}
+
+data "template_file" "image_builder_macbot_env" {
+  template = "${file("config/image-builder-macbot-env")}"
+}
+
+data "template_file" "image_builder_macbot_service" {
+  template = "${file("macbot.yml")}"
+}
+
+data "template_file" "image_builder_macbot_installer" {
+  template = "${file("install-macbot.sh")}"
+}
+
+resource "null_resource" "image-builder-macbot" {
+  // This depends on the packer user existing and on Docker being installed
+  depends_on = ["null_resource.image-builder-environment"]
+
+  triggers {
+    host_id             = "${vsphere_virtual_machine.image-builder.uuid}"
+    installer_signature = "${sha256(data.template_file.image_builder_macbot_installer.rendered)}"
+    env_signature       = "${sha256(data.template_file.image_builder_macbot_env.rendered)}"
+    service_signature   = "${sha256(data.template_file.image_builder_macbot_service.rendered)}"
+  }
+
+  connection {
+    host  = "${vsphere_virtual_machine.image-builder.network_interface.0.ipv4_address}"
+    user  = "${var.ssh_user}"
+    agent = true
+  }
+
+  provisioner "file" {
+    content     = "${data.template_file.image_builder_macbot_env.rendered}"
+    destination = "/tmp/macbot-env"
+  }
+
+  provisioner "file" {
+    content     = "${data.template_file.image_builder_macbot_service.rendered}"
+    destination = "/tmp/macbot.yml"
+  }
+
+  provisioner "file" {
+    content     = "${data.template_file.image_builder_macbot_installer.rendered}"
+    destination = "/tmp/install-macbot.sh"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "chmod +x /tmp/install-macbot.sh",
+      "sudo /tmp/install-macbot.sh",
+      "sudo rm /tmp/install-macbot.sh",
+    ]
+  }
+}
+
+resource "aws_route53_record" "image-builder" {
+  zone_id = "${var.travisci_net_external_zone_id}"
+  name    = "image-builder.macstadium-us-se-1.travisci.net"
+  type    = "A"
+  ttl     = 300
+  records = ["${vsphere_virtual_machine.image-builder.network_interface.0.ipv4_address}"]
 }

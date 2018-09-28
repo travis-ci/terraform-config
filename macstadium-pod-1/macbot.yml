@@ -1,0 +1,9 @@
+version: "3"
+services:
+  macbot:
+    image: travisci/macbot:latest
+    env_file: .macbot-env
+    networks:
+    - net
+networks:
+  net:

@@ -7,6 +7,9 @@ variable "index" {}
 variable "instance_count_com" {}
 variable "instance_count_com_free" {}
 variable "instance_count_org" {}
+variable "managed_instance_count_com" {}
+variable "managed_instance_count_com_free" {}
+variable "managed_instance_count_org" {}
 
 variable "machine_type" {
   default = "n1-standard-1"
@@ -169,6 +172,55 @@ EOF
   }
 }
 
+resource "google_compute_instance_template" "worker_com" {
+  name_prefix = "${var.env}-${var.index}-worker-com-"
+
+  machine_type = "${var.machine_type}"
+  tags         = ["worker", "${var.env}", "com", "paid"]
+  project      = "${var.project}"
+
+  scheduling {
+    automatic_restart   = true
+    on_host_maintenance = "MIGRATE"
+  }
+
+  disk {
+    auto_delete  = true
+    boot         = true
+    source_image = "${var.worker_image}"
+  }
+
+  network_interface {
+    subnetwork = "${var.subnetwork_workers}"
+
+    access_config {
+      # ephemeral ip
+    }
+  }
+
+  metadata {
+    "block-project-ssh-keys" = "true"
+    "user-data"              = "${data.template_file.cloud_config_com.rendered}"
+  }
+
+  depends_on = ["null_resource.worker_com_validation"]
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "google_compute_region_instance_group_manager" "worker_com" {
+  base_instance_name = "${var.env}-${var.index}-worker-com-gce"
+  instance_template  = "${google_compute_instance_template.worker_com.self_link}"
+  name               = "worker-com"
+  target_size        = "${var.managed_instance_count_com}"
+  update_strategy    = "NONE"
+  region             = "${var.region}"
+
+  distribution_policy_zones = "${formatlist("${var.region}-%s", var.zones)}"
+}
+
 resource "google_compute_instance" "worker_com" {
   count = "${var.instance_count_com}"
   name  = "${var.env}-${var.index}-worker-com-${element(var.zones, count.index % length(var.zones))}-${(count.index / length(var.zones)) + 1}-gce"
@@ -247,6 +299,55 @@ EOF
   }
 }
 
+resource "google_compute_instance_template" "worker_com_free" {
+  name_prefix = "${var.env}-${var.index}-worker-com-free-"
+
+  machine_type = "${var.machine_type}"
+  tags         = ["worker", "${var.env}", "com", "free"]
+  project      = "${var.project}"
+
+  scheduling {
+    automatic_restart   = true
+    on_host_maintenance = "MIGRATE"
+  }
+
+  disk {
+    auto_delete  = true
+    boot         = true
+    source_image = "${var.worker_image}"
+  }
+
+  network_interface {
+    subnetwork = "${var.subnetwork_workers}"
+
+    access_config {
+      # ephemeral ip
+    }
+  }
+
+  metadata {
+    "block-project-ssh-keys" = "true"
+    "user-data"              = "${data.template_file.cloud_config_com_free.rendered}"
+  }
+
+  depends_on = ["null_resource.worker_com_free_validation"]
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "google_compute_region_instance_group_manager" "worker_com_free" {
+  base_instance_name = "${var.env}-${var.index}-worker-com-free-gce"
+  instance_template  = "${google_compute_instance_template.worker_com_free.self_link}"
+  name               = "worker-com-free"
+  target_size        = "${var.managed_instance_count_com_free}"
+  update_strategy    = "NONE"
+  region             = "${var.region}"
+
+  distribution_policy_zones = "${formatlist("${var.region}-%s", var.zones)}"
+}
+
 resource "google_compute_instance" "worker_com_free" {
   count = "${var.instance_count_com_free}"
   name  = "${var.env}-${var.index}-worker-com-free-${element(var.zones, count.index % length(var.zones))}-${(count.index / length(var.zones)) + 1}-gce"
@@ -323,6 +424,55 @@ exec ${path.module}/../../bin/travis-worker-verify-config \
   "${base64encode(data.template_file.cloud_config_org.rendered)}"
 EOF
   }
+}
+
+resource "google_compute_instance_template" "worker_org" {
+  name_prefix = "${var.env}-${var.index}-worker-org-"
+
+  machine_type = "${var.machine_type}"
+  tags         = ["worker", "${var.env}", "org"]
+  project      = "${var.project}"
+
+  scheduling {
+    automatic_restart   = true
+    on_host_maintenance = "MIGRATE"
+  }
+
+  disk {
+    auto_delete  = true
+    boot         = true
+    source_image = "${var.worker_image}"
+  }
+
+  network_interface {
+    subnetwork = "${var.subnetwork_workers}"
+
+    access_config {
+      # ephemeral ip
+    }
+  }
+
+  metadata {
+    "block-project-ssh-keys" = "true"
+    "user-data"              = "${data.template_file.cloud_config_org.rendered}"
+  }
+
+  depends_on = ["null_resource.worker_org_validation"]
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "google_compute_region_instance_group_manager" "worker_org" {
+  base_instance_name = "${var.env}-${var.index}-worker-org-gce"
+  instance_template  = "${google_compute_instance_template.worker_org.self_link}"
+  name               = "worker-org"
+  target_size        = "${var.managed_instance_count_org}"
+  update_strategy    = "NONE"
+  region             = "${var.region}"
+
+  distribution_policy_zones = "${formatlist("${var.region}-%s", var.zones)}"
 }
 
 resource "google_compute_instance" "worker_org" {
