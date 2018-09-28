@@ -15,7 +15,7 @@ variable "gcloud_cleanup_instance_max_age" {
 variable "gcloud_cleanup_job_board_url" {}
 
 variable "gcloud_cleanup_loop_sleep" {
-  default = "1s"
+  default = "1m"
 }
 
 variable "gcloud_cleanup_opencensus_sampling_rate" {}
