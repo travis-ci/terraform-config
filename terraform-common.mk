@@ -18,7 +18,6 @@ NATBZ2 := $(TOP)/assets/nat.tar.bz2
 
 PROD_TF_VERSION := v0.11.8
 TERRAFORM := $(HOME)/.cache/travis-terraform-config/terraform-$(PROD_TF_VERSION)
-TAR := LC_ALL=C tar
 
 .PHONY: hello
 hello: announce
@@ -77,15 +76,32 @@ destroy: announce .config $(TRVS_TFVARS) $(TFSTATE)
 	$(TERRAFORM) plan -module-depth=-1 -destroy -out=$(TFPLAN)
 	$(TOP)/bin/post-flight $(TOP)
 
-$(NATBZ2): $(wildcard $(TOP)/assets/nat/**/*)
-	$(TAR) -C $(TOP)/assets \
+.PHONY: tar
+tar:
+UNAME := $(shell uname -s | tr '[A-Z]' '[a-z]')
+ifeq ($(UNAME),darwin)
+  TAR := gtar
+else
+  ifeq ($(UNAME),linux)
+    TAR := tar
+  else
+    $(error Operating system $(UNAME) is not yet supported)
+  endif
+endif
+ifeq (,$(shell which $(TAR)))
+  $(error Please ensure GNU tar is installed and is available as $(TAR))
+endif
+TAR := LC_ALL=C $(TAR) \
       --mtime='1970-01-01 00:00:00 +0000' \
       --mode='go=rX,u+rw,a-s' \
       --owner=0 \
       --group=0 \
       --numeric-owner \
       --sort=name \
-      -cjf $(TOP)/assets/nat.tar.bz2 nat
+	  -cj
+
+$(NATBZ2): tar $(wildcard $(TOP)/assets/nat/**/*)
+	$(TAR) -C $(TOP)/assets -f $(TOP)/assets/nat.tar.bz2 nat
 
 $(TFSTATE):
 	$(TERRAFORM) init
