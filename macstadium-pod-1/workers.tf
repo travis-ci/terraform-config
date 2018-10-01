@@ -20,12 +20,39 @@ resource "random_id" "travis_worker_production_com_token" {
   byte_length = 32
 }
 
+module "aws_iam_user_s3_com" {
+  source         = "../modules/aws_iam_user_s3"
+  iam_user_name  = "worker-macstadium-production-${var.index}-com"
+  s3_bucket_name = "build-trace.travis-ci.com"
+}
+
+module "aws_iam_user_s3_org" {
+  source         = "../modules/aws_iam_user_s3"
+  iam_user_name  = "worker-macstadium-production-${var.index}-org"
+  s3_bucket_name = "build-trace.travis-ci.org"
+}
+
+module "aws_iam_user_s3_com_staging" {
+  source         = "../modules/aws_iam_user_s3"
+  iam_user_name  = "worker-macstadium-staging-${var.index}-com"
+  s3_bucket_name = "build-trace.travis-ci.com"
+}
+
+module "aws_iam_user_s3_org_staging" {
+  source         = "../modules/aws_iam_user_s3"
+  iam_user_name  = "worker-macstadium-staging-${var.index}-org"
+  s3_bucket_name = "build-trace.travis-ci.org"
+}
+
 data "template_file" "worker_config_common" {
   template = <<EOF
 export TRAVIS_WORKER_AMQP_HEARTBEAT="60s"
 export TRAVIS_WORKER_BUILD_FIX_ETC_HOSTS="true"
 export TRAVIS_WORKER_BUILD_FIX_RESOLV_CONF="true"
 export TRAVIS_WORKER_BUILD_PARANOID="false"
+export TRAVIS_WORKER_BUILD_TRACE_ENABLED=true
+export TRAVIS_WORKER_BUILD_TRACE_S3_KEY_PREFIX=trace/
+export TRAVIS_WORKER_BUILD_TRACE_S3_REGION=us-east-1
 export TRAVIS_WORKER_QUEUE_TYPE="amqp"
 export TRAVIS_WORKER_QUEUE_NAME="builds.macstadium6"
 export TRAVIS_WORKER_PROVIDER_NAME="jupiterbrain"
@@ -55,6 +82,10 @@ export TRAVIS_WORKER_PPROF_PORT="7070"
 export TRAVIS_WORKER_HTTP_API_AUTH="macstadium-worker:${random_id.travis_worker_production_org_token.hex}"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_production_org_token.hex}@127.0.0.1:8081/"
 export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-production-org-macstadium-${var.index}-1-dc18"
+
+export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_org.bucket}
+export AWS_ACCESS_KEY_ID=${module.aws_iam_user_s3_org.id}
+export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_org.secret}
 EOF
 }
 
@@ -76,6 +107,10 @@ export TRAVIS_WORKER_PPROF_PORT="7071"
 export TRAVIS_WORKER_HTTP_API_AUTH="macstadium-worker:${random_id.travis_worker_production_org_token.hex}"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_production_org_token.hex}@127.0.0.1:8081/"
 export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-production-org-macstadium-${var.index}-2-dc18"
+
+export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_org.bucket}
+export AWS_ACCESS_KEY_ID=${module.aws_iam_user_s3_org.id}
+export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_org.secret}
 EOF
 }
 
@@ -97,6 +132,10 @@ export TRAVIS_WORKER_PPROF_PORT="7072"
 export TRAVIS_WORKER_HTTP_API_AUTH="macstadium-worker:${random_id.travis_worker_production_org_token.hex}"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_production_org_token.hex}@127.0.0.1:8081/"
 export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-production-org-macstadium-${var.index}-3-dc18"
+
+export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_org.bucket}
+export AWS_ACCESS_KEY_ID=${module.aws_iam_user_s3_org.id}
+export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_org.secret}
 EOF
 }
 
@@ -118,6 +157,10 @@ export TRAVIS_WORKER_PPROF_PORT="7073"
 export TRAVIS_WORKER_HTTP_API_AUTH="macstadium-worker:${random_id.travis_worker_production_org_token.hex}"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_production_org_token.hex}@127.0.0.1:8081/"
 export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-production-org-macstadium-${var.index}-4-dc18"
+
+export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_org.bucket}
+export AWS_ACCESS_KEY_ID=${module.aws_iam_user_s3_org.id}
+export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_org.secret}
 EOF
 }
 
@@ -137,6 +180,10 @@ export TRAVIS_WORKER_TRAVIS_SITE="org"
 export TRAVIS_WORKER_POOL_SIZE="2"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_staging_org_token.hex}@127.0.0.1:8082/"
 export TRAVIS_WORKER_LIBRATO_SOURCE="worker-staging-org-${var.index}-1-dc18"
+
+export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_org_staging.bucket}
+export AWS_ACCESS_KEY_ID=${module.aws_iam_user_s3_org_staging.id}
+export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_org_staging.secret}
 EOF
 }
 
@@ -156,6 +203,10 @@ export TRAVIS_WORKER_TRAVIS_SITE="org"
 export TRAVIS_WORKER_POOL_SIZE="2"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_staging_org_token.hex}@127.0.0.1:8082/"
 export TRAVIS_WORKER_LIBRATO_SOURCE="worker-staging-org-${var.index}-2-dc18"
+
+export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_org_staging.bucket}
+export AWS_ACCESS_KEY_ID=${module.aws_iam_user_s3_org_staging.id}
+export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_org_staging.secret}
 EOF
 }
 
@@ -178,6 +229,10 @@ export TRAVIS_WORKER_PPROF_PORT="7080"
 export TRAVIS_WORKER_HTTP_API_AUTH="macstadium-worker:${random_id.travis_worker_production_com_token.hex}"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_production_com_token.hex}@127.0.0.1:8083/"
 export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-production-com-macstadium-${var.index}-1-dc18"
+
+export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_com.bucket}
+export AWS_ACCESS_KEY_ID=${module.aws_iam_user_s3_com.id}
+export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_com.secret}
 EOF
 }
 
@@ -200,6 +255,10 @@ export TRAVIS_WORKER_PPROF_PORT="7081"
 export TRAVIS_WORKER_HTTP_API_AUTH="macstadium-worker:${random_id.travis_worker_production_com_token.hex}"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_production_com_token.hex}@127.0.0.1:8083/"
 export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-production-com-macstadium-${var.index}-2-dc18"
+
+export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_com.bucket}
+export AWS_ACCESS_KEY_ID=${module.aws_iam_user_s3_com.id}
+export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_com.secret}
 EOF
 }
 
@@ -222,6 +281,10 @@ export TRAVIS_WORKER_PPROF_PORT="7082"
 export TRAVIS_WORKER_HTTP_API_AUTH="macstadium-worker:${random_id.travis_worker_production_com_token.hex}"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_production_com_token.hex}@127.0.0.1:8083/"
 export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-production-com-macstadium-${var.index}-3-dc18"
+
+export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_com.bucket}
+export AWS_ACCESS_KEY_ID=${module.aws_iam_user_s3_com.id}
+export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_com.secret}
 EOF
 }
 
@@ -244,6 +307,10 @@ export TRAVIS_WORKER_PPROF_PORT="7083"
 export TRAVIS_WORKER_HTTP_API_AUTH="macstadium-worker:${random_id.travis_worker_production_com_token.hex}"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_production_com_token.hex}@127.0.0.1:8083/"
 export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-production-com-macstadium-${var.index}-4-dc18"
+
+export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_com.bucket}
+export AWS_ACCESS_KEY_ID=${module.aws_iam_user_s3_com.id}
+export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_com.secret}
 EOF
 }
 
@@ -264,6 +331,10 @@ export TRAVIS_WORKER_TRAVIS_SITE="com"
 export TRAVIS_WORKER_POOL_SIZE="2"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_staging_com_token.hex}@127.0.0.1:8084/"
 export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-staging-com-macstadium-${var.index}-1-dc18"
+
+export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_com_staging.bucket}
+export AWS_ACCESS_KEY_ID=${module.aws_iam_user_s3_com_staging.id}
+export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_com_staging.secret}
 EOF
 }
 
@@ -284,6 +355,10 @@ export TRAVIS_WORKER_TRAVIS_SITE="com"
 export TRAVIS_WORKER_POOL_SIZE="2"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_staging_com_token.hex}@127.0.0.1:8084/"
 export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-staging-com-macstadium-${var.index}-2-dc18"
+
+export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_com_staging.bucket}
+export AWS_ACCESS_KEY_ID=${module.aws_iam_user_s3_com_staging.id}
+export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_com_staging.secret}
 EOF
 }
 
@@ -305,6 +380,10 @@ export TRAVIS_WORKER_POOL_SIZE="2"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_staging_com_token.hex}@127.0.0.1:8084/"
 export TRAVIS_WORKER_QUEUE_NAME="builds.macstadium6-free"
 export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-staging-com-free-macstadium-${var.index}-1-dc18"
+
+export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_com_staging.bucket}
+export AWS_ACCESS_KEY_ID=${module.aws_iam_user_s3_com_staging.id}
+export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_com_staging.secret}
 EOF
 }
 
@@ -326,6 +405,10 @@ export TRAVIS_WORKER_POOL_SIZE="2"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_staging_com_token.hex}@127.0.0.1:8084/"
 export TRAVIS_WORKER_QUEUE_NAME="builds.macstadium6-free"
 export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-staging-com-free-macstadium-${var.index}-2-dc18"
+
+export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_com_staging.bucket}
+export AWS_ACCESS_KEY_ID=${module.aws_iam_user_s3_com_staging.id}
+export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_com_staging.secret}
 EOF
 }
 
