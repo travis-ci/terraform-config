@@ -34,6 +34,13 @@ LoadPlugin ping
 	MaxMissed -1
 </Plugin>
 
+<Plugin ping>
+	Host "8.8.4.4"
+	Interval 1.0
+	Timeout 0.9
+	MaxMissed -1
+</Plugin>
+
 Include "/opt/collectd/etc/collectd.conf.d/cpu.conf"
 Include "/opt/collectd/etc/collectd.conf.d/librato.conf"
 Include "/opt/collectd/etc/collectd.conf.d/disk.conf"
