@@ -118,9 +118,10 @@ ${file("${path.module}/worker.env")}
 ### config/worker-com.env
 ${file("${path.module}/config/worker-com.env")}
 
-export TRAVIS_WORKER_QUEUE_NAME=builds.gce
+export TRAVIS_WORKER_GCE_DISK_SIZE=50
 export TRAVIS_WORKER_GCE_SUBNETWORK=jobs-com
 export TRAVIS_WORKER_HARD_TIMEOUT=120m
+export TRAVIS_WORKER_QUEUE_NAME=builds.gce
 export TRAVIS_WORKER_TRAVIS_SITE=com
 
 export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_com.bucket}
