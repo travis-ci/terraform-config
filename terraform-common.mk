@@ -13,7 +13,6 @@ TRAVIS_BUILD_ORG_HOST ?= build.travis-ci.org
 JOB_BOARD_HOST ?= job-board.travis-ci.com
 AMQP_URL_VARNAME ?= AMQP_URL
 TOP := $(shell git rev-parse --show-toplevel)
-
 NATBZ2 := $(TOP)/assets/nat.tar.bz2
 
 PROD_TF_VERSION := v0.11.8
@@ -89,7 +88,8 @@ else
   endif
 endif
 ifeq (,$(shell which $(TAR)))
-  $(error Please ensure GNU tar is installed and is available as $(TAR))
+  $(info Please ensure GNU tar is installed and is available as $(TAR), e.g. with `brew install gnu-tar`)
+  $(error No valid tar found.)
 endif
 TAR := LC_ALL=C $(TAR) \
       --mtime='1970-01-01 00:00:00 +0000' \
@@ -101,7 +101,7 @@ TAR := LC_ALL=C $(TAR) \
       -cj
 
 $(NATBZ2): tar $(wildcard $(TOP)/assets/nat/**/*)
-	$(TAR) -C $(TOP)/assets -f $(TOP)/assets/nat.tar.bz2 nat
+	$(TAR) -C $(TOP)/assets -f $(NATBZ2) nat
 
 $(TFSTATE):
 	$(TERRAFORM) init
