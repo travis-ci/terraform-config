@@ -430,6 +430,10 @@ export TRAVIS_WORKER_POOL_SIZE="5"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_custom_1_token.hex}@127.0.0.1:8085/"
 export TRAVIS_WORKER_QUEUE_NAME="builds.customer.${lower(var.custom_1_name)}-macos"
 export TRAVIS_WORKER_LIBRATO_SOURCE="worker-custom-1-${var.index}-dc18"
+
+export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_com.bucket}
+export AWS_ACCESS_KEY_ID=${module.aws_iam_user_s3_com.id}
+export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_com.secret}
 EOF
 }
 
@@ -451,6 +455,10 @@ export TRAVIS_WORKER_POOL_SIZE="5"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_custom_2_token.hex}@127.0.0.1:8086/"
 export TRAVIS_WORKER_QUEUE_NAME="builds.customer.${lower(var.custom_2_name)}-macos"
 export TRAVIS_WORKER_LIBRATO_SOURCE="worker-custom-2-${var.index}-dc18"
+
+export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_com.bucket}
+export AWS_ACCESS_KEY_ID=${module.aws_iam_user_s3_com.id}
+export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_com.secret}
 EOF
 }
 
@@ -472,6 +480,10 @@ export TRAVIS_WORKER_POOL_SIZE="5"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_custom_4_token.hex}@127.0.0.1:8088/"
 export TRAVIS_WORKER_QUEUE_NAME="builds.customer.${lower(var.custom_4_name)}"
 export TRAVIS_WORKER_LIBRATO_SOURCE="worker-custom-4-${var.index}-dc18"
+
+export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_com.bucket}
+export AWS_ACCESS_KEY_ID=${module.aws_iam_user_s3_com.id}
+export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_com.secret}
 EOF
 }
 
@@ -493,6 +505,10 @@ export TRAVIS_WORKER_POOL_SIZE="5"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_custom_5_token.hex}@127.0.0.1:8089/"
 export TRAVIS_WORKER_QUEUE_NAME="builds.customer.${lower(var.custom_5_name)}"
 export TRAVIS_WORKER_LIBRATO_SOURCE="worker-custom-5-${var.index}-dc18"
+
+export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_com.bucket}
+export AWS_ACCESS_KEY_ID=${module.aws_iam_user_s3_com.id}
+export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_com.secret}
 EOF
 }
 
@@ -514,5 +530,9 @@ export TRAVIS_WORKER_POOL_SIZE="5"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_custom_6_token.hex}@127.0.0.1:8091/"
 export TRAVIS_WORKER_QUEUE_NAME="builds.customer.${lower(var.custom_6_name)}"
 export TRAVIS_WORKER_LIBRATO_SOURCE="worker-custom-6-${var.index}-dc18"
+
+export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_com.bucket}
+export AWS_ACCESS_KEY_ID=${module.aws_iam_user_s3_com.id}
+export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_com.secret}
 EOF
 }
