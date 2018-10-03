@@ -1,7 +1,7 @@
 variable "latest_travis_worker_version" {}
 
 variable "travis_worker_version" {
-  default = "v4.1.2"
+  default = "v4.2.0"
 }
 
 variable "worker_org_pool_size" {
@@ -53,6 +53,7 @@ export TRAVIS_WORKER_BUILD_PARANOID="false"
 export TRAVIS_WORKER_BUILD_TRACE_ENABLED=true
 export TRAVIS_WORKER_BUILD_TRACE_S3_KEY_PREFIX=trace/
 export TRAVIS_WORKER_BUILD_TRACE_S3_REGION=us-east-1
+export TRAVIS_WORKER_INFRA="macstadium"
 export TRAVIS_WORKER_QUEUE_TYPE="amqp"
 export TRAVIS_WORKER_QUEUE_NAME="builds.macstadium6"
 export TRAVIS_WORKER_PROVIDER_NAME="jupiterbrain"
