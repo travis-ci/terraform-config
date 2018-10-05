@@ -1,7 +1,7 @@
 variable "latest_travis_worker_version" {}
 
 variable "travis_worker_version" {
-  default = "v4.2.0"
+  default = "v4.4.0"
 }
 
 variable "worker_org_pool_size" {
