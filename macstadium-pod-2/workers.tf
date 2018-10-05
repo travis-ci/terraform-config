@@ -35,13 +35,13 @@ module "aws_iam_user_s3_org" {
 module "aws_iam_user_s3_com_staging" {
   source         = "../modules/aws_iam_user_s3"
   iam_user_name  = "worker-macstadium-staging-${var.index}-com"
-  s3_bucket_name = "build-trace.travis-ci.com"
+  s3_bucket_name = "build-trace-staging.travis-ci.com"
 }
 
 module "aws_iam_user_s3_org_staging" {
   source         = "../modules/aws_iam_user_s3"
   iam_user_name  = "worker-macstadium-staging-${var.index}-org"
-  s3_bucket_name = "build-trace.travis-ci.org"
+  s3_bucket_name = "build-trace-staging.travis-ci.org"
 }
 
 data "template_file" "worker_config_common" {
