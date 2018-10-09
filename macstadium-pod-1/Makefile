@@ -30,7 +30,9 @@ CONFIG_FILES := \
 		config/vsphere-monitor \
 		config/collectd-vsphere-common \
 		config/image-builder-packer-env \
+		config/image-builder-imaged-env \
 		config/image-builder-macbot-env \
+		config/image-builder-ansible-secrets \
 		config/travis-vm-ssh-key
 
 INDEX ?= $(subst $(INFRA)-$(ENV_SHORT)-,,$(ENV_NAME))
@@ -67,10 +69,14 @@ $(CONFIG_FILES):
 		| sed 's/^/export /' >config/travis-worker-staging-com-common
 	trvs generate-config -n --pro -p TRAVIS_WORKER -f env macstadium-workers production-common \
 		| sed 's/^/export /' >config/travis-worker-production-com-common
+	\
 	trvs generate-config -n --env-prefix= -f env macstadium-image-builder packer \
 		| sed 's/^/export /' >config/image-builder-packer-env
 	trvs generate-config -n --env-prefix= -f env macstadium-image-builder macbot \
 		| sed 's/\\!/!/' | sed 's/\\(/(/' >config/image-builder-macbot-env
+	trvs generate-config -n --env-prefix= -f env macstadium-image-builder imaged \
+		| sed 's/\\!/!/' | sed 's/\\(/(/' >config/image-builder-imaged-env
+	trvs generate-config -n macstadium-image-builder ansible-secrets >config/image-builder-ansible-secrets
 	\
 	trvs generate-config --pro -p VSPHERE_JANITOR -f env vsphere-janitor production-$(INDEX) \
 		| sed 's/^/export /' >config/vsphere-janitor-production-com
