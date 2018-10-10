@@ -28,6 +28,9 @@ variable "warmer_pool_images" {
     "travis-ci-garnet-trusty-1512502259-986baf0",
   ]
 }
+variable "warmer_pool_image_project" {
+  default = "eco-emissary-99515"
+}
 
 variable "warmer_pool_machine_type" {
   default = "n1-standard-2"
@@ -548,7 +551,7 @@ resource "google_compute_instance_template" "warmer_pool_org" {
   disk {
     auto_delete  = true
     boot         = true
-    source_image = "${element(var.warmer_pool_images, count.index)}"
+    source_image = "https://www.googleapis.com/compute/v1/projects/${var.warmer_pool_image_project}/global/images/${element(var.warmer_pool_images, count.index)}"
   }
 
   network_interface {
