@@ -20,6 +20,23 @@ variable "region" {}
 variable "subnetwork_workers" {}
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
+
+variable "warmer_pool_images" {
+  default = [
+    "travis-ci-connie-trusty-1512502258-986baf0",
+    "travis-ci-amethyst-trusty-1512508224-986baf0",
+    "travis-ci-garnet-trusty-1512502259-986baf0",
+  ]
+}
+
+variable "warmer_pool_machine_type" {
+  default = "n1-standard-2"
+}
+
+variable "warmer_pool_target_size" {
+  default = "1"
+}
+
 variable "worker_docker_self_image" {}
 variable "worker_image" {}
 
@@ -103,6 +120,8 @@ resource "google_project_iam_custom_role" "worker" {
     "compute.instances.updateNetworkInterface",
     "compute.instances.updateShieldedVmConfig",
     "compute.instances.use",
+    "compute.instanceGroups.get",
+    "compute.instanceGroups.list",
     "compute.machineTypes.get",
     "compute.machineTypes.list",
     "compute.networks.get",
@@ -511,6 +530,54 @@ resource "google_compute_instance" "worker_org" {
   lifecycle {
     ignore_changes = ["disk", "boot_disk"]
   }
+}
+
+resource "google_compute_instance_template" "warmer_pool_org" {
+  count       = "${length(var.warmer_pool_images)}"
+  name_prefix = "${var.env}-${var.index}-warmer-pool-org-"
+
+  machine_type = "${var.warmer_pool_machine_type}"
+  tags         = ["testing", "no-ip", "org"]
+  project      = "${var.project}"
+
+  scheduling {
+    automatic_restart   = true
+    on_host_maintenance = "MIGRATE"
+  }
+
+  disk {
+    auto_delete  = true
+    boot         = true
+    source_image = "${element(var.warmer_pool_images, count.index)}"
+  }
+
+  network_interface {
+    subnetwork = "jobs-org"
+
+    access_config {
+      # ephemeral ip
+    }
+  }
+
+  metadata {
+    "block-project-ssh-keys" = "true"
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "google_compute_region_instance_group_manager" "warmer_pool_org" {
+  count              = "${length(var.warmer_pool_images)}"
+  base_instance_name = "travis-job-${element(var.warmer_pool_images, count.index)}-"
+  instance_template  = "${google_compute_instance_template.warmer_pool_org.*.self_link}"
+  name               = "warmer-pool-org-${length(var.warmer_pool_images)}"
+  target_size        = "${var.warmer_pool_target_size}"
+  update_strategy    = "NONE"
+  region             = "${var.region}"
+
+  distribution_policy_zones = "${formatlist("${var.region}-%s", var.zones)}"
 }
 
 output "workers_service_account_email" {
