@@ -54,6 +54,10 @@ resource "google_compute_instance_template" "warmer_pool_org" {
   metadata {
     "block-project-ssh-keys" = "true"
   }
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "google_compute_region_instance_group_manager" "warmer_pool_org" {
