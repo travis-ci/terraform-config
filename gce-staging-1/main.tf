@@ -178,3 +178,7 @@ module "gce_warmer_standard" {
 output "workers_service_account_email" {
   value = "${module.gce_worker_group.workers_service_account_email}"
 }
+
+output "latest_docker_image_worker" {
+  value = "${var.latest_docker_image_worker}"
+}
