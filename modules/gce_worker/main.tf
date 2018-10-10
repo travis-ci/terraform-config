@@ -565,21 +565,18 @@ resource "google_compute_instance_template" "warmer_pool_org" {
   metadata {
     "block-project-ssh-keys" = "true"
   }
-
-  lifecycle {
-    create_before_destroy = true
-  }
 }
 
 resource "google_compute_region_instance_group_manager" "warmer_pool_org" {
   count              = "${length(var.warmer_pool_images)}"
-  base_instance_name = "travis-job-${element(var.warmer_pool_images, count.index)}-"
-  instance_template  = "${google_compute_instance_template.warmer_pool_org.*.self_link}"
-  name               = "warmer-pool-org-${length(var.warmer_pool_images)}"
+  base_instance_name = "travis-job"
+  instance_template  = "${element(google_compute_instance_template.warmer_pool_org.*.self_link, count.index)}"
+  name               = "warmer-pool-org-${count.index}"
   target_size        = "${var.warmer_pool_target_size}"
   update_strategy    = "NONE"
   region             = "${var.region}"
 
+  # TODO: make sure this list matches what worker actually uses
   distribution_policy_zones = "${formatlist("${var.region}-%s", var.zones)}"
 }
 
