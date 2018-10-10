@@ -172,9 +172,7 @@ module "gce_warmer_standard" {
   index   = "${var.index}"
   project = "${var.project}"
   region  = "us-central1"
-
-  # TODO: make sure this list matches what worker actually uses
-  zones = "${var.worker_zones}"
+  zones   = "${var.worker_zones}"
 }
 
 output "workers_service_account_email" {
