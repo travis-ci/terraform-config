@@ -49,14 +49,14 @@ resource "google_compute_instance_template" "warmer_pool_org" {
 
   network_interface {
     subnetwork = "jobs-org"
-
-    access_config {
-      # ephemeral ip
-    }
   }
 
   metadata {
     "block-project-ssh-keys" = "true"
+  }
+
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
