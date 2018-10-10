@@ -20,26 +20,6 @@ variable "region" {}
 variable "subnetwork_workers" {}
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
-
-variable "warmer_pool_images" {
-  default = [
-    "travis-ci-connie-trusty-1512502258-986baf0",
-    "travis-ci-amethyst-trusty-1512508224-986baf0",
-    "travis-ci-garnet-trusty-1512502259-986baf0",
-  ]
-}
-variable "warmer_pool_image_project" {
-  default = "eco-emissary-99515"
-}
-
-variable "warmer_pool_machine_type" {
-  default = "n1-standard-2"
-}
-
-variable "warmer_pool_target_size" {
-  default = "1"
-}
-
 variable "worker_docker_self_image" {}
 variable "worker_image" {}
 
@@ -533,51 +513,6 @@ resource "google_compute_instance" "worker_org" {
   lifecycle {
     ignore_changes = ["disk", "boot_disk"]
   }
-}
-
-resource "google_compute_instance_template" "warmer_pool_org" {
-  count       = "${length(var.warmer_pool_images)}"
-  name_prefix = "${var.env}-${var.index}-warmer-pool-org-"
-
-  machine_type = "${var.warmer_pool_machine_type}"
-  tags         = ["testing", "no-ip", "org"]
-  project      = "${var.project}"
-
-  scheduling {
-    automatic_restart   = true
-    on_host_maintenance = "MIGRATE"
-  }
-
-  disk {
-    auto_delete  = true
-    boot         = true
-    source_image = "https://www.googleapis.com/compute/v1/projects/${var.warmer_pool_image_project}/global/images/${element(var.warmer_pool_images, count.index)}"
-  }
-
-  network_interface {
-    subnetwork = "jobs-org"
-
-    access_config {
-      # ephemeral ip
-    }
-  }
-
-  metadata {
-    "block-project-ssh-keys" = "true"
-  }
-}
-
-resource "google_compute_region_instance_group_manager" "warmer_pool_org" {
-  count              = "${length(var.warmer_pool_images)}"
-  base_instance_name = "travis-job"
-  instance_template  = "${element(google_compute_instance_template.warmer_pool_org.*.self_link, count.index)}"
-  name               = "warmer-pool-org-${element(var.warmer_pool_images, count.index)}"
-  target_size        = "${var.warmer_pool_target_size}"
-  update_strategy    = "NONE"
-  region             = "${var.region}"
-
-  # TODO: make sure this list matches what worker actually uses
-  distribution_policy_zones = "${formatlist("${var.region}-%s", var.zones)}"
 }
 
 output "workers_service_account_email" {
