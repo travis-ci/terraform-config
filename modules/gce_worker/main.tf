@@ -103,6 +103,8 @@ resource "google_project_iam_custom_role" "worker" {
     "compute.instances.updateNetworkInterface",
     "compute.instances.updateShieldedVmConfig",
     "compute.instances.use",
+    "compute.instanceGroups.get",
+    "compute.instanceGroups.list",
     "compute.machineTypes.get",
     "compute.machineTypes.list",
     "compute.networks.get",
