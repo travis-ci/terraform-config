@@ -156,25 +156,6 @@ export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_org.secret}
 EOF
 }
 
-module "gce_warmer_standard" {
-  source = "../modules/gce_warmer"
-
-  machine_type = "n1-standard-1"
-  target_size  = "1"
-
-  images = [
-    "travis-ci-connie-trusty-1512502258-986baf0",
-    "travis-ci-amethyst-trusty-1512508224-986baf0",
-    "travis-ci-garnet-trusty-1512502259-986baf0",
-  ]
-
-  env     = "${var.env}"
-  index   = "${var.index}"
-  project = "${var.project}"
-  region  = "us-central1"
-  zones   = "${var.worker_zones}"
-}
-
 output "workers_service_account_email" {
   value = "${module.gce_worker_group.workers_service_account_email}"
 }
