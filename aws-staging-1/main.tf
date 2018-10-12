@@ -356,3 +356,7 @@ module "aws_asg_org_canary" {
     "${data.terraform_remote_state.vpc.workers_org_subnet_1b_id}",
   ]
 }
+
+output "latest_docker_image_worker" {
+  value = "${var.latest_docker_image_worker}"
+}
