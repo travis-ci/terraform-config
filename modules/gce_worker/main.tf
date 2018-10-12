@@ -135,6 +135,10 @@ resource "google_service_account_key" "workers" {
   service_account_id = "${google_service_account.workers.email}"
 }
 
+resource "stackdriver_trace_account_key" "tracing" {
+  service_account_id = "${google_service_account.tracing.email}"
+}
+
 data "template_file" "cloud_init_env_com" {
   template = <<EOF
 export TRAVIS_WORKER_SELF_IMAGE="${var.worker_docker_self_image}"
@@ -273,12 +277,13 @@ data "template_file" "cloud_config_com_free" {
   template = "${file("${path.module}/cloud-config.yml.tpl")}"
 
   vars {
-    assets           = "${path.module}/../../assets"
-    cloud_init_env   = "${data.template_file.cloud_init_env_com_free.rendered}"
-    gce_account_json = "${base64decode(google_service_account_key.workers.private_key)}"
-    here             = "${path.module}"
-    syslog_address   = "${var.syslog_address_com}"
-    worker_config    = "${var.config_com_free}"
+    assets                         = "${path.module}/../../assets"
+    cloud_init_env                 = "${data.template_file.cloud_init_env_com_free.rendered}"
+    gce_account_json               = "${base64decode(google_service_account_key.workers.private_key)}"
+    stackdriver_trace_account_json = "${base64decode(google_service_account_key.tracing.private_key)}"
+    here                           = "${path.module}"
+    syslog_address                 = "${var.syslog_address_com}"
+    worker_config                  = "${var.config_com_free}"
 
     docker_env = <<EOF
 export TRAVIS_DOCKER_DISABLE_DIRECT_LVM=1
@@ -400,12 +405,13 @@ data "template_file" "cloud_config_org" {
   template = "${file("${path.module}/cloud-config.yml.tpl")}"
 
   vars {
-    assets           = "${path.module}/../../assets"
-    cloud_init_env   = "${data.template_file.cloud_init_env_org.rendered}"
-    gce_account_json = "${base64decode(google_service_account_key.workers.private_key)}"
-    here             = "${path.module}"
-    syslog_address   = "${var.syslog_address_org}"
-    worker_config    = "${var.config_org}"
+    assets                         = "${path.module}/../../assets"
+    cloud_init_env                 = "${data.template_file.cloud_init_env_org.rendered}"
+    gce_account_json               = "${base64decode(google_service_account_key.workers.private_key)}"
+    stackdriver_trace_account_json = "${base64decode(google_service_account_key.tracing.private_key)}"
+    here                           = "${path.module}"
+    syslog_address                 = "${var.syslog_address_org}"
+    worker_config                  = "${var.config_org}"
 
     docker_env = <<EOF
 export TRAVIS_DOCKER_DISABLE_DIRECT_LVM=1
