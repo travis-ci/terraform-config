@@ -1,18 +1,21 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
+
 require 'optparse'
 require 'json'
 
 def main
   options = { env: '', noop: false }
   OptionParser.new do |opts|
-    opts.banner = <<-HEREDOC
+    opts.banner = <<~BANNER
+      Usage: gcloud-recreate-nat-instances [options]
 
-  Recreates the NAT instances managed by the instance groups specified using the GCE_NAT_GROUPS environment variable.
-  Also requires GCE_NAT_PROJECT and GCE_NAT_REGION to be set.
-  
-  Usage: gcloud-recreate-nat-instances [options]
+      Recreates the NAT instances managed by the instance groups specified using
+      the GCE_NAT_GROUPS environment variable.  Also requires GCE_NAT_PROJECT
+      and GCE_NAT_REGION to be set.
 
-  HEREDOC
+    BANNER
+
     opts.on('-E', '--env=ENV_FILE') do |f|
       options[:env] = f.strip
     end
@@ -40,8 +43,8 @@ def main
   groups_zones = Hash[groups_zones]
 
   groups_zones.each do |instance_group, zone|
-    instance_list = JSON.parse(`gcloud compute instance-groups list-instances #{instance_group} --zone=#{zone} --project=#{project} --format=json`)
-    instances = instance_list.map{|x| x['instance'].split('/').last}
+    instance_list = list_instances(instance_group, zone)
+    instances = instance_list.map { |r| r.fetch('instance').split('/').last }
     command = %W[
       gcloud compute instance-groups managed recreate-instances
       #{instance_group} --zone=#{zone} --project=#{project}
@@ -51,6 +54,17 @@ def main
   end
 
   0
+end
+
+def list_instances(instance_group, zone)
+  command = %W[
+    gcloud compute instance-groups list-instances
+    #{instance_group}
+    --zone=#{zone}
+    --project=#{project}
+    --format=json
+  ]
+  JSON.parse(`#{command.join(' ')}`)
 end
 
 def run_command(command, noop)
@@ -63,11 +77,11 @@ def run_command(command, noop)
 end
 
 def source_env(env_file)
-  base_env = `bash -c 'printenv'`.split($/).map do |l|
+  base_env = `bash -c 'printenv'`.split($RS).map do |l|
     l.strip.split('=', 2)
   end
   base_env = Hash[base_env]
-  sourced_env = `bash -c "source #{env_file}; printenv"`.split($/).map do |l|
+  sourced_env = `bash -c "source #{env_file}; printenv"`.split($RS).map do |l|
     l.strip.split('=', 2)
   end
   sourced_env = Hash[sourced_env]
