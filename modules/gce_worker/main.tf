@@ -39,6 +39,7 @@ resource "google_project_iam_custom_role" "worker" {
   description = "A travis-worker process that can do travis-worky stuff"
 
   permissions = [
+    "cloudtrace.traces.patch",
     "compute.acceleratorTypes.get",
     "compute.acceleratorTypes.list",
     "compute.addresses.create",
@@ -144,12 +145,13 @@ data "template_file" "cloud_config_com" {
   template = "${file("${path.module}/cloud-config.yml.tpl")}"
 
   vars {
-    assets           = "${path.module}/../../assets"
-    cloud_init_env   = "${data.template_file.cloud_init_env_com.rendered}"
-    gce_account_json = "${base64decode(google_service_account_key.workers.private_key)}"
-    here             = "${path.module}"
-    syslog_address   = "${var.syslog_address_com}"
-    worker_config    = "${var.config_com}"
+    assets                         = "${path.module}/../../assets"
+    cloud_init_env                 = "${data.template_file.cloud_init_env_com.rendered}"
+    gce_account_json               = "${base64decode(google_service_account_key.workers.private_key)}"
+    stackdriver_trace_account_json = "${base64decode(google_service_account_key.tracing.private_key)}"
+    here                           = "${path.module}"
+    syslog_address                 = "${var.syslog_address_com}"
+    worker_config                  = "${var.config_com}"
 
     docker_env = <<EOF
 export TRAVIS_DOCKER_DISABLE_DIRECT_LVM=1
