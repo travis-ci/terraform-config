@@ -1,4 +1,6 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
+
 require 'optparse'
 require 'json'
 
@@ -57,10 +59,10 @@ end
 def list_instances(instance_group, zone)
   command = %W[
     gcloud compute instance-groups list-instances
-      #{instance_group}
-      --zone=#{zone}
-      --project=#{project}
-      --format=json
+    #{instance_group}
+    --zone=#{zone}
+    --project=#{project}
+    --format=json
   ]
   JSON.parse(`#{command.join(' ')}`)
 end
@@ -75,11 +77,11 @@ def run_command(command, noop)
 end
 
 def source_env(env_file)
-  base_env = `bash -c 'printenv'`.split($/).map do |l|
+  base_env = `bash -c 'printenv'`.split($RS).map do |l|
     l.strip.split('=', 2)
   end
   base_env = Hash[base_env]
-  sourced_env = `bash -c "source #{env_file}; printenv"`.split($/).map do |l|
+  sourced_env = `bash -c "source #{env_file}; printenv"`.split($RS).map do |l|
     l.strip.split('=', 2)
   end
   sourced_env = Hash[sourced_env]
