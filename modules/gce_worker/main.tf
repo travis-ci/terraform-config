@@ -39,6 +39,7 @@ resource "google_project_iam_custom_role" "worker" {
   description = "A travis-worker process that can do travis-worky stuff"
 
   permissions = [
+    "cloudtrace.traces.patch",
     "compute.acceleratorTypes.get",
     "compute.acceleratorTypes.list",
     "compute.addresses.create",
