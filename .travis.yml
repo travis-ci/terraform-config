@@ -1,6 +1,7 @@
 language: bash
 rvm: 2.4.2
-dist: trusty
+dist: xenial
+group: edge
 sudo: required
 cache:
   directories:
