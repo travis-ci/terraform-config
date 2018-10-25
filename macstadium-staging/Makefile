@@ -1,8 +1,5 @@
 include $(shell git rev-parse --show-toplevel)/terraform-common.mk
 
-PROD_TF_VERSION := v0.9.11
-TERRAFORM := $(HOME)/.cache/travis-terraform-config/terraform-$(PROD_TF_VERSION)
-
 .PHONY: default
 default: hello
 
@@ -45,6 +42,15 @@ $(CONFIG_FILES):
 .PHONY: plan
 plan: announce .config $(TRVS_TFVARS) $(TFSTATE)
 	$(TERRAFORM) plan -module-depth=-1 \
+		-var-file=$(ENV_NAME).auto.tfvars \
+		-var-file=trvs-collectd-vsphere.auto.tfvars \
+		-var-file=trvs-$(ENV_NAME).auto.tfvars \
+		-var-file=trvs-$(INFRA)-$(ENV_SHORT).auto.tfvars \
+		-out=$(TFPLAN)
+
+.PHONY: destroy
+destroy: announce .config $(TRVS_TFVARS) $(TFSTATE)
+	$(TERRAFORM) plan -module-depth=-1 -destroy \
 		-var-file=$(ENV_NAME).auto.tfvars \
 		-var-file=trvs-collectd-vsphere.auto.tfvars \
 		-var-file=trvs-$(ENV_NAME).auto.tfvars \

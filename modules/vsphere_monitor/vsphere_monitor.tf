@@ -1,6 +1,6 @@
 variable "ssh_host" {}
 variable "ssh_user" {}
-variable "version" {}
+variable "vsphere_monitor_version" {}
 variable "config_path" {}
 variable "index" {}
 variable "host_id" {}
@@ -9,14 +9,14 @@ data "template_file" "vsphere_monitor_install" {
   template = "${file("${path.module}/install-vsphere-monitor.sh")}"
 
   vars {
-    version = "${var.version}"
+    version = "${var.vsphere_monitor_version}"
     index   = "${var.index}"
   }
 }
 
 resource "null_resource" "vsphere_monitor" {
   triggers {
-    version                  = "${var.version}"
+    version                  = "${var.vsphere_monitor_version}"
     config_signature         = "${sha256(file(var.config_path))}"
     install_script_signature = "${sha256(data.template_file.vsphere_monitor_install.rendered)}"
     upstart_script_signature = "${sha256(file("${path.module}/vsphere-monitor.conf"))}"

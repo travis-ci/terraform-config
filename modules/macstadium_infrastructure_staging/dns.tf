@@ -3,5 +3,5 @@ resource "aws_route53_record" "wjb" {
   name    = "wjb-${var.name_suffix}.macstadium-us-se-1.travisci.net"
   type    = "A"
   ttl     = 300
-  records = ["${vsphere_virtual_machine.wjb.network_interface.0.ipv4_address}"]
+  records = ["${vsphere_virtual_machine.wjb.clone.0.customize.0.network_interface.0.ipv4_address}"]
 }

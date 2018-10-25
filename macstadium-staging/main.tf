@@ -89,14 +89,14 @@ module "macstadium_infrastructure_staging" {
 }
 
 module "vsphere_janitor_staging_com" {
-  source      = "../modules/vsphere_janitor"
-  host_id     = "${module.macstadium_infrastructure_staging.wjb_uuid}"
-  ssh_host    = "${module.macstadium_infrastructure_staging.wjb_ip}"
-  ssh_user    = "${var.ssh_user}"
-  version     = "${var.vsphere_janitor_version}"
-  config_path = "${path.module}/config/vsphere-janitor-staging-com"
-  env         = "staging-com"
-  index       = "${var.index}"
+  source                  = "../modules/vsphere_janitor"
+  host_id                 = "${module.macstadium_infrastructure_staging.wjb_uuid}"
+  ssh_host                = "${module.macstadium_infrastructure_staging.wjb_ip}"
+  ssh_user                = "${var.ssh_user}"
+  vsphere_janitor_version = "${var.vsphere_janitor_version}"
+  config_path             = "${path.module}/config/vsphere-janitor-staging-com"
+  env                     = "staging-com"
+  index                   = "${var.index}"
 }
 
 resource "random_id" "collectd_vsphere_collectd_network_token" {
@@ -108,7 +108,7 @@ module "collectd-vsphere-common" {
   host_id                                 = "${module.macstadium_infrastructure_staging.wjb_uuid}"
   ssh_host                                = "${module.macstadium_infrastructure_staging.wjb_ip}"
   ssh_user                                = "${var.ssh_user}"
-  version                                 = "${var.collectd_vsphere_version}"
+  collectd_vsphere_version                = "${var.collectd_vsphere_version}"
   config_path                             = "${path.module}/config/collectd-vsphere-common"
   librato_email                           = "${var.librato_email}"
   librato_token                           = "${var.librato_token}"
