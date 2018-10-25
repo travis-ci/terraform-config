@@ -55,18 +55,6 @@ data "dns_a_record_set" "gce_production_2_nat" {
   host = "nat-production-2.gce-us-central1.travisci.net"
 }
 
-data "dns_a_record_set" "gce_production_3_nat" {
-  host = "nat-production-3.gce-us-central1.travisci.net"
-}
-
-data "dns_a_record_set" "gce_production_4_nat" {
-  host = "nat-production-4.gce-us-central1.travisci.net"
-}
-
-data "dns_a_record_set" "gce_production_5_nat" {
-  host = "nat-production-5.gce-us-central1.travisci.net"
-}
-
 data "dns_a_record_set" "packet_production_1_nat" {
   host = "nat-production-1.packet-ewr1.travisci.net"
 }
@@ -96,9 +84,6 @@ resource "aws_route53_record" "gce_nat" {
   records = [
     "${data.dns_a_record_set.gce_production_1_nat.addrs}",
     "${data.dns_a_record_set.gce_production_2_nat.addrs}",
-    "${data.dns_a_record_set.gce_production_3_nat.addrs}",
-    "${data.dns_a_record_set.gce_production_4_nat.addrs}",
-    "${data.dns_a_record_set.gce_production_5_nat.addrs}",
   ]
 }
 
@@ -148,9 +133,6 @@ resource "aws_route53_record" "nat" {
     "${data.dns_a_record_set.aws_production_2_nat_org.addrs}",
     "${data.dns_a_record_set.gce_production_1_nat.addrs}",
     "${data.dns_a_record_set.gce_production_2_nat.addrs}",
-    "${data.dns_a_record_set.gce_production_3_nat.addrs}",
-    "${data.dns_a_record_set.gce_production_4_nat.addrs}",
-    "${data.dns_a_record_set.gce_production_5_nat.addrs}",
     "${var.macstadium_production_nat_addrs}",
     "${data.dns_a_record_set.packet_production_1_nat.addrs}",
     "${data.dns_a_record_set.packet_production_2_nat.addrs}",
@@ -178,12 +160,6 @@ resource "heroku_app" "whereami" {
       join(",", data.dns_a_record_set.gce_production_1_nat.addrs)
     },${
       join(",", data.dns_a_record_set.gce_production_2_nat.addrs)
-    },${
-      join(",", data.dns_a_record_set.gce_production_3_nat.addrs)
-    },${
-      join(",", data.dns_a_record_set.gce_production_4_nat.addrs)
-    },${
-      join(",", data.dns_a_record_set.gce_production_5_nat.addrs)
     }"
 
     WHEREAMI_INFRA_MACSTADIUM_IPS = "${

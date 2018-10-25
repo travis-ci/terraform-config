@@ -17,7 +17,6 @@ SHELL := bash
 GIT := git
 GO := go
 CURL := curl
-TAR := tar
 
 .PHONY: test
 test:
@@ -46,7 +45,7 @@ deps: $(DEPS)
 .PHONY: .ensure-shellcheck
 .ensure-shellcheck:
 	if [[ ! -x "$(HOME)/bin/shellcheck" ]]; then \
-		$(CURL) -sSL "$(SHELLCHECK_URL)" | $(TAR) -C "$(HOME)/bin" -xjf -; \
+		$(CURL) -sSL "$(SHELLCHECK_URL)" | tar -C "$(HOME)/bin" -xjf -; \
 	fi
 
 .PHONY: .ensure-shfmt

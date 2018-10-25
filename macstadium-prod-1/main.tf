@@ -19,7 +19,7 @@ variable "jobs_network_label" {
 }
 
 variable "vsphere_janitor_version" {
-  default = "98d5b98"
+  default = "8af7743"
 }
 
 variable "vsphere_monitor_version" {
@@ -340,7 +340,8 @@ resource "null_resource" "image-builder-environment" {
 
   provisioner "remote-exec" {
     inline = [
-      "sudo cp /tmp/build-macos.sh /home/packer/bin/build-macos",
+      "sudo rm /tmp/install-image-builder.sh",
+      "sudo mv /tmp/build-macos.sh /home/packer/bin/build-macos",
       "sudo chown packer:packer /home/packer/bin/build-macos",
       "sudo chmod +x /home/packer/bin/build-macos",
       "sudo mv /tmp/packer-env /home/packer/.packer-env",
@@ -353,6 +354,14 @@ data "template_file" "image_builder_macbot_env" {
   template = "${file("config/image-builder-macbot-env")}"
 }
 
+data "template_file" "image_builder_imaged_config" {
+  template = "${file("config/image-builder-imaged-env")}"
+}
+
+data "template_file" "image_builder_ansible_secrets" {
+  template = "${file("config/image-builder-ansible-secrets")}"
+}
+
 data "template_file" "image_builder_macbot_service" {
   template = "${file("macbot.yml")}"
 }
@@ -361,15 +370,45 @@ data "template_file" "image_builder_macbot_installer" {
   template = "${file("install-macbot.sh")}"
 }
 
+resource "aws_s3_bucket" "imaged_records" {
+  acl    = "private"
+  bucket = "imaged-records.travis-ci.com"
+  region = "us-east-1"
+}
+
+module "aws_iam_user_s3_imaged" {
+  source         = "../modules/aws_iam_user_s3"
+  iam_user_name  = "imaged-macstadium"
+  s3_bucket_name = "${aws_s3_bucket.imaged_records.id}"
+}
+
+data "template_file" "image_builder_aws_env" {
+  template = <<EOF
+AWS_REGION=${aws_s3_bucket.imaged_records.region}
+AWS_ACCESS_KEY=${module.aws_iam_user_s3_imaged.id}
+AWS_SECRET_KEY=${module.aws_iam_user_s3_imaged.secret}
+IMAGED_RECORD_BUCKET=${aws_s3_bucket.imaged_records.id}
+EOF
+}
+
+data "template_file" "image_builder_imaged_env" {
+  template = <<EOF
+${data.template_file.image_builder_imaged_config.rendered}
+${data.template_file.image_builder_aws_env.rendered}
+EOF
+}
+
 resource "null_resource" "image-builder-macbot" {
   // This depends on the packer user existing and on Docker being installed
   depends_on = ["null_resource.image-builder-environment"]
 
   triggers {
-    host_id             = "${vsphere_virtual_machine.image-builder.uuid}"
-    installer_signature = "${sha256(data.template_file.image_builder_macbot_installer.rendered)}"
-    env_signature       = "${sha256(data.template_file.image_builder_macbot_env.rendered)}"
-    service_signature   = "${sha256(data.template_file.image_builder_macbot_service.rendered)}"
+    host_id              = "${vsphere_virtual_machine.image-builder.uuid}"
+    installer_signature  = "${sha256(data.template_file.image_builder_macbot_installer.rendered)}"
+    macbot_env_signature = "${sha256(data.template_file.image_builder_macbot_env.rendered)}"
+    imaged_env_signature = "${sha256(data.template_file.image_builder_imaged_env.rendered)}"
+    secrets_signature    = "${sha256(data.template_file.image_builder_ansible_secrets.rendered)}"
+    service_signature    = "${sha256(data.template_file.image_builder_macbot_service.rendered)}"
   }
 
   connection {
@@ -381,6 +420,16 @@ resource "null_resource" "image-builder-macbot" {
   provisioner "file" {
     content     = "${data.template_file.image_builder_macbot_env.rendered}"
     destination = "/tmp/macbot-env"
+  }
+
+  provisioner "file" {
+    content     = "${data.template_file.image_builder_imaged_env.rendered}"
+    destination = "/tmp/imaged-env"
+  }
+
+  provisioner "file" {
+    content     = "${data.template_file.image_builder_ansible_secrets.rendered}"
+    destination = "/tmp/ansible-secrets.yml"
   }
 
   provisioner "file" {
@@ -397,6 +446,7 @@ resource "null_resource" "image-builder-macbot" {
     inline = [
       "chmod +x /tmp/install-macbot.sh",
       "sudo /tmp/install-macbot.sh",
+      "sudo rm /tmp/install-macbot.sh",
     ]
   }
 }

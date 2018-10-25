@@ -1,9 +1,24 @@
-version: "3"
+version: "3.1"
 services:
   macbot:
     image: travisci/macbot:latest
+    environment:
+      MACBOT_IMAGED_URL: http://imaged:8080
     env_file: .macbot-env
     networks:
     - net
+  imaged:
+    image: travisci/imaged:latest
+    environment:
+      IMAGED_TEMPLATES_URL: https://github.com/travis-ci/packer-templates-mac.git
+      IMAGED_ANSIBLE_SECRETS_FILE: /run/secrets/ansible.yml
+    env_file: .imaged-env
+    networks:
+    - net
+    secrets:
+    - ansible.yml
 networks:
   net:
+secrets:
+  ansible.yml:
+    file: /tmp/ansible-secrets.yml
