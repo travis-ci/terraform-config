@@ -188,9 +188,9 @@ resource "google_compute_instance_template" "worker_com" {
   }
 
   disk {
+    source_image = "ubuntu-os-cloud/ubuntu-1804-lts"
     auto_delete  = true
     boot         = true
-    source_image = "${var.worker_image}"
   }
 
   network_interface {
@@ -199,6 +199,11 @@ resource "google_compute_instance_template" "worker_com" {
     access_config {
       # ephemeral ip
     }
+  }
+
+  service_account {
+    email  = "${google_service_account.workers.email}"
+    scopes = ["cloud-platform"]
   }
 
   metadata {
@@ -237,7 +242,7 @@ resource "google_compute_instance" "worker_com" {
     auto_delete = true
 
     initialize_params {
-      image = "${var.worker_image}"
+      image = "ubuntu-os-cloud/ubuntu-1804-lts"
       type  = "pd-ssd"
     }
   }
@@ -315,9 +320,9 @@ resource "google_compute_instance_template" "worker_com_free" {
   }
 
   disk {
+    source_image = "ubuntu-os-cloud/ubuntu-1804-lts"
     auto_delete  = true
     boot         = true
-    source_image = "${var.worker_image}"
   }
 
   network_interface {
@@ -326,6 +331,11 @@ resource "google_compute_instance_template" "worker_com_free" {
     access_config {
       # ephemeral ip
     }
+  }
+
+  service_account {
+    email  = "${google_service_account.workers.email}"
+    scopes = ["cloud-platform"]
   }
 
   metadata {
@@ -364,7 +374,7 @@ resource "google_compute_instance" "worker_com_free" {
     auto_delete = true
 
     initialize_params {
-      image = "${var.worker_image}"
+      image = "ubuntu-os-cloud/ubuntu-1804-lts"
       type  = "pd-ssd"
     }
   }
@@ -442,9 +452,9 @@ resource "google_compute_instance_template" "worker_org" {
   }
 
   disk {
+    source_image = "ubuntu-os-cloud/ubuntu-1804-lts"
     auto_delete  = true
     boot         = true
-    source_image = "${var.worker_image}"
   }
 
   network_interface {
@@ -453,6 +463,11 @@ resource "google_compute_instance_template" "worker_org" {
     access_config {
       # ephemeral ip
     }
+  }
+
+  service_account {
+    email  = "${google_service_account.workers.email}"
+    scopes = ["cloud-platform"]
   }
 
   metadata {
@@ -491,7 +506,7 @@ resource "google_compute_instance" "worker_org" {
     auto_delete = true
 
     initialize_params {
-      image = "${var.worker_image}"
+      image = "ubuntu-os-cloud/ubuntu-1804-lts"
       type  = "pd-ssd"
     }
   }

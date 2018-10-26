@@ -27,6 +27,11 @@ write_files:
   owner: 'root:root'
   path: /usr/local/bin/travis-combined-env
   permissions: '0755'
+- content: '${file("${assets}/bits/ensure-tfw.bash")}'
+  encoding: b64
+  owner: 'root:root'
+  path: /var/tmp/ensure-tfw.bash
+  permissions: '0750'
 - content: '${base64encode(gce_account_json)}'
   encoding: b64
   owner: 'travis:travis'
