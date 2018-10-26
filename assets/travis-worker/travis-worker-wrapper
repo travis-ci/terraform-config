@@ -26,6 +26,10 @@ main() {
       gce_zone=us-central1-b
     fi
     echo "TRAVIS_WORKER_GCE_ZONE=${gce_zone}" >>"${env_file}"
+
+    if [[ -f /var/tmp/gce_accounts_b64.json ]] && command -v python; then
+      __pick_rand_gce_key </var/tmp/gce_accounts_b64.json >/var/tmp/gce.json
+    fi
   fi
 
   if [[ ! "${TRAVIS_WORKER_LIBRATO_SOURCE}" ]]; then
@@ -66,6 +70,31 @@ __build_librato_source() {
   fi
 
   echo "${host_name}-${name/travis-worker-/}"
+}
+
+__pick_rand_gce_key() {
+  python <<'EOF'
+import base64
+import json
+import random
+import sys
+import time
+
+random.seed(time.time())
+decoded = [
+    base64.decodestring(s.encode("utf-8")) for s in json.load(sys.stdin)
+]
+idx = random.randint(0, len(decoded)-1)
+selected = decoded[idx]
+selected_dict = json.loads(selected)
+sys.stderr.write(
+    "travis-worker-wrapper selected key={} idx={} len={}\n".format(
+        selected_dict["client_email"],
+        idx, len(decoded)
+    )
+)
+sys.stdout.write(selected.decode("utf-8"))
+EOF
 }
 
 main "$@"

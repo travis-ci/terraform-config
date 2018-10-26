@@ -147,6 +147,6 @@ export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_org.secret}
 EOF
 }
 
-output "workers_service_account_email" {
-  value = "${module.gce_worker_group.workers_service_account_email}"
+output "workers_service_account_emails" {
+  value = ["${module.gce_worker_group.workers_service_account_emails}"]
 }
