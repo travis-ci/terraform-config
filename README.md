@@ -21,7 +21,6 @@ our main cloud environments as well as some other services:
 * Google Cloud Platform
 * Macstadium
 * OpenStack
-* Packet
 
 ## Requirements
 

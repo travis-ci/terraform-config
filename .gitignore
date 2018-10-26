@@ -4,7 +4,6 @@
 *.tfvars
 
 !gce-*/instance-counts.auto.tfvars
-!packet-*/instance-counts.auto.tfvars
 
 .env
 .envrc
@@ -20,5 +19,4 @@ build-*/config/
 graph.png
 local-development-0/local-development-0.tfstate
 macstadium-*/config/
-packet-*/config/
 tfstate
