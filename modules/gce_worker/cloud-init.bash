@@ -17,6 +17,7 @@ main() {
   chmod 0777 "${VARTMP}"
 
   for substep in \
+    apt \
     tfw \
     travis_user \
     sysctl \
@@ -39,6 +40,17 @@ __wait_for_docker() {
   done
 }
 
+__setup_apt() {
+  logger writing apt conf options to force conf
+
+  cat >"${ETCDIR}/apt/apt.conf.d/force_confdef" <<'EOF'
+Dpkg::Options {
+  "--force-confdef";
+  "--force-confold";
+}
+EOF
+}
+
 __setup_tfw() {
   "${VARLIBDIR}/cloud/scripts/per-boot/00-ensure-tfw" || true
 
@@ -58,6 +70,10 @@ __setup_travis_user() {
     useradd travis
   fi
 
+  if ! getent group docker &>/dev/null; then
+    groupadd docker
+  fi
+
   usermod -a -G docker travis
   chown -R travis:travis "${RUNDIR}"
 }
@@ -74,13 +90,12 @@ __setup_worker() {
     "${ETCDIR}/default/travis-worker-cloud-init"
 
   eval "$(tfw printenv travis-worker)"
-  tfw extract travis-worker "${TRAVIS_WORKER_SELF_IMAGE}"
-
-  cp -v "${VARTMP}/travis-worker.service" \
-    "${ETCDIR}/systemd/system/travis-worker.service"
-  systemctl enable travis-worker || true
 
   __wait_for_docker
+
+  tfw extract travis-worker "${TRAVIS_WORKER_SELF_IMAGE}"
+
+  systemctl enable travis-worker || true
   systemctl start travis-worker || true
 }
 
