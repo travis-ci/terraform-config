@@ -13,7 +13,7 @@ CONFIG_FILES := \
 		config/collectd-vsphere-common \
 		config/travis-vm-ssh-key
 
-INDEX ?= $(subst $(INFRA)-$(ENV_SHORT)-,,$(ENV_NAME))
+INDEX ?= 1
 
 include $(shell git rev-parse --show-toplevel)/trvs.mk
 
