@@ -18,7 +18,10 @@ variable "subnetwork_workers" {}
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
 variable "worker_docker_self_image" {}
-variable "worker_image" {}
+
+variable "worker_image" {
+  default = "ubuntu-os-cloud/ubuntu-1804-lts"
+}
 
 variable "zones" {
   default = ["a", "b", "c", "f"]
@@ -64,6 +67,8 @@ resource "google_project_iam_custom_role" "worker" {
     "compute.disks.useReadOnly",
     "compute.globalOperations.get",
     "compute.globalOperations.list",
+    "compute.images.list",
+    "compute.images.useReadOnly",
     "compute.instances.addAccessConfig",
     "compute.instances.addMaintenancePolicies",
     "compute.instances.attachDisk",
@@ -185,7 +190,7 @@ resource "google_compute_instance_template" "worker_com" {
   }
 
   disk {
-    source_image = "ubuntu-os-cloud/ubuntu-1804-lts"
+    source_image = "${var.worker_image}"
     auto_delete  = true
     boot         = true
   }
@@ -199,8 +204,14 @@ resource "google_compute_instance_template" "worker_com" {
   }
 
   service_account {
-    email  = "${google_service_account.workers.email}"
-    scopes = ["cloud-platform"]
+    email = "${google_service_account.workers.email}"
+
+    scopes = [
+      "cloud-platform",
+      "storage-full",
+      "compute-rw",
+      "trace-append",
+    ]
   }
 
   metadata {
@@ -279,7 +290,7 @@ resource "google_compute_instance_template" "worker_com_free" {
   }
 
   disk {
-    source_image = "ubuntu-os-cloud/ubuntu-1804-lts"
+    source_image = "${var.worker_image}"
     auto_delete  = true
     boot         = true
   }
@@ -293,8 +304,14 @@ resource "google_compute_instance_template" "worker_com_free" {
   }
 
   service_account {
-    email  = "${google_service_account.workers.email}"
-    scopes = ["cloud-platform"]
+    email = "${google_service_account.workers.email}"
+
+    scopes = [
+      "cloud-platform",
+      "storage-full",
+      "compute-rw",
+      "trace-append",
+    ]
   }
 
   metadata {
@@ -373,7 +390,7 @@ resource "google_compute_instance_template" "worker_org" {
   }
 
   disk {
-    source_image = "ubuntu-os-cloud/ubuntu-1804-lts"
+    source_image = "${var.worker_image}"
     auto_delete  = true
     boot         = true
   }
@@ -387,8 +404,14 @@ resource "google_compute_instance_template" "worker_org" {
   }
 
   service_account {
-    email  = "${google_service_account.workers.email}"
-    scopes = ["cloud-platform"]
+    email = "${google_service_account.workers.email}"
+
+    scopes = [
+      "cloud-platform",
+      "storage-full",
+      "compute-rw",
+      "trace-append",
+    ]
   }
 
   metadata {
