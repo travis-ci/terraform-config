@@ -21,7 +21,9 @@ resource "vsphere_virtual_machine" "wjb" {
   }
 
   network_interface {
-    network_id = "${data.vsphere_network.jobs.id}"
+    network_id     = "${data.vsphere_network.jobs.id}"
+    use_static_mac = true
+    mac_address    = "${var.jobs_network_mac_address}"
   }
 
   network_interface {
