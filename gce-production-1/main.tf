@@ -28,10 +28,6 @@ variable "travisci_net_external_zone_id" {
   default = "Z2RI61YP4UWSIO"
 }
 
-variable "worker_instance_count_com" {}
-variable "worker_instance_count_org" {}
-variable "worker_instance_count_com_free" {}
-
 variable "worker_managed_instance_count_com" {}
 variable "worker_managed_instance_count_org" {}
 variable "worker_managed_instance_count_com_free" {}
@@ -125,10 +121,6 @@ module "gce_worker_group" {
   worker_subnetwork                         = "${data.terraform_remote_state.vpc.gce_subnetwork_workers}"
 
   worker_zones = "${var.worker_zones}"
-
-  worker_instance_count_com      = "${var.worker_instance_count_com}"
-  worker_instance_count_com_free = "${var.worker_instance_count_com_free}"
-  worker_instance_count_org      = "${var.worker_instance_count_org}"
 
   worker_managed_instance_count_com      = "${var.worker_managed_instance_count_com}"
   worker_managed_instance_count_com_free = "${var.worker_managed_instance_count_com_free}"

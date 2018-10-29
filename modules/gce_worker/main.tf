@@ -4,9 +4,6 @@ variable "config_org" {}
 variable "env" {}
 variable "github_users" {}
 variable "index" {}
-variable "instance_count_com" {}
-variable "instance_count_com_free" {}
-variable "instance_count_org" {}
 variable "managed_instance_count_com" {}
 variable "managed_instance_count_com_free" {}
 variable "managed_instance_count_org" {}
@@ -229,44 +226,6 @@ resource "google_compute_region_instance_group_manager" "worker_com" {
   distribution_policy_zones = "${formatlist("${var.region}-%s", var.zones)}"
 }
 
-resource "google_compute_instance" "worker_com" {
-  count = "${var.instance_count_com}"
-  name  = "${var.env}-${var.index}-worker-com-${element(var.zones, count.index % length(var.zones))}-${(count.index / length(var.zones)) + 1}-gce"
-
-  machine_type = "${var.machine_type}"
-  zone         = "${var.region}-${element(var.zones, count.index % length(var.zones))}"
-  tags         = ["worker", "${var.env}", "com", "paid"]
-  project      = "${var.project}"
-
-  boot_disk {
-    auto_delete = true
-
-    initialize_params {
-      image = "ubuntu-os-cloud/ubuntu-1804-lts"
-      type  = "pd-ssd"
-    }
-  }
-
-  network_interface {
-    subnetwork = "${var.subnetwork_workers}"
-
-    access_config {
-      # ephemeral ip
-    }
-  }
-
-  metadata {
-    "block-project-ssh-keys" = "true"
-    "user-data"              = "${data.template_file.cloud_config_com.rendered}"
-  }
-
-  depends_on = ["null_resource.worker_com_validation"]
-
-  lifecycle {
-    ignore_changes = ["disk", "boot_disk"]
-  }
-}
-
 data "template_file" "cloud_init_env_com_free" {
   template = <<EOF
 export TRAVIS_WORKER_SELF_IMAGE="${var.worker_docker_self_image}"
@@ -361,44 +320,6 @@ resource "google_compute_region_instance_group_manager" "worker_com_free" {
   distribution_policy_zones = "${formatlist("${var.region}-%s", var.zones)}"
 }
 
-resource "google_compute_instance" "worker_com_free" {
-  count = "${var.instance_count_com_free}"
-  name  = "${var.env}-${var.index}-worker-com-free-${element(var.zones, count.index % length(var.zones))}-${(count.index / length(var.zones)) + 1}-gce"
-
-  machine_type = "${var.machine_type}"
-  zone         = "${var.region}-${element(var.zones, count.index % length(var.zones))}"
-  tags         = ["worker", "${var.env}", "com", "free"]
-  project      = "${var.project}"
-
-  boot_disk {
-    auto_delete = true
-
-    initialize_params {
-      image = "ubuntu-os-cloud/ubuntu-1804-lts"
-      type  = "pd-ssd"
-    }
-  }
-
-  network_interface {
-    subnetwork = "${var.subnetwork_workers}"
-
-    access_config {
-      # ephemeral ip
-    }
-  }
-
-  metadata {
-    "block-project-ssh-keys" = "true"
-    "user-data"              = "${data.template_file.cloud_config_com_free.rendered}"
-  }
-
-  depends_on = ["null_resource.worker_com_free_validation"]
-
-  lifecycle {
-    ignore_changes = ["disk", "boot_disk"]
-  }
-}
-
 data "template_file" "cloud_init_env_org" {
   template = <<EOF
 export TRAVIS_WORKER_SELF_IMAGE="${var.worker_docker_self_image}"
@@ -491,44 +412,6 @@ resource "google_compute_region_instance_group_manager" "worker_org" {
   region             = "${var.region}"
 
   distribution_policy_zones = "${formatlist("${var.region}-%s", var.zones)}"
-}
-
-resource "google_compute_instance" "worker_org" {
-  count = "${var.instance_count_org}"
-  name  = "${var.env}-${var.index}-worker-org-${element(var.zones, count.index % length(var.zones))}-${(count.index / length(var.zones)) + 1}-gce"
-
-  machine_type = "${var.machine_type}"
-  zone         = "${var.region}-${element(var.zones, count.index % length(var.zones))}"
-  tags         = ["worker", "${var.env}", "org"]
-  project      = "${var.project}"
-
-  boot_disk {
-    auto_delete = true
-
-    initialize_params {
-      image = "ubuntu-os-cloud/ubuntu-1804-lts"
-      type  = "pd-ssd"
-    }
-  }
-
-  network_interface {
-    subnetwork = "${var.subnetwork_workers}"
-
-    access_config {
-      # ephemeral ip
-    }
-  }
-
-  metadata {
-    "block-project-ssh-keys" = "true"
-    "user-data"              = "${data.template_file.cloud_config_org.rendered}"
-  }
-
-  depends_on = ["null_resource.worker_org_validation"]
-
-  lifecycle {
-    ignore_changes = ["disk", "boot_disk"]
-  }
 }
 
 output "workers_service_account_email" {

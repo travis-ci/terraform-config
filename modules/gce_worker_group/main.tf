@@ -50,9 +50,6 @@ variable "worker_docker_self_image" {
 }
 
 variable "worker_image" {}
-variable "worker_instance_count_com" {}
-variable "worker_instance_count_com_free" {}
-variable "worker_instance_count_org" {}
 
 variable "worker_managed_instance_count_com" {
   default = 0
@@ -85,10 +82,6 @@ module "gce_workers" {
   env             = "${var.env}"
   github_users    = "${var.github_users}"
   index           = "${var.index}"
-
-  instance_count_com      = "${var.worker_instance_count_com}"
-  instance_count_com_free = "${var.worker_instance_count_com_free}"
-  instance_count_org      = "${var.worker_instance_count_org}"
 
   managed_instance_count_com      = "${var.worker_managed_instance_count_com}"
   managed_instance_count_com_free = "${var.worker_managed_instance_count_com_free}"
