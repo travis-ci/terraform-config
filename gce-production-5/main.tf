@@ -27,12 +27,6 @@ variable "travisci_net_external_zone_id" {
 
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
-variable "worker_instance_count_com" {}
-variable "worker_instance_count_org" {}
-
-variable "worker_instance_count_com_free" {
-  default = "0"
-}
 
 variable "worker_zones" {
   default = ["a", "b", "f"]
