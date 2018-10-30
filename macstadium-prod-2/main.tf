@@ -39,7 +39,6 @@ variable "custom_2_name" {}
 variable "custom_4_name" {}
 variable "custom_5_name" {}
 variable "custom_6_name" {}
-variable "threatstack_key" {}
 variable "librato_email" {}
 variable "librato_token" {}
 variable "fw_ip" {}
@@ -82,7 +81,6 @@ module "macstadium_infrastructure" {
   jobs_network_label            = "${var.jobs_network_label}"
   jobs_network_subnet           = "${var.jobs_network_subnet}"
   ssh_user                      = "${var.ssh_user}"
-  threatstack_key               = "${var.threatstack_key}"
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
   vsphere_ip                    = "${var.vsphere_ip}"
   vm_ssh_key_path               = "${path.module}/config/travis-vm-ssh-key"
