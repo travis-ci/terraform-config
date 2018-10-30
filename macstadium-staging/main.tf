@@ -102,6 +102,16 @@ module "vsphere_janitor_staging_com" {
   index                   = "${var.index}"
 }
 
+module "vsphere_monitor" {
+  source                  = "../modules/vsphere_monitor"
+  host_id                 = "${module.macstadium_infrastructure_staging.util_uuid}"
+  ssh_host                = "${module.macstadium_infrastructure_staging.util_ip}"
+  ssh_user                = "${var.ssh_user}"
+  vsphere_monitor_version = "${var.vsphere_monitor_version}"
+  config_path             = "${path.module}/config/vsphere-monitor"
+  index                   = "${var.index}"
+}
+
 resource "random_id" "collectd_vsphere_collectd_network_token" {
   byte_length = 32
 }
@@ -149,5 +159,12 @@ module "wjb-host-utilities" {
   source   = "../modules/macstadium_host_utilities"
   host_id  = "${module.macstadium_infrastructure_staging.wjb_uuid}"
   ssh_host = "${module.macstadium_infrastructure_staging.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+}
+
+module "util-host-utilities" {
+  source   = "../modules/macstadium_host_utilities"
+  host_id  = "${module.macstadium_infrastructure_staging.util_uuid}"
+  ssh_host = "${module.macstadium_infrastructure_staging.util_ip}"
   ssh_user = "${var.ssh_user}"
 }
