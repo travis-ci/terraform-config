@@ -1,5 +1,5 @@
 variable "travis_worker_version" {
-  default = "v4.1.0"
+  default = "v4.6.0"
 }
 
 module "aws_iam_user_s3_com" {
