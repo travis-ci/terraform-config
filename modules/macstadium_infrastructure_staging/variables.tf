@@ -8,6 +8,7 @@ variable "internal_network_label" {}
 variable "management_network_label" {}
 variable "jobs_network_label" {}
 variable "jobs_network_subnet" {}
+variable "jobs_network_mac_address" {}
 variable "threatstack_key" {}
 variable "travisci_net_external_zone_id" {}
 variable "vsphere_ip" {}

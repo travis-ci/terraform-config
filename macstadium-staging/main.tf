@@ -22,6 +22,10 @@ variable "jobs_network_label" {
   default = "Jobs-1"
 }
 
+variable "jobs_network_mac_address" {
+  default = "00:50:56:84:0b:a3"
+}
+
 variable "vsphere_janitor_version" {
   default = "8af7743"
 }
@@ -81,6 +85,7 @@ module "macstadium_infrastructure_staging" {
   management_network_label      = "ESXi-MGMT"
   jobs_network_label            = "${var.jobs_network_label}"
   jobs_network_subnet           = "${var.jobs_network_subnet}"
+  jobs_network_mac_address      = "${var.jobs_network_mac_address}"
   ssh_user                      = "${var.ssh_user}"
   threatstack_key               = "${var.threatstack_key}"
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
