@@ -7,10 +7,6 @@ variable "gce_heroku_org" {}
 variable "latest_gce_tfw_image" {}
 variable "github_users" {}
 
-variable "gce_tfw_image" {
-  default = "https://www.googleapis.com/compute/v1/projects/eco-emissary-99515/global/images/tfw-1523464380-560dabd"
-}
-
 variable "index" {
   default = 1
 }
@@ -95,7 +91,6 @@ module "gce_worker_group" {
   syslog_address_org                        = "${var.syslog_address_org}"
   travisci_net_external_zone_id             = "${var.travisci_net_external_zone_id}"
   worker_docker_self_image                  = "${var.latest_docker_image_worker}"
-  worker_image                              = "${var.gce_tfw_image}"
   worker_subnetwork                         = "${data.terraform_remote_state.vpc.gce_subnetwork_workers}"
 
   worker_zones = "${var.worker_zones}"
