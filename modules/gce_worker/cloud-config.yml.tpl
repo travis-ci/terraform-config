@@ -28,6 +28,9 @@ write_files:
 - content: '${base64encode(gce_accounts_b64)}'
   encoding: b64
   path: /var/tmp/gce_accounts_b64.txt
+- content: '${base64encode("___INSTANCE_NAME___\n")}'
+  encoding: b64
+  path: /var/tmp/travis-run.d/instance-hostname.tmpl
 - content: '${base64encode(syslog_address)}'
   encoding: b64
   path: /var/tmp/travis-run.d/syslog-address

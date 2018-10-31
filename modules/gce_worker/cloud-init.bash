@@ -18,7 +18,6 @@ main() {
 
   for substep in \
     tfw \
-    hostname \
     travis_user \
     sysctl \
     randcreds \
@@ -53,14 +52,6 @@ __setup_tfw() {
   tfw admin-bootstrap
 
   systemctl restart sshd || true
-}
-
-__setup_hostname() {
-  if [[ -f "${RUNDIR}/instance-hostname.tmpl" ]]; then
-    return
-  fi
-
-  echo '___INSTANCE_NAME___' >"${RUNDIR}/instance-hostname.tmpl"
 }
 
 __setup_travis_user() {
