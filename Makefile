@@ -1,6 +1,7 @@
 SHELLCHECK_URL := https://s3.amazonaws.com/travis-blue-public/binaries/ubuntu/14.04/x86_64/shellcheck-0.4.4.tar.bz2
 SHFMT_URL := https://github.com/mvdan/sh/releases/download/v2.5.0/shfmt_v2.5.0_linux_amd64
 TFPLAN2JSON_URL := github.com/travis-ci/tfplan2json
+TFPLAN2JSON_V11_URL := gopkg.in/travis-ci/tfplan2json.v11
 PROVIDER_TRAVIS_URL := github.com/travis-ci/terraform-provider-travis
 
 DEPS := \
@@ -57,7 +58,8 @@ $(GOPATH_BIN)/shfmt:
 
 .PHONY: .ensure-tfplan2json
 .ensure-tfplan2json:
-	$(GO) get -u "$(TFPLAN2JSON_URL)"
+	$(SHELL) -c 'eval $$(gimme 1.11.1) && $(GO) get -u "$(TFPLAN2JSON_URL)"'
+	$(SHELL) -c 'eval $$(gimme 1.9.7) && $(GO) get -u "$(TFPLAN2JSON_V11_URL)"'
 
 .PHONY: .ensure-provider-travis
 .ensure-provider-travis:
