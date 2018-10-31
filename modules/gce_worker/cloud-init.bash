@@ -73,15 +73,12 @@ __setup_sysctl() {
 }
 
 __setup_randcreds() {
-  if [[ ! -f "${VARTMP}/gce_accounts_b64.txt" ]]; then
+  local accounts_file="${VARTMP}/gce_accounts_b64.txt"
+  if [[ ! -s "${accounts_file}" ]]; then
     return
   fi
 
-  tfw randline \
-    -d \
-    -i "${VARTMP}/gce_accounts_b64.txt" \
-    -o "${VARTMP}/gce.json"
-
+  tfw randline -d -i "${accounts_file}" -o "${VARTMP}/gce.json"
   chown travis:travis "${VARTMP}/gce.json"
 }
 
