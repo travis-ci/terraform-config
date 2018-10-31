@@ -121,6 +121,10 @@ module "gce_worker_group" {
   worker_managed_instance_count_com_free = "${var.worker_managed_instance_count_com_free}"
   worker_managed_instance_count_org      = "${var.worker_managed_instance_count_org}"
 
+  worker_service_accounts_count_com      = "${var.worker_managed_instance_count_com / 4}"
+  worker_service_accounts_count_com_free = "${var.worker_managed_instance_count_com_free / 4}"
+  worker_service_accounts_count_org      = "${var.worker_managed_instance_count_org / 4}"
+
   worker_config_com = <<EOF
 ### worker.env
 ${file("${path.module}/worker.env")}
@@ -170,13 +174,15 @@ EOF
 }
 
 resource "google_project_iam_member" "staging_1_workers" {
+  count   = "${length(data.terraform_remote_state.staging_1.workers_service_account_emails)}"
   project = "${var.project}"
   role    = "roles/compute.imageUser"
-  member  = "serviceAccount:${data.terraform_remote_state.staging_1.workers_service_account_email}"
+  member  = "serviceAccount:${element(data.terraform_remote_state.staging_1.workers_service_account_emails, count.index)}"
 }
 
 resource "google_project_iam_member" "production_2_workers" {
+  count   = "${length(data.terraform_remote_state.production_2.workers_service_account_emails)}"
   project = "${var.project}"
   role    = "roles/compute.imageUser"
-  member  = "serviceAccount:${data.terraform_remote_state.production_2.workers_service_account_email}"
+  member  = "serviceAccount:${element(data.terraform_remote_state.production_2.workers_service_account_emails, count.index)}"
 }

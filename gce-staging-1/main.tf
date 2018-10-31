@@ -96,8 +96,12 @@ module "gce_worker_group" {
   worker_zones = "${var.worker_zones}"
 
   worker_managed_instance_count_com      = "${length(var.worker_zones)}"
-  worker_managed_instance_count_com_free = "0"
+  worker_managed_instance_count_com_free = 0
   worker_managed_instance_count_org      = "${length(var.worker_zones)}"
+
+  worker_service_accounts_count_com      = "${length(var.worker_zones) / 2}"
+  worker_service_accounts_count_com_free = 0
+  worker_service_accounts_count_org      = "${length(var.worker_zones) / 2}"
 
   worker_config_com = <<EOF
 ### worker.env
@@ -147,8 +151,8 @@ export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_org.secret}
 EOF
 }
 
-output "workers_service_account_email" {
-  value = "${module.gce_worker_group.workers_service_account_email}"
+output "workers_service_account_emails" {
+  value = ["${module.gce_worker_group.workers_service_account_emails}"]
 }
 
 output "latest_docker_image_worker" {
