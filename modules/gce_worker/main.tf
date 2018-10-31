@@ -218,12 +218,12 @@ data "template_file" "cloud_config_com" {
   template = "${file("${path.module}/cloud-config.yml.tpl")}"
 
   vars {
-    assets                = "${path.module}/../../assets"
-    gce_account_json      = "${base64decode(google_service_account_key.workers.private_key)}"
-    gce_accounts_json_b64 = "${jsonencode(google_service_account_key.workers_com.*.private_key)}"
-    here                  = "${path.module}"
-    syslog_address        = "${var.syslog_address_com}"
-    worker_config         = "${var.config_com}"
+    assets           = "${path.module}/../../assets"
+    gce_account_json = "${base64decode(google_service_account_key.workers.private_key)}"
+    gce_accounts_b64 = "${join("\n", google_service_account_key.workers_com.*.private_key)}"
+    here             = "${path.module}"
+    syslog_address   = "${var.syslog_address_com}"
+    worker_config    = "${var.config_com}"
 
     cloud_init_env = <<EOF
 export TRAVIS_WORKER_SELF_IMAGE="${var.worker_docker_self_image}"
@@ -316,12 +316,12 @@ data "template_file" "cloud_config_com_free" {
   template = "${file("${path.module}/cloud-config.yml.tpl")}"
 
   vars {
-    assets                = "${path.module}/../../assets"
-    gce_account_json      = "${base64decode(google_service_account_key.workers.private_key)}"
-    gce_accounts_json_b64 = "${jsonencode(google_service_account_key.workers_com_free.*.private_key)}"
-    here                  = "${path.module}"
-    syslog_address        = "${var.syslog_address_com}"
-    worker_config         = "${var.config_com_free}"
+    assets           = "${path.module}/../../assets"
+    gce_account_json = "${base64decode(google_service_account_key.workers.private_key)}"
+    gce_accounts_b64 = "${join("\n", google_service_account_key.workers_com_free.*.private_key)}"
+    here             = "${path.module}"
+    syslog_address   = "${var.syslog_address_com}"
+    worker_config    = "${var.config_com_free}"
 
     cloud_init_env = <<EOF
 export TRAVIS_WORKER_SELF_IMAGE="${var.worker_docker_self_image}"
@@ -414,12 +414,12 @@ data "template_file" "cloud_config_org" {
   template = "${file("${path.module}/cloud-config.yml.tpl")}"
 
   vars {
-    assets                = "${path.module}/../../assets"
-    gce_account_json      = "${base64decode(google_service_account_key.workers.private_key)}"
-    gce_accounts_json_b64 = "${jsonencode(google_service_account_key.workers_org.*.private_key)}"
-    here                  = "${path.module}"
-    syslog_address        = "${var.syslog_address_org}"
-    worker_config         = "${var.config_org}"
+    assets           = "${path.module}/../../assets"
+    gce_account_json = "${base64decode(google_service_account_key.workers.private_key)}"
+    gce_accounts_b64 = "${join("\n", google_service_account_key.workers_org.*.private_key)}"
+    here             = "${path.module}"
+    syslog_address   = "${var.syslog_address_org}"
+    worker_config    = "${var.config_org}"
 
     cloud_init_env = <<EOF
 export TRAVIS_WORKER_SELF_IMAGE="${var.worker_docker_self_image}"

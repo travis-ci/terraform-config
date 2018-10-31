@@ -20,6 +20,7 @@ main() {
     tfw \
     travis_user \
     sysctl \
+    randcreds \
     worker; do
     logger running setup substep="${substep}"
     "__setup_${substep}"
@@ -69,6 +70,17 @@ __setup_travis_user() {
 __setup_sysctl() {
   echo 1048576 >/proc/sys/fs/aio-max-nr
   sysctl -w fs.aio-max-nr=1048576
+}
+
+__setup_randcreds() {
+  if [[ ! -f "${VARTMP}/gce_accounts_b64.txt" ]]; then
+    return
+  fi
+
+  tfw randline \
+    -d \
+    -i "${VARTMP}/gce_accounts_b64.txt" \
+    -o "${VARTMP}/gce.json"
 }
 
 __setup_worker() {

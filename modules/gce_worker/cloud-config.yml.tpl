@@ -25,10 +25,10 @@ write_files:
 - content: '${base64encode(gce_account_json)}'
   encoding: b64
   path: /var/tmp/gce.json
-- content: '${base64encode(gce_accounts_json_b64)}'
+- content: '${base64encode(gce_accounts_b64)}'
   encoding: b64
   owner: 'travis:travis'
-  path: /var/tmp/gce_accounts_b64.json
+  path: /var/tmp/gce_accounts_b64.txt
 - content: '${base64encode(syslog_address)}'
   encoding: b64
   path: /var/tmp/travis-run.d/syslog-address
