@@ -49,7 +49,9 @@ variable "worker_docker_self_image" {
   default = "travisci/worker:v4.5.2"
 }
 
-variable "worker_image" {}
+variable "worker_image" {
+  default = "ubuntu-os-cloud/ubuntu-1804-lts"
+}
 
 variable "worker_managed_instance_count_com" {
   default = 0
