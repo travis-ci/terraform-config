@@ -17,7 +17,6 @@ main() {
   chmod 0777 "${VARTMP}"
 
   for substep in \
-    apt \
     tfw \
     travis_user \
     sysctl \
@@ -38,17 +37,6 @@ __wait_for_docker() {
     sleep 10
     let i+=10
   done
-}
-
-__setup_apt() {
-  logger writing apt conf options to force conf
-
-  cat >"${ETCDIR}/apt/apt.conf.d/force_confdef" <<'EOF'
-Dpkg::Options {
-  "--force-confdef";
-  "--force-confold";
-}
-EOF
 }
 
 __setup_tfw() {
