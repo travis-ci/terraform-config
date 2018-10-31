@@ -61,18 +61,6 @@ resource "vsphere_virtual_machine" "wjb" {
   }
 
   wait_for_guest_net_routable = false
-
-  connection {
-    host  = "${vsphere_virtual_machine.wjb.clone.0.customize.0.network_interface.0.ipv4_address}"
-    user  = "${var.ssh_user}"
-    agent = true
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "curl -s -v 'https://app.threatstack.com/agents/script?key=${var.threatstack_key}' | sudo bash",
-    ]
-  }
 }
 
 resource "null_resource" "worker" {

@@ -42,7 +42,6 @@ variable "ssh_user" {
   description = "your username on the wjb instances"
 }
 
-variable "threatstack_key" {}
 variable "librato_email" {}
 variable "librato_token" {}
 variable "fw_ip" {}
@@ -87,7 +86,6 @@ module "macstadium_infrastructure_staging" {
   jobs_network_subnet           = "${var.jobs_network_subnet}"
   jobs_network_mac_address      = "${var.jobs_network_mac_address}"
   ssh_user                      = "${var.ssh_user}"
-  threatstack_key               = "${var.threatstack_key}"
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
   vsphere_ip                    = "${var.vsphere_ip}"
   vm_ssh_key_path               = "${path.module}/config/travis-vm-ssh-key"
@@ -101,6 +99,16 @@ module "vsphere_janitor_staging_com" {
   vsphere_janitor_version = "${var.vsphere_janitor_version}"
   config_path             = "${path.module}/config/vsphere-janitor-staging-com"
   env                     = "staging-com"
+  index                   = "${var.index}"
+}
+
+module "vsphere_monitor" {
+  source                  = "../modules/vsphere_monitor"
+  host_id                 = "${module.macstadium_infrastructure_staging.util_uuid}"
+  ssh_host                = "${module.macstadium_infrastructure_staging.util_ip}"
+  ssh_user                = "${var.ssh_user}"
+  vsphere_monitor_version = "${var.vsphere_monitor_version}"
+  config_path             = "${path.module}/config/vsphere-monitor"
   index                   = "${var.index}"
 }
 
@@ -151,5 +159,12 @@ module "wjb-host-utilities" {
   source   = "../modules/macstadium_host_utilities"
   host_id  = "${module.macstadium_infrastructure_staging.wjb_uuid}"
   ssh_host = "${module.macstadium_infrastructure_staging.wjb_ip}"
+  ssh_user = "${var.ssh_user}"
+}
+
+module "util-host-utilities" {
+  source   = "../modules/macstadium_host_utilities"
+  host_id  = "${module.macstadium_infrastructure_staging.util_uuid}"
+  ssh_host = "${module.macstadium_infrastructure_staging.util_ip}"
   ssh_user = "${var.ssh_user}"
 }
