@@ -69,6 +69,18 @@ variable "worker_machine_type" {
   default = "g1-small"
 }
 
+variable "worker_service_accounts_count_com" {
+  default = 4
+}
+
+variable "worker_service_accounts_count_com_free" {
+  default = 4
+}
+
+variable "worker_service_accounts_count_org" {
+  default = 4
+}
+
 variable "worker_subnetwork" {}
 
 variable "worker_zones" {
@@ -98,6 +110,10 @@ module "gce_workers" {
   worker_docker_self_image = "${var.worker_docker_self_image}"
   worker_image             = "${var.worker_image}"
   zones                    = "${var.worker_zones}"
+
+  worker_service_accounts_count_com      = "${var.worker_service_accounts_count_com}"
+  worker_service_accounts_count_com_free = "${var.worker_service_accounts_count_com_free}"
+  worker_service_accounts_count_org      = "${var.worker_service_accounts_count_org}"
 }
 
 resource "google_storage_bucket" "gcloud_cleanup_archive" {

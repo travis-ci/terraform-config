@@ -18,6 +18,7 @@ main() {
 
   for substep in \
     tfw \
+    hostname \
     travis_user \
     sysctl \
     randcreds \
@@ -54,6 +55,14 @@ __setup_tfw() {
   systemctl restart sshd || true
 }
 
+__setup_hostname() {
+  if [[ -f "${RUNDIR}/instance-hostname.tmpl" ]]; then
+    return
+  fi
+
+  echo '___INSTANCE_NAME___' >"${RUNDIR}/instance-hostname.tmpl"
+}
+
 __setup_travis_user() {
   if ! getent passwd travis &>/dev/null; then
     useradd travis
@@ -81,6 +90,8 @@ __setup_randcreds() {
     -d \
     -i "${VARTMP}/gce_accounts_b64.txt" \
     -o "${VARTMP}/gce.json"
+
+  chown travis:travis "${VARTMP}/gce.json"
 }
 
 __setup_worker() {

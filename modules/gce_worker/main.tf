@@ -55,21 +55,21 @@ resource "google_service_account" "workers" {
 
 resource "google_service_account" "workers_com" {
   count        = "${var.worker_service_accounts_count_com}"
-  account_id   = "workers-com-${lookup(var.regions_abbrev, var.region, "unk")}${count.index+1}"
+  account_id   = "workers-com-${lookup(var.regions_abbrev, var.region, "unk")}-${count.index+1}"
   display_name = "travis-worker processes com ${var.region} ${count.index+1}"
   project      = "${var.project}"
 }
 
 resource "google_service_account" "workers_com_free" {
   count        = "${var.worker_service_accounts_count_com_free}"
-  account_id   = "workers-com-free-${lookup(var.regions_abbrev, var.region, "unk")}${count.index+1}"
+  account_id   = "workers-com-free-${lookup(var.regions_abbrev, var.region, "unk")}-${count.index+1}"
   display_name = "travis-worker processes com free ${var.region} ${count.index+1}"
   project      = "${var.project}"
 }
 
 resource "google_service_account" "workers_org" {
   count        = "${var.worker_service_accounts_count_org}"
-  account_id   = "workers-org-${lookup(var.regions_abbrev, var.region, "unk")}${count.index+1}"
+  account_id   = "workers-org-${lookup(var.regions_abbrev, var.region, "unk")}-${count.index+1}"
   display_name = "travis-worker processes org ${var.region} ${count.index+1}"
   project      = "${var.project}"
 }
@@ -509,9 +509,19 @@ resource "google_compute_region_instance_group_manager" "worker_org" {
 }
 
 output "workers_service_account_emails" {
-  value = ["${google_service_account.workers.email}"]
+  value = [
+    "${google_service_account.workers.email}",
+    "${google_service_account.workers_org.*.email}",
+    "${google_service_account.workers_com.*.email}",
+    "${google_service_account.workers_com_free.*.email}",
+  ]
 }
 
 output "workers_service_account_names" {
-  value = ["${google_service_account.workers.name}"]
+  value = [
+    "${google_service_account.workers.name}",
+    "${google_service_account.workers_org.*.name}",
+    "${google_service_account.workers_com.*.name}",
+    "${google_service_account.workers_com_free.*.name}",
+  ]
 }
