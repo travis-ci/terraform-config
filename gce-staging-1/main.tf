@@ -7,10 +7,6 @@ variable "gce_heroku_org" {}
 variable "latest_gce_tfw_image" {}
 variable "github_users" {}
 
-variable "gce_tfw_image" {
-  default = "https://www.googleapis.com/compute/v1/projects/eco-emissary-99515/global/images/tfw-1523464380-560dabd"
-}
-
 variable "index" {
   default = 1
 }
@@ -95,14 +91,17 @@ module "gce_worker_group" {
   syslog_address_org                        = "${var.syslog_address_org}"
   travisci_net_external_zone_id             = "${var.travisci_net_external_zone_id}"
   worker_docker_self_image                  = "${var.latest_docker_image_worker}"
-  worker_image                              = "${var.gce_tfw_image}"
   worker_subnetwork                         = "${data.terraform_remote_state.vpc.gce_subnetwork_workers}"
 
   worker_zones = "${var.worker_zones}"
 
   worker_managed_instance_count_com      = "${length(var.worker_zones)}"
-  worker_managed_instance_count_com_free = "0"
+  worker_managed_instance_count_com_free = 0
   worker_managed_instance_count_org      = "${length(var.worker_zones)}"
+
+  worker_service_accounts_count_com      = "${length(var.worker_zones) / 2}"
+  worker_service_accounts_count_com_free = 0
+  worker_service_accounts_count_org      = "${length(var.worker_zones) / 2}"
 
   worker_config_com = <<EOF
 ### worker.env
@@ -152,8 +151,8 @@ export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_org.secret}
 EOF
 }
 
-output "workers_service_account_email" {
-  value = "${module.gce_worker_group.workers_service_account_email}"
+output "workers_service_account_emails" {
+  value = ["${module.gce_worker_group.workers_service_account_emails}"]
 }
 
 output "latest_docker_image_worker" {

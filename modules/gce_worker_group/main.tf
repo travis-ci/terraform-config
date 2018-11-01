@@ -46,10 +46,12 @@ variable "worker_config_com_free" {}
 variable "worker_config_org" {}
 
 variable "worker_docker_self_image" {
-  default = "travisci/worker:v4.5.2"
+  default = "travisci/worker:v4.6.1"
 }
 
-variable "worker_image" {}
+variable "worker_image" {
+  default = "ubuntu-os-cloud/ubuntu-1804-lts"
+}
 
 variable "worker_managed_instance_count_com" {
   default = 0
@@ -65,6 +67,18 @@ variable "worker_managed_instance_count_org" {
 
 variable "worker_machine_type" {
   default = "g1-small"
+}
+
+variable "worker_service_accounts_count_com" {
+  default = 4
+}
+
+variable "worker_service_accounts_count_com_free" {
+  default = 4
+}
+
+variable "worker_service_accounts_count_org" {
+  default = 4
 }
 
 variable "worker_subnetwork" {}
@@ -96,6 +110,10 @@ module "gce_workers" {
   worker_docker_self_image = "${var.worker_docker_self_image}"
   worker_image             = "${var.worker_image}"
   zones                    = "${var.worker_zones}"
+
+  worker_service_accounts_count_com      = "${var.worker_service_accounts_count_com}"
+  worker_service_accounts_count_com_free = "${var.worker_service_accounts_count_com_free}"
+  worker_service_accounts_count_org      = "${var.worker_service_accounts_count_org}"
 }
 
 resource "google_storage_bucket" "gcloud_cleanup_archive" {
@@ -215,10 +233,10 @@ EOF
   }
 }
 
-output "workers_service_account_email" {
-  value = "${module.gce_workers.workers_service_account_email}"
+output "workers_service_account_emails" {
+  value = ["${module.gce_workers.workers_service_account_emails}"]
 }
 
-output "workers_service_account_name" {
-  value = "${module.gce_workers.workers_service_account_name}"
+output "workers_service_account_names" {
+  value = ["${module.gce_workers.workers_service_account_names}"]
 }

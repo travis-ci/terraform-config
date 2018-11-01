@@ -5,10 +5,6 @@ variable "env" {
 variable "gce_gcloud_zone" {}
 variable "gce_heroku_org" {}
 
-variable "gce_worker_image" {
-  default = "https://www.googleapis.com/compute/v1/projects/eco-emissary-99515/global/images/tfw-1516675156-0b5be43"
-}
-
 variable "github_users" {}
 
 variable "index" {
@@ -117,7 +113,6 @@ module "gce_worker_group" {
   syslog_address_com                        = "${var.syslog_address_com}"
   syslog_address_org                        = "${var.syslog_address_org}"
   travisci_net_external_zone_id             = "${var.travisci_net_external_zone_id}"
-  worker_image                              = "${var.gce_worker_image}"
   worker_subnetwork                         = "${data.terraform_remote_state.vpc.gce_subnetwork_workers}"
 
   worker_zones = "${var.worker_zones}"
@@ -125,6 +120,10 @@ module "gce_worker_group" {
   worker_managed_instance_count_com      = "${var.worker_managed_instance_count_com}"
   worker_managed_instance_count_com_free = "${var.worker_managed_instance_count_com_free}"
   worker_managed_instance_count_org      = "${var.worker_managed_instance_count_org}"
+
+  worker_service_accounts_count_com      = "${var.worker_managed_instance_count_com / 4}"
+  worker_service_accounts_count_com_free = "${var.worker_managed_instance_count_com_free / 4}"
+  worker_service_accounts_count_org      = "${var.worker_managed_instance_count_org / 4}"
 
   worker_config_com = <<EOF
 ### worker.env
@@ -175,13 +174,15 @@ EOF
 }
 
 resource "google_project_iam_member" "staging_1_workers" {
+  count   = "${length(data.terraform_remote_state.staging_1.workers_service_account_emails)}"
   project = "${var.project}"
   role    = "roles/compute.imageUser"
-  member  = "serviceAccount:${data.terraform_remote_state.staging_1.workers_service_account_email}"
+  member  = "serviceAccount:${element(data.terraform_remote_state.staging_1.workers_service_account_emails, count.index)}"
 }
 
 resource "google_project_iam_member" "production_2_workers" {
+  count   = "${length(data.terraform_remote_state.production_2.workers_service_account_emails)}"
   project = "${var.project}"
   role    = "roles/compute.imageUser"
-  member  = "serviceAccount:${data.terraform_remote_state.production_2.workers_service_account_email}"
+  member  = "serviceAccount:${element(data.terraform_remote_state.production_2.workers_service_account_emails, count.index)}"
 }

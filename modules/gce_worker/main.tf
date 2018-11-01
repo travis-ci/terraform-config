@@ -14,11 +14,34 @@ variable "machine_type" {
 
 variable "project" {}
 variable "region" {}
+
+variable "regions_abbrev" {
+  default = {
+    "us-central1" = "uc1"
+    "us-east1"    = "ue1"
+  }
+}
+
 variable "subnetwork_workers" {}
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
 variable "worker_docker_self_image" {}
-variable "worker_image" {}
+
+variable "worker_image" {
+  default = "ubuntu-os-cloud/ubuntu-1804-lts"
+}
+
+variable "worker_service_accounts_count_com" {
+  default = 4
+}
+
+variable "worker_service_accounts_count_com_free" {
+  default = 4
+}
+
+variable "worker_service_accounts_count_org" {
+  default = 4
+}
 
 variable "zones" {
   default = ["a", "b", "c", "f"]
@@ -27,6 +50,27 @@ variable "zones" {
 resource "google_service_account" "workers" {
   account_id   = "workers"
   display_name = "travis-worker processes"
+  project      = "${var.project}"
+}
+
+resource "google_service_account" "workers_com" {
+  count        = "${var.worker_service_accounts_count_com}"
+  account_id   = "workers-com-${lookup(var.regions_abbrev, var.region, "unk")}-${count.index+1}"
+  display_name = "travis-worker processes com ${var.region} ${count.index+1}"
+  project      = "${var.project}"
+}
+
+resource "google_service_account" "workers_com_free" {
+  count        = "${var.worker_service_accounts_count_com_free}"
+  account_id   = "workers-com-free-${lookup(var.regions_abbrev, var.region, "unk")}-${count.index+1}"
+  display_name = "travis-worker processes com free ${var.region} ${count.index+1}"
+  project      = "${var.project}"
+}
+
+resource "google_service_account" "workers_org" {
+  count        = "${var.worker_service_accounts_count_org}"
+  account_id   = "workers-org-${lookup(var.regions_abbrev, var.region, "unk")}-${count.index+1}"
+  display_name = "travis-worker processes org ${var.region} ${count.index+1}"
   project      = "${var.project}"
 }
 
@@ -64,6 +108,8 @@ resource "google_project_iam_custom_role" "worker" {
     "compute.disks.useReadOnly",
     "compute.globalOperations.get",
     "compute.globalOperations.list",
+    "compute.images.list",
+    "compute.images.useReadOnly",
     "compute.instances.addAccessConfig",
     "compute.instances.addMaintenancePolicies",
     "compute.instances.attachDisk",
@@ -132,10 +178,40 @@ resource "google_service_account_key" "workers" {
   service_account_id = "${google_service_account.workers.email}"
 }
 
-data "template_file" "cloud_init_env_com" {
-  template = <<EOF
-export TRAVIS_WORKER_SELF_IMAGE="${var.worker_docker_self_image}"
-EOF
+resource "google_project_iam_member" "workers_com" {
+  count   = "${var.worker_service_accounts_count_com}"
+  project = "${var.project}"
+  role    = "projects/${var.project}/roles/${google_project_iam_custom_role.worker.role_id}"
+  member  = "serviceAccount:${element(google_service_account.workers_com.*.email, count.index)}"
+}
+
+resource "google_service_account_key" "workers_com" {
+  count              = "${var.worker_service_accounts_count_com}"
+  service_account_id = "${element(google_service_account.workers_com.*.email, count.index)}"
+}
+
+resource "google_project_iam_member" "workers_com_free" {
+  count   = "${var.worker_service_accounts_count_com_free}"
+  project = "${var.project}"
+  role    = "projects/${var.project}/roles/${google_project_iam_custom_role.worker.role_id}"
+  member  = "serviceAccount:${element(google_service_account.workers_com_free.*.email, count.index)}"
+}
+
+resource "google_service_account_key" "workers_com_free" {
+  count              = "${var.worker_service_accounts_count_com_free}"
+  service_account_id = "${element(google_service_account.workers_com_free.*.email, count.index)}"
+}
+
+resource "google_project_iam_member" "workers_org" {
+  count   = "${var.worker_service_accounts_count_org}"
+  project = "${var.project}"
+  role    = "projects/${var.project}/roles/${google_project_iam_custom_role.worker.role_id}"
+  member  = "serviceAccount:${element(google_service_account.workers_org.*.email, count.index)}"
+}
+
+resource "google_service_account_key" "workers_org" {
+  count              = "${var.worker_service_accounts_count_org}"
+  service_account_id = "${element(google_service_account.workers_org.*.email, count.index)}"
 }
 
 data "template_file" "cloud_config_com" {
@@ -143,11 +219,15 @@ data "template_file" "cloud_config_com" {
 
   vars {
     assets           = "${path.module}/../../assets"
-    cloud_init_env   = "${data.template_file.cloud_init_env_com.rendered}"
     gce_account_json = "${base64decode(google_service_account_key.workers.private_key)}"
+    gce_accounts_b64 = "${join("\n", google_service_account_key.workers_com.*.private_key)}"
     here             = "${path.module}"
     syslog_address   = "${var.syslog_address_com}"
     worker_config    = "${var.config_com}"
+
+    cloud_init_env = <<EOF
+export TRAVIS_WORKER_SELF_IMAGE="${var.worker_docker_self_image}"
+EOF
 
     docker_env = <<EOF
 export TRAVIS_DOCKER_DISABLE_DIRECT_LVM=1
@@ -185,9 +265,9 @@ resource "google_compute_instance_template" "worker_com" {
   }
 
   disk {
+    source_image = "${var.worker_image}"
     auto_delete  = true
     boot         = true
-    source_image = "${var.worker_image}"
   }
 
   network_interface {
@@ -196,6 +276,17 @@ resource "google_compute_instance_template" "worker_com" {
     access_config {
       # ephemeral ip
     }
+  }
+
+  service_account {
+    email = "${google_service_account.workers.email}"
+
+    scopes = [
+      "cloud-platform",
+      "storage-full",
+      "compute-rw",
+      "trace-append",
+    ]
   }
 
   metadata {
@@ -221,22 +312,20 @@ resource "google_compute_region_instance_group_manager" "worker_com" {
   distribution_policy_zones = "${formatlist("${var.region}-%s", var.zones)}"
 }
 
-data "template_file" "cloud_init_env_com_free" {
-  template = <<EOF
-export TRAVIS_WORKER_SELF_IMAGE="${var.worker_docker_self_image}"
-EOF
-}
-
 data "template_file" "cloud_config_com_free" {
   template = "${file("${path.module}/cloud-config.yml.tpl")}"
 
   vars {
     assets           = "${path.module}/../../assets"
-    cloud_init_env   = "${data.template_file.cloud_init_env_com_free.rendered}"
     gce_account_json = "${base64decode(google_service_account_key.workers.private_key)}"
+    gce_accounts_b64 = "${join("\n", google_service_account_key.workers_com_free.*.private_key)}"
     here             = "${path.module}"
     syslog_address   = "${var.syslog_address_com}"
     worker_config    = "${var.config_com_free}"
+
+    cloud_init_env = <<EOF
+export TRAVIS_WORKER_SELF_IMAGE="${var.worker_docker_self_image}"
+EOF
 
     docker_env = <<EOF
 export TRAVIS_DOCKER_DISABLE_DIRECT_LVM=1
@@ -274,9 +363,9 @@ resource "google_compute_instance_template" "worker_com_free" {
   }
 
   disk {
+    source_image = "${var.worker_image}"
     auto_delete  = true
     boot         = true
-    source_image = "${var.worker_image}"
   }
 
   network_interface {
@@ -285,6 +374,17 @@ resource "google_compute_instance_template" "worker_com_free" {
     access_config {
       # ephemeral ip
     }
+  }
+
+  service_account {
+    email = "${google_service_account.workers.email}"
+
+    scopes = [
+      "cloud-platform",
+      "storage-full",
+      "compute-rw",
+      "trace-append",
+    ]
   }
 
   metadata {
@@ -310,22 +410,20 @@ resource "google_compute_region_instance_group_manager" "worker_com_free" {
   distribution_policy_zones = "${formatlist("${var.region}-%s", var.zones)}"
 }
 
-data "template_file" "cloud_init_env_org" {
-  template = <<EOF
-export TRAVIS_WORKER_SELF_IMAGE="${var.worker_docker_self_image}"
-EOF
-}
-
 data "template_file" "cloud_config_org" {
   template = "${file("${path.module}/cloud-config.yml.tpl")}"
 
   vars {
     assets           = "${path.module}/../../assets"
-    cloud_init_env   = "${data.template_file.cloud_init_env_org.rendered}"
     gce_account_json = "${base64decode(google_service_account_key.workers.private_key)}"
+    gce_accounts_b64 = "${join("\n", google_service_account_key.workers_org.*.private_key)}"
     here             = "${path.module}"
     syslog_address   = "${var.syslog_address_org}"
     worker_config    = "${var.config_org}"
+
+    cloud_init_env = <<EOF
+export TRAVIS_WORKER_SELF_IMAGE="${var.worker_docker_self_image}"
+EOF
 
     docker_env = <<EOF
 export TRAVIS_DOCKER_DISABLE_DIRECT_LVM=1
@@ -363,9 +461,9 @@ resource "google_compute_instance_template" "worker_org" {
   }
 
   disk {
+    source_image = "${var.worker_image}"
     auto_delete  = true
     boot         = true
-    source_image = "${var.worker_image}"
   }
 
   network_interface {
@@ -374,6 +472,17 @@ resource "google_compute_instance_template" "worker_org" {
     access_config {
       # ephemeral ip
     }
+  }
+
+  service_account {
+    email = "${google_service_account.workers.email}"
+
+    scopes = [
+      "cloud-platform",
+      "storage-full",
+      "compute-rw",
+      "trace-append",
+    ]
   }
 
   metadata {
@@ -399,10 +508,20 @@ resource "google_compute_region_instance_group_manager" "worker_org" {
   distribution_policy_zones = "${formatlist("${var.region}-%s", var.zones)}"
 }
 
-output "workers_service_account_email" {
-  value = "${google_service_account.workers.email}"
+output "workers_service_account_emails" {
+  value = [
+    "${google_service_account.workers.email}",
+    "${google_service_account.workers_org.*.email}",
+    "${google_service_account.workers_com.*.email}",
+    "${google_service_account.workers_com_free.*.email}",
+  ]
 }
 
-output "workers_service_account_name" {
-  value = "${google_service_account.workers.name}"
+output "workers_service_account_names" {
+  value = [
+    "${google_service_account.workers.name}",
+    "${google_service_account.workers_org.*.name}",
+    "${google_service_account.workers_com.*.name}",
+    "${google_service_account.workers_com_free.*.name}",
+  ]
 }
