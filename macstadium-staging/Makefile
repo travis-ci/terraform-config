@@ -19,7 +19,7 @@ include $(shell git rev-parse --show-toplevel)/trvs.mk
 
 
 .PHONY: .config
-.config: $(CONFIG_FILES) $(ENV_NAME).auto.tfvars trvs-collectd-vsphere.auto.tfvars
+.config: $(CONFIG_FILES) $(ENV_NAME).auto.tfvars trvs-collectd-vsphere.auto.tfvars trvs-image-builder.auto.tfvars
 
 $(CONFIG_FILES):
 	mkdir -p config
@@ -62,3 +62,9 @@ $(ENV_NAME).auto.tfvars:
 
 trvs-collectd-vsphere.auto.tfvars:
 	trvs generate-config -f json collectd-vsphere common-$(INDEX) -o $@
+
+trvs-image-builder.auto.tfvars:
+	echo 'image_builder_secrets = {' >$@
+	trvs generate-config -f hcl macstadium-image-builder macbot | sed 's/^/  /' >>$@
+	trvs generate-config -f hcl macstadium-image-builder imaged | sed 's/^/  /' >>$@
+	echo '}' >>$@

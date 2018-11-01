@@ -88,8 +88,6 @@ data "external" "kubectl_config" {
     host = "${local.master_ip}"
     user = "${var.ssh_user}"
   }
-
-  depends_on = ["vsphere_virtual_machine.master"]
 }
 
 output "master_ip" {

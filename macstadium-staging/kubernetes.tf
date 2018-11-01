@@ -10,9 +10,15 @@ module "kubernetes_cluster" {
   ssh_user               = "${var.ssh_user}"
 }
 
-provider "kubernetes" {
+variable "image_builder_secrets" {
+  default = {}
+}
+
+module "kubernetes_services" {
+  source                 = "services"
   host                   = "${module.kubernetes_cluster.host}"
   cluster_ca_certificate = "${base64decode(module.kubernetes_cluster.cluster_ca_certificate)}"
   client_certificate     = "${base64decode(module.kubernetes_cluster.client_certificate)}"
   client_key             = "${base64decode(module.kubernetes_cluster.client_key)}"
+  image_builder_secrets  = "${var.image_builder_secrets}"
 }
