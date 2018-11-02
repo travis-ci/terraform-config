@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+set -o errexit
+
+main() {
+  [[ "${QUIET}" ]] || set -o xtrace
+
+  : "${SQUIGNIX_IMAGE:=tianon/squignix}"
+
+  local name=squignix
+  if [[ "${1}" ]]; then
+    name="${1}"
+  fi
+
+  local env_file
+  env_file="$(tfw writeenv squignix)"
+
+  set -o allexport
+  # shellcheck source=/dev/null
+  source "${env_file}"
+
+  __ensure_docker_volume "${name}"
+  exec docker run -dit \
+    --name "${name}" \
+    -v "${name}:/var/cache/nginx" \
+    "${SQUIGNIX_IMAGE}"
+}
+
+__ensure_docker_volume() {
+  local name="${1}"
+
+  if docker volume inspect "${name}" --format='{{.Name}}' &>/dev/null; then
+    return
+  fi
+
+  docker volume create \
+    --driver local \
+    --opt type=tmpfs \
+    --opt device=tmpfs \
+    --opt o=size=1048576k \
+    "${name}"
+}
+
+main "${@}"
