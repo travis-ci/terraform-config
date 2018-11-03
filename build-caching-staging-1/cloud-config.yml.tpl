@@ -8,7 +8,7 @@ write_files:
 - content: '${base64encode(github_users_env)}'
   encoding: b64
   path: /etc/default/github-users
-- content: '${base64encode(file("${here}/squignix.env"))}'
+- content: '${base64encode(squignix_env)}'
   encoding: b64
   path: /etc/default/squignix
 - content: '${base64encode(file("${here}/squignix.service"))}'
@@ -32,6 +32,9 @@ write_files:
   encoding: b64
   path: /var/lib/cloud/scripts/per-boot/99-cloud-init
   permissions: '0750'
+- content: '${base64encode(nginx_conf_d_default)}'
+  encoding: b64
+  path: /var/tmp/nginx-conf.d/default.conf
 - content: '${base64encode("___INSTANCE_NAME___\n")}'
   encoding: b64
   path: /var/tmp/travis-run.d/instance-hostname.tmpl

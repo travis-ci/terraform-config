@@ -5,6 +5,7 @@ main() {
   [[ "${QUIET}" ]] || set -o xtrace
 
   : "${SQUIGNIX_IMAGE:=tianon/squignix}"
+  : "${SQUIGNIX_CACHE_SIZE:=1048576k}"
 
   local name=squignix
   if [[ "${1}" ]]; then
@@ -18,15 +19,18 @@ main() {
   # shellcheck source=/dev/null
   source "${env_file}"
 
-  __ensure_docker_volume "${name}"
+  __ensure_docker_volume "${name}" "${SQUIGNIX_CACHE_SIZE}"
   exec docker run -dit \
+    --rm \
     --name "${name}" \
+    -v /var/tmp/nginx-conf.d:/etc/nginx/conf.d \
     -v "${name}:/var/cache/nginx" \
     "${SQUIGNIX_IMAGE}"
 }
 
 __ensure_docker_volume() {
   local name="${1}"
+  local cache_size="${2}"
 
   if docker volume inspect "${name}" --format='{{.Name}}' &>/dev/null; then
     return
@@ -36,7 +40,7 @@ __ensure_docker_volume() {
     --driver local \
     --opt type=tmpfs \
     --opt device=tmpfs \
-    --opt o=size=1048576k \
+    --opt "o=size=${cache_size}" \
     "${name}"
 }
 
