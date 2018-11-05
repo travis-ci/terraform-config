@@ -28,12 +28,23 @@ resource "vsphere_virtual_machine" "nodes" {
     network_id = "${data.vsphere_network.internal.id}"
   }
 
+  network_interface {
+    network_id = "${data.vsphere_network.jobs.id}"
+    use_static_mac = true
+    mac_address = "${var.mac_addresses[count.index]}"
+  }
+
   clone {
     template_uuid = "${data.vsphere_virtual_machine.vanilla_template.id}"
 
     customize {
       network_interface {
         ipv4_address = "${cidrhost("10.182.64.0/18", var.ip_base + count.index + 1)}"
+        ipv4_netmask = 18
+      }
+
+      network_interface {
+        ipv4_address = "${cidrhost(var.jobs_network_subnet, var.ip_base + count.index + 1)}"
         ipv4_netmask = 18
       }
 

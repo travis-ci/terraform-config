@@ -35,6 +35,19 @@ variable "internal_network_label" {
   description = "The label for the internal network for the MacStadium VPN"
 }
 
+variable "jobs_network_label" {
+  description = "The label for the jobs network for the MacStadium VPN"
+}
+
+variable "jobs_network_subnet" {
+  description = "The subnet for the jobs network where this cluster is running"
+}
+
+variable "mac_addresses" {
+  default = []
+  description = "The list of MAC addresses to assign the node VMs on the jobs network"
+}
+
 variable "ssh_user" {
   description = "your SSH username on our vanilla Linux images"
 }
