@@ -62,3 +62,7 @@ $(ENV_NAME).auto.tfvars:
 
 trvs-collectd-vsphere.auto.tfvars:
 	trvs generate-config -f json collectd-vsphere common-$(INDEX) -o $@
+
+.PHONY: context
+context:
+	$(TOP)/bin/set-k8s-context $(ENV_NAME)

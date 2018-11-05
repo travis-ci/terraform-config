@@ -9,9 +9,31 @@ module "kubernetes_cluster" {
   internal_network_label = "Internal"
   jobs_network_label     = "Jobs-1"
   jobs_network_subnet    = "10.182.0.0/18"
-  mac_addresses          = [
+
+  mac_addresses = [
     "00:50:56:84:0b:b1",
     "00:50:56:84:0b:b2",
   ]
-  ssh_user               = "${var.ssh_user}"
+
+  ssh_user = "${var.ssh_user}"
+}
+
+// Use these outputs to be able to easily set up a context in kubectl on the local machine.
+output "cluster_host" {
+  value = "${module.kubernetes_cluster.host}"
+}
+
+output "cluster_ca_certificate" {
+  value     = "${module.kubernetes_cluster.cluster_ca_certificate}"
+  sensitive = true
+}
+
+output "client_certificate" {
+  value     = "${module.kubernetes_cluster.client_certificate}"
+  sensitive = true
+}
+
+output "client_key" {
+  value     = "${module.kubernetes_cluster.client_key}"
+  sensitive = true
 }
