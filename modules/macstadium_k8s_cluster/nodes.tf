@@ -81,3 +81,12 @@ resource "vsphere_virtual_machine" "nodes" {
     ]
   }
 }
+
+resource "aws_route53_record" "nodes" {
+  count   = "${var.node_count}"
+  zone_id = "${var.travisci_net_external_zone_id}"
+  name    = "${local.node_vm_prefix}-${count.index + 1}.macstadium-us-se-1.travisci.net"
+  type    = "A"
+  ttl     = 300
+  records = ["${element(vsphere_virtual_machine.nodes.*.clone.0.customize.0.network_interface.0.ipv4_address, count.index)}"]
+}

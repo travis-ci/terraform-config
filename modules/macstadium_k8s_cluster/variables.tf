@@ -48,6 +48,10 @@ variable "mac_addresses" {
   description = "The list of MAC addresses to assign the node VMs on the jobs network"
 }
 
+variable "travisci_net_external_zone_id" {
+  description = "The zone ID for the travisci.net DNS zone"
+}
+
 variable "ssh_user" {
   description = "your SSH username on our vanilla Linux images"
 }

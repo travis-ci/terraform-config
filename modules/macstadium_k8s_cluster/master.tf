@@ -68,6 +68,14 @@ resource "vsphere_virtual_machine" "master" {
   }
 }
 
+resource "aws_route53_record" "master" {
+  zone_id = "${var.travisci_net_external_zone_id}"
+  name    = "${local.master_vm_name}.macstadium-us-se-1.travisci.net"
+  type    = "A"
+  ttl     = 300
+  records = ["${local.master_ip}"]
+}
+
 # The command needed to join additional nodes to the cluster
 data "external" "kubeadm_join" {
   program = ["${path.module}/scripts/kubeadm-token.sh"]

@@ -15,7 +15,8 @@ module "kubernetes_cluster" {
     "00:50:56:84:0b:b2",
   ]
 
-  ssh_user = "${var.ssh_user}"
+  travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
+  ssh_user                      = "${var.ssh_user}"
 }
 
 // Use these outputs to be able to easily set up a context in kubectl on the local machine.
