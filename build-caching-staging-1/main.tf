@@ -30,10 +30,6 @@ variable "travisci_net_external_zone_id" {
   default = "Z2RI61YP4UWSIO"
 }
 
-variable "zones" {
-  default = ["a", "b", "c", "f"]
-}
-
 terraform {
   backend "s3" {
     bucket         = "travis-terraform-state"
@@ -45,6 +41,11 @@ terraform {
 }
 
 provider "google" {
+  project = "${var.project}"
+  region  = "${var.region}"
+}
+
+provider "google-beta" {
   project = "${var.project}"
   region  = "${var.region}"
 }
@@ -114,12 +115,30 @@ resource "aws_route53_record" "build_cache" {
   records = ["${google_compute_address.build_cache.address}"]
 }
 
-resource "google_compute_http_health_check" "build_cache" {
-  name         = "build-cache-health-check"
-  request_path = "/__squignix_health__"
+resource "google_compute_health_check" "build_cache" {
+  name = "build-cache-health-check"
 
   timeout_sec        = 3
   check_interval_sec = 5
+
+  http_health_check {
+    request_path = "/__squignix_health__"
+  }
+}
+
+resource "google_compute_backend_service" "build_cache" {
+  name        = "build-cache-backend"
+  description = "backend servers for build cache"
+  port_name   = "http"
+  protocol    = "HTTP"
+  timeout_sec = 10
+  enable_cdn  = false
+
+  backend {
+    group = "${google_compute_instance_group_manager.build_cache.instance_group}"
+  }
+
+  health_checks = ["${google_compute_health_check.build_cache.self_link}"]
 }
 
 resource "google_compute_instance_template" "build_cache" {
@@ -142,9 +161,7 @@ resource "google_compute_instance_template" "build_cache" {
   network_interface {
     subnetwork = "public"
 
-    access_config = {
-      nat_ip = "${google_compute_address.build_cache.address}"
-    }
+    access_config = {}
   }
 
   metadata {
@@ -157,17 +174,49 @@ resource "google_compute_instance_template" "build_cache" {
   }
 }
 
-resource "google_compute_region_instance_group_manager" "build_cache" {
-  base_instance_name = "${var.env}-${var.index}-build-cache-gce"
-  instance_template  = "${google_compute_instance_template.build_cache.self_link}"
-  name               = "build-cache"
-  target_size        = 1
-  region             = "${var.region}"
+resource "google_compute_instance_group_manager" "build_cache" {
+  provider = "google-beta"
 
-  distribution_policy_zones = "${formatlist("${var.region}-%s", var.zones)}"
+  base_instance_name = "${var.env}-${var.index}-build-cache-gce"
+  name               = "build-cache"
+  target_size        = 2
+  zone               = "us-central1-a"
+
+  version {
+    name              = "default"
+    instance_template = "${google_compute_instance_template.build_cache.self_link}"
+  }
+
+  rolling_update_policy {
+    type                    = "PROACTIVE"
+    minimal_action          = "REPLACE"
+    max_surge_percent       = 100
+    max_unavailable_percent = 50
+    min_ready_sec           = 900
+  }
 
   auto_healing_policies {
-    health_check      = "${google_compute_http_health_check.build_cache.self_link}"
+    health_check      = "${google_compute_health_check.build_cache.self_link}"
     initial_delay_sec = 900
   }
+}
+
+resource "google_compute_url_map" "build_cache" {
+  name        = "build-cache"
+  description = "url map for build cache"
+
+  default_service = "${google_compute_backend_service.build_cache.self_link}"
+}
+
+resource "google_compute_target_http_proxy" "build_cache" {
+  name    = "build-cache"
+  url_map = "${google_compute_url_map.build_cache.self_link}"
+}
+
+resource "google_compute_forwarding_rule" "build_cache" {
+  name                  = "build-cache-forwarding-rule"
+  ip_address            = "${google_compute_address.build_cache.self_link}"
+  load_balancing_scheme = "EXTERNAL"
+  target                = "${google_compute_target_http_proxy.build_cache.self_link}"
+  port_range            = "80,8080"
 }
