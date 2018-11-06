@@ -179,7 +179,7 @@ resource "google_compute_instance_group_manager" "build_cache" {
 
   base_instance_name = "${var.env}-${var.index}-build-cache-gce"
   name               = "build-cache"
-  target_size        = 2
+  target_size        = 1
   zone               = "us-central1-a"
 
   version {
