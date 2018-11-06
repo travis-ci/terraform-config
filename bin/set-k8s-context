@@ -7,12 +7,12 @@ cluster_ca_certificate=$(terraform output cluster_ca_certificate)
 client_certificate=$(terraform output client_certificate)
 client_key=$(terraform output client_key)
 
-echo "$cluster_ca_certificate" | base64 --decode > /tmp/k8s_ca
+echo "$cluster_ca_certificate" | base64 --decode >/tmp/k8s_ca
 kubectl config set-cluster "$name" --certificate-authority=/tmp/k8s_ca --server="$host" --embed-certs
 rm /tmp/k8s_ca
 
-echo "$client_certificate" | base64 --decode > /tmp/k8s_cert
-echo "$client_key" | base64 --decode > /tmp/k8s_key
+echo "$client_certificate" | base64 --decode >/tmp/k8s_cert
+echo "$client_key" | base64 --decode >/tmp/k8s_key
 kubectl config set-credentials "$name" --client-certificate=/tmp/k8s_cert --client-key=/tmp/k8s_key --embed-certs
 rm /tmp/k8s_cert
 rm /tmp/k8s_key
