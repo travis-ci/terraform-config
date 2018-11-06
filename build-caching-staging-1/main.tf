@@ -187,7 +187,7 @@ resource "google_compute_instance_group_manager" "build_cache" {
     instance_template = "${google_compute_instance_template.build_cache.self_link}"
   }
 
-  rolling_update_policy {
+  update_policy {
     type                    = "PROACTIVE"
     minimal_action          = "REPLACE"
     max_surge_percent       = 100
