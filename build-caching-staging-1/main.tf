@@ -200,23 +200,3 @@ resource "google_compute_instance_group_manager" "build_cache" {
     initial_delay_sec = 900
   }
 }
-
-resource "google_compute_url_map" "build_cache" {
-  name        = "build-cache"
-  description = "url map for build cache"
-
-  default_service = "${google_compute_backend_service.build_cache.self_link}"
-}
-
-resource "google_compute_target_http_proxy" "build_cache" {
-  name    = "build-cache"
-  url_map = "${google_compute_url_map.build_cache.self_link}"
-}
-
-resource "google_compute_forwarding_rule" "build_cache" {
-  name                  = "build-cache-forwarding-rule"
-  ip_address            = "${google_compute_address.build_cache.self_link}"
-  load_balancing_scheme = "EXTERNAL"
-  target                = "${google_compute_target_http_proxy.build_cache.self_link}"
-  port_range            = "80,8080"
-}
