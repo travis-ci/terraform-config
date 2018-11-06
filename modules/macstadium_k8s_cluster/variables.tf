@@ -15,7 +15,7 @@ variable "node_count" {
 }
 
 variable "vanilla_image" {
-  default = "travis-ci-ubuntu16.04-internal-vanilla-1540931726"
+  default     = "travis-ci-ubuntu16.04-internal-vanilla-1540931726"
   description = "The image to clone VMs from. Needs to be at least Xenial to support Kubernetes."
 }
 
@@ -44,7 +44,7 @@ variable "jobs_network_subnet" {
 }
 
 variable "mac_addresses" {
-  default = []
+  default     = []
   description = "The list of MAC addresses to assign the node VMs on the jobs network"
 }
 

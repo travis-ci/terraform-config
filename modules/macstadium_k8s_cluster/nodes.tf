@@ -29,9 +29,9 @@ resource "vsphere_virtual_machine" "nodes" {
   }
 
   network_interface {
-    network_id = "${data.vsphere_network.jobs.id}"
+    network_id     = "${data.vsphere_network.jobs.id}"
     use_static_mac = true
-    mac_address = "${var.mac_addresses[count.index]}"
+    mac_address    = "${var.mac_addresses[count.index]}"
   }
 
   clone {
