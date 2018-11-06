@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -o errexit
+set -o pipefail
+
+main() {
+  local name=squignix
+  if [[ "${1}" ]]; then
+    name="${1}"
+  fi
+
+  exec docker exec "${name}" \
+    grep -Erho '^KEY: .*' /var/cache/nginx |
+    cut -d' ' -f2- |
+    sort -u
+}
+
+main "${@}"

@@ -2,7 +2,7 @@
 # https://www.nginx.com/blog/nginx-caching-guide/
 # https://nginx.org/en/docs/http/ngx_http_proxy_module.html
 
-proxy_cache_path /var/cache/nginx levels=1:2 keys_zone=my_cache:10m inactive=180m max_size=${max_size}m use_temp_path=off;
+proxy_cache_path /var/cache/nginx levels=1:2 keys_zone=my_cache:10m inactive=180m max_size=${max_size} use_temp_path=off;
 
 proxy_cache my_cache;
 proxy_cache_background_update on;

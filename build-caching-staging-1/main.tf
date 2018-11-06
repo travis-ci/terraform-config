@@ -161,7 +161,9 @@ resource "google_compute_instance_template" "build_cache" {
   network_interface {
     subnetwork = "public"
 
-    access_config = {}
+    access_config = {
+      nat_ip = "${google_compute_address.build_cache.address}"
+    }
   }
 
   metadata {
@@ -170,7 +172,7 @@ resource "google_compute_instance_template" "build_cache" {
   }
 
   lifecycle {
-    create_before_destroy = true
+    create_before_destroy = false
   }
 }
 

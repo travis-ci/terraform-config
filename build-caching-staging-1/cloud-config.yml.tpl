@@ -20,6 +20,10 @@ write_files:
 - content: '${base64encode(file("${assets}/bits/apt_force_confdef.conf"))}'
   encoding: b64
   path: /etc/apt/apt.conf.d/force_confdef
+- content: '${base64encode(file("${here}/squignix-list-cached-urls"))}'
+  encoding: b64
+  path: /usr/local/bin/squignix-list-cached-urls
+  permissions: '0750'
 - content: '${base64encode(file("${here}/squignix-wrapper"))}'
   encoding: b64
   path: /usr/local/bin/squignix-wrapper
