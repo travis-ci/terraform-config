@@ -193,7 +193,7 @@ resource "google_compute_instance_group_manager" "build_cache" {
     type                    = "PROACTIVE"
     minimal_action          = "REPLACE"
     max_surge_percent       = 100
-    max_unavailable_percent = 50
+    max_unavailable_percent = 100
     min_ready_sec           = 900
   }
 
