@@ -263,111 +263,6 @@ module "util-host-utilities" {
   ssh_user = "${var.ssh_user}"
 }
 
-resource "vsphere_virtual_machine" "image-builder" {
-  name       = "image-builder"
-  folder     = "Internal VMs"
-  vcpu       = 2
-  memory     = 4096
-  datacenter = "pod-1"
-  cluster    = "MacPro_Pod_1"
-  domain     = "macstadium-us-se-1.travisci.net"
-
-  network_interface {
-    label = "Internal"
-  }
-
-  disk {
-    template  = "Vanilla VMs/travis-ci-ubuntu14.04-internal-vanilla-1531412548"
-    datastore = "DataCore1_1"
-  }
-
-  connection {
-    host  = "${vsphere_virtual_machine.image-builder.network_interface.0.ipv4_address}"
-    user  = "${var.ssh_user}"
-    agent = true
-  }
-}
-
-data "template_file" "image_builder_installer" {
-  template = "${file("install-image-builder.sh")}"
-}
-
-data "template_file" "build_macos_script" {
-  template = "${file("build-macos.sh")}"
-}
-
-data "template_file" "image_builder_packer_env" {
-  template = "${file("config/image-builder-packer-env")}"
-}
-
-resource "null_resource" "image-builder-environment" {
-  triggers {
-    host_id                  = "${vsphere_virtual_machine.image-builder.uuid}"
-    install_script_signature = "${sha256(data.template_file.image_builder_installer.rendered)}"
-    run_script_signature     = "${sha256(data.template_file.build_macos_script.rendered)}"
-    packer_env_signature     = "${sha256(data.template_file.image_builder_packer_env.rendered)}"
-  }
-
-  connection {
-    host  = "${vsphere_virtual_machine.image-builder.network_interface.0.ipv4_address}"
-    user  = "${var.ssh_user}"
-    agent = true
-  }
-
-  provisioner "file" {
-    content     = "${data.template_file.image_builder_installer.rendered}"
-    destination = "/tmp/install-image-builder.sh"
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "chmod +x /tmp/install-image-builder.sh",
-      "sudo /tmp/install-image-builder.sh",
-    ]
-  }
-
-  provisioner "file" {
-    content     = "${data.template_file.build_macos_script.rendered}"
-    destination = "/tmp/build-macos.sh"
-  }
-
-  provisioner "file" {
-    content     = "${data.template_file.image_builder_packer_env.rendered}"
-    destination = "/tmp/packer-env"
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "sudo rm /tmp/install-image-builder.sh",
-      "sudo mv /tmp/build-macos.sh /home/packer/bin/build-macos",
-      "sudo chown packer:packer /home/packer/bin/build-macos",
-      "sudo chmod +x /home/packer/bin/build-macos",
-      "sudo mv /tmp/packer-env /home/packer/.packer-env",
-      "sudo chown packer:packer /home/packer/.packer-env",
-    ]
-  }
-}
-
-data "template_file" "image_builder_macbot_env" {
-  template = "${file("config/image-builder-macbot-env")}"
-}
-
-data "template_file" "image_builder_imaged_config" {
-  template = "${file("config/image-builder-imaged-env")}"
-}
-
-data "template_file" "image_builder_ansible_secrets" {
-  template = "${file("config/image-builder-ansible-secrets")}"
-}
-
-data "template_file" "image_builder_macbot_service" {
-  template = "${file("macbot.yml")}"
-}
-
-data "template_file" "image_builder_macbot_installer" {
-  template = "${file("install-macbot.sh")}"
-}
-
 resource "aws_s3_bucket" "imaged_records" {
   acl    = "private"
   bucket = "imaged-records.travis-ci.com"
@@ -380,79 +275,12 @@ module "aws_iam_user_s3_imaged" {
   s3_bucket_name = "${aws_s3_bucket.imaged_records.id}"
 }
 
-data "template_file" "image_builder_aws_env" {
-  template = <<EOF
-AWS_REGION=${aws_s3_bucket.imaged_records.region}
-AWS_ACCESS_KEY=${module.aws_iam_user_s3_imaged.id}
-AWS_SECRET_KEY=${module.aws_iam_user_s3_imaged.secret}
-IMAGED_RECORD_BUCKET=${aws_s3_bucket.imaged_records.id}
-EOF
+output "imaged_access_key" {
+  value     = "${module.aws_iam_user_s3_imaged.id}"
+  sensitive = true
 }
 
-data "template_file" "image_builder_imaged_env" {
-  template = <<EOF
-${data.template_file.image_builder_imaged_config.rendered}
-${data.template_file.image_builder_aws_env.rendered}
-EOF
-}
-
-resource "null_resource" "image-builder-macbot" {
-  // This depends on the packer user existing and on Docker being installed
-  depends_on = ["null_resource.image-builder-environment"]
-
-  triggers {
-    host_id              = "${vsphere_virtual_machine.image-builder.uuid}"
-    installer_signature  = "${sha256(data.template_file.image_builder_macbot_installer.rendered)}"
-    macbot_env_signature = "${sha256(data.template_file.image_builder_macbot_env.rendered)}"
-    imaged_env_signature = "${sha256(data.template_file.image_builder_imaged_env.rendered)}"
-    secrets_signature    = "${sha256(data.template_file.image_builder_ansible_secrets.rendered)}"
-    service_signature    = "${sha256(data.template_file.image_builder_macbot_service.rendered)}"
-  }
-
-  connection {
-    host  = "${vsphere_virtual_machine.image-builder.network_interface.0.ipv4_address}"
-    user  = "${var.ssh_user}"
-    agent = true
-  }
-
-  provisioner "file" {
-    content     = "${data.template_file.image_builder_macbot_env.rendered}"
-    destination = "/tmp/macbot-env"
-  }
-
-  provisioner "file" {
-    content     = "${data.template_file.image_builder_imaged_env.rendered}"
-    destination = "/tmp/imaged-env"
-  }
-
-  provisioner "file" {
-    content     = "${data.template_file.image_builder_ansible_secrets.rendered}"
-    destination = "/tmp/ansible-secrets.yml"
-  }
-
-  provisioner "file" {
-    content     = "${data.template_file.image_builder_macbot_service.rendered}"
-    destination = "/tmp/macbot.yml"
-  }
-
-  provisioner "file" {
-    content     = "${data.template_file.image_builder_macbot_installer.rendered}"
-    destination = "/tmp/install-macbot.sh"
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "chmod +x /tmp/install-macbot.sh",
-      "sudo /tmp/install-macbot.sh",
-      "sudo rm /tmp/install-macbot.sh",
-    ]
-  }
-}
-
-resource "aws_route53_record" "image-builder" {
-  zone_id = "${var.travisci_net_external_zone_id}"
-  name    = "image-builder.macstadium-us-se-1.travisci.net"
-  type    = "A"
-  ttl     = 300
-  records = ["${vsphere_virtual_machine.image-builder.network_interface.0.ipv4_address}"]
+output "imaged_secret_key" {
+  value     = "${module.aws_iam_user_s3_imaged.secret}"
+  sensitive = true
 }
