@@ -262,25 +262,3 @@ module "util-host-utilities" {
   ssh_host = "${module.macstadium_infrastructure.util_ip}"
   ssh_user = "${var.ssh_user}"
 }
-
-resource "aws_s3_bucket" "imaged_records" {
-  acl    = "private"
-  bucket = "imaged-records.travis-ci.com"
-  region = "us-east-1"
-}
-
-module "aws_iam_user_s3_imaged" {
-  source         = "../modules/aws_iam_user_s3"
-  iam_user_name  = "imaged-macstadium"
-  s3_bucket_name = "${aws_s3_bucket.imaged_records.id}"
-}
-
-output "imaged_access_key" {
-  value     = "${module.aws_iam_user_s3_imaged.id}"
-  sensitive = true
-}
-
-output "imaged_secret_key" {
-  value     = "${module.aws_iam_user_s3_imaged.secret}"
-  sensitive = true
-}

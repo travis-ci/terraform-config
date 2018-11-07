@@ -71,3 +71,29 @@ output "client_key" {
   value     = "${module.kubernetes_cluster.client_key}"
   sensitive = true
 }
+
+// This bucket and user will be used by imaged when deployed in the cluster.
+// If the S3 user ever gets recreated, the travis-keychain will need to be updated
+// so that imaged has the right credentials.
+
+resource "aws_s3_bucket" "imaged_records" {
+  acl    = "private"
+  bucket = "imaged-records.travis-ci.com"
+  region = "us-east-1"
+}
+
+module "aws_iam_user_s3_imaged" {
+  source         = "../modules/aws_iam_user_s3"
+  iam_user_name  = "imaged-macstadium"
+  s3_bucket_name = "${aws_s3_bucket.imaged_records.id}"
+}
+
+output "imaged_access_key" {
+  value     = "${module.aws_iam_user_s3_imaged.id}"
+  sensitive = true
+}
+
+output "imaged_secret_key" {
+  value     = "${module.aws_iam_user_s3_imaged.secret}"
+  sensitive = true
+}
