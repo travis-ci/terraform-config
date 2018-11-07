@@ -30,6 +30,10 @@ variable "travisci_net_external_zone_id" {
   default = "Z2RI61YP4UWSIO"
 }
 
+variable "zones" {
+  default = ["a", "b", "c", "f"]
+}
+
 terraform {
   backend "s3" {
     bucket         = "travis-terraform-state"
@@ -100,19 +104,11 @@ resource "google_compute_firewall" "build_cache" {
   target_tags = ["build-cache"]
 }
 
-resource "google_compute_address" "build_cache" {
-  name    = "build-cache-1"
-  region  = "${var.region}"
-  project = "${var.project}"
-}
-
-resource "aws_route53_record" "build_cache" {
-  zone_id = "${var.travisci_net_external_zone_id}"
-  name    = "build-cache-${var.env}-${var.index}.gce-${var.region}.travisci.net"
-  type    = "A"
-  ttl     = 5
-
-  records = ["${google_compute_address.build_cache.address}"]
+resource "google_compute_address" "build_cache_frontend" {
+  name         = "build-cache-frontend"
+  subnetwork   = "public"
+  address_type = "INTERNAL"
+  address      = "10.10.0.127"
 }
 
 resource "google_compute_health_check" "build_cache" {
@@ -126,26 +122,10 @@ resource "google_compute_health_check" "build_cache" {
   }
 }
 
-resource "google_compute_backend_service" "build_cache" {
-  name        = "build-cache-backend"
-  description = "backend servers for build cache"
-  port_name   = "http"
-  protocol    = "HTTP"
-  timeout_sec = 10
-  enable_cdn  = false
-
-  backend {
-    group = "${google_compute_instance_group_manager.build_cache.instance_group}"
-  }
-
-  health_checks = ["${google_compute_health_check.build_cache.self_link}"]
-}
-
 resource "google_compute_instance_template" "build_cache" {
   name_prefix  = "${var.env}-${var.index}-build-cache-"
   machine_type = "${var.machine_type}"
   tags         = ["build-cache", "${var.env}"]
-  project      = "${var.project}"
 
   scheduling {
     automatic_restart   = true
@@ -161,9 +141,7 @@ resource "google_compute_instance_template" "build_cache" {
   network_interface {
     subnetwork = "public"
 
-    access_config = {
-      nat_ip = "${google_compute_address.build_cache.address}"
-    }
+    access_config = {}
   }
 
   metadata {
@@ -172,17 +150,18 @@ resource "google_compute_instance_template" "build_cache" {
   }
 
   lifecycle {
-    create_before_destroy = false
+    create_before_destroy = true
   }
 }
 
-resource "google_compute_instance_group_manager" "build_cache" {
+resource "google_compute_region_instance_group_manager" "build_cache" {
   provider = "google-beta"
 
-  base_instance_name = "${var.env}-${var.index}-build-cache-gce"
-  name               = "build-cache"
-  target_size        = 1
-  zone               = "us-central1-a"
+  base_instance_name        = "${var.env}-${var.index}-build-cache-gce"
+  distribution_policy_zones = "${formatlist("${var.region}-%s", var.zones)}"
+  name                      = "build-cache"
+  region                    = "${var.region}"
+  target_size               = 2
 
   version {
     name              = "default"
@@ -190,15 +169,49 @@ resource "google_compute_instance_group_manager" "build_cache" {
   }
 
   update_policy {
-    type                    = "PROACTIVE"
-    minimal_action          = "REPLACE"
-    max_surge_percent       = 100
-    max_unavailable_percent = 100
-    min_ready_sec           = 900
+    type                  = "PROACTIVE"
+    minimal_action        = "REPLACE"
+    max_unavailable_fixed = "${length(var.zones)}"
+    max_surge_fixed       = "${length(var.zones)}"
+    min_ready_sec         = 900
   }
 
   auto_healing_policies {
     health_check      = "${google_compute_health_check.build_cache.self_link}"
     initial_delay_sec = 900
   }
+}
+
+resource "google_compute_region_backend_service" "build_cache" {
+  name             = "build-cache-backend"
+  description      = "backend servers for build cache"
+  protocol         = "TCP"
+  session_affinity = "CLIENT_IP"
+  timeout_sec      = 10
+
+  backend {
+    group = "${google_compute_region_instance_group_manager.build_cache.instance_group}"
+  }
+
+  health_checks = ["${google_compute_health_check.build_cache.self_link}"]
+}
+
+resource "google_compute_forwarding_rule" "build_cache" {
+  name                  = "build-cache-forwarding"
+  backend_service       = "${google_compute_region_backend_service.build_cache.self_link}"
+  ip_address            = "${google_compute_address.build_cache_frontend.address}"
+  ip_protocol           = "TCP"
+  load_balancing_scheme = "INTERNAL"
+  network               = "main"
+  ports                 = ["80", "8080", "11371"]
+  subnetwork            = "public"
+}
+
+resource "aws_route53_record" "build_cache_frontend" {
+  zone_id = "${var.travisci_net_external_zone_id}"
+  name    = "build-cache-${var.env}-${var.index}.gce-${var.region}.travisci.net"
+  type    = "A"
+  ttl     = 5
+
+  records = ["${google_compute_address.build_cache_frontend.address}"]
 }
