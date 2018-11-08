@@ -141,7 +141,7 @@ module "worker_production_org_4" {
 
   worker_local_config = <<EOF
 export TRAVIS_WORKER_TRAVIS_SITE="org"
-export TRAVIS_WORKER_POOL_SIZE="${var.worker_org_pool_size}"
+export TRAVIS_WORKER_POOL_SIZE="20"
 export TRAVIS_WORKER_PPROF_PORT="7073"
 export TRAVIS_WORKER_HTTP_API_AUTH="macstadium-worker:${random_id.travis_worker_production_org_token.hex}"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_production_org_token.hex}@127.0.0.1:8081/"

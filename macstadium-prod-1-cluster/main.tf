@@ -97,3 +97,44 @@ output "imaged_secret_key" {
   value     = "${module.aws_iam_user_s3_imaged.secret}"
   sensitive = true
 }
+
+// These users are for the worker instances that will run on the cluster.
+// The credentials are outputs so they can be copied into the keychain.
+//
+// If the users ever get recreated, those credentials need to get copied
+// again so the Kubernetes secrets can be updated.
+//
+// This is not ideal, so I'd like to find a better way to manage this at
+// point.
+
+module "worker_com_s3_user" {
+  source         = "../modules/aws_iam_user_s3"
+  iam_user_name  = "worker-macstadium-prod-1-com"
+  s3_bucket_name = "build-trace.travis-ci.com"
+}
+
+output "worker_com_access_key" {
+  value     = "${module.worker_com_s3_user.id}"
+  sensitive = true
+}
+
+output "worker_com_secret_key" {
+  value     = "${module.worker_com_s3_user.secret}"
+  sensitive = true
+}
+
+module "worker_org_s3_user" {
+  source         = "../modules/aws_iam_user_s3"
+  iam_user_name  = "worker-macstadium-prod-1-org"
+  s3_bucket_name = "build-trace.travis-ci.org"
+}
+
+output "worker_org_access_key" {
+  value     = "${module.worker_org_s3_user.id}"
+  sensitive = true
+}
+
+output "worker_org_secret_key" {
+  value     = "${module.worker_org_s3_user.secret}"
+  sensitive = true
+}
