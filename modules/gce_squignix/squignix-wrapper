@@ -24,8 +24,6 @@ main() {
     --rm \
     --name "${name}" \
     -p 80:80 \
-    -p 443:443 \
-    -p 11371:11371 \
     -v /var/tmp/nginx-conf.d:/etc/nginx/conf.d \
     -v "${name}:/var/cache/nginx" \
     "${SQUIGNIX_IMAGE}"

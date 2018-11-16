@@ -24,10 +24,6 @@ variable "machine_type" {
   default = "custom-1-4096"
 }
 
-variable "ports" {
-  default = ["80", "8080", "11371"]
-}
-
 variable "region" {
   default = "us-central1"
 }
@@ -84,7 +80,7 @@ resource "google_compute_firewall" "build_cache" {
 
   allow {
     protocol = "tcp"
-    ports    = ["${var.ports}"]
+    ports    = ["80"]
   }
 
   target_tags = ["build-cache"]
@@ -187,7 +183,7 @@ resource "google_compute_forwarding_rule" "build_cache" {
   ip_protocol           = "TCP"
   load_balancing_scheme = "INTERNAL"
   network               = "main"
-  ports                 = ["${var.ports}"]
+  ports                 = ["80"]
   subnetwork            = "public"
 }
 
