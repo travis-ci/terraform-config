@@ -1,5 +1,5 @@
 variable "env" {
-  default = "staging"
+  default = "production"
 }
 
 variable "github_users" {}
@@ -9,7 +9,7 @@ variable "index" {
 }
 
 variable "project" {
-  default = "travis-staging-1"
+  default = "eco-emissary-99515"
 }
 
 variable "region" {
@@ -21,7 +21,7 @@ variable "syslog_address_com" {}
 terraform {
   backend "s3" {
     bucket         = "travis-terraform-state"
-    key            = "terraform-config/build-caching-staging-1.tfstate"
+    key            = "terraform-config/build-caching-production.tfstate"
     region         = "us-east-1"
     encrypt        = "true"
     dynamodb_table = "travis-terraform-state"
@@ -46,8 +46,6 @@ module "gce_squignix" {
   env            = "${var.env}"
   github_users   = "${var.github_users}"
   index          = "${var.index}"
-  cache_size_mb  = 1848
-  machine_type   = "custom-1-2048"
   region         = "${var.region}"
   syslog_address = "${var.syslog_address_com}"
 }
