@@ -126,8 +126,6 @@ resource "google_compute_instance_template" "build_cache" {
 
   network_interface {
     subnetwork = "public"
-
-    access_config = {}
   }
 
   metadata {
