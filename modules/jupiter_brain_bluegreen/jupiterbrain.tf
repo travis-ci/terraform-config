@@ -1,6 +1,6 @@
 variable "ssh_ip_address" {}
 variable "ssh_user" {}
-variable "version" {}
+variable "jupiter_brain_version" {}
 variable "config_path" {}
 variable "env" {}
 variable "index" {}
@@ -13,7 +13,7 @@ data "template_file" "jupiter_brain_install" {
 
   vars {
     env     = "${var.env}"
-    version = "${var.version}"
+    version = "${var.jupiter_brain_version}"
   }
 }
 
@@ -27,7 +27,7 @@ data "template_file" "jupiter_brain_upstart" {
 
 resource "null_resource" "jupiter_brain" {
   triggers {
-    version                  = "${var.version}"
+    version                  = "${var.jupiter_brain_version}"
     config_signature         = "${sha256(file(var.config_path))}"
     install_script_signature = "${sha256(data.template_file.jupiter_brain_install.rendered)}"
     upstart_script_signature = "${sha256(data.template_file.jupiter_brain_upstart.rendered)}"

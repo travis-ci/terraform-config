@@ -1,28 +1,26 @@
 # terraform-config
 
-This repository will contain all of our terraform configs as a monolithic repo.
+This contains all of the Terraform bits for hosted Travis CI :cloud:.
 
 This is what allows us to manage our cloud environments from a central place,
 and change them over time. It should be possible to bring up (or re-create) a
-complete environment with the push of a button.
+complete environment with a few `make` tasks.
 
 ## Status
 
-In production, with mixed adoption across infrastructures.
+In production.  Patches welcome.  Please review the [code of
+conduct](./CODE_OF_CONDUCT.md).
 
 ## Infrastructure
 
-Terraform manages pretty much everything that is not running on Heroku. We build
-images using Packer and then spin up instances in our cloud environments based
-on those images.
-
-We use terraform to manage our main cloud environments as well as some other
-services:
+Terraform manages pretty much everything that is not running on Heroku, and even
+a little bit of some of what is running on Heroku.  We use terraform to manage
+our main cloud environments as well as some other services:
 
 * Amazon Web Services
 * Google Cloud Platform
 * Macstadium
-* (Hopefully more soon)
+* OpenStack
 
 ## Requirements
 
@@ -36,27 +34,24 @@ services:
 ## Set-up
 
 * Clone this repo
-* Clone the keychain repositories
-* Make sure trvs is installed and added to your $PATH. (You can try
-running `trvs generate-config -H travis-scheduler-prod` to check)
-* Set all required environment variables (see the list below). This
-can be achieved by either:
-	* Manually sourcing an .env file (like .example.env)
+* Make sure `trvs` is installed and added to your `$PATH`. (You can try running
+  `trvs generate-config -H travis-scheduler-prod` to check)
+* Set all required environment variables (see the list below). This can achieved
+  by doing something like:
+	* Manually sourcing an `.env` file (like `.example.env`)
 	* Using [autoenv](https://github.com/kennethreitz/autoenv)
-	* Fetching them from your own pass vault
+	* Fetching values from your own pass vault
 
 #### Required environment variables
 
-* TRAVIS_KEYCHAIN_DIR  - should to  be the parent directory of your keychain
-repos
-* GITHUB_TOKEN
-* GITHUB_USERNAME
-* AWS_ACCESS_KEY
-* AWS_SECRET_KEY
-* AWS_REGION
-* HEROKU_API_KEY
-* TF_VAR_ssh_user
-* SLACK_WEBHOOK (can be retrieved via `trvs generate-config -n -f env terraform-config -p '' terraform_common`)
+* `AWS_ACCESS_KEY`
+* `AWS_REGION`
+* `AWS_SECRET_KEY`
+* `GITHUB_TOKEN`
+* `GITHUB_USERNAME`
+* `HEROKU_API_KEY`
+* `TF_VAR_ssh_user`
+* `TRAVIS_KEYCHAIN_DIR` - should be the parent directory of your keychain repos
 
 #### Notes
 
@@ -64,9 +59,9 @@ MacStadium & GCE access creds are shared and come from keychain, not
 personal accounts, so there are no infrastructure-specific access keys
 for them.
 
-$TF_VAR_ssh_user isn't needed for AWS and can just be set to $USER, if
-your local username and your SSH username are the same. If you have an
-SSH key passphrase, consider starting `ssh-agent` and doing `ssh-add`.
+`$TF_VAR_ssh_user` isn't needed for AWS and can just be set to `$USER`, if your
+local username and your SSH username are the same. If you have an SSH key
+passphrase, consider starting `ssh-agent` and doing `ssh-add`.
 
 See http://rabexc.org/posts/using-ssh-agent for more details.
 
@@ -79,17 +74,20 @@ cd ./gce-staging-1
 
 # terraform plan, which will automatically configure terraform from remote and
 # generate config files via `trvs`
-make clean plan
+make plan
 
 # if it looks OK, terraform apply
 make apply
-```
 
+# as some configuration is generated and cached locally, changes to
+# configuration sources may require cleaning before further plan/apply
+make clean
+```
 
 ## Troubleshooting tips
 
 * Running `make check` will verify a few common setup requirements.
-* Verify you have been added to both com and pro Heroku organizations.
+* Verify you have been added to the relevant Heroku organizations.
 * Try passing the `-d` flag to `make` to see which commands are being
 run.
 	* this will show various curl commands (e.g. heroku) which may be
@@ -100,3 +98,7 @@ run.
 * Terraform state errors may be due to insufficient AWS permissions.  See the
   [`.example-aws-iam-policy.json`](./.example-aws-iam-policy.json) for example
 minimum permissions.
+
+## License
+
+See [`./LICENSE`](./LICENSE).

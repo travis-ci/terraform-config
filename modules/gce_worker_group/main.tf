@@ -1,8 +1,11 @@
 variable "env" {}
-variable "gcloud_cleanup_account_json" {}
+
+variable "gcloud_cleanup_archive_retention_days" {
+  default = 8
+}
 
 variable "gcloud_cleanup_instance_filters" {
-  default = "name eq ^(testing-gce|travis-job).*"
+  default = "name eq ^(testing-gce|travis-job|packer-).*"
 }
 
 variable "gcloud_cleanup_instance_max_age" {
@@ -12,7 +15,13 @@ variable "gcloud_cleanup_instance_max_age" {
 variable "gcloud_cleanup_job_board_url" {}
 
 variable "gcloud_cleanup_loop_sleep" {
-  default = "1s"
+  default = "1m"
+}
+
+variable "gcloud_cleanup_opencensus_sampling_rate" {}
+
+variable "gcloud_cleanup_opencensus_tracing_enabled" {
+  default = "false"
 }
 
 variable "gcloud_cleanup_scale" {
@@ -32,21 +41,44 @@ variable "region" {}
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
 variable "travisci_net_external_zone_id" {}
-variable "worker_account_json_com" {}
-variable "worker_account_json_org" {}
 variable "worker_config_com" {}
+variable "worker_config_com_free" {}
 variable "worker_config_org" {}
 
 variable "worker_docker_self_image" {
-  default = "travisci/worker:v3.6.0"
+  default = "travisci/worker:v4.6.3"
 }
 
-variable "worker_image" {}
-variable "worker_instance_count_com" {}
-variable "worker_instance_count_org" {}
+variable "worker_image" {
+  default = "ubuntu-os-cloud/ubuntu-1804-lts"
+}
+
+variable "worker_managed_instance_count_com" {
+  default = 0
+}
+
+variable "worker_managed_instance_count_com_free" {
+  default = 0
+}
+
+variable "worker_managed_instance_count_org" {
+  default = 0
+}
 
 variable "worker_machine_type" {
   default = "g1-small"
+}
+
+variable "worker_service_accounts_count_com" {
+  default = 4
+}
+
+variable "worker_service_accounts_count_com_free" {
+  default = 4
+}
+
+variable "worker_service_accounts_count_org" {
+  default = 4
 }
 
 variable "worker_subnetwork" {}
@@ -58,15 +90,17 @@ variable "worker_zones" {
 module "gce_workers" {
   source = "../gce_worker"
 
-  account_json_com         = "${var.worker_account_json_com}"
-  account_json_org         = "${var.worker_account_json_org}"
-  config_com               = "${var.worker_config_com}"
-  config_org               = "${var.worker_config_org}"
-  env                      = "${var.env}"
-  github_users             = "${var.github_users}"
-  index                    = "${var.index}"
-  instance_count_com       = "${var.worker_instance_count_com}"
-  instance_count_org       = "${var.worker_instance_count_org}"
+  config_com      = "${var.worker_config_com}"
+  config_com_free = "${var.worker_config_com_free}"
+  config_org      = "${var.worker_config_org}"
+  env             = "${var.env}"
+  github_users    = "${var.github_users}"
+  index           = "${var.index}"
+
+  managed_instance_count_com      = "${var.worker_managed_instance_count_com}"
+  managed_instance_count_com_free = "${var.worker_managed_instance_count_com_free}"
+  managed_instance_count_org      = "${var.worker_managed_instance_count_org}"
+
   machine_type             = "${var.worker_machine_type}"
   project                  = "${var.project}"
   region                   = "${var.region}"
@@ -76,6 +110,79 @@ module "gce_workers" {
   worker_docker_self_image = "${var.worker_docker_self_image}"
   worker_image             = "${var.worker_image}"
   zones                    = "${var.worker_zones}"
+
+  worker_service_accounts_count_com      = "${var.worker_service_accounts_count_com}"
+  worker_service_accounts_count_com_free = "${var.worker_service_accounts_count_com_free}"
+  worker_service_accounts_count_org      = "${var.worker_service_accounts_count_org}"
+}
+
+resource "google_storage_bucket" "gcloud_cleanup_archive" {
+  name    = "gcloud-cleanup-${var.env}-${var.index}"
+  project = "${var.project}"
+
+  versioning {
+    enabled = false
+  }
+
+  lifecycle_rule {
+    action {
+      type = "Delete"
+    }
+
+    condition {
+      age = "${var.gcloud_cleanup_archive_retention_days}"
+    }
+  }
+}
+
+resource "google_project_iam_custom_role" "gcloud_cleaner" {
+  role_id     = "gcloud_cleaner"
+  title       = "Gcloud Cleaner"
+  description = "A gcloud-cleanup process that can clean and archive stuff"
+
+  permissions = [
+    "cloudtrace.traces.patch",
+    "compute.disks.delete",
+    "compute.disks.get",
+    "compute.disks.list",
+    "compute.disks.update",
+    "compute.globalOperations.get",
+    "compute.globalOperations.list",
+    "compute.images.delete",
+    "compute.images.get",
+    "compute.images.list",
+    "compute.instances.delete",
+    "compute.instances.deleteAccessConfig",
+    "compute.instances.detachDisk",
+    "compute.instances.get",
+    "compute.instances.getSerialPortOutput",
+    "compute.instances.list",
+    "compute.instances.reset",
+    "compute.instances.stop",
+    "compute.instances.update",
+    "compute.regions.get",
+    "compute.regions.list",
+    "compute.zones.get",
+    "compute.zones.list",
+    "storage.objects.create",
+    "storage.objects.update",
+  ]
+}
+
+resource "google_service_account" "gcloud_cleanup" {
+  account_id   = "gcloud-cleanup"
+  display_name = "Gcloud Cleanup"
+  project      = "${var.project}"
+}
+
+resource "google_project_iam_member" "gcloud_cleaner" {
+  project = "${var.project}"
+  role    = "projects/${var.project}/roles/${google_project_iam_custom_role.gcloud_cleaner.role_id}"
+  member  = "serviceAccount:${google_service_account.gcloud_cleanup.email}"
+}
+
+resource "google_service_account_key" "gcloud_cleanup" {
+  service_account_id = "${google_service_account.gcloud_cleanup.email}"
 }
 
 resource "heroku_app" "gcloud_cleanup" {
@@ -87,17 +194,23 @@ resource "heroku_app" "gcloud_cleanup" {
   }
 
   config_vars {
-    BUILDPACK_URL                   = "https://github.com/travis-ci/heroku-buildpack-makey-go"
-    GCLOUD_CLEANUP_ACCOUNT_JSON     = "${var.gcloud_cleanup_account_json}"
-    GCLOUD_CLEANUP_ENTITIES         = "instances"
-    GCLOUD_CLEANUP_INSTANCE_FILTERS = "${var.gcloud_cleanup_instance_filters}"
-    GCLOUD_CLEANUP_INSTANCE_MAX_AGE = "${var.gcloud_cleanup_instance_max_age}"
-    GCLOUD_CLEANUP_JOB_BOARD_URL    = "${var.gcloud_cleanup_job_board_url}"
-    GCLOUD_CLEANUP_LOOP_SLEEP       = "${var.gcloud_cleanup_loop_sleep}"
-    GCLOUD_LOG_HTTP                 = "no-log-http"
-    GCLOUD_PROJECT                  = "${var.project}"
-    GCLOUD_ZONE                     = "${var.gcloud_zone}"
-    GO_IMPORT_PATH                  = "github.com/travis-ci/gcloud-cleanup"
+    BUILDPACK_URL                             = "https://github.com/travis-ci/heroku-buildpack-makey-go"
+    GCLOUD_CLEANUP_ACCOUNT_JSON               = "${base64decode(google_service_account_key.gcloud_cleanup.private_key)}"
+    GCLOUD_CLEANUP_ARCHIVE_BUCKET             = "${google_storage_bucket.gcloud_cleanup_archive.name}"
+    GCLOUD_CLEANUP_ARCHIVE_SERIAL             = "true"
+    GCLOUD_CLEANUP_ARCHIVE_SAMPLE_RATE        = "10"
+    GCLOUD_CLEANUP_ENTITIES                   = "instances"
+    GCLOUD_CLEANUP_INSTANCE_FILTERS           = "${var.gcloud_cleanup_instance_filters}"
+    GCLOUD_CLEANUP_INSTANCE_MAX_AGE           = "${var.gcloud_cleanup_instance_max_age}"
+    GCLOUD_CLEANUP_JOB_BOARD_URL              = "${var.gcloud_cleanup_job_board_url}"
+    GCLOUD_CLEANUP_LOOP_SLEEP                 = "${var.gcloud_cleanup_loop_sleep}"
+    GCLOUD_CLEANUP_OPENCENSUS_SAMPLING_RATE   = "${var.gcloud_cleanup_opencensus_sampling_rate}"
+    GCLOUD_CLEANUP_OPENCENSUS_TRACING_ENABLED = "${var.gcloud_cleanup_opencensus_tracing_enabled}"
+    GCLOUD_LOG_HTTP                           = "no-log-http"
+    GCLOUD_PROJECT                            = "${var.project}"
+    GCLOUD_ZONE                               = "${var.gcloud_zone}"
+    GO_IMPORT_PATH                            = "github.com/travis-ci/gcloud-cleanup"
+    MANAGED_VIA                               = "github.com/travis-ci/terraform-config"
   }
 }
 
@@ -110,6 +223,20 @@ resource "null_resource" "gcloud_cleanup" {
   }
 
   provisioner "local-exec" {
-    command = "exec ${path.module}/../../bin/heroku-wait-deploy-scale travis-ci/gcloud-cleanup ${heroku_app.gcloud_cleanup.id} ${var.gcloud_cleanup_scale} ${var.gcloud_cleanup_version}"
+    command = <<EOF
+exec ${path.module}/../../bin/heroku-wait-deploy-scale \
+  --repo=travis-ci/gcloud-cleanup \
+  --app=${heroku_app.gcloud_cleanup.id} \
+  --ps-scale=${var.gcloud_cleanup_scale} \
+  --deploy-version=${var.gcloud_cleanup_version}
+EOF
   }
+}
+
+output "workers_service_account_emails" {
+  value = ["${module.gce_workers.workers_service_account_emails}"]
+}
+
+output "workers_service_account_names" {
+  value = ["${module.gce_workers.workers_service_account_names}"]
 }

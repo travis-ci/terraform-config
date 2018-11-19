@@ -5,13 +5,19 @@ def main
   fail 'Missing {tfplan} input as first argument' if tfplan_filename.nil?
 
   differ = ENV.fetch('TFPLANDIFF_DIFFER', 'diff')
+  tfversion = ENV.fetch('PROD_TF_VERSION', '???')
 
   require 'base64'
   require 'json'
   require 'tmpdir'
   require 'yaml'
 
-  tfplan = JSON.parse(`tfplan2json <#{tfplan_filename}`)
+  tfplan2json_command = "tfplan2json #{tfplan_filename}"
+  if tfversion < 'v0.12'
+    tfplan2json_command = "tfplan2json.v11 <#{tfplan_filename}"
+  end
+
+  tfplan = JSON.parse(`#{tfplan2json_command}`)
 
   trunc_filename = tfplan_filename.sub(Dir.pwd, '.')
   $stdout.puts <<~PREAMBLE

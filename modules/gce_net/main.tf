@@ -102,36 +102,39 @@ resource "google_compute_network" "main" {
 }
 
 resource "google_compute_subnetwork" "public" {
-  name          = "public"
-  ip_cidr_range = "${var.public_subnet_cidr_range}"
-  network       = "${google_compute_network.main.self_link}"
-  region        = "${var.region}"
-  project       = "${var.project}"
+  name             = "public"
+  ip_cidr_range    = "${var.public_subnet_cidr_range}"
+  network          = "${google_compute_network.main.self_link}"
+  region           = "${var.region}"
+  project          = "${var.project}"
+  enable_flow_logs = "true"
 }
 
 resource "google_compute_subnetwork" "workers" {
-  name          = "workers"
-  ip_cidr_range = "${var.workers_subnet_cidr_range}"
-  network       = "${google_compute_network.main.self_link}"
-  region        = "${var.region}"
-  project       = "${var.project}"
+  name             = "workers"
+  ip_cidr_range    = "${var.workers_subnet_cidr_range}"
+  network          = "${google_compute_network.main.self_link}"
+  region           = "${var.region}"
+  project          = "${var.project}"
+  enable_flow_logs = "true"
 }
 
 resource "google_compute_subnetwork" "jobs_org" {
-  name          = "jobs-org"
-  ip_cidr_range = "${var.jobs_org_subnet_cidr_range}"
-  network       = "${google_compute_network.main.self_link}"
-  region        = "${var.region}"
-  project       = "${var.project}"
+  name             = "jobs-org"
+  ip_cidr_range    = "${var.jobs_org_subnet_cidr_range}"
+  network          = "${google_compute_network.main.self_link}"
+  region           = "${var.region}"
+  project          = "${var.project}"
+  enable_flow_logs = "true"
 }
 
 resource "google_compute_subnetwork" "jobs_com" {
-  name          = "jobs-com"
-  ip_cidr_range = "${var.jobs_com_subnet_cidr_range}"
-  network       = "${google_compute_network.main.self_link}"
-  region        = "${var.region}"
-
-  project = "${var.project}"
+  name             = "jobs-com"
+  ip_cidr_range    = "${var.jobs_com_subnet_cidr_range}"
+  network          = "${google_compute_network.main.self_link}"
+  region           = "${var.region}"
+  project          = "${var.project}"
+  enable_flow_logs = "true"
 }
 
 resource "google_compute_firewall" "allow_main_ssh" {
@@ -271,10 +274,13 @@ data "template_file" "nat_cloud_config" {
   vars {
     assets            = "${path.module}/../../assets"
     cloud_init_bash   = "${file("${path.module}/nat-cloud-init.bash")}"
-    github_users_env  = "export GITHUB_USERS='${var.github_users}'"
     instance_hostname = "nat-${var.env}-${var.index}-___INSTANCE_ID___.gce-___REGION_ZONE___.travisci.net"
     nat_config        = "${var.nat_config}"
     syslog_address    = "${var.syslog_address}"
+
+    github_users_env = <<EOF
+export GITHUB_USERS='${var.github_users}'
+EOF
 
     docker_env = <<EOF
 export TRAVIS_DOCKER_DISABLE_DIRECT_LVM=1
@@ -475,10 +481,13 @@ data "template_file" "bastion_cloud_config" {
   template = "${file("${path.module}/bastion-cloud-config.yml.tpl")}"
 
   vars {
-    bastion_config   = "${var.bastion_config}"
-    cloud_init_bash  = "${file("${path.module}/bastion-cloud-init.bash")}"
-    github_users_env = "export GITHUB_USERS='${var.github_users}'"
-    syslog_address   = "${var.syslog_address}"
+    bastion_config  = "${var.bastion_config}"
+    cloud_init_bash = "${file("${path.module}/bastion-cloud-init.bash")}"
+    syslog_address  = "${var.syslog_address}"
+
+    github_users_env = <<EOF
+export GITHUB_USERS='${var.github_users}'
+EOF
   }
 }
 

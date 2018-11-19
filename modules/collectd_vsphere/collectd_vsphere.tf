@@ -1,6 +1,6 @@
 variable "ssh_host" {}
 variable "ssh_user" {}
-variable "version" {}
+variable "collectd_vsphere_version" {}
 variable "config_path" {}
 variable "librato_email" {}
 variable "librato_token" {}
@@ -17,7 +17,7 @@ data "template_file" "collectd_vsphere_install" {
 
   vars {
     env     = "${var.env}"
-    version = "${var.version}"
+    version = "${var.collectd_vsphere_version}"
     index   = "${var.index}"
   }
 }
@@ -62,7 +62,7 @@ data "template_file" "collectd_vsphere_upstart" {
 
 resource "null_resource" "collectd_vsphere" {
   triggers {
-    version                                           = "${var.version}"
+    version                                           = "${var.collectd_vsphere_version}"
     config_signature                                  = "${sha256(file(var.config_path))}"
     install_script_signature                          = "${sha256(data.template_file.collectd_vsphere_install.rendered)}"
     librato_creds_signature                           = "${sha256(data.template_file.librato_conf.rendered)}"
@@ -87,6 +87,7 @@ resource "null_resource" "collectd_vsphere" {
 ${file(var.config_path)}
 export COLLECTD_VSPHERE_COLLECTD_USERNAME=${var.collectd_vsphere_collectd_network_user}
 export COLLECTD_VSPHERE_COLLECTD_PASSWORD=${var.collectd_vsphere_collectd_network_token}
+export COLLECTD_VSPHERE_LIBRATO_SOURCE='collectd-vsphere-${var.env}-${var.index}'
 EOF
 
     destination = "/tmp/etc-default-collectd-vsphere-${var.env}"

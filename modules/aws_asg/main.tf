@@ -1,41 +1,16 @@
+variable "cyclist_url" {}
 variable "cyclist_auth_token" {}
-
-variable "cyclist_aws_region" {
-  default = "us-east-1"
-}
-
-variable "cyclist_debug" {
-  default = "false"
-}
-
-variable "cyclist_redis_plan" {
-  default = "premium-0"
-}
-
-variable "cyclist_scale" {
-  default = "web=1:Standard-1X"
-}
-
-variable "cyclist_token_ttl" {
-  default = "1h"
-}
-
-variable "cyclist_version" {
-  default = "master"
-}
 
 variable "docker_storage_dm_basesize" {
   default = "12G"
 }
 
 variable "env" {}
-variable "env_short" {}
 
 variable "github_users" {
   default = ""
 }
 
-variable "heroku_org" {}
 variable "index" {}
 
 variable "lifecycle_hook_heartbeat_timeout" {
@@ -118,7 +93,7 @@ variable "worker_docker_image_python" {}
 variable "worker_docker_image_ruby" {}
 
 variable "worker_docker_self_image" {
-  default = "travisci/worker:v3.6.0"
+  default = "travisci/worker:v4.4.0"
 }
 
 variable "worker_instance_type" {
@@ -134,7 +109,7 @@ variable "worker_subnets" {
 data "template_file" "cloud_init_env" {
   template = <<EOF
 export CYCLIST_AUTH_TOKEN="${var.cyclist_auth_token}"
-export CYCLIST_URL="${replace(heroku_app.cyclist.web_url, "/\\/$/", "")}"
+export CYCLIST_URL="${var.cyclist_url}"
 export TRAVIS_WORKER_DOCKER_IMAGE_ANDROID="${var.worker_docker_image_android}"
 export TRAVIS_WORKER_DOCKER_IMAGE_DEFAULT="${var.worker_docker_image_default}"
 export TRAVIS_WORKER_DOCKER_IMAGE_ERLANG="${var.worker_docker_image_erlang}"
@@ -146,7 +121,7 @@ export TRAVIS_WORKER_DOCKER_IMAGE_PERL="${var.worker_docker_image_perl}"
 export TRAVIS_WORKER_DOCKER_IMAGE_PHP="${var.worker_docker_image_php}"
 export TRAVIS_WORKER_DOCKER_IMAGE_PYTHON="${var.worker_docker_image_python}"
 export TRAVIS_WORKER_DOCKER_IMAGE_RUBY="${var.worker_docker_image_ruby}"
-export TRAVIS_WORKER_HEARTBEAT_URL="${replace(heroku_app.cyclist.web_url, "/\\/$/", "")}/heartbeats/___INSTANCE_ID___"
+export TRAVIS_WORKER_HEARTBEAT_URL="${var.cyclist_url}/heartbeats/___INSTANCE_ID___"
 export TRAVIS_WORKER_HEARTBEAT_URL_AUTH_TOKEN="file:///var/tmp/travis-run.d/instance-token"
 export TRAVIS_WORKER_PRESTART_HOOK="/var/tmp/travis-run.d/travis-worker-prestart-hook"
 export TRAVIS_WORKER_SELF_IMAGE="${var.worker_docker_self_image}"
@@ -188,14 +163,17 @@ data "template_file" "cloud_config" {
   vars {
     assets             = "${path.module}/../../assets"
     cloud_init_env     = "${data.template_file.cloud_init_env.rendered}"
-    cyclist_url        = "${replace(heroku_app.cyclist.web_url, "/\\/$/", "")}"
+    cyclist_url        = "${var.cyclist_url}"
     docker_daemon_json = "${data.template_file.docker_daemon_json.rendered}"
-    github_users_env   = "export GITHUB_USERS='${var.github_users}'"
     here               = "${path.module}"
     hostname_tmpl      = "___INSTANCE_ID___-${var.env}-${var.index}-worker-${var.site}-${var.worker_queue}.travisci.net"
     registry_hostname  = "${var.registry_hostname}"
     syslog_address     = "${var.syslog_address}"
     worker_config      = "${var.worker_config}"
+
+    github_users_env = <<EOF
+export GITHUB_USERS='${var.github_users}'
+EOF
   }
 }
 
@@ -353,16 +331,16 @@ resource "aws_autoscaling_policy" "workers_add_capacity" {
     metric_interval_lower_bound = "${floor(var.worker_asg_scale_out_threshold/-2.0)}"
   }
 
-  # Headroom is less than half of THRESHOLD; scale out twice as much
+  # Headroom is less than half of THRESHOLD; scale out 2x as much
   step_adjustment {
     scaling_adjustment          = "${var.worker_asg_scale_out_qty * 2}"
     metric_interval_upper_bound = "${floor(var.worker_asg_scale_out_threshold/-2.0)}"
     metric_interval_lower_bound = "${floor(var.worker_asg_scale_out_threshold/-1.0)}"
   }
 
-  # Headroom is 0; scale out three times as much
+  # Headroom is 0; scale out 4x as much
   step_adjustment {
-    scaling_adjustment          = "${var.worker_asg_scale_out_qty * 3}"
+    scaling_adjustment          = "${var.worker_asg_scale_out_qty * 4}"
     metric_interval_upper_bound = "${floor(var.worker_asg_scale_out_threshold/-1.0)}"
   }
 }
@@ -387,41 +365,7 @@ resource "aws_sns_topic_subscription" "workers_cyclist" {
   topic_arn              = "${aws_sns_topic.workers.arn}"
   protocol               = "https"
   endpoint_auto_confirms = true
-  endpoint               = "${replace(heroku_app.cyclist.web_url, "/\\/$/", "")}/sns"
-}
-
-resource "aws_iam_user" "cyclist" {
-  name = "cyclist-${var.env}-${var.index}-${var.site}"
-}
-
-resource "aws_iam_access_key" "cyclist" {
-  user       = "${aws_iam_user.cyclist.name}"
-  depends_on = ["aws_iam_user.cyclist"]
-}
-
-resource "aws_iam_user_policy" "cyclist_actions" {
-  name = "cyclist_actions_${var.env}_${var.index}_${var.site}"
-  user = "${aws_iam_user.cyclist.name}"
-
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": [
-        "sns:*",
-        "autoscaling:*",
-        "cloudwatch:PutMetricAlarm",
-        "iam:PassRole"
-      ],
-      "Effect": "Allow",
-      "Resource": "*"
-    }
-  ]
-}
-EOF
-
-  depends_on = ["aws_iam_user.cyclist"]
+  endpoint               = "${var.cyclist_url}/sns"
 }
 
 resource "aws_iam_role" "workers_sns" {
@@ -485,55 +429,6 @@ resource "aws_autoscaling_lifecycle_hook" "workers_terminating" {
   role_arn                = "${aws_iam_role.workers_sns.arn}"
 }
 
-resource "heroku_app" "cyclist" {
-  name   = "cyclist-${var.env}-${var.index}-${var.site}"
-  region = "us"
-
-  organization {
-    name = "${var.heroku_org}"
-  }
-
-  config_vars {
-    AWS_ACCESS_KEY      = "${aws_iam_access_key.cyclist.id}"
-    AWS_REGION          = "${var.cyclist_aws_region}"
-    AWS_SECRET_KEY      = "${aws_iam_access_key.cyclist.secret}"
-    BUILDPACK_URL       = "https://github.com/travis-ci/heroku-buildpack-makey-go"
-    CYCLIST_AUTH_TOKENS = "${var.cyclist_auth_token}"
-    CYCLIST_DEBUG       = "${var.cyclist_debug}"
-    CYCLIST_TOKEN_TTL   = "${var.cyclist_token_ttl}"
-    GO_IMPORT_PATH      = "github.com/travis-ci/cyclist"
-  }
-}
-
-resource "heroku_drain" "cyclist_drain" {
-  app = "${heroku_app.cyclist.name}"
-  url = "syslog+tls://${var.syslog_address}"
-}
-
-resource "heroku_addon" "cyclist_redis" {
-  app  = "${heroku_app.cyclist.name}"
-  plan = "heroku-redis:${var.cyclist_redis_plan}"
-}
-
-resource "null_resource" "cyclist" {
-  triggers {
-    config_signature = "${sha256(join(",", values(heroku_app.cyclist.config_vars.0)))}"
-    heroku_id        = "${heroku_app.cyclist.id}"
-    ps_scale         = "${var.cyclist_scale}"
-    version          = "${var.cyclist_version}"
-  }
-
-  provisioner "local-exec" {
-    command = <<EOF
-exec ${path.module}/../../bin/heroku-wait-deploy-scale \
-  travis-ci/cyclist \
-  ${heroku_app.cyclist.id} \
-  ${var.cyclist_scale} \
-  ${var.cyclist_version}
-EOF
-  }
-}
-
 resource "aws_cloudwatch_dashboard" "main" {
   dashboard_name = "${var.env}-${var.site}"
 
@@ -552,7 +447,7 @@ resource "aws_cloudwatch_dashboard" "main" {
         "metrics": [
           [
             "Travis/${var.site}${var.env == "staging" ? "-staging" : ""}",
-            "v1.travis.rabbitmq.consumers.builds.ec2.headroom",
+            "v1.travis.rabbitmq.consumers.builds.${var.worker_queue}.headroom",
             {
               "color": "#2ca02c",
               "period": 60,

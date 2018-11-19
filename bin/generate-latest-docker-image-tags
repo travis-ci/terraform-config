@@ -43,6 +43,7 @@ def main
   0
 end
 
+# FIXME: doesn't work if docker isn't installed
 def latest_docker_image_tag(image)
   qs = URI.encode_www_form(
     service: 'registry.docker.io',
@@ -59,6 +60,7 @@ def latest_docker_image_tag(image)
     headers: { 'Authorization' => "Bearer #{token}" }
   ).fetch('tags')
 
+  # FIXME: this fails if user is not a member of Docker Hub org/team
   return "#{image}:#{tags.first}" if tags.all? { |t| t.match?(GITSHA1) }
 
   "#{image}:#{fancy_sorted(tags).reverse.fetch(0)}"
@@ -85,10 +87,12 @@ def vers2int(vers)
   parts.map { |part| sprintf('%03d' % Integer(part)) }.join.to_i
 end
 
-def docker_index_get(path, host: 'index.docker.io', headers: {})
+def docker_index_get(path, host: 'index.docker.io', headers: {},
+                     debug: ENV['DOCKER_HTTP_DEBUG'] == '1')
   http = Net::HTTP.new(host, 443)
   http.use_ssl = true
   http.verify_mode = OpenSSL::SSL::VERIFY_PEER
+  http.set_debug_output($stderr) if debug
 
   request = Net::HTTP::Get.new(path)
   request['Accept'] = 'application/json'

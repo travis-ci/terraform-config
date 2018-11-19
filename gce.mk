@@ -39,28 +39,3 @@ import-net:
 .PHONY: export-net
 export-net:
 	$(TOP)/bin/gce-export-net --terraform $(TERRAFORM)
-
-# Imports worker resources from a GCE project that used a single terraform graph
-# to manage network resources and workers into a workers-only graph.  This
-# target is intended to be run within a given "non-net" graph directory such as
-# "gce-production-5".
-.PHONY: import-workers
-import-workers:
-	$(TOP)/bin/gce-import-workers \
-		--count-com $(shell jq -r .worker_instance_count_com <instance-counts.auto.tfvars) \
-		--count-org $(shell jq -r .worker_instance_count_org <instance-counts.auto.tfvars) \
-		--env $(ENV_SHORT) \
-		--index $(shell awk -F- '{ print $$NF }' <<<$(ENV_NAME)) \
-		--project $(shell $(TOP)/bin/lookup-gce-project $(ENV_NAME)) \
-		--terraform $(TERRAFORM)
-
-# Removes state references from a GCE project that has migrated worker resources
-# to a workers-only terraform graph (see `import-workers` above).  This target
-# is intended to be run within a given "non-net" graph directory such as
-# "gce-production-5".
-.PHONY: export-workers
-export-workers:
-	$(TOP)/bin/gce-export-workers \
-		--count-com $(shell jq -r .worker_instance_count_com <instance-counts.auto.tfvars) \
-		--count-org $(shell jq -r .worker_instance_count_org <instance-counts.auto.tfvars) \
-		--terraform $(TERRAFORM)

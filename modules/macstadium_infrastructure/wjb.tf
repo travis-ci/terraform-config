@@ -30,24 +30,13 @@ resource "vsphere_virtual_machine" "wjb" {
     template  = "${vsphere_folder.vanilla_vms.path}/${var.vanilla_image}"
     datastore = "${var.datastore}"
   }
-
-  connection {
-    host  = "${vsphere_virtual_machine.wjb.network_interface.0.ipv4_address}"
-    user  = "${var.ssh_user}"
-    agent = true
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "curl -s -v 'https://app.threatstack.com/agents/script?key=${var.threatstack_key}' | sudo bash",
-    ]
-  }
 }
 
 resource "null_resource" "worker" {
   triggers {
-    host_id                = "${vsphere_virtual_machine.wjb.uuid}"
-    ssh_key_file_signature = "${sha256(file(var.vm_ssh_key_path))}"
+    host_id                 = "${vsphere_virtual_machine.wjb.uuid}"
+    ssh_key_file_signature  = "${sha256(file(var.vm_ssh_key_path))}"
+    manage_script_signature = "${sha256(file("${path.module}/manage-workers.sh"))}"
   }
 
   connection {
@@ -61,12 +50,20 @@ resource "null_resource" "worker" {
     destination = "/tmp/travis-vm-ssh-key"
   }
 
+  provisioner "file" {
+    source      = "${path.module}/manage-workers.sh"
+    destination = "/tmp/manage-workers.sh"
+  }
+
   provisioner "remote-exec" {
     inline = [
       "if ! getent passwd travis-worker >/dev/null; then sudo useradd -r -s /usr/bin/nologin travis-worker; fi",
       "sudo mv /tmp/travis-vm-ssh-key /etc/travis-vm-ssh-key",
       "sudo chown travis-worker:travis-worker /etc/travis-vm-ssh-key",
       "sudo chmod 0600 /etc/travis-vm-ssh-key",
+      "sudo mv /tmp/manage-workers.sh /usr/local/bin/manage-workers",
+      "sudo chown root:root /usr/local/bin/manage-workers",
+      "sudo chmod 0755 /usr/local/bin/manage-workers",
     ]
   }
 }

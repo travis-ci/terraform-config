@@ -2,15 +2,16 @@
 set -o errexit
 
 main() {
-  [[ "${SLACK_WEBHOOK}" ]] || {
-    echo 'Missing SLACK_WEBHOOK variable'
+  slack_webhook="$(trvs generate-config -n --app terraform-config terraform_common | grep slack_webhook | awk '{print $2}')"
+  [[ "${slack_webhook}" ]] || {
+    echo 'slack_webhook could not be retrieved from keychain. Check output of "trvs generate-config -n --app terraform-config terraform_common"'
     exit 1
   }
 
   local graphname
   graphname="$(basename "$(pwd)")"
 
-  if [[ "${graphname}" != *production* ]] && [[ "${graphname}" != *2* ]]; then
+  if [[ "${graphname}" != *production* ]] && [[ "${graphname}" != *macstadium-pod* ]]; then
     echo "Skipping Slack notification for '${graphname}'"
     exit 0
   fi
@@ -25,7 +26,7 @@ main() {
   }'
 
   echo "Sending Slack notification for ${graphname}... "
-  curl -X POST --data-urlencode "payload=${payload}" "${SLACK_WEBHOOK}"
+  curl -X POST --data-urlencode "payload=${payload}" "${slack_webhook}"
 }
 
 __format_text() {

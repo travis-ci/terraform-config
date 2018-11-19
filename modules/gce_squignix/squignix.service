@@ -1,0 +1,14 @@
+[Unit]
+Description=Squignix
+After=docker.service
+Requires=docker.service
+
+[Service]
+ExecStart=/usr/local/bin/squignix-wrapper
+ExecStopPost=/bin/sleep 5
+Restart=always
+SyslogIdentifier=squignix
+WorkingDirectory=/
+
+[Install]
+WantedBy=multi-user.target

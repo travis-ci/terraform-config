@@ -13,12 +13,13 @@ TRAVIS_BUILD_ORG_HOST ?= build.travis-ci.org
 JOB_BOARD_HOST ?= job-board.travis-ci.com
 AMQP_URL_VARNAME ?= AMQP_URL
 TOP := $(shell git rev-parse --show-toplevel)
-
 NATBZ2 := $(TOP)/assets/nat.tar.bz2
 
-PROD_TF_VERSION := v0.11.7
+PROD_TF_VERSION := v0.11.10
 TERRAFORM := $(HOME)/.cache/travis-terraform-config/terraform-$(PROD_TF_VERSION)
-TAR := tar
+
+export PROD_TF_VERSION
+export TERRAFORM
 
 .PHONY: hello
 hello: announce
@@ -29,7 +30,7 @@ hello: announce
 
 .PHONY: .assert-ruby
 .assert-ruby:
-	@ruby -e "fail 'Ruby >= 2.3 required' unless RUBY_VERSION >= '2.3'"
+	@ruby -e "fail 'Ruby >= 2.4 required' unless RUBY_VERSION >= '2.4'"
 
 .PHONY: .echo-tf-version
 .echo-tf-version:
@@ -81,8 +82,33 @@ destroy: announce .config $(TRVS_TFVARS) $(TFSTATE)
 	$(TERRAFORM) plan -module-depth=-1 -destroy -out=$(TFPLAN)
 	$(TOP)/bin/post-flight $(TOP)
 
-$(NATBZ2): $(wildcard $(TOP)/assets/nat/**/*)
-	$(TAR) -C $(TOP)/assets -cjf $(TOP)/assets/nat.tar.bz2 nat
+.PHONY: tar
+tar:
+UNAME := $(shell uname -s | tr '[A-Z]' '[a-z]')
+ifeq ($(UNAME),darwin)
+  TAR := gtar
+else
+  ifeq ($(UNAME),linux)
+    TAR := tar
+  else
+    $(error Operating system $(UNAME) is not yet supported)
+  endif
+endif
+ifeq (,$(shell which $(TAR)))
+  $(info Please ensure GNU tar is installed and is available as $(TAR), e.g. with `brew install gnu-tar`)
+  $(error No valid tar found.)
+endif
+TAR := LC_ALL=C $(TAR) \
+      --mtime='1970-01-01 00:00:00 +0000' \
+      --mode='go=rX,u+rw,a-s' \
+      --owner=0 \
+      --group=0 \
+      --numeric-owner \
+      --sort=name \
+      -cj
+
+$(NATBZ2): tar $(wildcard $(TOP)/assets/nat/**/*)
+	$(TAR) -C $(TOP)/assets -f $(NATBZ2) nat
 
 $(TFSTATE):
 	$(TERRAFORM) init

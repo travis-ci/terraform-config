@@ -6,6 +6,7 @@
 !gce-*/instance-counts.auto.tfvars
 
 .env
+.envrc
 .ruby-version
 .terraform/
 /tmp/
@@ -14,8 +15,8 @@ aws-*/config/
 crash.log
 debug.tmp
 gce-*/config/
+build-*/config/
 graph.png
 local-development-0/local-development-0.tfstate
 macstadium-*/config/
-packet-*/config/
 tfstate
