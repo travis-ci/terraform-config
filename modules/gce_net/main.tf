@@ -274,7 +274,6 @@ data "template_file" "nat_cloud_config" {
   vars {
     assets            = "${path.module}/../../assets"
     cloud_init_bash   = "${file("${path.module}/nat-cloud-init.bash")}"
-    instance_hostname = "nat-${var.env}-${var.index}-___INSTANCE_ID___.gce-___REGION_ZONE___.travisci.net"
     nat_config        = "${var.nat_config}"
     syslog_address    = "${var.syslog_address}"
 
