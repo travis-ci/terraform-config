@@ -425,10 +425,9 @@ resource "google_compute_route" "nat" {
 
 data "template_file" "nat_rolling_updater_config" {
   template = <<EOF
-export GCE_NAT_ROLLING_UPDATER_PROJECT='${var.project}'
-export GCE_NAT_ROLLING_UPDATER_REGION='${var.region}'
-export GCE_NAT_ROLLING_UPDATER_GROUPS='${join(",", google_compute_instance_group_manager.nat.*.name)}'
-export GCE_NAT_ROLLING_UPDATER_TEMPLATES='${join(",", google_compute_instance_template.nat.*.name)}'
+export GCE_NAT_PROJECT='${var.project}'
+export GCE_NAT_REGION='${var.region}'
+export GCE_NAT_GROUPS='${join(",", google_compute_instance_group_manager.nat.*.name)}'
 EOF
 }
 
