@@ -25,9 +25,6 @@ write_files:
 - content: '${base64encode(file("${assets}/nat.tar.bz2"))}'
   encoding: b64
   path: /var/tmp/nat.tar.bz2
-- content: '${base64encode(instance_hostname)}'
-  encoding: b64
-  path: /var/tmp/travis-run.d/instance-hostname.tmpl
 - content: '${base64encode(syslog_address)}'
   encoding: b64
   path: /var/tmp/travis-run.d/syslog-address

@@ -272,11 +272,10 @@ data "template_file" "nat_cloud_config" {
   template = "${file("${path.module}/nat-cloud-config.yml.tpl")}"
 
   vars {
-    assets            = "${path.module}/../../assets"
-    cloud_init_bash   = "${file("${path.module}/nat-cloud-init.bash")}"
-    instance_hostname = "nat-${var.env}-${var.index}-___INSTANCE_ID___.gce-___REGION_ZONE___.travisci.net"
-    nat_config        = "${var.nat_config}"
-    syslog_address    = "${var.syslog_address}"
+    assets          = "${path.module}/../../assets"
+    cloud_init_bash = "${file("${path.module}/nat-cloud-init.bash")}"
+    nat_config      = "${var.nat_config}"
+    syslog_address  = "${var.syslog_address}"
 
     github_users_env = <<EOF
 export GITHUB_USERS='${var.github_users}'
@@ -426,10 +425,9 @@ resource "google_compute_route" "nat" {
 
 data "template_file" "nat_rolling_updater_config" {
   template = <<EOF
-export GCE_NAT_ROLLING_UPDATER_PROJECT='${var.project}'
-export GCE_NAT_ROLLING_UPDATER_REGION='${var.region}'
-export GCE_NAT_ROLLING_UPDATER_GROUPS='${join(",", google_compute_instance_group_manager.nat.*.name)}'
-export GCE_NAT_ROLLING_UPDATER_TEMPLATES='${join(",", google_compute_instance_template.nat.*.name)}'
+export GCE_NAT_PROJECT='${var.project}'
+export GCE_NAT_REGION='${var.region}'
+export GCE_NAT_GROUPS='${join(",", google_compute_instance_group_manager.nat.*.name)}'
 EOF
 }
 
