@@ -169,7 +169,7 @@ resource "google_compute_instance_template" "build_cache" {
 resource "google_compute_region_instance_group_manager" "build_cache" {
   provider = "google-beta"
 
-  base_instance_name        = "${var.env}-${var.index}-build-cache-gce"
+  base_instance_name        = "${var.env}-${var.index}-build-cache"
   distribution_policy_zones = "${formatlist("${var.region}-%s", var.zones)}"
   name                      = "${var.env}-${var.index}-build-cache"
   region                    = "${var.region}"
@@ -221,7 +221,7 @@ resource "google_compute_forwarding_rule" "build_cache" {
 
 resource "aws_route53_record" "build_cache_frontend" {
   zone_id = "${data.aws_route53_zone.travisci_net.zone_id}"
-  name    = "build-cache-${var.env}-${var.index}.gce-${var.region}.${var.dns_domain}"
+  name    = "${var.env}-${var.index}-build-cache.gce-${var.region}.${var.dns_domain}"
   type    = "A"
   ttl     = 5
 
