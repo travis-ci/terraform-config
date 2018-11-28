@@ -530,8 +530,8 @@ resource "google_redis_instance" "worker_rate_limit" {
 
   authorized_network = "main"
 
-  redis_version     = "REDIS_3_2"
-  display_name      = "Worker Rate Limit"
+  redis_version = "REDIS_3_2"
+  display_name  = "Worker Rate Limit"
 }
 
 output "workers_service_account_emails" {
