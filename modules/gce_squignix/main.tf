@@ -6,6 +6,10 @@ variable "backend_ig_size" {
   default = 2
 }
 
+variable "build_apps" {
+  default = []
+}
+
 variable "cache_size_mb" {
   default = 3896
 }
@@ -226,4 +230,19 @@ resource "aws_route53_record" "build_cache_frontend" {
   ttl     = 5
 
   records = ["${google_compute_address.build_cache_frontend.address}"]
+}
+
+resource "null_resource" "heroku_config_set" {
+  triggers {
+    frontend_name = "${aws_route53_record.build_cache_frontend.fqdn}"
+    apps          = "${join(",", var.build_apps)}"
+  }
+
+  provisioner "local-exec" {
+    command = <<EOF
+${path.module}/../../bin/build-cache-configure \
+    --apps "${join(",", var.build_apps)}" \
+    --fqdn "${aws_route53_record.build_cache_frontend.fqdn}"
+EOF
+  }
 }

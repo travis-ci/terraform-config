@@ -43,6 +43,7 @@ provider "aws" {}
 module "gce_squignix" {
   source = "../modules/gce_squignix"
 
+  build_apps     = ["travis-build-production", "travis-pro-build-production"]
   env            = "${var.env}"
   github_users   = "${var.github_users}"
   index          = "${var.index}"

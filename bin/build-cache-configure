@@ -1,0 +1,58 @@
+#!/usr/bin/env ruby
+
+require 'json'
+require 'optparse'
+
+require_relative '../lib/heroku_client'
+
+def main
+  options = {
+    apps: [],
+    fqdn: '',
+    heroku_api_hostname: 'api.heroku.com',
+    heroku_api_key: ENV.fetch('HEROKU_API_KEY', '').strip,
+  }
+
+  OptionParser.new do |opts|
+    opts.on(
+      '-a', '--apps=APPS',
+      'name of travis-build heroku apps (space or comma-delimited)'
+    ) { |v| options[:apps] = v.split(/[ ,]/).map(&:strip) }
+
+    opts.on(
+      '-f', '--fqdn=FQDN',
+      'fully-qualified domain name of build cache'
+    ) { |v| options[:fqdn] = v.strip }
+
+    opts.on(
+      '--heroku-api-hostname=HOSTNAME',
+      'hostname of Heroku API'
+    ) { |v| options[:heroku_api_hostname] = v.strip }
+
+    opts.on(
+      '--heroku-api-key=HEROKU_API_KEY',
+      'key to use with Heroku API'
+    ) { |v| options[:heroku_api_key] = v.strip }
+  end.parse!
+
+  fail 'Missing HEROKU_API_KEY' if options[:heroku_api_key].empty?
+  fail 'No apps specified' if options[:apps].empty?
+
+  heroku = HerokuClient.new(
+    api_key: options.fetch(:heroku_api_key),
+    api_host: options.fetch(:heroku_api_hostname)
+  )
+
+  options.fetch(:apps).each do |app_name|
+    heroku.patch(
+      JSON.generate(
+        'TRAVIS_BUILD_APT_PROXY' => "http://#{options.fetch(:fqdn)}"
+      ),
+      "/apps/#{app_name}/config-vars"
+    )
+  end
+
+  0
+end
+
+exit(main) if $PROGRAM_NAME == __FILE__

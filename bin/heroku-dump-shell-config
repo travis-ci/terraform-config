@@ -1,10 +1,11 @@
 #!/usr/bin/env ruby
 require 'json'
-require 'net/http'
-require 'net/https'
-require 'openssl'
+
+require_relative '../lib/heroku_client'
 
 def main(argv: ARGV)
+  prog = File.basename($PROGRAM_NAME)
+
   argv.each do |arg|
     if arg =~ /-h|--help|help/
       show_usage
@@ -25,13 +26,15 @@ def main(argv: ARGV)
   out = $stdout
   outname = argv[1]
   unless outname.nil?
+    $stderr.puts "#{prog}: writing to #{outname.inspect}"
     out = File.open(outname, 'w')
   end
 
-  dumped = heroku_dump_shell_config(
-    argv.fetch(0),
-    ENV.fetch('HEROKU_API_KEY'),
-  )
+  heroku = HerokuClient.new(api_key: ENV.fetch('HEROKU_API_KEY'))
+
+  dumped = heroku.get("/apps/#{argv.fetch(0)}/config-vars").map do |key, value|
+    "export #{key.upcase}=#{value.to_s.inspect}"
+  end
 
   dumped.sort.each do |entry|
     out.puts entry
@@ -41,7 +44,6 @@ def main(argv: ARGV)
 end
 
 def show_usage
-  prog = File.basename($PROGRAM_NAME)
   $stdout.puts <<~USAGE
     Usage: #{prog} <app>
 
@@ -51,19 +53,8 @@ def show_usage
   USAGE
 end
 
-def heroku_dump_shell_config(heroku_app, heroku_api_key)
-  conn = Net::HTTP.new('api.heroku.com', 443)
-  conn.use_ssl = true
-  conn.verify_mode = OpenSSL::SSL::VERIFY_PEER
-
-  req = Net::HTTP::Get.new("/apps/#{heroku_app}/config-vars")
-  req['Authorization'] = "Bearer #{heroku_api_key}"
-  req['Content-Type'] = 'application/json'
-  req['Accept'] = 'application/vnd.heroku+json; version=3'
-
-  JSON.parse(conn.request(req).body).map do |key, value|
-    "export #{key.upcase}=#{value.to_s.inspect}"
-  end
+def prog
+  @prog ||= File.basename($PROGRAM_NAME)
 end
 
 exit(main) if $PROGRAM_NAME == __FILE__

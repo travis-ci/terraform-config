@@ -43,10 +43,11 @@ provider "aws" {}
 module "gce_squignix" {
   source = "../modules/gce_squignix"
 
+  build_apps     = ["travis-build-staging", "travis-pro-build-staging"]
+  cache_size_mb  = 1848
   env            = "${var.env}"
   github_users   = "${var.github_users}"
   index          = "${var.index}"
-  cache_size_mb  = 1848
   machine_type   = "custom-1-2048"
   region         = "${var.region}"
   syslog_address = "${var.syslog_address_com}"
