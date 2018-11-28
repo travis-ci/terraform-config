@@ -5,11 +5,11 @@ variable "env" {
 variable "github_users" {}
 
 variable "index" {
-  default = 1
+  default = 3
 }
 
 variable "project" {
-  default = "eco-emissary-99515"
+  default = "travis-ci-prod-3"
 }
 
 variable "region" {
@@ -21,7 +21,7 @@ variable "syslog_address_com" {}
 terraform {
   backend "s3" {
     bucket         = "travis-terraform-state"
-    key            = "terraform-config/build-caching-production-1.tfstate"
+    key            = "terraform-config/build-caching-production-3.tfstate"
     region         = "us-east-1"
     encrypt        = "true"
     dynamodb_table = "travis-terraform-state"

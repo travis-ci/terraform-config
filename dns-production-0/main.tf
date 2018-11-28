@@ -12,8 +12,11 @@ variable "macstadium_production_nat_addrs" {
   type = "list"
 }
 
-variable "travisci_net_external_zone_id" {
-  default = "Z2RI61YP4UWSIO"
+variable "travis_build_heroku_apps" {
+  default = [
+    "travis-build-production",
+    "travis-pro-build-production",
+  ]
 }
 
 variable "whereami_scale" {
@@ -39,6 +42,10 @@ provider "aws" {}
 provider "heroku" {}
 provider "dnsimple" {}
 
+data "aws_route53_zone" "travisci_net" {
+  name = "travisci.net."
+}
+
 data "dns_a_record_set" "aws_production_2_nat_com" {
   host = "workers-nat-com-shared-2.aws-us-east-1.travisci.net"
 }
@@ -59,8 +66,20 @@ data "dns_a_record_set" "gce_production_3_nat" {
   host = "nat-production-3.gce-us-central1.travisci.net"
 }
 
+data "dns_a_record_set" "gce_production_1_build_cache" {
+  host = "production-1-build-cache.gce-us-central1.travisci.net"
+}
+
+data "dns_a_record_set" "gce_production_2_build_cache" {
+  host = "production-2-build-cache.gce-us-central1.travisci.net"
+}
+
+data "dns_a_record_set" "gce_production_3_build_cache" {
+  host = "production-3-build-cache.gce-us-central1.travisci.net"
+}
+
 resource "aws_route53_record" "aws_nat" {
-  zone_id = "${var.travisci_net_external_zone_id}"
+  zone_id = "${data.aws_route53_zone.travisci_net.zone_id}"
   name    = "nat.aws-us-east-1.travisci.net"
   type    = "A"
   ttl     = 300
@@ -72,7 +91,7 @@ resource "aws_route53_record" "aws_nat" {
 }
 
 resource "aws_route53_record" "gce_nat" {
-  zone_id = "${var.travisci_net_external_zone_id}"
+  zone_id = "${data.aws_route53_zone.travisci_net.zone_id}"
   name    = "nat.gce-us-central1.travisci.net"
   type    = "A"
   ttl     = 300
@@ -85,7 +104,7 @@ resource "aws_route53_record" "gce_nat" {
 }
 
 resource "aws_route53_record" "linux_containers_nat" {
-  zone_id = "${var.travisci_net_external_zone_id}"
+  zone_id = "${data.aws_route53_zone.travisci_net.zone_id}"
   name    = "nat.linux-containers.travisci.net"
   type    = "A"
   ttl     = 300
@@ -97,7 +116,7 @@ resource "aws_route53_record" "linux_containers_nat" {
 }
 
 resource "aws_route53_record" "macstadium_nat" {
-  zone_id = "${var.travisci_net_external_zone_id}"
+  zone_id = "${data.aws_route53_zone.travisci_net.zone_id}"
   name    = "nat.macstadium-us-se-1.travisci.net"
   type    = "A"
   ttl     = 300
@@ -106,7 +125,7 @@ resource "aws_route53_record" "macstadium_nat" {
 }
 
 resource "aws_route53_record" "nat" {
-  zone_id = "${var.travisci_net_external_zone_id}"
+  zone_id = "${data.aws_route53_zone.travisci_net.zone_id}"
   name    = "nat.travisci.net"
   type    = "A"
   ttl     = 300
@@ -119,6 +138,23 @@ resource "aws_route53_record" "nat" {
     "${data.dns_a_record_set.gce_production_3_nat.addrs}",
     "${var.macstadium_production_nat_addrs}",
   ]
+}
+
+resource "aws_route53_record" "build_cache" {
+  zone_id = "${data.aws_route53_zone.travisci_net.zone_id}"
+  name    = "build-cache.travisci.net"
+  type    = "A"
+  ttl     = 60
+
+  records = ["${
+    distinct(
+      concat(
+        data.dns_a_record_set.gce_production_1_build_cache.addrs,
+        data.dns_a_record_set.gce_production_2_build_cache.addrs,
+        data.dns_a_record_set.gce_production_3_build_cache.addrs
+      )
+    )
+  }"]
 }
 
 resource "heroku_app" "whereami" {
@@ -180,10 +216,24 @@ resource "dnsimple_record" "whereami_cname" {
 }
 
 resource "aws_route53_record" "whereami_cname" {
-  zone_id = "${var.travisci_net_external_zone_id}"
+  zone_id = "${data.aws_route53_zone.travisci_net.zone_id}"
   name    = "whereami.travis-ci.com"
   ttl     = 60
   type    = "CNAME"
 
   records = ["osaka-6117.herokussl.com"]
+}
+
+resource "null_resource" "build_cache_config" {
+  triggers {
+    name = "${aws_route53_record.build_cache.name}"
+  }
+
+  provisioner "local-exec" {
+    command = <<EOF
+${path.module}/../bin/build-cache-configure \
+  --apps "${join(",", var.travis_build_heroku_apps)}" \
+  --fqdn "${aws_route53_record.build_cache.name}"
+EOF
+  }
 }

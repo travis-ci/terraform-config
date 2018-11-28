@@ -43,7 +43,6 @@ provider "aws" {}
 module "gce_squignix" {
   source = "../modules/gce_squignix"
 
-  build_apps     = ["travis-build-staging", "travis-pro-build-staging"]
   cache_size_mb  = 1848
   env            = "${var.env}"
   github_users   = "${var.github_users}"

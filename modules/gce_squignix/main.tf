@@ -6,10 +6,6 @@ variable "backend_ig_size" {
   default = 2
 }
 
-variable "build_apps" {
-  default = []
-}
-
 variable "cache_size_mb" {
   default = 3896
 }
@@ -90,7 +86,7 @@ EOF
 
 resource "google_compute_subnetwork" "build_cache" {
   enable_flow_logs = "true"
-  ip_cidr_range    = "10.80.${var.index}.0/24"
+  ip_cidr_range    = "10.80.1.0/24"
   name             = "${var.env}-${var.index}-build-cache"
   network          = "${var.network}"
   region           = "${var.region}"
@@ -125,7 +121,7 @@ resource "google_compute_address" "build_cache_frontend" {
   name         = "build-cache-frontend"
   subnetwork   = "${google_compute_subnetwork.build_cache.self_link}"
   address_type = "INTERNAL"
-  address      = "${cidrhost("10.80.${var.index}.0/24", 2)}"
+  address      = "${cidrhost("10.80.1.0/24", 2)}"
 }
 
 resource "google_compute_health_check" "build_cache" {
@@ -230,19 +226,4 @@ resource "aws_route53_record" "build_cache_frontend" {
   ttl     = 5
 
   records = ["${google_compute_address.build_cache_frontend.address}"]
-}
-
-resource "null_resource" "heroku_config_set" {
-  triggers {
-    frontend_name = "${aws_route53_record.build_cache_frontend.fqdn}"
-    apps          = "${join(",", var.build_apps)}"
-  }
-
-  provisioner "local-exec" {
-    command = <<EOF
-${path.module}/../../bin/build-cache-configure \
-    --apps "${join(",", var.build_apps)}" \
-    --fqdn "${aws_route53_record.build_cache_frontend.fqdn}"
-EOF
-  }
 }
