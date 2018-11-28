@@ -194,10 +194,6 @@ resource "google_compute_region_autoscaler" "build_cache" {
   }
 }
 
-resource "google_compute_target_pool" "build_cache" {
-  name = "${var.env}-${var.index}-build-cache"
-}
-
 resource "google_compute_region_instance_group_manager" "build_cache" {
   provider = "google-beta"
 
@@ -205,7 +201,6 @@ resource "google_compute_region_instance_group_manager" "build_cache" {
   distribution_policy_zones = "${formatlist("${var.region}-%s", var.zones)}"
   name                      = "${var.env}-${var.index}-build-cache"
   region                    = "${var.region}"
-  target_pools              = ["${google_compute_target_pool.build_cache.self_link}"]
 
   version {
     name              = "default"
