@@ -105,7 +105,7 @@ resource "google_compute_subnetwork" "build_cache" {
 }
 
 resource "google_compute_firewall" "allow_build_cache_internal" {
-  name        = "allow-build-cache-internal"
+  name        = "${var.env}-${var.index}-allow-build-cache-internal"
   network     = "${var.network}"
   target_tags = ["build-cache"]
 
@@ -117,7 +117,7 @@ resource "google_compute_firewall" "allow_build_cache_internal" {
 }
 
 resource "google_compute_firewall" "allow_build_cache_health_check" {
-  name        = "allow-build-cache-health-check"
+  name        = "${var.env}-${var.index}-allow-build-cache-health-check"
   network     = "${var.network}"
   target_tags = ["build-cache"]
 
@@ -130,14 +130,14 @@ resource "google_compute_firewall" "allow_build_cache_health_check" {
 }
 
 resource "google_compute_address" "build_cache_frontend" {
-  name         = "build-cache-frontend"
+  name         = "${var.env}-${var.index}-build-cache-frontend"
   subnetwork   = "${google_compute_subnetwork.build_cache.self_link}"
   address_type = "INTERNAL"
   address      = "${cidrhost("10.80.1.0/24", 2)}"
 }
 
 resource "google_compute_health_check" "build_cache" {
-  name = "build-cache-health-check"
+  name = "${var.env}-${var.index}-build-cache-health-check"
 
   timeout_sec        = 3
   check_interval_sec = 5
@@ -194,6 +194,10 @@ resource "google_compute_region_autoscaler" "build_cache" {
   }
 }
 
+resource "google_compute_target_pool" "build_cache" {
+  name = "${var.env}-${var.index}-build-cache"
+}
+
 resource "google_compute_region_instance_group_manager" "build_cache" {
   provider = "google-beta"
 
@@ -201,6 +205,7 @@ resource "google_compute_region_instance_group_manager" "build_cache" {
   distribution_policy_zones = "${formatlist("${var.region}-%s", var.zones)}"
   name                      = "${var.env}-${var.index}-build-cache"
   region                    = "${var.region}"
+  target_pools              = ["${google_compute_target_pool.build_cache.self_link}"]
 
   version {
     name              = "default"
@@ -222,7 +227,7 @@ resource "google_compute_region_instance_group_manager" "build_cache" {
 }
 
 resource "google_compute_region_backend_service" "build_cache" {
-  name             = "build-cache-backend"
+  name             = "${var.env}-${var.index}-build-cache-backend"
   description      = "backend servers for build cache"
   protocol         = "TCP"
   session_affinity = "CLIENT_IP"
@@ -236,7 +241,7 @@ resource "google_compute_region_backend_service" "build_cache" {
 }
 
 resource "google_compute_forwarding_rule" "build_cache" {
-  name                  = "build-cache-forwarding"
+  name                  = "${var.env}-${var.index}-build-cache-forwarding"
   backend_service       = "${google_compute_region_backend_service.build_cache.self_link}"
   ip_address            = "${google_compute_address.build_cache_frontend.address}"
   ip_protocol           = "TCP"
