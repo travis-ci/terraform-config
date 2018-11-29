@@ -259,3 +259,7 @@ resource "aws_route53_record" "build_cache_frontend" {
 
   records = ["${google_compute_address.build_cache_frontend.address}"]
 }
+
+output "dns_fqdn" {
+  value = "${aws_route53_record.build_cache_frontend.name}"
+}
