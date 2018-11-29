@@ -223,7 +223,11 @@ data "template_file" "cloud_config_com" {
     gce_accounts_b64 = "${join("\n", google_service_account_key.workers_com.*.private_key)}"
     here             = "${path.module}"
     syslog_address   = "${var.syslog_address_com}"
-    worker_config    = "${var.config_com}"
+
+    worker_config = <<EOF
+${var.config_com}
+export TRAVIS_WORKER_GCE_RATE_LIMIT_REDIS_URL=redis://${google_redis_instance.worker_rate_limit.host}:${google_redis_instance.worker_rate_limit.port}
+EOF
 
     cloud_init_env = <<EOF
 export TRAVIS_WORKER_SELF_IMAGE="${var.worker_docker_self_image}"
@@ -321,7 +325,11 @@ data "template_file" "cloud_config_com_free" {
     gce_accounts_b64 = "${join("\n", google_service_account_key.workers_com_free.*.private_key)}"
     here             = "${path.module}"
     syslog_address   = "${var.syslog_address_com}"
-    worker_config    = "${var.config_com_free}"
+
+    worker_config = <<EOF
+${var.config_com_free}
+export TRAVIS_WORKER_GCE_RATE_LIMIT_REDIS_URL=redis://${google_redis_instance.worker_rate_limit.host}:${google_redis_instance.worker_rate_limit.port}
+EOF
 
     cloud_init_env = <<EOF
 export TRAVIS_WORKER_SELF_IMAGE="${var.worker_docker_self_image}"
@@ -419,7 +427,11 @@ data "template_file" "cloud_config_org" {
     gce_accounts_b64 = "${join("\n", google_service_account_key.workers_org.*.private_key)}"
     here             = "${path.module}"
     syslog_address   = "${var.syslog_address_org}"
-    worker_config    = "${var.config_org}"
+
+    worker_config = <<EOF
+${var.config_org}
+export TRAVIS_WORKER_GCE_RATE_LIMIT_REDIS_URL=redis://${google_redis_instance.worker_rate_limit.host}:${google_redis_instance.worker_rate_limit.port}
+EOF
 
     cloud_init_env = <<EOF
 export TRAVIS_WORKER_SELF_IMAGE="${var.worker_docker_self_image}"
@@ -506,6 +518,20 @@ resource "google_compute_region_instance_group_manager" "worker_org" {
   region             = "${var.region}"
 
   distribution_policy_zones = "${formatlist("${var.region}-%s", var.zones)}"
+}
+
+resource "google_redis_instance" "worker_rate_limit" {
+  name           = "worker-rate-limit"
+  tier           = "STANDARD_HA"
+  memory_size_gb = 1
+
+  location_id             = "us-central1-a"
+  alternative_location_id = "us-central1-f"
+
+  authorized_network = "main"
+
+  redis_version = "REDIS_3_2"
+  display_name  = "Worker Rate Limit"
 }
 
 output "workers_service_account_emails" {
