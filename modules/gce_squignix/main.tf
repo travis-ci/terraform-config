@@ -1,4 +1,20 @@
-variable "backend_ig_size" {
+variable "allowed_internal_ranges" {
+  default = ["10.0.0.0/8"]
+}
+
+variable "backend_ig_cooldown_period" {
+  default = 60
+}
+
+variable "backend_ig_lb_utilization" {
+  default = 0.9
+}
+
+variable "backend_ig_max_size" {
+  default = 5
+}
+
+variable "backend_ig_min_size" {
   default = 2
 }
 
@@ -12,16 +28,23 @@ variable "dns_domain" {
 
 variable "env" {}
 
-variable "frontend_ip" {
-  default = "10.10.0.127"
-}
-
 variable "github_users" {}
+
+variable "gce_health_check_source_ranges" {
+  default = [
+    "130.211.0.0/22",
+    "35.191.0.0/16",
+  ]
+}
 
 variable "index" {}
 
 variable "machine_type" {
   default = "custom-1-4096"
+}
+
+variable "network" {
+  default = "main"
 }
 
 variable "region" {
@@ -73,28 +96,48 @@ EOF
   }
 }
 
-resource "google_compute_firewall" "build_cache" {
-  name      = "build-cache"
-  network   = "main"
-  direction = "INGRESS"
+resource "google_compute_subnetwork" "build_cache" {
+  enable_flow_logs = "true"
+  ip_cidr_range    = "10.80.1.0/24"
+  name             = "${var.env}-${var.index}-build-cache"
+  network          = "${var.network}"
+  region           = "${var.region}"
+}
+
+resource "google_compute_firewall" "allow_build_cache_internal" {
+  name        = "${var.env}-${var.index}-allow-build-cache-internal"
+  network     = "${var.network}"
+  target_tags = ["build-cache"]
+
+  source_ranges = ["${var.allowed_internal_ranges}"]
+
+  allow {
+    protocol = "all"
+  }
+}
+
+resource "google_compute_firewall" "allow_build_cache_health_check" {
+  name        = "${var.env}-${var.index}-allow-build-cache-health-check"
+  network     = "${var.network}"
+  target_tags = ["build-cache"]
+
+  source_ranges = ["${var.gce_health_check_source_ranges}"]
 
   allow {
     protocol = "tcp"
     ports    = ["80"]
   }
-
-  target_tags = ["build-cache"]
 }
 
 resource "google_compute_address" "build_cache_frontend" {
-  name         = "build-cache-frontend"
-  subnetwork   = "public"
+  name         = "${var.env}-${var.index}-build-cache-frontend"
+  subnetwork   = "${google_compute_subnetwork.build_cache.self_link}"
   address_type = "INTERNAL"
-  address      = "${var.frontend_ip}"
+  address      = "${cidrhost("10.80.1.0/24", 2)}"
 }
 
 resource "google_compute_health_check" "build_cache" {
-  name = "build-cache-health-check"
+  name = "${var.env}-${var.index}-build-cache-health-check"
 
   timeout_sec        = 3
   check_interval_sec = 5
@@ -121,8 +164,7 @@ resource "google_compute_instance_template" "build_cache" {
   }
 
   network_interface {
-    subnetwork = "public"
-
+    subnetwork    = "${google_compute_subnetwork.build_cache.self_link}"
     access_config = {}
   }
 
@@ -136,14 +178,34 @@ resource "google_compute_instance_template" "build_cache" {
   }
 }
 
+resource "google_compute_region_autoscaler" "build_cache" {
+  name   = "${var.env}-${var.index}-build-cache"
+  region = "${var.region}"
+  target = "${google_compute_region_instance_group_manager.build_cache.self_link}"
+
+  autoscaling_policy = {
+    max_replicas    = "${var.backend_ig_max_size}"
+    min_replicas    = "${var.backend_ig_min_size}"
+    cooldown_period = "${var.backend_ig_cooldown_period}"
+
+    load_balancing_utilization {
+      target = "${var.backend_ig_lb_utilization}"
+    }
+  }
+}
+
+resource "google_compute_target_pool" "build_cache" {
+  name = "${var.env}-${var.index}-build-cache"
+}
+
 resource "google_compute_region_instance_group_manager" "build_cache" {
   provider = "google-beta"
 
-  base_instance_name        = "${var.env}-${var.index}-build-cache-gce"
+  base_instance_name        = "${var.env}-${var.index}-build-cache"
   distribution_policy_zones = "${formatlist("${var.region}-%s", var.zones)}"
   name                      = "${var.env}-${var.index}-build-cache"
   region                    = "${var.region}"
-  target_size               = "${var.backend_ig_size}"
+  target_pools              = ["${google_compute_target_pool.build_cache.self_link}"]
 
   version {
     name              = "default"
@@ -165,7 +227,7 @@ resource "google_compute_region_instance_group_manager" "build_cache" {
 }
 
 resource "google_compute_region_backend_service" "build_cache" {
-  name             = "build-cache-backend"
+  name             = "${var.env}-${var.index}-build-cache-backend"
   description      = "backend servers for build cache"
   protocol         = "TCP"
   session_affinity = "CLIENT_IP"
@@ -179,21 +241,25 @@ resource "google_compute_region_backend_service" "build_cache" {
 }
 
 resource "google_compute_forwarding_rule" "build_cache" {
-  name                  = "build-cache-forwarding"
+  name                  = "${var.env}-${var.index}-build-cache-forwarding"
   backend_service       = "${google_compute_region_backend_service.build_cache.self_link}"
   ip_address            = "${google_compute_address.build_cache_frontend.address}"
   ip_protocol           = "TCP"
   load_balancing_scheme = "INTERNAL"
   network               = "main"
   ports                 = ["80"]
-  subnetwork            = "public"
+  subnetwork            = "${google_compute_subnetwork.build_cache.self_link}"
 }
 
 resource "aws_route53_record" "build_cache_frontend" {
   zone_id = "${data.aws_route53_zone.travisci_net.zone_id}"
-  name    = "build-cache-${var.env}-${var.index}.gce-${var.region}.${var.dns_domain}"
+  name    = "${var.env}-${var.index}-build-cache.gce-${var.region}.${var.dns_domain}"
   type    = "A"
   ttl     = 5
 
   records = ["${google_compute_address.build_cache_frontend.address}"]
+}
+
+output "dns_fqdn" {
+  value = "${aws_route53_record.build_cache_frontend.name}"
 }
