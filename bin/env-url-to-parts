@@ -1,4 +1,6 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
+
 require 'uri'
 
 def main(argv = ARGV)
@@ -8,7 +10,7 @@ def main(argv = ARGV)
 
   parsed = URI(ENV.fetch(url_varname))
 
-  %w(scheme user password host port path query).each do |part|
+  %w[scheme user password host port path query].each do |part|
     basename = "#{url_varname}_#{part.upcase}_#{suffix}"
     File.open(File.join(out_dir, basename), 'w') do |f|
       f.puts parsed.send(part).to_s + "\n"

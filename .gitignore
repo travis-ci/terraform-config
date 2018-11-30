@@ -7,7 +7,6 @@
 
 .env
 .envrc
-.ruby-version
 .terraform/
 /tmp/
 assets/*.tar.bz2

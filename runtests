@@ -74,6 +74,9 @@ main() {
     bats -t "${f}"
   done
 
+  echo 'Running rubocop'
+  bundle exec rubocop
+
   for d in $(git ls-files '*.tf' | xargs -n1 dirname | LC_ALL=C sort | uniq); do
     echo -en "${d} "
     if [[ -f "${d}/Makefile" ]]; then

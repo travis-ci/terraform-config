@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 require 'fileutils'
 require 'optparse'
@@ -21,7 +22,7 @@ def main(argv: ARGV)
     'config/worker-org.env',
     trvs_gen(
       "#{opts[:infra]}-workers",
-      opts[:env_tail].empty? ? opts[:env_short] : opts[:env_tail],
+      opts[:env_tail].empty? ? opts[:env_short] : opts[:env_tail]
     )
   )
 
@@ -52,9 +53,8 @@ def main(argv: ARGV)
     'config/travis-build-com.env' => "travis-pro-build-#{opts[:env_short]}",
     'config/job-board.env' => "job-board-#{opts[:env_short]}"
   }.each do |outfile, app|
-    %x[#{top}/bin/heroku-dump-shell-config #{app} #{outfile}]
+    `#{top}/bin/heroku-dump-shell-config #{app} #{outfile}`
   end
-
 
   env = source_env('config/job-board.env')
   job_board_auth = "travis-worker:#{env['AUTH_TOKENS'].split(':').first}"
@@ -192,7 +192,7 @@ def source_env(filename)
 end
 
 def fwrite(outfile, content)
-  $stderr.puts "#{prog}: writing #{outfile.inspect}"
+  warn "#{prog}: writing #{outfile.inspect}"
   File.write(outfile, content)
 end
 

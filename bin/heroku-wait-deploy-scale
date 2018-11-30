@@ -1,4 +1,6 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
+
 require 'optparse'
 
 require_relative '../lib/heroku_client'
@@ -29,12 +31,12 @@ def main
     ) { |v| options[:version] = v.strip }
   end.parse!
 
-  fail 'Missing HEROKU_API_KEY' unless ENV.key?('HEROKU_API_KEY')
+  raise 'Missing HEROKU_API_KEY' unless ENV.key?('HEROKU_API_KEY')
 
   heroku = HerokuClient.new(api_key: ENV.fetch('HEROKU_API_KEY'))
 
   unless heroku.wait(options.fetch(:heroku_app))
-    $stderr.puts "---> timeout waiting for app=#{options.fetch(:heroku_app)}"
+    warn "---> timeout waiting for app=#{options.fetch(:heroku_app)}"
     return 1
   end
 

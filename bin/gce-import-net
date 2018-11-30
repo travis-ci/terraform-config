@@ -1,4 +1,6 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
+
 require 'optparse'
 
 def main
@@ -8,7 +10,7 @@ def main
     noop: false,
     project: ENV.fetch('PROJECT', 'notset'),
     region: ENV.fetch('REGION', 'us-central1'),
-    terraform: ENV.fetch('TERRAFORM', 'terraform'),
+    terraform: ENV.fetch('TERRAFORM', 'terraform')
   }
 
   OptionParser.new do |opts|
@@ -57,14 +59,15 @@ def main
     'google_compute_subnetwork.jobs_com' => "#{region}/jobs-com",
     'google_compute_subnetwork.jobs_org' => "#{region}/jobs-org",
     'google_compute_subnetwork.public' => "#{region}/public",
-    'google_compute_subnetwork.workers' => "#{region}/workers",
+    'google_compute_subnetwork.workers' => "#{region}/workers"
   }.each do |resource, importable|
     command = %W[
       #{terraform} import module.gce_net.#{resource} #{importable}
     ]
-    $stderr.puts("---> #{command.join(' ')}")
+    warn("---> #{command.join(' ')}")
     next if noop
-    system(*command) || $stderr.puts('---? already imported?')
+
+    system(*command) || warn('---? already imported?')
   end
 
   0
