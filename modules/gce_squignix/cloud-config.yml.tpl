@@ -8,7 +8,7 @@ write_files:
 - content: '${base64encode(github_users_env)}'
   encoding: b64
   path: /etc/default/github-users
-- content: '${base64encode(squignix_env)}'
+- content: '${base64encode(file("${here}/squignix.env"))}'
   encoding: b64
   path: /etc/default/squignix
 - content: '${base64encode(file("${here}/squignix.service"))}'
