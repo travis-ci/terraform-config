@@ -52,7 +52,7 @@ def main(argv: ARGV)
     'config/travis-build-com.env' => "travis-pro-build-#{opts[:env_short]}",
     'config/job-board.env' => "job-board-#{opts[:env_short]}"
   }.each do |outfile, app|
-    %x[#{top}/bin/heroku-dump-shell-config #{app} #{outfile}])
+    %x[#{top}/bin/heroku-dump-shell-config #{app} #{outfile}]
   end
 
 
