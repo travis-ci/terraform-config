@@ -47,7 +47,8 @@ deps: $(DEPS)
 .PHONY: .ensure-rubocop
 .ensure-rubocop:
 	bundle version &>/dev/null || gem install bundler
-	bundle exec rubocop --version &>/dev/null || bundle install
+	bundle exec rubocop --version &>/dev/null || \
+		bundle install --jobs=3 --retry=3 --deployment --path $${BUNDLE_PATH:-vendor/bundle}
 
 .PHONY: .ensure-shellcheck
 .ensure-shellcheck:
