@@ -43,11 +43,10 @@ provider "aws" {}
 module "gce_squignix" {
   source = "../modules/gce_squignix"
 
-  cache_size_mb  = 1848
+  cache_size_mb  = 51200
   env            = "${var.env}"
   github_users   = "${var.github_users}"
   index          = "${var.index}"
-  machine_type   = "custom-1-2048"
   region         = "${var.region}"
   syslog_address = "${var.syslog_address_com}"
 }

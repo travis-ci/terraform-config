@@ -2,24 +2,8 @@ variable "allowed_internal_ranges" {
   default = ["10.0.0.0/8"]
 }
 
-variable "backend_ig_cooldown_period" {
-  default = 60
-}
-
-variable "backend_ig_lb_utilization" {
-  default = 0.9
-}
-
-variable "backend_ig_max_size" {
-  default = 5
-}
-
-variable "backend_ig_min_size" {
-  default = 2
-}
-
 variable "cache_size_mb" {
-  default = 3896
+  default = 102400
 }
 
 variable "dns_domain" {
@@ -40,7 +24,7 @@ variable "gce_health_check_source_ranges" {
 variable "index" {}
 
 variable "machine_type" {
-  default = "custom-1-4096"
+  default = "g1-small"
 }
 
 variable "network" {
@@ -65,7 +49,7 @@ data "template_file" "nginx_conf_d_default" {
   template = "${file("${path.module}/nginx-conf.d-default.conf.tpl")}"
 
   vars {
-    max_size = "${replace("${var.cache_size_mb * 0.9}", "/\\..*/", "")}m"
+    max_size = "${replace("${var.cache_size_mb * 0.8}", "/\\..*/", "")}m"
   }
 }
 
@@ -84,14 +68,6 @@ EOF
 
     github_users_env = <<EOF
 export GITHUB_USERS='${var.github_users}'
-EOF
-
-    squignix_env = <<EOF
-### squignix.env
-${file("${path.module}/squignix.env")}
-
-### in-line
-export SQUIGNIX_CACHE_SIZE=${format("%dk", var.cache_size_mb * 1024)}
 EOF
   }
 }
@@ -158,9 +134,11 @@ resource "google_compute_instance_template" "build_cache" {
   }
 
   disk {
-    source_image = "ubuntu-os-cloud/ubuntu-1804-lts"
     auto_delete  = true
     boot         = true
+    disk_size_gb = "${ceil(var.cache_size_mb / 1024.0)}"
+    disk_type    = "pd-ssd"
+    source_image = "ubuntu-os-cloud/ubuntu-1804-lts"
   }
 
   network_interface {
@@ -175,22 +153,6 @@ resource "google_compute_instance_template" "build_cache" {
 
   lifecycle {
     create_before_destroy = true
-  }
-}
-
-resource "google_compute_region_autoscaler" "build_cache" {
-  name   = "${var.env}-${var.index}-build-cache"
-  region = "${var.region}"
-  target = "${google_compute_region_instance_group_manager.build_cache.self_link}"
-
-  autoscaling_policy = {
-    max_replicas    = "${var.backend_ig_max_size}"
-    min_replicas    = "${var.backend_ig_min_size}"
-    cooldown_period = "${var.backend_ig_cooldown_period}"
-
-    load_balancing_utilization {
-      target = "${var.backend_ig_lb_utilization}"
-    }
   }
 }
 
