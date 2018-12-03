@@ -47,6 +47,8 @@ main() {
       PATH="${PATH}" \
       TERM="${TERM}" \
       LANG="${LANG}" \
+      GEM_HOME="${GEM_HOME}" \
+      GEM_PATH="${GEM_PATH}" \
       bash -c "source '${env_file}' && bash ${BASH_SOURCE[0]} ${exec_opts}"
   fi
 
@@ -75,9 +77,6 @@ main() {
   done
 
   echo 'Running rubocop'
-  if ! bundle exec rubocop --version &>/dev/null; then
-    rvm use --install --fuzzy "$(cat .ruby-version)"
-  fi
   bundle exec rubocop
 
   for d in $(git ls-files '*.tf' | xargs -n1 dirname | LC_ALL=C sort | uniq); do
