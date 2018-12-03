@@ -75,6 +75,9 @@ main() {
   done
 
   echo 'Running rubocop'
+  if ! bundle exec rubocop --version &>/dev/null; then
+    rvm use --install --fuzzy "$(cat .ruby-version)"
+  fi
   bundle exec rubocop
 
   for d in $(git ls-files '*.tf' | xargs -n1 dirname | LC_ALL=C sort | uniq); do
