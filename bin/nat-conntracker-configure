@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 require 'json'
 require 'net/http'
@@ -48,7 +49,7 @@ def main
     dst_command = %W[
       trvs redis-cli #{options[:app]} REDIS_URL SADD nat-conntracker:dst-ignore
     ] + Array(options[:dst_ignore])
-    $stderr.puts("---> #{dst_command.join(' ')}")
+    warn("---> #{dst_command.join(' ')}")
     system(*dst_command)
   end
 
@@ -56,7 +57,7 @@ def main
     src_command = %W[
       trvs redis-cli #{options[:app]} REDIS_URL SADD nat-conntracker:src-ignore
     ] + Array(options[:src_ignore])
-    $stderr.puts("---> #{src_command.join(' ')}")
+    warn("---> #{src_command.join(' ')}")
     system(*src_command)
   end
 
@@ -76,12 +77,12 @@ def expand_private!(cidrs)
 end
 
 PRIVATE_SUBNETS = %w[
-	10.0.0.0/8
-	127.0.0.0/8
-	169.254.0.0/16
-	172.16.0.0/12
-	192.0.2.0/24
-	192.168.0.0/16
+  10.0.0.0/8
+  127.0.0.0/8
+  169.254.0.0/16
+  172.16.0.0/12
+  192.0.2.0/24
+  192.168.0.0/16
 ].freeze
 
 exit(main) if $PROGRAM_NAME == __FILE__

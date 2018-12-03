@@ -1,4 +1,6 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
+
 require 'json'
 
 require_relative '../lib/heroku_client'
@@ -7,26 +9,26 @@ def main(argv: ARGV)
   prog = File.basename($PROGRAM_NAME)
 
   argv.each do |arg|
-    if arg =~ /-h|--help|help/
+    if /-h|--help|help/.match?(arg)
       show_usage
       return 0
     end
   end
 
-  if argv.length < 1
+  if argv.empty?
     show_usage
     return 1
   end
 
   unless ENV.key?('HEROKU_API_KEY')
-    $stderr.puts 'Missing $HEROKU_API_KEY'
+    warn 'Missing $HEROKU_API_KEY'
     return 2
   end
 
   out = $stdout
   outname = argv[1]
   unless outname.nil?
-    $stderr.puts "#{prog}: writing to #{outname.inspect}"
+    warn "#{prog}: writing to #{outname.inspect}"
     out = File.open(outname, 'w')
   end
 

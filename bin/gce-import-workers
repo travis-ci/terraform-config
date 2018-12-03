@@ -1,11 +1,13 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
+
 require 'optparse'
 
 def main
   options = {
     counts: {
       com: Integer(ENV.fetch('COUNT_COM', '0')),
-      org: Integer(ENV.fetch('COUNT_ORG', '0')),
+      org: Integer(ENV.fetch('COUNT_ORG', '0'))
     },
     env: ENV.fetch('ENV', 'staging'),
     index: ENV.fetch('INDEX', '1'),
@@ -14,7 +16,7 @@ def main
     project: ENV.fetch('PROJECT', 'notset'),
     region: ENV.fetch('REGION', 'us-central1'),
     terraform: ENV.fetch('TERRAFORM', 'terraform'),
-    zones: ENV.fetch('ZONES', 'a,b,c,f').split(',').map(&:strip),
+    zones: ENV.fetch('ZONES', 'a,b,c,f').split(',').map(&:strip)
   }
 
   OptionParser.new do |opts|
@@ -70,7 +72,7 @@ def main
   zones = options.fetch(:zones)
 
   to_import = {
-    'heroku_app.gcloud_cleanup' => "gcloud-cleanup-#{env}-#{index}",
+    'heroku_app.gcloud_cleanup' => "gcloud-cleanup-#{env}-#{index}"
   }
 
   %i[com org].each do |site|
@@ -90,9 +92,10 @@ def main
     command = %W[
       #{terraform} import module.#{module_name}.#{resource} #{importable}
     ]
-    $stderr.puts("---> #{command.join(' ')}")
+    warn("---> #{command.join(' ')}")
     next if noop
-    system(*command) || $stderr.puts('---? already imported?')
+
+    system(*command) || warn('---? already imported?')
   end
 
   0

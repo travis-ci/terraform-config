@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 require 'json'
 require 'optparse'
@@ -10,7 +11,7 @@ def main
     apps: [],
     fqdn: '',
     heroku_api_hostname: 'api.heroku.com',
-    heroku_api_key: ENV.fetch('HEROKU_API_KEY', '').strip,
+    heroku_api_key: ENV.fetch('HEROKU_API_KEY', '').strip
   }
 
   OptionParser.new do |opts|
@@ -35,8 +36,8 @@ def main
     ) { |v| options[:heroku_api_key] = v.strip }
   end.parse!
 
-  fail 'Missing HEROKU_API_KEY' if options[:heroku_api_key].empty?
-  fail 'No apps specified' if options[:apps].empty?
+  raise 'Missing HEROKU_API_KEY' if options[:heroku_api_key].empty?
+  raise 'No apps specified' if options[:apps].empty?
 
   heroku = HerokuClient.new(
     api_key: options.fetch(:heroku_api_key),

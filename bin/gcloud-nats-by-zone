@@ -1,13 +1,12 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 require 'json'
 
 NOTSET = '<notset>'
 
 def main(argv: ARGV)
-  if $stdin.tty? || argv.include?('-h') || argv.include?('--help')
-    return usage
-  end
+  return usage if $stdin.tty? || argv.include?('-h') || argv.include?('--help')
 
   in_args = JSON.parse($stdin.read)
   zones = in_args.fetch('zones', '').split(',').map(&:strip).reject(&:empty?)
@@ -26,10 +25,10 @@ def main(argv: ARGV)
   instances = {}
   while retried <= retries
     instances = fetch_nats_by_zone(zones, count, project, region)
-    break if !accounting
+    break unless accounting
     break if instances.length == count
 
-    $stderr.puts(
+    warn(
       "#{$PROGRAM_NAME}: sleeping=#{retry_sleep}s " \
       "instances_length=#{instances.length} count=#{count}"
     )
@@ -50,27 +49,25 @@ def fetch_nats_by_zone(zones, count, project, region)
 
   zones.each do |zone|
     (count / zones.length).times do |count_index|
-      begin
-        full_command = instances_command + %W[
-          nat-#{zone}-#{count_index + 1}
-          --project=#{project}
-          --zone=#{region}-#{zone}
-          --format="value(instance)"
-        ]
-        instance_name = `#{full_command.join(' ')}`.strip
-        next if instance_name.empty?
+      full_command = instances_command + %W[
+        nat-#{zone}-#{count_index + 1}
+        --project=#{project}
+        --zone=#{region}-#{zone}
+        --format="value(instance)"
+      ]
+      instance_name = `#{full_command.join(' ')}`.strip
+      next if instance_name.empty?
 
-        instances["#{zone}-#{count_index + 1}"] = %W[
-          projects
-          #{project}
-          zones
-          #{region}-#{zone}
-          instances
-          #{instance_name}
-        ].join('/')
-      rescue => e
-        warn e
-      end
+      instances["#{zone}-#{count_index + 1}"] = %W[
+        projects
+        #{project}
+        zones
+        #{region}-#{zone}
+        instances
+        #{instance_name}
+      ].join('/')
+    rescue StandardError => e
+      warn e
     end
   end
 
@@ -78,7 +75,7 @@ def fetch_nats_by_zone(zones, count, project, region)
 end
 
 def usage
-  $stderr.puts <<~EOF
+  warn <<~EOF
     Usage: #{$PROGRAM_NAME} [-h|--help]
 
     Print a mapping of {zone}-{index}=>{instance-id} given a JSON blob

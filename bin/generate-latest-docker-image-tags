@@ -1,9 +1,11 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
+
 require 'json'
 require 'net/http'
 require 'openssl'
 
-DEFAULT_STACKS = %w(
+DEFAULT_STACKS = %w[
   android
   erlang
   go
@@ -17,7 +19,7 @@ DEFAULT_STACKS = %w(
   amethyst
   connie
   garnet
-).freeze
+].freeze
 
 GITSHA1 = /^[0-9a-f]{7}$/.freeze
 
@@ -36,7 +38,7 @@ def main
   ].each do |image|
     tag = latest_docker_image_tag("travisci/#{image}")
     $stdout.puts(
-      %(latest_docker_image_#{image.gsub('-', '_')} = #{tag.to_s.inspect})
+      %(latest_docker_image_#{image.tr('-', '_')} = #{tag.to_s.inspect})
     )
   end
 
@@ -80,11 +82,12 @@ end
 
 def vers2int(vers)
   return 0 if vers.match?(GITSHA1)
+
   parts = vers.sub(/^v/, '').split('-')
   parts = parts.map { |part| part.split('.') }.flatten.compact
-  parts.reject! { |part| part.start_with?('g') || part.start_with?('dirty') }
+  parts.reject! { |part| part.start_with?('g', 'dirty') }
   parts << 0 if parts.length < 4
-  parts.map { |part| sprintf('%03d' % Integer(part)) }.join.to_i
+  parts.map { |part| format('%03d', Integer(part)) }.join.to_i
 end
 
 def docker_index_get(path, host: 'index.docker.io', headers: {},
