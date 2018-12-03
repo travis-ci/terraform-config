@@ -6,6 +6,7 @@ cache:
   directories:
   - "${HOME}/bin"
   - "${HOME}/.cache/travis-terraform-config"
+  bundler: true
 env:
   global:
   - PATH="${HOME}/bin:${PATH}"
