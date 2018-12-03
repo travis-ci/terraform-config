@@ -1,11 +1,13 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
+
 require 'optparse'
 
 def main
   options = {
     module_name: ENV.fetch('MODULE_NAME', 'gce_project_1'),
     noop: false,
-    terraform: ENV.fetch('TERRAFORM', 'terraform'),
+    terraform: ENV.fetch('TERRAFORM', 'terraform')
   }
 
   OptionParser.new do |opts|
@@ -50,7 +52,7 @@ def main
     ].map { |r| "module.#{module_name}.#{r}" }
   )
 
-  $stderr.puts("---> #{command.join(' ')}")
+  warn("---> #{command.join(' ')}")
   system(*command) unless noop
 
   0

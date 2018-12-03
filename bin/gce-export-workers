@@ -1,16 +1,18 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
+
 require 'optparse'
 
 def main
   options = {
     counts: {
       com: Integer(ENV.fetch('COUNT_COM', '0')),
-      org: Integer(ENV.fetch('COUNT_ORG', '0')),
+      org: Integer(ENV.fetch('COUNT_ORG', '0'))
     },
     module_name: ENV.fetch('MODULE_NAME', 'gce_project_1'),
     noop: false,
     terraform: ENV.fetch('TERRAFORM', 'terraform'),
-    zones: ENV.fetch('ZONES', 'a,b,c,f').split(',').map(&:strip),
+    zones: ENV.fetch('ZONES', 'a,b,c,f').split(',').map(&:strip)
   }
 
   OptionParser.new do |opts|
@@ -59,7 +61,7 @@ def main
     end
   end
 
-  $stderr.puts("---> #{command.join(' ')}")
+  warn("---> #{command.join(' ')}")
   system(*command) unless noop
 
   0

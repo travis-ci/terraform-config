@@ -1,5 +1,4 @@
 language: bash
-rvm: 2.4.2
 dist: xenial
 group: edge
 sudo: required
@@ -7,11 +6,13 @@ cache:
   directories:
   - "${HOME}/bin"
   - "${HOME}/.cache/travis-terraform-config"
+  bundler: true
 env:
   global:
   - PATH="${HOME}/bin:${PATH}"
   - TMPDIR="${TMPDIR:-/tmp}"
 before_install:
+- rvm use --install --fuzzy "$(cat .ruby-version)"
 - eval "$(gimme 1.11.1)"
 - make deps
 script:

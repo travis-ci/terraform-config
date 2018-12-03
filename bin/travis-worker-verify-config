@@ -1,4 +1,6 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
+
 # This executable is run via null resource provisioner
 # but you can run it directly, too
 
@@ -28,13 +30,11 @@ class TravisWorkerConfigVerifier
     end
   end
 
-  private
-
-  def cloud_config
+  private def cloud_config
     @cloud_config ||= YAML.safe_load(Base64.decode64(cloud_config_string_base64))
   end
 
-  def verify_etc_default_travis_worker!(content)
+  private def verify_etc_default_travis_worker!(content)
     vars = load_env_file(content)
     assert! vars.key?('TRAVIS_WORKER_BUILD_API_URI')
 
@@ -64,31 +64,31 @@ class TravisWorkerConfigVerifier
     )
   end
 
-  def verify_var_tmp_travis_run_d_check_unregister_netdevice!(content)
+  private def verify_var_tmp_travis_run_d_check_unregister_netdevice!(content)
     assert_identical_content!(
       content, 'assets/travis-worker/check-unregister-netdevice.bash'
     )
   end
 
-  def verify_etc_cron_d_unregister_netdevice!(content)
+  private def verify_etc_cron_d_unregister_netdevice!(content)
     assert_identical_content!(
       content, 'assets/travis-worker/unregister-netdevice.crontab'
     )
   end
 
-  def verify_var_tmp_travis_run_d_check_docker_health!(content)
+  private def verify_var_tmp_travis_run_d_check_docker_health!(content)
     assert_identical_content!(
       content, 'assets/travis-worker/check-docker-health.bash'
     )
   end
 
-  def verify_etc_cron_d_check_docker_health!(content)
+  private def verify_etc_cron_d_check_docker_health!(content)
     assert_identical_content!(
       content, 'assets/travis-worker/check-docker-health.crontab'
     )
   end
 
-  def verify_etc_default_github_users!(content)
+  private def verify_etc_default_github_users!(content)
     vars = load_env_file(content)
     assert!(vars.key?('GITHUB_USERS'), msg: 'does not define GITHUB_USERS')
     vars.fetch('GITHUB_USERS').split.each do |github_user|
@@ -99,7 +99,7 @@ class TravisWorkerConfigVerifier
     end
   end
 
-  def verify_etc_docker_daemon_direct_lvm_json!(content)
+  private def verify_etc_docker_daemon_direct_lvm_json!(content)
     config = JSON.parse(content)
     assert!(config.key?('storage-opts'), msg: 'missing storage-opts config')
     storage_opts = Hash[config.fetch('storage-opts').map { |s| s.split('=') }]
@@ -114,7 +114,7 @@ class TravisWorkerConfigVerifier
     assert!(dm_basesize_gigs > 5, msg: 'dm.basesize under 5GB')
   end
 
-  def verify_var_tmp_travis_run_d_cyclist_url!(content)
+  private def verify_var_tmp_travis_run_d_cyclist_url!(content)
     assert!(content.strip !~ /\/$/, msg: 'value contains a trailing slash')
     assert!(content =~ /^https/, msg: 'value protocol is not https')
     assert!(
@@ -123,57 +123,58 @@ class TravisWorkerConfigVerifier
     )
   end
 
-  def verify_var_tmp_travis_run_d_travis_worker_prestart_hook!(content)
+  private def verify_var_tmp_travis_run_d_travis_worker_prestart_hook!(content)
     assert_identical_content!(
       content,
       'modules/aws_asg/prestart-hook.bash'
     )
   end
 
-  def verify_var_tmp_travis_run_d_travis_worker_start_hook!(content)
+  private def verify_var_tmp_travis_run_d_travis_worker_start_hook!(content)
     assert_identical_content!(
       content,
       'modules/aws_asg/start-hook.bash'
     )
   end
 
-  def verify_var_tmp_travis_run_d_travis_worker_stop_hook!(content)
+  private def verify_var_tmp_travis_run_d_travis_worker_stop_hook!(content)
     assert_identical_content!(
       content,
       'modules/aws_asg/stop-hook.bash'
     )
   end
 
-  class ValueError < StandardError
-  end
+  ValueError = Class.new(StandardError)
 
-  def assert!(condition, msg: '')
+  private def assert!(condition, msg: '')
     raise Exception, msg unless condition
   end
 
-  def assert_identical_content!(content, path)
+  private def assert_identical_content!(content, path)
     assert!(
       content == load_relative_file(path),
       msg: "content does not match #{path.inspect}"
     )
   end
 
-  def load_env_file(content)
+  private def load_env_file(content)
     vars = {}
     content.split("\n").each do |line|
       next if line.strip.start_with?('#')
+
       key, value = line.sub(/^export /, '').split('=', 2)
       next if key.nil? || value.nil?
+
       vars[key.strip] = value.strip.gsub(/["']/, '')
     end
     vars
   end
 
-  def load_relative_file(path)
+  private def load_relative_file(path)
     File.read(top.join(path))
   end
 
-  def top
+  private def top
     @top ||= Pathname.new(`git rev-parse --show-toplevel`.strip)
   end
 end

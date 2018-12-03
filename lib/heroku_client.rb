@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'json'
 require 'net/http'
 require 'openssl'
@@ -45,8 +47,9 @@ class HerokuClient
       req['Content-Type'] = 'application/json'
 
       http.request(req) do |response|
-        return false unless response.kind_of?(Net::HTTPSuccess)
-        response.read_body { |c| $stderr.puts c }
+        return false unless response.is_a?(Net::HTTPSuccess)
+
+        response.read_body { |c| warn c }
       end
     end
 
@@ -68,9 +71,7 @@ class HerokuClient
 
     response = http.request(req)
 
-    unless response.kind_of?(Net::HTTPSuccess)
-      raise RuntimeError.new(response.body)
-    end
+    raise response.body unless response.is_a?(Net::HTTPSuccess)
 
     JSON.parse(response.body)
   end
