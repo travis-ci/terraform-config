@@ -1,5 +1,4 @@
 {
-  "android": "travisci/ci-amethyst:packer-1512508255-986baf0",
   "erlang": "travisci/ci-amethyst:packer-1512508255-986baf0",
   "haskell": "travisci/ci-amethyst:packer-1512508255-986baf0",
   "perl": "travisci/ci-amethyst:packer-1512508255-986baf0",
