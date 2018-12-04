@@ -23,6 +23,9 @@ variable "gce_health_check_source_ranges" {
 
 variable "index" {}
 
+variable "librato_email" {}
+variable "librato_token" {}
+
 variable "machine_type" {
   default = "g1-small"
 }
@@ -68,6 +71,11 @@ EOF
 
     github_users_env = <<EOF
 export GITHUB_USERS='${var.github_users}'
+EOF
+
+    librato_env = <<EOF
+export LIBRATO_EMAIL=${var.librato_email}
+export LIBRATO_TOKEN=${var.librato_token}
 EOF
   }
 }

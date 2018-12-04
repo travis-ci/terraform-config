@@ -8,6 +8,9 @@ variable "index" {
   default = 3
 }
 
+variable "librato_email" {}
+variable "librato_token" {}
+
 variable "project" {
   default = "travis-ci-prod-3"
 }
@@ -46,6 +49,8 @@ module "gce_squignix" {
   env            = "${var.env}"
   github_users   = "${var.github_users}"
   index          = "${var.index}"
+  librato_email  = "${var.librato_email}"
+  librato_token  = "${var.librato_token}"
   region         = "${var.region}"
   syslog_address = "${var.syslog_address_com}"
 }
