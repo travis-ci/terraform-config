@@ -45,7 +45,7 @@ def gen_resource_diff(resource_name, definition, differ: 'diff')
   out = []
 
   Dir.mktmpdir(%w[tfplandiff- -tmp]) do |tmpdir|
-    definition.fetch('Attributes').each do |attr_name, attr_def|
+    (definition.fetch('Attributes') || []).each do |attr_name, attr_def|
       attr_def = expand_attribute(attr_name, attr_def)
 
       a_name = File.join(tmpdir, "a-#{attr_name}")
