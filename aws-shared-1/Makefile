@@ -8,3 +8,9 @@ default: hello
 
 .PHONY: .config
 .config: $(ENV_NAME).auto.tfvars
+
+plan:
+	@echo NO
+
+apply:
+	@echo STILL NO
