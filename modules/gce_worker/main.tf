@@ -31,47 +31,23 @@ variable "worker_image" {
   default = "ubuntu-os-cloud/ubuntu-1804-lts"
 }
 
-variable "worker_service_accounts_count_com" {
-  default = 4
-}
-
-variable "worker_service_accounts_count_com_free" {
-  default = 4
-}
-
-variable "worker_service_accounts_count_org" {
-  default = 4
-}
-
 variable "zones" {
   default = ["a", "b", "c", "f"]
 }
 
-resource "google_service_account" "workers" {
-  account_id   = "workers"
-  display_name = "travis-worker processes"
-  project      = "${var.project}"
-}
-
 resource "google_service_account" "workers_com" {
-  count        = "${var.worker_service_accounts_count_com}"
-  account_id   = "workers-com-${lookup(var.regions_abbrev, var.region, "unk")}-${count.index+1}"
-  display_name = "travis-worker processes com ${var.region} ${count.index+1}"
-  project      = "${var.project}"
+  account_id   = "workers-com-${lookup(var.regions_abbrev, var.region, "unk")}"
+  display_name = "travis-worker processes com ${var.region}"
 }
 
 resource "google_service_account" "workers_com_free" {
-  count        = "${var.worker_service_accounts_count_com_free}"
-  account_id   = "workers-com-free-${lookup(var.regions_abbrev, var.region, "unk")}-${count.index+1}"
-  display_name = "travis-worker processes com free ${var.region} ${count.index+1}"
-  project      = "${var.project}"
+  account_id   = "workers-com-free-${lookup(var.regions_abbrev, var.region, "unk")}"
+  display_name = "travis-worker processes com free ${var.region}"
 }
 
 resource "google_service_account" "workers_org" {
-  count        = "${var.worker_service_accounts_count_org}"
-  account_id   = "workers-org-${lookup(var.regions_abbrev, var.region, "unk")}-${count.index+1}"
-  display_name = "travis-worker processes org ${var.region} ${count.index+1}"
-  project      = "${var.project}"
+  account_id   = "workers-org-${lookup(var.regions_abbrev, var.region, "unk")}"
+  display_name = "travis-worker processes org ${var.region}"
 }
 
 resource "google_project_iam_custom_role" "worker" {
@@ -168,50 +144,31 @@ resource "google_project_iam_custom_role" "worker" {
   ]
 }
 
-resource "google_project_iam_member" "workers" {
-  project = "${var.project}"
-  role    = "projects/${var.project}/roles/${google_project_iam_custom_role.worker.role_id}"
-  member  = "serviceAccount:${google_service_account.workers.email}"
-}
-
-resource "google_service_account_key" "workers" {
-  service_account_id = "${google_service_account.workers.email}"
-}
-
 resource "google_project_iam_member" "workers_com" {
-  count   = "${var.worker_service_accounts_count_com}"
-  project = "${var.project}"
-  role    = "projects/${var.project}/roles/${google_project_iam_custom_role.worker.role_id}"
-  member  = "serviceAccount:${element(google_service_account.workers_com.*.email, count.index)}"
+  role   = "projects/${var.project}/roles/${google_project_iam_custom_role.worker.role_id}"
+  member = "serviceAccount:${google_service_account.workers_com.email}"
 }
 
 resource "google_service_account_key" "workers_com" {
-  count              = "${var.worker_service_accounts_count_com}"
-  service_account_id = "${element(google_service_account.workers_com.*.email, count.index)}"
+  service_account_id = "${google_service_account.workers_com.email}"
 }
 
 resource "google_project_iam_member" "workers_com_free" {
-  count   = "${var.worker_service_accounts_count_com_free}"
-  project = "${var.project}"
-  role    = "projects/${var.project}/roles/${google_project_iam_custom_role.worker.role_id}"
-  member  = "serviceAccount:${element(google_service_account.workers_com_free.*.email, count.index)}"
+  role   = "projects/${var.project}/roles/${google_project_iam_custom_role.worker.role_id}"
+  member = "serviceAccount:${google_service_account.workers_com_free.email}"
 }
 
 resource "google_service_account_key" "workers_com_free" {
-  count              = "${var.worker_service_accounts_count_com_free}"
-  service_account_id = "${element(google_service_account.workers_com_free.*.email, count.index)}"
+  service_account_id = "${google_service_account.workers_com_free.email}"
 }
 
 resource "google_project_iam_member" "workers_org" {
-  count   = "${var.worker_service_accounts_count_org}"
-  project = "${var.project}"
-  role    = "projects/${var.project}/roles/${google_project_iam_custom_role.worker.role_id}"
-  member  = "serviceAccount:${element(google_service_account.workers_org.*.email, count.index)}"
+  role   = "projects/${var.project}/roles/${google_project_iam_custom_role.worker.role_id}"
+  member = "serviceAccount:${google_service_account.workers_org.email}"
 }
 
 resource "google_service_account_key" "workers_org" {
-  count              = "${var.worker_service_accounts_count_org}"
-  service_account_id = "${element(google_service_account.workers_org.*.email, count.index)}"
+  service_account_id = "${google_service_account.workers_org.email}"
 }
 
 data "template_file" "cloud_config_com" {
@@ -219,8 +176,7 @@ data "template_file" "cloud_config_com" {
 
   vars {
     assets           = "${path.module}/../../assets"
-    gce_account_json = "${base64decode(google_service_account_key.workers.private_key)}"
-    gce_accounts_b64 = "${join("\n", google_service_account_key.workers_com.*.private_key)}"
+    gce_account_json = "${base64decode(google_service_account_key.workers_com.private_key)}"
     here             = "${path.module}"
     syslog_address   = "${var.syslog_address_com}"
 
@@ -283,7 +239,7 @@ resource "google_compute_instance_template" "worker_com" {
   }
 
   service_account {
-    email = "${google_service_account.workers.email}"
+    email = "${google_service_account.workers_com.email}"
 
     scopes = [
       "cloud-platform",
@@ -321,8 +277,7 @@ data "template_file" "cloud_config_com_free" {
 
   vars {
     assets           = "${path.module}/../../assets"
-    gce_account_json = "${base64decode(google_service_account_key.workers.private_key)}"
-    gce_accounts_b64 = "${join("\n", google_service_account_key.workers_com_free.*.private_key)}"
+    gce_account_json = "${base64decode(google_service_account_key.workers_com_free.private_key)}"
     here             = "${path.module}"
     syslog_address   = "${var.syslog_address_com}"
 
@@ -385,7 +340,7 @@ resource "google_compute_instance_template" "worker_com_free" {
   }
 
   service_account {
-    email = "${google_service_account.workers.email}"
+    email = "${google_service_account.workers_com_free.email}"
 
     scopes = [
       "cloud-platform",
@@ -423,8 +378,7 @@ data "template_file" "cloud_config_org" {
 
   vars {
     assets           = "${path.module}/../../assets"
-    gce_account_json = "${base64decode(google_service_account_key.workers.private_key)}"
-    gce_accounts_b64 = "${join("\n", google_service_account_key.workers_org.*.private_key)}"
+    gce_account_json = "${base64decode(google_service_account_key.workers_org.private_key)}"
     here             = "${path.module}"
     syslog_address   = "${var.syslog_address_org}"
 
@@ -487,7 +441,7 @@ resource "google_compute_instance_template" "worker_org" {
   }
 
   service_account {
-    email = "${google_service_account.workers.email}"
+    email = "${google_service_account.workers_org.email}"
 
     scopes = [
       "cloud-platform",
@@ -536,18 +490,16 @@ resource "google_redis_instance" "worker_rate_limit" {
 
 output "workers_service_account_emails" {
   value = [
-    "${google_service_account.workers.email}",
-    "${google_service_account.workers_org.*.email}",
-    "${google_service_account.workers_com.*.email}",
-    "${google_service_account.workers_com_free.*.email}",
+    "${google_service_account.workers_org.email}",
+    "${google_service_account.workers_com.email}",
+    "${google_service_account.workers_com_free.email}",
   ]
 }
 
 output "workers_service_account_names" {
   value = [
-    "${google_service_account.workers.name}",
-    "${google_service_account.workers_org.*.name}",
-    "${google_service_account.workers_com.*.name}",
-    "${google_service_account.workers_com_free.*.name}",
+    "${google_service_account.workers_org.name}",
+    "${google_service_account.workers_com.name}",
+    "${google_service_account.workers_com_free.name}",
   ]
 }
