@@ -83,17 +83,6 @@ data "terraform_remote_state" "production_2" {
   }
 }
 
-data "terraform_remote_state" "production_3" {
-  backend = "s3"
-
-  config {
-    bucket         = "travis-terraform-state"
-    key            = "terraform-config/gce-production-3.tfstate"
-    region         = "us-east-1"
-    dynamodb_table = "travis-terraform-state"
-  }
-}
-
 module "aws_iam_user_s3_com" {
   source = "../modules/aws_iam_user_s3"
 
@@ -131,10 +120,6 @@ module "gce_worker_group" {
   worker_managed_instance_count_com      = "${var.worker_managed_instance_count_com}"
   worker_managed_instance_count_com_free = "${var.worker_managed_instance_count_com_free}"
   worker_managed_instance_count_org      = "${var.worker_managed_instance_count_org}"
-
-  worker_service_accounts_count_com      = "${var.worker_managed_instance_count_com / 4}"
-  worker_service_accounts_count_com_free = "${var.worker_managed_instance_count_com_free / 4}"
-  worker_service_accounts_count_org      = "${var.worker_managed_instance_count_org / 4}"
 
   worker_config_com = <<EOF
 ### worker.env
@@ -196,11 +181,4 @@ resource "google_project_iam_member" "production_2_workers" {
   project = "${var.project}"
   role    = "roles/compute.imageUser"
   member  = "serviceAccount:${element(data.terraform_remote_state.production_2.workers_service_account_emails, count.index)}"
-}
-
-resource "google_project_iam_member" "production_3_workers" {
-  count   = "${length(data.terraform_remote_state.production_3.workers_service_account_emails)}"
-  project = "${var.project}"
-  role    = "roles/compute.imageUser"
-  member  = "serviceAccount:${element(data.terraform_remote_state.production_3.workers_service_account_emails, count.index)}"
 }
