@@ -10,3 +10,9 @@ include $(TOP)/trvs.mk
 
 $(TRVS_INFRA_ENV_TFVARS):
 	trvs generate-config -f json -a terraform-config -e terraform_common -o $@
+
+plan:
+	@echo DISABLED OK
+
+apply:
+	@echo NO REALLY DONT DO THIS
