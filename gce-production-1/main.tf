@@ -111,6 +111,8 @@ module "gce_worker_group" {
   travisci_net_external_zone_id             = "${var.travisci_net_external_zone_id}"
   worker_subnetwork                         = "${data.terraform_remote_state.vpc.gce_subnetwork_workers}"
 
+  worker_zones = ["a", "c", "f"]
+
   worker_managed_instance_count_com      = "${var.worker_managed_instance_count_com}"
   worker_managed_instance_count_com_free = "${var.worker_managed_instance_count_com_free}"
   worker_managed_instance_count_org      = "${var.worker_managed_instance_count_org}"
