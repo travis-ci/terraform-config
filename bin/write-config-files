@@ -69,15 +69,15 @@ def main(argv: ARGV)
   fwrite(
     'config/worker-com-local.env',
     <<~EOF
-      export TRAVIS_WORKER_AMQP_URI=#{env[opts[:amqp_url_varname]]}
+      export TRAVIS_WORKER_AMQP_URI=#{env[opts[:amqp_url_com_varname]]}
       export TRAVIS_WORKER_BUILD_API_URI=#{com_build_uri}
       export TRAVIS_WORKER_JOB_BOARD_URL=#{job_board_uri}
     EOF
   )
 
   system(
-    { opts[:amqp_url_varname] => env[opts[:amqp_url_varname]] },
-    "#{top}/bin/env-url-to-parts #{opts[:amqp_url_varname]} config/ com"
+    { opts[:amqp_url_com_varname] => env[opts[:amqp_url_com_varname]] },
+    "#{top}/bin/env-url-to-parts #{opts[:amqp_url_com_varname]} config/ com"
   )
 
   env = source_env('config/travis-build-org.env')
@@ -89,15 +89,15 @@ def main(argv: ARGV)
   fwrite(
     'config/worker-org-local.env',
     <<~EOF
-      export TRAVIS_WORKER_AMQP_URI=#{env[opts[:amqp_url_varname]]}
+      export TRAVIS_WORKER_AMQP_URI=#{env[opts[:amqp_url_org_varname]]}
       export TRAVIS_WORKER_BUILD_API_URI=#{org_build_uri}
       export TRAVIS_WORKER_JOB_BOARD_URL=#{job_board_uri}
     EOF
   )
 
   system(
-    { opts[:amqp_url_varname] => env[opts[:amqp_url_varname]] },
-    "#{top}/bin/env-url-to-parts #{opts[:amqp_url_varname]} config/ org"
+    { opts[:amqp_url_org_varname] => env[opts[:amqp_url_org_varname]] },
+    "#{top}/bin/env-url-to-parts #{opts[:amqp_url_org_varname]} config/ org"
   )
 
   fwrite('config/.written', Time.now.utc.iso8601 + "\n")
@@ -112,7 +112,8 @@ def parse_argv(argv)
     build_com_host: '',
     build_org_host: '',
     job_board_host: '',
-    amqp_url_varname: '',
+    amqp_url_com_varname: '',
+    amqp_url_org_varname: '',
     write_bastion: false,
     write_nat: false
   }
@@ -142,8 +143,12 @@ def parse_argv(argv)
       opts[:job_board_host] = v.strip
     end
 
-    o.on('--amqp-url-varname=HOST') do |v|
-      opts[:amqp_url_varname] = v.strip
+    o.on('--amqp-url-com-varname=HOST') do |v|
+      opts[:amqp_url_com_varname] = v.strip
+    end
+
+    o.on('--amqp-url-org-varname=HOST') do |v|
+      opts[:amqp_url_org_varname] = v.strip
     end
 
     o.on('--write-bastion') do

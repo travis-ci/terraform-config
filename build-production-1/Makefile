@@ -1,4 +1,5 @@
-AMQP_URL_VARNAME := CLOUDAMQP_URL
+AMQP_URL_COM_VARNAME := CLOUDAMQP_URL
+AMQP_URL_ORG_VARNAME := CLOUDAMQP_GRAY_URL
 ENV_SHORT := production
 CA_PEMS := config/docker-ca-key.pem config/docker-ca.pem
 TOP := $(shell git rev-parse --show-toplevel)
