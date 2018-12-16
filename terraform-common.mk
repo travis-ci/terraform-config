@@ -11,7 +11,8 @@ TFPLAN := $(PWD)/$(ENV_NAME).tfplan
 TRAVIS_BUILD_COM_HOST ?= build.travis-ci.com
 TRAVIS_BUILD_ORG_HOST ?= build.travis-ci.org
 JOB_BOARD_HOST ?= job-board.travis-ci.com
-AMQP_URL_VARNAME ?= AMQP_URL
+AMQP_URL_COM_VARNAME ?= AMQP_URL
+AMQP_URL_ORG_VARNAME ?= AMQP_URL
 TOP := $(shell git rev-parse --show-toplevel)
 NATBZ2 := $(TOP)/assets/nat.tar.bz2
 
@@ -157,7 +158,8 @@ config/.written:
 		--build-com-host "$(TRAVIS_BUILD_COM_HOST)" \
 		--build-org-host "$(TRAVIS_BUILD_ORG_HOST)" \
 		--job-board-host "$(JOB_BOARD_HOST)" \
-		--amqp-url-varname "$(AMQP_URL_VARNAME)" $(WRITE_CONFIG_OPTS)
+		--amqp-url-org-varname "$(AMQP_URL_ORG_VARNAME)" $(WRITE_CONFIG_OPTS) \
+		--amqp-url-com-varname "$(AMQP_URL_COM_VARNAME)" $(WRITE_CONFIG_OPTS)
 
 config/.gce-keys-written:
 	cp -v $$TRAVIS_KEYCHAIN_DIR/travis-keychain/gce/*.json config/
