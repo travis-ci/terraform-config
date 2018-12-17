@@ -123,27 +123,6 @@ class TravisWorkerConfigVerifier
     )
   end
 
-  private def verify_var_tmp_travis_run_d_travis_worker_prestart_hook!(content)
-    assert_identical_content!(
-      content,
-      'modules/aws_asg/prestart-hook.bash'
-    )
-  end
-
-  private def verify_var_tmp_travis_run_d_travis_worker_start_hook!(content)
-    assert_identical_content!(
-      content,
-      'modules/aws_asg/start-hook.bash'
-    )
-  end
-
-  private def verify_var_tmp_travis_run_d_travis_worker_stop_hook!(content)
-    assert_identical_content!(
-      content,
-      'modules/aws_asg/stop-hook.bash'
-    )
-  end
-
   ValueError = Class.new(StandardError)
 
   private def assert!(condition, msg: '')
