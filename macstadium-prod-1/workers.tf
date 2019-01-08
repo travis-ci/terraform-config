@@ -249,7 +249,7 @@ module "worker_production_com_4" {
   worker_local_config = <<EOF
 export TRAVIS_WORKER_HARD_TIMEOUT=120m
 export TRAVIS_WORKER_TRAVIS_SITE="com"
-export TRAVIS_WORKER_POOL_SIZE="5"
+export TRAVIS_WORKER_POOL_SIZE="0"
 export TRAVIS_WORKER_PPROF_PORT="7083"
 export TRAVIS_WORKER_HTTP_API_AUTH="macstadium-worker:${random_id.travis_worker_production_com_token.hex}"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_production_com_token.hex}@127.0.0.1:8083/"
