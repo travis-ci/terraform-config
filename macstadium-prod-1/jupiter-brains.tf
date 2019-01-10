@@ -6,10 +6,6 @@ variable "jupiter_brain_custom-1_version" {
   default = "v1.0.0-18-ga1e73ab"
 }
 
-variable "jupiter_brain_custom-2_version" {
-  default = "v1.0.0-18-ga1e73ab"
-}
-
 variable "jupiter_brain_custom-4_version" {
   default = "v1.0.0-18-ga1e73ab"
 }
@@ -31,10 +27,6 @@ resource "random_id" "jupiter_brain_production_com_token" {
 }
 
 resource "random_id" "jupiter_brain_custom_1_token" {
-  byte_length = 32
-}
-
-resource "random_id" "jupiter_brain_custom_2_token" {
   byte_length = 32
 }
 
@@ -87,19 +79,6 @@ module "jupiter_brain_custom_1" {
   index                 = "${var.index}"
   port_suffix           = 5
   token                 = "${random_id.jupiter_brain_custom_1_token.hex}"
-}
-
-module "jupiter_brain_custom_2" {
-  source                = "../modules/jupiter_brain_bluegreen"
-  host_id               = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_ip_address        = "${module.macstadium_infrastructure.wjb_ip}"
-  ssh_user              = "${var.ssh_user}"
-  jupiter_brain_version = "${var.jupiter_brain_custom-2_version}"
-  config_path           = "${path.module}/config/jupiter-brain-custom-2-env"
-  env                   = "custom-2"
-  index                 = "${var.index}"
-  port_suffix           = 6
-  token                 = "${random_id.jupiter_brain_custom_2_token.hex}"
 }
 
 module "jupiter_brain_custom_4" {

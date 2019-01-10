@@ -291,7 +291,7 @@ module "worker_custom_2" {
   env                = "custom-2"
   index              = "${var.index}"
   worker_base_config = "${data.template_file.worker_config_common.rendered}"
-  worker_env_config  = "${file("${path.module}/config/travis-worker-production-org-common")}"
+  worker_env_config  = "${file("${path.module}/config/travis-worker-production-com-common")}"
 
   worker_local_config = <<EOF
 export TRAVIS_WORKER_HARD_TIMEOUT=120m
