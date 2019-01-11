@@ -5,11 +5,15 @@ variable "travis_worker_version" {
 }
 
 variable "worker_org_pool_size" {
-  default = 39
+  default = 0
 }
 
 variable "worker_com_pool_size" {
-  default = 26
+  default = 0
+}
+
+variable "worker_custom_pool_size" {
+  default = 0
 }
 
 resource "random_id" "travis_worker_production_org_token" {
@@ -245,7 +249,7 @@ module "worker_production_com_4" {
   worker_local_config = <<EOF
 export TRAVIS_WORKER_HARD_TIMEOUT=120m
 export TRAVIS_WORKER_TRAVIS_SITE="com"
-export TRAVIS_WORKER_POOL_SIZE="5"
+export TRAVIS_WORKER_POOL_SIZE="0"
 export TRAVIS_WORKER_PPROF_PORT="7083"
 export TRAVIS_WORKER_HTTP_API_AUTH="macstadium-worker:${random_id.travis_worker_production_com_token.hex}"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_production_com_token.hex}@127.0.0.1:8083/"
@@ -271,7 +275,7 @@ module "worker_custom_1" {
   worker_local_config = <<EOF
 export TRAVIS_WORKER_HARD_TIMEOUT=120m
 export TRAVIS_WORKER_TRAVIS_SITE="com"
-export TRAVIS_WORKER_POOL_SIZE="5"
+export TRAVIS_WORKER_POOL_SIZE="${var.worker_custom_pool_size}"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_custom_1_token.hex}@127.0.0.1:8085/"
 export TRAVIS_WORKER_QUEUE_NAME="builds.customer.${lower(var.custom_1_name)}-macos"
 export TRAVIS_WORKER_LIBRATO_SOURCE="worker-custom-1-${var.index}-dc18"
@@ -296,7 +300,7 @@ module "worker_custom_4" {
   worker_local_config = <<EOF
 export TRAVIS_WORKER_HARD_TIMEOUT=120m
 export TRAVIS_WORKER_TRAVIS_SITE="com"
-export TRAVIS_WORKER_POOL_SIZE="5"
+export TRAVIS_WORKER_POOL_SIZE="${var.worker_custom_pool_size}"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_custom_4_token.hex}@127.0.0.1:8088/"
 export TRAVIS_WORKER_QUEUE_NAME="builds.customer.${lower(var.custom_4_name)}"
 export TRAVIS_WORKER_LIBRATO_SOURCE="worker-custom-4-${var.index}-dc18"
@@ -321,7 +325,7 @@ module "worker_custom_5" {
   worker_local_config = <<EOF
 export TRAVIS_WORKER_HARD_TIMEOUT=120m
 export TRAVIS_WORKER_TRAVIS_SITE="com"
-export TRAVIS_WORKER_POOL_SIZE="5"
+export TRAVIS_WORKER_POOL_SIZE="${var.worker_custom_pool_size}"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_custom_5_token.hex}@127.0.0.1:8089/"
 export TRAVIS_WORKER_QUEUE_NAME="builds.customer.${lower(var.custom_5_name)}"
 export TRAVIS_WORKER_LIBRATO_SOURCE="worker-custom-5-${var.index}-dc18"
@@ -346,7 +350,7 @@ module "worker_custom_6" {
   worker_local_config = <<EOF
 export TRAVIS_WORKER_HARD_TIMEOUT=120m
 export TRAVIS_WORKER_TRAVIS_SITE="com"
-export TRAVIS_WORKER_POOL_SIZE="5"
+export TRAVIS_WORKER_POOL_SIZE="${var.worker_custom_pool_size}"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_custom_6_token.hex}@127.0.0.1:8091/"
 export TRAVIS_WORKER_QUEUE_NAME="builds.customer.${lower(var.custom_6_name)}"
 export TRAVIS_WORKER_LIBRATO_SOURCE="worker-custom-6-${var.index}-dc18"
