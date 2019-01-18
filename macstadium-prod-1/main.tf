@@ -91,17 +91,6 @@ module "macstadium_infrastructure" {
   custom_6_name                 = "${var.custom_6_name}"
 }
 
-module "vsphere_janitor_production_com" {
-  source                  = "../modules/vsphere_janitor"
-  host_id                 = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host                = "${module.macstadium_infrastructure.wjb_ip}"
-  ssh_user                = "${var.ssh_user}"
-  vsphere_janitor_version = "${var.vsphere_janitor_version}"
-  config_path             = "${path.module}/config/vsphere-janitor-production-com"
-  env                     = "production-com"
-  index                   = "${var.index}"
-}
-
 module "vsphere_janitor_custom_1" {
   source                  = "../modules/vsphere_janitor"
   host_id                 = "${module.macstadium_infrastructure.wjb_uuid}"
@@ -110,17 +99,6 @@ module "vsphere_janitor_custom_1" {
   vsphere_janitor_version = "${var.vsphere_janitor_version}"
   config_path             = "${path.module}/config/vsphere-janitor-custom-1"
   env                     = "custom-1"
-  index                   = "${var.index}"
-}
-
-module "vsphere_janitor_custom_2" {
-  source                  = "../modules/vsphere_janitor"
-  host_id                 = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host                = "${module.macstadium_infrastructure.wjb_ip}"
-  ssh_user                = "${var.ssh_user}"
-  vsphere_janitor_version = "${var.vsphere_janitor_version}"
-  config_path             = "${path.module}/config/vsphere-janitor-custom-2"
-  env                     = "custom-2"
   index                   = "${var.index}"
 }
 
@@ -164,16 +142,6 @@ module "dhcp_server" {
   jobs_network_subnet = "${var.jobs_network_subnet}"
   ssh_host            = "${module.macstadium_infrastructure.dhcp_server_ip}"
   ssh_user            = "${var.ssh_user}"
-}
-
-module "vsphere_monitor" {
-  source                  = "../modules/vsphere_monitor"
-  host_id                 = "${module.macstadium_infrastructure.util_uuid}"
-  ssh_host                = "${module.macstadium_infrastructure.util_ip}"
-  ssh_user                = "${var.ssh_user}"
-  vsphere_monitor_version = "${var.vsphere_monitor_version}"
-  config_path             = "${path.module}/config/vsphere-monitor"
-  index                   = "${var.index}"
 }
 
 resource "random_id" "collectd_vsphere_collectd_network_token" {
