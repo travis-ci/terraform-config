@@ -5,15 +5,15 @@ variable "travis_worker_version" {
 }
 
 variable "worker_org_pool_size" {
-  default = 0
+  default = 41
 }
 
 variable "worker_com_pool_size" {
-  default = 0
+  default = 28
 }
 
 variable "worker_custom_pool_size" {
-  default = 0
+  default = 5
 }
 
 resource "random_id" "travis_worker_production_org_token" {
