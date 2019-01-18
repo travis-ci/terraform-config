@@ -107,56 +107,6 @@ export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_org.secret}
 EOF
 }
 
-module "worker_production_org_3" {
-  source             = "../modules/macstadium_go_worker"
-  host_id            = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host           = "${module.macstadium_infrastructure.wjb_ip}"
-  ssh_user           = "${var.ssh_user}"
-  worker_version     = "${var.travis_worker_version}"
-  env                = "production-org-3"
-  index              = "${var.index}"
-  worker_base_config = "${data.template_file.worker_config_common.rendered}"
-  worker_env_config  = "${file("${path.module}/config/travis-worker-production-org-common")}"
-
-  worker_local_config = <<EOF
-export TRAVIS_WORKER_TRAVIS_SITE="org"
-export TRAVIS_WORKER_POOL_SIZE="${var.worker_org_pool_size}"
-export TRAVIS_WORKER_PPROF_PORT="7072"
-export TRAVIS_WORKER_HTTP_API_AUTH="macstadium-worker:${random_id.travis_worker_production_org_token.hex}"
-export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_production_org_token.hex}@127.0.0.1:8081/"
-export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-production-org-macstadium-${var.index}-3-dc18"
-
-export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_org.bucket}
-export AWS_ACCESS_KEY_ID=${module.aws_iam_user_s3_org.id}
-export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_org.secret}
-EOF
-}
-
-module "worker_production_org_4" {
-  source             = "../modules/macstadium_go_worker"
-  host_id            = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host           = "${module.macstadium_infrastructure.wjb_ip}"
-  ssh_user           = "${var.ssh_user}"
-  worker_version     = "${var.travis_worker_version}"
-  env                = "production-org-4"
-  index              = "${var.index}"
-  worker_base_config = "${data.template_file.worker_config_common.rendered}"
-  worker_env_config  = "${file("${path.module}/config/travis-worker-production-org-common")}"
-
-  worker_local_config = <<EOF
-export TRAVIS_WORKER_TRAVIS_SITE="org"
-export TRAVIS_WORKER_POOL_SIZE="20"
-export TRAVIS_WORKER_PPROF_PORT="7073"
-export TRAVIS_WORKER_HTTP_API_AUTH="macstadium-worker:${random_id.travis_worker_production_org_token.hex}"
-export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_production_org_token.hex}@127.0.0.1:8081/"
-export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-production-org-macstadium-${var.index}-4-dc18"
-
-export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_org.bucket}
-export AWS_ACCESS_KEY_ID=${module.aws_iam_user_s3_org.id}
-export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_org.secret}
-EOF
-}
-
 module "worker_production_com_1" {
   source             = "../modules/macstadium_go_worker"
   host_id            = "${module.macstadium_infrastructure.wjb_uuid}"
@@ -228,32 +178,6 @@ export TRAVIS_WORKER_PPROF_PORT="7082"
 export TRAVIS_WORKER_HTTP_API_AUTH="macstadium-worker:${random_id.travis_worker_production_com_token.hex}"
 export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_production_com_token.hex}@127.0.0.1:8083/"
 export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-production-com-macstadium-${var.index}-3-dc18"
-
-export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_com.bucket}
-export AWS_ACCESS_KEY_ID=${module.aws_iam_user_s3_com.id}
-export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_com.secret}
-EOF
-}
-
-module "worker_production_com_4" {
-  source             = "../modules/macstadium_go_worker"
-  host_id            = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host           = "${module.macstadium_infrastructure.wjb_ip}"
-  ssh_user           = "${var.ssh_user}"
-  worker_version     = "${var.travis_worker_version}"
-  env                = "production-com-4"
-  index              = "${var.index}"
-  worker_base_config = "${data.template_file.worker_config_common.rendered}"
-  worker_env_config  = "${file("${path.module}/config/travis-worker-production-com-common")}"
-
-  worker_local_config = <<EOF
-export TRAVIS_WORKER_HARD_TIMEOUT=120m
-export TRAVIS_WORKER_TRAVIS_SITE="com"
-export TRAVIS_WORKER_POOL_SIZE="5"
-export TRAVIS_WORKER_PPROF_PORT="7083"
-export TRAVIS_WORKER_HTTP_API_AUTH="macstadium-worker:${random_id.travis_worker_production_com_token.hex}"
-export TRAVIS_WORKER_JUPITERBRAIN_ENDPOINT="http://${random_id.jupiter_brain_production_com_token.hex}@127.0.0.1:8083/"
-export TRAVIS_WORKER_LIBRATO_SOURCE="travis-worker-production-com-macstadium-${var.index}-4-dc18"
 
 export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_com.bucket}
 export AWS_ACCESS_KEY_ID=${module.aws_iam_user_s3_com.id}
