@@ -76,6 +76,40 @@ resource "aws_route53_record" "master" {
   records = ["${local.master_ip}"]
 }
 
+data "template_file" "guard_install" {
+  template = "${file("${path.module}/scripts/guard.sh.tpl")}"
+
+  vars = {
+    org        = "${var.auth_org}"
+    admin_team = "${var.auth_admin_team}"
+  }
+}
+
+resource "null_resource" "guard" {
+  triggers {
+    master_id         = "${vsphere_virtual_machine.master.id}"
+    install_signature = "${sha256(data.template_file.guard_install.rendered)}"
+  }
+
+  connection {
+    host  = "${local.master_ip}"
+    user  = "${var.ssh_user}"
+    agent = true
+  }
+
+  provisioner "file" {
+    content     = "${data.template_file.guard_install.rendered}"
+    destination = "/tmp/guard.sh"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo chmod a+x /tmp/guard.sh",
+      "sudo /tmp/guard.sh",
+    ]
+  }
+}
+
 # The command needed to join additional nodes to the cluster
 data "external" "kubeadm_join" {
   program = ["${path.module}/scripts/kubeadm-token.sh"]
