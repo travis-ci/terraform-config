@@ -55,3 +55,13 @@ variable "travisci_net_external_zone_id" {
 variable "ssh_user" {
   description = "your SSH username on our vanilla Linux images"
 }
+
+variable "auth_org" {
+  default     = "travis-ci"
+  description = "The GitHub organization for users of this cluster"
+}
+
+variable "auth_admin_team" {
+  default     = "Employees"
+  description = "The GitHub team in the organization whose users will be made admins of the cluster"
+}
