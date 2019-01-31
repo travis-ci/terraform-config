@@ -62,6 +62,6 @@ variable "auth_org" {
 }
 
 variable "auth_admin_team" {
-  default     = "Employees"
+  default     = "Builders"
   description = "The GitHub team in the organization whose users will be made admins of the cluster"
 }
