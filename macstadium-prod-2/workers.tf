@@ -9,7 +9,7 @@ variable "worker_org_pool_size" {
 }
 
 variable "worker_com_pool_size" {
-  default = 28
+  default = 32
 }
 
 variable "worker_custom_pool_size" {
