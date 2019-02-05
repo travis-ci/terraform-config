@@ -9,3 +9,4 @@ include $(shell git rev-parse --show-toplevel)/gce.mk
 .PHONY: context
 context:
 	gcloud container clusters get-credentials cluster --zone us-central1-a --project travis-staging-1
+	kubectl config set-context gke_travis-staging-1_us-central1-a_cluster --namespace=gce-staging-1
