@@ -25,6 +25,8 @@ provider "aws" {
 }
 
 provider "vsphere" {
+  version = "~> 1.8"
+
   user                 = "${var.vsphere_user}"
   password             = "${var.vsphere_password}"
   vsphere_server       = "${var.vsphere_server}"
