@@ -11,14 +11,14 @@ resource "vsphere_virtual_machine" "master" {
 
   num_cpus  = 4
   memory    = 4096
-  guest_id  = "${data.vsphere_virtual_machine.vanilla_template.guest_id}"
-  scsi_type = "${data.vsphere_virtual_machine.vanilla_template.scsi_type}"
+  guest_id  = "${data.vsphere_virtual_machine.master_vanilla_template.guest_id}"
+  scsi_type = "${data.vsphere_virtual_machine.master_vanilla_template.scsi_type}"
 
   disk {
     label            = "disk0"
-    size             = "${data.vsphere_virtual_machine.vanilla_template.disks.0.size}"
-    eagerly_scrub    = "${data.vsphere_virtual_machine.vanilla_template.disks.0.eagerly_scrub}"
-    thin_provisioned = "${data.vsphere_virtual_machine.vanilla_template.disks.0.thin_provisioned}"
+    size             = "${data.vsphere_virtual_machine.master_vanilla_template.disks.0.size}"
+    eagerly_scrub    = "${data.vsphere_virtual_machine.master_vanilla_template.disks.0.eagerly_scrub}"
+    thin_provisioned = "${data.vsphere_virtual_machine.master_vanilla_template.disks.0.thin_provisioned}"
   }
 
   network_interface {
@@ -26,7 +26,7 @@ resource "vsphere_virtual_machine" "master" {
   }
 
   clone {
-    template_uuid = "${data.vsphere_virtual_machine.vanilla_template.id}"
+    template_uuid = "${data.vsphere_virtual_machine.master_vanilla_template.id}"
 
     customize {
       network_interface {
