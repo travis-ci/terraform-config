@@ -91,15 +91,6 @@ module "macstadium_infrastructure" {
   custom_6_name                 = "${var.custom_6_name}"
 }
 
-module "dhcp_server" {
-  source              = "../modules/macstadium_dhcp_server"
-  host_id             = "${module.macstadium_infrastructure.dhcp_server_uuid}"
-  index               = "${var.index}"
-  jobs_network_subnet = "${var.jobs_network_subnet}"
-  ssh_host            = "${module.macstadium_infrastructure.dhcp_server_ip}"
-  ssh_user            = "${var.ssh_user}"
-}
-
 resource "random_id" "collectd_vsphere_collectd_network_token" {
   byte_length = 32
 }
