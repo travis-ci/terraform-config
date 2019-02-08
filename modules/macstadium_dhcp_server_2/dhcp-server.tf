@@ -114,7 +114,7 @@ resource "null_resource" "dhcp_server" {
   }
 }
 
-resource "aws_route53_record" "nodes" {
+resource "aws_route53_record" "dhcp_server" {
   zone_id = "${var.travisci_net_external_zone_id}"
   name    = "dhcp-server-${var.index}.macstadium-us-se-1.travisci.net"
   type    = "A"
