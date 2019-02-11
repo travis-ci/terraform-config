@@ -4,7 +4,6 @@ variable "env" {
 
 variable "gce_gcloud_zone" {}
 variable "gce_heroku_org" {}
-variable "latest_gce_tfw_image" {}
 variable "github_users" {}
 
 variable "index" {
@@ -24,6 +23,8 @@ variable "syslog_address_org" {}
 variable "travisci_net_external_zone_id" {
   default = "Z2RI61YP4UWSIO"
 }
+
+variable "warmer_honeycomb_write_key" {}
 
 variable "worker_zones" {
   default = ["a", "b", "c", "f"]
@@ -84,6 +85,7 @@ module "gce_worker_group" {
   gcloud_zone                               = "${var.gce_gcloud_zone}"
   github_users                              = "${var.github_users}"
   heroku_org                                = "${var.gce_heroku_org}"
+  honeycomb_key                             = "${var.warmer_honeycomb_write_key}"
   index                                     = "${var.index}"
   project                                   = "${var.project}"
   region                                    = "us-central1"
@@ -149,6 +151,10 @@ EOF
 
 output "workers_service_account_emails" {
   value = ["${module.gce_worker_group.workers_service_account_emails}"]
+}
+
+output "warmer_service_account_emails" {
+  value = ["${module.gce_worker_group.warmer_service_account_emails}"]
 }
 
 output "latest_docker_image_worker" {

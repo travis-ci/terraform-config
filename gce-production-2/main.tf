@@ -144,3 +144,7 @@ EOF
 output "workers_service_account_emails" {
   value = ["${module.gce_worker_group.workers_service_account_emails}"]
 }
+
+output "warmer_service_account_emails" {
+  value = ["${module.gce_worker_group.warmer_service_account_emails}"]
+}

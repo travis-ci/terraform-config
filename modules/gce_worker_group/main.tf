@@ -35,12 +35,22 @@ variable "gcloud_cleanup_version" {
 variable "gcloud_zone" {}
 variable "github_users" {}
 variable "heroku_org" {}
+variable "honeycomb_key" {}
 variable "index" {}
 variable "project" {}
 variable "region" {}
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
 variable "travisci_net_external_zone_id" {}
+
+variable "warmer_scale" {
+  default = "web=1:Standard-1X checker=1:Standard-1X"
+}
+
+variable "warmer_version" {
+  default = "master"
+}
+
 variable "worker_config_com" {}
 variable "worker_config_com_free" {}
 variable "worker_config_org" {}
@@ -75,15 +85,43 @@ variable "worker_zones" {
   default = ["a", "b", "c", "f"]
 }
 
+module "warmer" {
+  source = "../warmer"
+
+  env           = "${var.env}"
+  heroku_org    = "${var.heroku_org}"
+  honeycomb_key = "${var.honeycomb_key}"
+  index         = "${var.index}"
+  project       = "${var.project}"
+  region        = "${var.region}"
+  app_scale     = "${var.warmer_scale}"
+  app_version   = "${var.warmer_version}"
+}
+
 module "gce_workers" {
   source = "../gce_worker"
 
-  config_com      = "${var.worker_config_com}"
-  config_com_free = "${var.worker_config_com_free}"
-  config_org      = "${var.worker_config_org}"
-  env             = "${var.env}"
-  github_users    = "${var.github_users}"
-  index           = "${var.index}"
+  config_com = <<EOF
+${var.worker_config_com}
+
+export TRAVIS_WORKER_WARMER_URL=https://travis-worker-${var.env}-${var.index}-com:${module.warmer.auth_token}@${module.warmer.app_hostname}
+EOF
+
+  config_com_free = <<EOF
+${var.worker_config_com_free}
+
+export TRAVIS_WORKER_WARMER_URL=https://travis-worker-${var.env}-${var.index}-com-free:${module.warmer.auth_token}@${module.warmer.app_hostname}
+EOF
+
+  config_org = <<EOF
+${var.worker_config_org}
+
+export TRAVIS_WORKER_WARMER_URL=https://travis-worker-${var.env}-${var.index}-org:${module.warmer.auth_token}@${module.warmer.app_hostname}
+EOF
+
+  env          = "${var.env}"
+  github_users = "${var.github_users}"
+  index        = "${var.index}"
 
   managed_instance_count_com      = "${var.worker_managed_instance_count_com}"
   managed_instance_count_com_free = "${var.worker_managed_instance_count_com_free}"
@@ -223,4 +261,8 @@ output "workers_service_account_emails" {
 
 output "workers_service_account_names" {
   value = ["${module.gce_workers.workers_service_account_names}"]
+}
+
+output "warmer_service_account_emails" {
+  value = ["${module.warmer.service_account_emails}"]
 }
