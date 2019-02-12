@@ -167,9 +167,9 @@ resource "null_resource" "warmer" {
     command = <<EOF
 exec ${path.module}/../../bin/heroku-wait-deploy-scale \
   --repo=travis-ci/warmer \
-  --app=${heroku_app.warmer.id} \
-  --ps-scale=${var.app_scale} \
-  --deploy-version=${var.app_version}
+  --app="${heroku_app.warmer.id}" \
+  --ps-scale="${var.app_scale}" \
+  --deploy-version="${var.app_version}"
 EOF
   }
 }
