@@ -93,8 +93,6 @@ module "gce_worker_group" {
   syslog_address_org                        = "${var.syslog_address_org}"
   travisci_net_external_zone_id             = "${var.travisci_net_external_zone_id}"
 
-  warmer_version = "meat-familiarization"
-
   worker_docker_self_image = "${var.latest_docker_image_worker}"
   worker_subnetwork        = "${data.terraform_remote_state.vpc.gce_subnetwork_workers}"
 
