@@ -14,14 +14,14 @@ resource "vsphere_virtual_machine" "nodes" {
 
   num_cpus  = 4
   memory    = 4096
-  guest_id  = "${data.vsphere_virtual_machine.vanilla_template.guest_id}"
-  scsi_type = "${data.vsphere_virtual_machine.vanilla_template.scsi_type}"
+  guest_id  = "${data.vsphere_virtual_machine.node_vanilla_template.guest_id}"
+  scsi_type = "${data.vsphere_virtual_machine.node_vanilla_template.scsi_type}"
 
   disk {
     label            = "disk0"
-    size             = "${data.vsphere_virtual_machine.vanilla_template.disks.0.size}"
-    eagerly_scrub    = "${data.vsphere_virtual_machine.vanilla_template.disks.0.eagerly_scrub}"
-    thin_provisioned = "${data.vsphere_virtual_machine.vanilla_template.disks.0.thin_provisioned}"
+    size             = "${data.vsphere_virtual_machine.node_vanilla_template.disks.0.size}"
+    eagerly_scrub    = "${data.vsphere_virtual_machine.node_vanilla_template.disks.0.eagerly_scrub}"
+    thin_provisioned = "${data.vsphere_virtual_machine.node_vanilla_template.disks.0.thin_provisioned}"
   }
 
   network_interface {
@@ -35,7 +35,7 @@ resource "vsphere_virtual_machine" "nodes" {
   }
 
   clone {
-    template_uuid = "${data.vsphere_virtual_machine.vanilla_template.id}"
+    template_uuid = "${data.vsphere_virtual_machine.node_vanilla_template.id}"
 
     customize {
       network_interface {
@@ -67,16 +67,8 @@ resource "vsphere_virtual_machine" "nodes" {
     agent = true
   }
 
-  provisioner "file" {
-    source      = "${path.module}/scripts/"
-    destination = "/tmp"
-  }
-
   provisioner "remote-exec" {
     inline = [
-      "sudo chmod a+x /tmp/*.sh",
-      "sudo /tmp/install-docker.sh",
-      "sudo /tmp/install-kubernetes.sh",
       "sudo ${lookup(data.external.kubeadm_join.result, "command")}",
     ]
   }

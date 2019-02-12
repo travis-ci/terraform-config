@@ -35,7 +35,7 @@ module "kubernetes_cluster" {
   source                 = "../modules/macstadium_k8s_cluster"
   name_prefix            = "cluster-1"
   ip_base                = 80
-  node_count             = 2
+  node_count             = 3
   datacenter             = "pod-1"
   cluster                = "MacPro_Pod_1"
   datastore              = "DataCore1_1"
@@ -46,6 +46,7 @@ module "kubernetes_cluster" {
   mac_addresses = [
     "00:50:56:84:0b:aa",
     "00:50:56:84:0b:ab",
+    "00:50:56:84:0b:ac",
   ]
 
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"

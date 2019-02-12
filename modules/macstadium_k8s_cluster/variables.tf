@@ -14,9 +14,14 @@ variable "node_count" {
   default = 1
 }
 
-variable "vanilla_image" {
+variable "master_vanilla_image" {
   default     = "travis-ci-ubuntu16.04-internal-vanilla-1540931726"
-  description = "The image to clone VMs from. Needs to be at least Xenial to support Kubernetes."
+  description = "The image to clone the master VM from. Needs to be at least Xenial to support Kubernetes."
+}
+
+variable "node_vanilla_image" {
+  default     = "travis-ci-centos7-internal-kubernetes-1549480185"
+  description = "The image to clone node VMs from. It should already have Kubernetes installed."
 }
 
 variable "datacenter" {
@@ -54,4 +59,14 @@ variable "travisci_net_external_zone_id" {
 
 variable "ssh_user" {
   description = "your SSH username on our vanilla Linux images"
+}
+
+variable "auth_org" {
+  default     = "travis-ci"
+  description = "The GitHub organization for users of this cluster"
+}
+
+variable "auth_admin_team" {
+  default     = "Builders"
+  description = "The GitHub team in the organization whose users will be made admins of the cluster"
 }

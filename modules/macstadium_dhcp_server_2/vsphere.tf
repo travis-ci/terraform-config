@@ -22,19 +22,7 @@ data "vsphere_network" "jobs" {
   datacenter_id = "${data.vsphere_datacenter.dc.id}"
 }
 
-/*
-data "vsphere_network" "management" {
-  name          = "${var.management_network_label}"
-  datacenter_id = "${data.vsphere_datacenter.dc.id}"
-}
-*/
-
-data "vsphere_virtual_machine" "master_vanilla_template" {
-  name          = "Vanilla VMs/${var.master_vanilla_image}"
-  datacenter_id = "${data.vsphere_datacenter.dc.id}"
-}
-
-data "vsphere_virtual_machine" "node_vanilla_template" {
-  name          = "Vanilla VMs/${var.node_vanilla_image}"
+data "vsphere_virtual_machine" "vanilla_template" {
+  name          = "Vanilla VMs/${var.vanilla_image}"
   datacenter_id = "${data.vsphere_datacenter.dc.id}"
 }

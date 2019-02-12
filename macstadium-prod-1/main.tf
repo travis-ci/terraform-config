@@ -91,59 +91,6 @@ module "macstadium_infrastructure" {
   custom_6_name                 = "${var.custom_6_name}"
 }
 
-module "vsphere_janitor_custom_1" {
-  source                  = "../modules/vsphere_janitor"
-  host_id                 = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host                = "${module.macstadium_infrastructure.wjb_ip}"
-  ssh_user                = "${var.ssh_user}"
-  vsphere_janitor_version = "${var.vsphere_janitor_version}"
-  config_path             = "${path.module}/config/vsphere-janitor-custom-1"
-  env                     = "custom-1"
-  index                   = "${var.index}"
-}
-
-module "vsphere_janitor_custom_4" {
-  source                  = "../modules/vsphere_janitor"
-  host_id                 = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host                = "${module.macstadium_infrastructure.wjb_ip}"
-  ssh_user                = "${var.ssh_user}"
-  vsphere_janitor_version = "${var.vsphere_janitor_version}"
-  config_path             = "${path.module}/config/vsphere-janitor-custom-4"
-  env                     = "custom-4"
-  index                   = "${var.index}"
-}
-
-module "vsphere_janitor_custom_5" {
-  source                  = "../modules/vsphere_janitor"
-  host_id                 = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host                = "${module.macstadium_infrastructure.wjb_ip}"
-  ssh_user                = "${var.ssh_user}"
-  vsphere_janitor_version = "${var.vsphere_janitor_version}"
-  config_path             = "${path.module}/config/vsphere-janitor-custom-5"
-  env                     = "custom-5"
-  index                   = "${var.index}"
-}
-
-module "vsphere_janitor_custom_6" {
-  source                  = "../modules/vsphere_janitor"
-  host_id                 = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host                = "${module.macstadium_infrastructure.wjb_ip}"
-  ssh_user                = "${var.ssh_user}"
-  vsphere_janitor_version = "${var.vsphere_janitor_version}"
-  config_path             = "${path.module}/config/vsphere-janitor-custom-6"
-  env                     = "custom-6"
-  index                   = "${var.index}"
-}
-
-module "dhcp_server" {
-  source              = "../modules/macstadium_dhcp_server"
-  host_id             = "${module.macstadium_infrastructure.dhcp_server_uuid}"
-  index               = "${var.index}"
-  jobs_network_subnet = "${var.jobs_network_subnet}"
-  ssh_host            = "${module.macstadium_infrastructure.dhcp_server_ip}"
-  ssh_user            = "${var.ssh_user}"
-}
-
 resource "random_id" "collectd_vsphere_collectd_network_token" {
   byte_length = 32
 }
@@ -183,36 +130,6 @@ module "haproxy" {
       frontend_port      = "8083"
       backend_port_blue  = "9083"
       backend_port_green = "10083"
-    },
-    {
-      name               = "jupiter-brain-custom-1"
-      frontend_port      = "8085"
-      backend_port_blue  = "9085"
-      backend_port_green = "10085"
-    },
-    {
-      name               = "jupiter-brain-custom-2"
-      frontend_port      = "8086"
-      backend_port_blue  = "9086"
-      backend_port_green = "10086"
-    },
-    {
-      name               = "jupiter-brain-custom-4"
-      frontend_port      = "8088"
-      backend_port_blue  = "9088"
-      backend_port_green = "10088"
-    },
-    {
-      name               = "jupiter-brain-custom-5"
-      frontend_port      = "8089"
-      backend_port_blue  = "9089"
-      backend_port_green = "10089"
-    },
-    {
-      name               = "jupiter-brain-custom-6"
-      frontend_port      = "8091"
-      backend_port_blue  = "9091"
-      backend_port_green = "10091"
     },
   ]
 }

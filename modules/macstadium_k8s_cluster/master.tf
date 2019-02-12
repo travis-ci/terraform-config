@@ -11,14 +11,14 @@ resource "vsphere_virtual_machine" "master" {
 
   num_cpus  = 4
   memory    = 4096
-  guest_id  = "${data.vsphere_virtual_machine.vanilla_template.guest_id}"
-  scsi_type = "${data.vsphere_virtual_machine.vanilla_template.scsi_type}"
+  guest_id  = "${data.vsphere_virtual_machine.master_vanilla_template.guest_id}"
+  scsi_type = "${data.vsphere_virtual_machine.master_vanilla_template.scsi_type}"
 
   disk {
     label            = "disk0"
-    size             = "${data.vsphere_virtual_machine.vanilla_template.disks.0.size}"
-    eagerly_scrub    = "${data.vsphere_virtual_machine.vanilla_template.disks.0.eagerly_scrub}"
-    thin_provisioned = "${data.vsphere_virtual_machine.vanilla_template.disks.0.thin_provisioned}"
+    size             = "${data.vsphere_virtual_machine.master_vanilla_template.disks.0.size}"
+    eagerly_scrub    = "${data.vsphere_virtual_machine.master_vanilla_template.disks.0.eagerly_scrub}"
+    thin_provisioned = "${data.vsphere_virtual_machine.master_vanilla_template.disks.0.thin_provisioned}"
   }
 
   network_interface {
@@ -26,7 +26,7 @@ resource "vsphere_virtual_machine" "master" {
   }
 
   clone {
-    template_uuid = "${data.vsphere_virtual_machine.vanilla_template.id}"
+    template_uuid = "${data.vsphere_virtual_machine.master_vanilla_template.id}"
 
     customize {
       network_interface {
@@ -74,6 +74,40 @@ resource "aws_route53_record" "master" {
   type    = "A"
   ttl     = 300
   records = ["${local.master_ip}"]
+}
+
+data "template_file" "guard_install" {
+  template = "${file("${path.module}/scripts/guard.sh.tpl")}"
+
+  vars = {
+    org        = "${var.auth_org}"
+    admin_team = "${var.auth_admin_team}"
+  }
+}
+
+resource "null_resource" "guard" {
+  triggers {
+    master_id         = "${vsphere_virtual_machine.master.id}"
+    install_signature = "${sha256(data.template_file.guard_install.rendered)}"
+  }
+
+  connection {
+    host  = "${local.master_ip}"
+    user  = "${var.ssh_user}"
+    agent = true
+  }
+
+  provisioner "file" {
+    content     = "${data.template_file.guard_install.rendered}"
+    destination = "/tmp/guard.sh"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo chmod a+x /tmp/guard.sh",
+      "sudo /tmp/guard.sh",
+    ]
+  }
 }
 
 # The command needed to join additional nodes to the cluster
