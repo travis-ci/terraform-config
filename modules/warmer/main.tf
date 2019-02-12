@@ -135,18 +135,19 @@ resource "heroku_app" "warmer" {
   }
 
   config_vars {
-    BUILDPACK_URL             = "https://github.com/bundler/heroku-buildpack-bundler2"
-    GOOGLE_CLOUD_KEYFILE_JSON = "${base64decode(google_service_account_key.warmer.private_key)}"
-    GOOGLE_CLOUD_PROJECT      = "${var.project}"
-    GOOGLE_CLOUD_REGION       = "${var.region}"
-    MANAGED_VIA               = "github.com/travis-ci/terraform-config"
-    RACK_ENV                  = "${var.env}"
+    BUILDPACK_URL      = "https://github.com/bundler/heroku-buildpack-bundler2"
+    HONEYCOMB_WRITEKEY = "${var.honeycomb_key}"
+    HONEYCOMB_DATASET  = "warmer"
+    MANAGED_VIA        = "github.com/travis-ci/terraform-config"
+    RACK_ENV           = "${var.env}"
 
-    WARMER_AUTH_TOKEN          = "${random_string.auth_token.result}"
-    WARMER_HONEYCOMB_KEY       = "${var.honeycomb_key}"
-    WARMER_ORPHAN_THRESHOLD    = 20
-    WARMER_POOL_CHECK_INTERVAL = 30
-    WARMER_VM_CREATION_TIMEOUT = 120
+    WARMER_AUTH_TOKENS               = "${random_string.auth_token.result}"
+    WARMER_GOOGLE_CLOUD_KEYFILE_JSON = "${base64decode(google_service_account_key.warmer.private_key)}"
+    WARMER_GOOGLE_CLOUD_PROJECT      = "${var.project}"
+    WARMER_GOOGLE_CLOUD_REGION       = "${var.region}"
+    WARMER_ORPHAN_THRESHOLD          = 20
+    WARMER_POOL_CHECK_INTERVAL       = 30
+    WARMER_VM_CREATION_TIMEOUT       = 120
   }
 }
 
