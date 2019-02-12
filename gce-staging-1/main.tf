@@ -147,6 +147,10 @@ export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_org.secret}
 EOF
 }
 
+module "gke_staging_cluster_1" {
+  source = "../modules/gke_cluster"
+}
+
 output "workers_service_account_emails" {
   value = ["${module.gce_worker_group.workers_service_account_emails}"]
 }
