@@ -4,7 +4,7 @@
 require 'json'
 
 DEFAULT_GCE_PROJECT_ID = 'eco-emissary-99515'
-DEFAULT_IMAGE_PREFIXES = 'bastion nat tfw'
+DEFAULT_IMAGE_PREFIXES = 'bastion'
 
 def main(argv: ARGV)
   return usage if argv.include?('-h') || argv.include?('--help')
