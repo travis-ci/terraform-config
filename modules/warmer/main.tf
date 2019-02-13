@@ -13,7 +13,9 @@ variable "app_scale" {}
 variable "app_version" {}
 
 resource "random_string" "auth_token" {
-  length = 31
+  length           = 31
+  special          = true
+  override_special = "!#$%&()+-?@[]^_"
 }
 
 resource "google_project_iam_custom_role" "warmer" {
