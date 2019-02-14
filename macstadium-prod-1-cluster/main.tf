@@ -10,6 +10,12 @@ variable "vsphere_user" {}
 variable "vsphere_password" {}
 variable "vsphere_server" {}
 
+variable "custom_1_name" {}
+variable "custom_2_name" {}
+variable "custom_4_name" {}
+variable "custom_5_name" {}
+variable "custom_6_name" {}
+
 terraform {
   backend "s3" {
     bucket         = "travis-terraform-state"
@@ -29,6 +35,16 @@ provider "vsphere" {
   password             = "${var.vsphere_password}"
   vsphere_server       = "${var.vsphere_server}"
   allow_unverified_ssl = true
+}
+
+module "inventory" {
+  source        = "../modules/macstadium_inventory"
+  datacenter    = "pod-1"
+  custom_1_name = "${var.custom_1_name}"
+  custom_2_name = "${var.custom_2_name}"
+  custom_4_name = "${var.custom_4_name}"
+  custom_5_name = "${var.custom_5_name}"
+  custom_6_name = "${var.custom_6_name}"
 }
 
 module "kubernetes_cluster" {
