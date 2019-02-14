@@ -5,11 +5,7 @@ default: hello
 
 INDEX ?= 1
 
-$(TRVS_INFRA_ENV_TFVARS):
-	trvs generate-config -f json -o $@ terraform-config $(INFRA)_$(ENV_SHORT)
-
-$(TRVS_ENV_NAME_TFVARS):
-	trvs generate-config -f json -o $@ terraform-config macstadium_prod_1
+include $(shell git rev-parse --show-toplevel)/trvs.mk
 
 .PHONY: .config
 .config: $(ENV_NAME).auto.tfvars
