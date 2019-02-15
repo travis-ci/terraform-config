@@ -4,7 +4,9 @@
 apt-get install -y jq
 
 # This CIDR is required by the Flannel network provider
-kubeadm init --pod-network-cidr=10.244.0.0/16
+kubeadm init \
+  --pod-network-cidr=10.244.0.0/16 \
+  --apiserver-cert-extra-sans "$EXTRA_SANS"
 
 # This allows us to use kubectl as root on the master VM
 export KUBECONFIG=/etc/kubernetes/admin.conf

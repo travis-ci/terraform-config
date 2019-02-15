@@ -51,6 +51,7 @@ module "kubernetes_cluster" {
   source                 = "../modules/macstadium_k8s_cluster"
   name_prefix            = "cluster-1"
   ip_base                = 80
+  master_hostname        = "cluster-1.macstadium-us-se-1.travisci.net"
   node_count             = 3
   datacenter             = "pod-1"
   cluster                = "MacPro_Pod_1"

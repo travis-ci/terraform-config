@@ -1,6 +1,9 @@
 locals {
-  master_vm_name = "${var.name_prefix}-master"
-  master_ip      = "${vsphere_virtual_machine.master.clone.0.customize.0.network_interface.0.ipv4_address}"
+  master_vm_name  = "${var.name_prefix}-master"
+  master_ip       = "${vsphere_virtual_machine.master.clone.0.customize.0.network_interface.0.ipv4_address}"
+  master_dns_name = "${local.master_vm_name}.macstadium-us-se-1.travisci.net"
+
+  extra_sans    = "${var.master_hostname == "" ? local.master_dns_name : var.master_hostname}"
 }
 
 resource "vsphere_virtual_machine" "master" {
@@ -63,14 +66,14 @@ resource "vsphere_virtual_machine" "master" {
       "sudo chmod a+x /tmp/*.sh",
       "sudo /tmp/install-docker.sh",
       "sudo /tmp/install-kubernetes.sh",
-      "sudo /tmp/create-master.sh",
+      "sudo env EXTRA_SANS=${local.extra_sans} /tmp/create-master.sh",
     ]
   }
 }
 
 resource "aws_route53_record" "master" {
   zone_id = "${var.travisci_net_external_zone_id}"
-  name    = "${local.master_vm_name}.macstadium-us-se-1.travisci.net"
+  name    = "${local.master_dns_name}"
   type    = "A"
   ttl     = 300
   records = ["${local.master_ip}"]
