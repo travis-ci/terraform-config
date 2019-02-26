@@ -7,7 +7,6 @@ variable "env" {
 variable "latest_docker_image_gesund" {}
 variable "latest_docker_image_nat_conntracker" {}
 variable "latest_gce_bastion_image" {}
-variable "latest_gce_tfw_image" {}
 
 variable "gce_heroku_org" {}
 variable "github_users" {}
@@ -66,8 +65,7 @@ module "gce_net" {
   deny_target_ip_ranges = ["${split(",", var.deny_target_ip_ranges)}"]
   env                   = "${var.env}"
 
-  # TODO: replace with var.latest_docker_image_gesund when
-  # https://github.com/travis-ci/packer-templates/issues/640 is fixed
+  # TODO: replace with var.latest_docker_image_gesund
   gesund_self_image = "travisci/gesund:0.1.0"
 
   github_users               = "${var.github_users}"
@@ -80,8 +78,7 @@ module "gce_net" {
   nat_conntracker_self_image = "${var.latest_docker_image_nat_conntracker}"
   nat_conntracker_src_ignore = ["${var.nat_conntracker_src_ignore}"]
 
-  # TODO: replace with var.latest_gce_tfw_image when
-  # https://github.com/travis-ci/packer-templates/issues/640 is fixed
+  # TODO: replace with vanilla ubuntu bionic image
   nat_image = "https://www.googleapis.com/compute/v1/projects/eco-emissary-99515/global/images/tfw-1520467760-573cd26"
 
   nat_machine_type              = "g1-small"

@@ -1,57 +1,25 @@
-variable "index" {
-  default = 1
-}
-
 variable "travisci_net_external_zone_id" {
   default = "Z2RI61YP4UWSIO"
 }
 
-variable "macstadium_vanilla_image" {
-  default = "travis-ci-ubuntu14.04-internal-vanilla-1516305382"
-}
-
-variable "jobs_network_subnet" {
-  default = "10.182.0.0/18"
-}
-
-variable "jobs_network_label" {
-  default = "Jobs-1"
-}
-
-variable "vsphere_janitor_version" {
-  default = "8af7743"
-}
-
-variable "vsphere_monitor_version" {
-  default = "0a459b3"
-}
-
-variable "collectd_vsphere_version" {
-  default = "e1b57fe"
-}
-
 variable "ssh_user" {
-  description = "your username on the wjb instances"
+  description = "your username on the Linux VM instances"
 }
+
+variable "vsphere_user" {}
+variable "vsphere_password" {}
+variable "vsphere_server" {}
 
 variable "custom_1_name" {}
 variable "custom_2_name" {}
 variable "custom_4_name" {}
 variable "custom_5_name" {}
 variable "custom_6_name" {}
-variable "librato_email" {}
-variable "librato_token" {}
-variable "fw_ip" {}
-variable "fw_snmp_community" {}
-variable "vsphere_user" {}
-variable "vsphere_password" {}
-variable "vsphere_server" {}
-variable "vsphere_ip" {}
 
 terraform {
   backend "s3" {
     bucket         = "travis-terraform-state"
-    key            = "terraform-config/macstadium-pod-1-hopethisworks-terraform.tfstate"
+    key            = "terraform-config/macstadium-pod-1-cluster-terraform.tfstate"
     region         = "us-east-1"
     encrypt        = "true"
     dynamodb_table = "travis-terraform-state"
@@ -69,81 +37,121 @@ provider "vsphere" {
   allow_unverified_ssl = true
 }
 
-module "macstadium_infrastructure" {
-  source                        = "../modules/macstadium_infrastructure"
-  index                         = "${var.index}"
-  vanilla_image                 = "${var.macstadium_vanilla_image}"
-  datacenter                    = "pod-1"
-  cluster                       = "MacPro_Pod_1"
-  datastore                     = "DataCore1_1"
-  internal_network_label        = "Internal"
-  management_network_label      = "ESXi-MGMT"
-  jobs_network_label            = "${var.jobs_network_label}"
-  jobs_network_subnet           = "${var.jobs_network_subnet}"
-  ssh_user                      = "${var.ssh_user}"
-  travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
-  vsphere_ip                    = "${var.vsphere_ip}"
-  vm_ssh_key_path               = "${path.module}/config/travis-vm-ssh-key"
-  custom_1_name                 = "${var.custom_1_name}"
-  custom_2_name                 = "${var.custom_2_name}"
-  custom_4_name                 = "${var.custom_4_name}"
-  custom_5_name                 = "${var.custom_5_name}"
-  custom_6_name                 = "${var.custom_6_name}"
+module "inventory" {
+  source        = "../modules/macstadium_inventory"
+  datacenter    = "pod-1"
+  custom_1_name = "${var.custom_1_name}"
+  custom_2_name = "${var.custom_2_name}"
+  custom_4_name = "${var.custom_4_name}"
+  custom_5_name = "${var.custom_5_name}"
+  custom_6_name = "${var.custom_6_name}"
 }
 
-resource "random_id" "collectd_vsphere_collectd_network_token" {
-  byte_length = 32
-}
+module "kubernetes_cluster" {
+  source                 = "../modules/macstadium_k8s_cluster"
+  name_prefix            = "cluster-1"
+  ip_base                = 80
+  node_count             = 3
+  datacenter             = "pod-1"
+  cluster                = "MacPro_Pod_1"
+  datastore              = "DataCore1_1"
+  internal_network_label = "Internal"
+  jobs_network_label     = "Jobs-1"
+  jobs_network_subnet    = "10.182.0.0/18"
 
-module "collectd-vsphere-common" {
-  source                                  = "../modules/collectd_vsphere"
-  host_id                                 = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host                                = "${module.macstadium_infrastructure.wjb_ip}"
-  ssh_user                                = "${var.ssh_user}"
-  collectd_vsphere_version                = "${var.collectd_vsphere_version}"
-  config_path                             = "${path.module}/config/collectd-vsphere-common"
-  librato_email                           = "${var.librato_email}"
-  librato_token                           = "${var.librato_token}"
-  env                                     = "common"
-  index                                   = "${var.index}"
-  collectd_vsphere_collectd_network_user  = "collectd-vsphere-1"
-  collectd_vsphere_collectd_network_token = "${random_id.collectd_vsphere_collectd_network_token.hex}"
-  fw_ip                                   = "${var.fw_ip}"
-  fw_snmp_community                       = "${var.fw_snmp_community}"
-}
-
-module "haproxy" {
-  source   = "../modules/haproxy"
-  host_id  = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
-  ssh_user = "${var.ssh_user}"
-
-  config = [
-    {
-      name               = "jupiter-brain-production-org"
-      frontend_port      = "8081"
-      backend_port_blue  = "9081"
-      backend_port_green = "10081"
-    },
-    {
-      name               = "jupiter-brain-production-com"
-      frontend_port      = "8083"
-      backend_port_blue  = "9083"
-      backend_port_green = "10083"
-    },
+  mac_addresses = [
+    "00:50:56:84:0b:aa",
+    "00:50:56:84:0b:ab",
+    "00:50:56:84:0b:ac",
   ]
+
+  travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
+  ssh_user                      = "${var.ssh_user}"
 }
 
-module "wjb-host-utilities" {
-  source   = "../modules/macstadium_host_utilities"
-  host_id  = "${module.macstadium_infrastructure.wjb_uuid}"
-  ssh_host = "${module.macstadium_infrastructure.wjb_ip}"
-  ssh_user = "${var.ssh_user}"
+// Use these outputs to be able to easily set up a context in kubectl on the local machine.
+output "cluster_host" {
+  value = "${module.kubernetes_cluster.host}"
 }
 
-module "util-host-utilities" {
-  source   = "../modules/macstadium_host_utilities"
-  host_id  = "${module.macstadium_infrastructure.util_uuid}"
-  ssh_host = "${module.macstadium_infrastructure.util_ip}"
-  ssh_user = "${var.ssh_user}"
+output "cluster_ca_certificate" {
+  value     = "${module.kubernetes_cluster.cluster_ca_certificate}"
+  sensitive = true
+}
+
+output "client_certificate" {
+  value     = "${module.kubernetes_cluster.client_certificate}"
+  sensitive = true
+}
+
+output "client_key" {
+  value     = "${module.kubernetes_cluster.client_key}"
+  sensitive = true
+}
+
+// This bucket and user will be used by imaged when deployed in the cluster.
+// If the S3 user ever gets recreated, the travis-keychain will need to be updated
+// so that imaged has the right credentials.
+
+resource "aws_s3_bucket" "imaged_records" {
+  acl    = "private"
+  bucket = "imaged-records.travis-ci.com"
+  region = "us-east-1"
+}
+
+module "aws_iam_user_s3_imaged" {
+  source         = "../modules/aws_iam_user_s3"
+  iam_user_name  = "imaged-macstadium"
+  s3_bucket_name = "${aws_s3_bucket.imaged_records.id}"
+}
+
+output "imaged_access_key" {
+  value     = "${module.aws_iam_user_s3_imaged.id}"
+  sensitive = true
+}
+
+output "imaged_secret_key" {
+  value     = "${module.aws_iam_user_s3_imaged.secret}"
+  sensitive = true
+}
+
+// These users are for the worker instances that will run on the cluster.
+// The credentials are outputs so they can be copied into the keychain.
+//
+// If the users ever get recreated, those credentials need to get copied
+// again so the Kubernetes secrets can be updated.
+//
+// This is not ideal, so I'd like to find a better way to manage this at
+// point.
+
+module "worker_com_s3_user" {
+  source         = "../modules/aws_iam_user_s3"
+  iam_user_name  = "worker-macstadium-prod-1-com"
+  s3_bucket_name = "build-trace.travis-ci.com"
+}
+
+output "worker_com_access_key" {
+  value     = "${module.worker_com_s3_user.id}"
+  sensitive = true
+}
+
+output "worker_com_secret_key" {
+  value     = "${module.worker_com_s3_user.secret}"
+  sensitive = true
+}
+
+module "worker_org_s3_user" {
+  source         = "../modules/aws_iam_user_s3"
+  iam_user_name  = "worker-macstadium-prod-1-org"
+  s3_bucket_name = "build-trace.travis-ci.org"
+}
+
+output "worker_org_access_key" {
+  value     = "${module.worker_org_s3_user.id}"
+  sensitive = true
+}
+
+output "worker_org_secret_key" {
+  value     = "${module.worker_org_s3_user.secret}"
+  sensitive = true
 }
