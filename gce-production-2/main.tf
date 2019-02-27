@@ -24,8 +24,6 @@ variable "travisci_net_external_zone_id" {
   default = "Z2RI61YP4UWSIO"
 }
 
-variable "warmer_honeycomb_write_key" {}
-
 variable "worker_managed_instance_count_com" {}
 variable "worker_managed_instance_count_org" {}
 variable "worker_managed_instance_count_com_free" {}
@@ -83,7 +81,6 @@ module "gce_worker_group" {
   gcloud_zone                               = "${var.gce_gcloud_zone}"
   github_users                              = "${var.github_users}"
   heroku_org                                = "${var.gce_heroku_org}"
-  honeycomb_key                             = "${var.warmer_honeycomb_write_key}"
   index                                     = "${var.index}"
   project                                   = "${var.project}"
   region                                    = "us-central1"
@@ -147,8 +144,4 @@ EOF
 
 output "workers_service_account_emails" {
   value = ["${module.gce_worker_group.workers_service_account_emails}"]
-}
-
-output "warmer_service_account_emails" {
-  value = ["${module.gce_worker_group.warmer_service_account_emails}"]
 }
