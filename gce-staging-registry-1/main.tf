@@ -9,14 +9,14 @@ variable "index" {
 }
 
 variable "project" {
-  default = "eco-emissary-99515"
+  default = "travis-staging-1"
 }
 
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
 
-variable "travisci_net_external_zone_id" {
-  default = "Z2RI61YP4UWSIO"
+data "aws_route53_zone" "travisci_net" {
+  name = "travisci.net."
 }
 
 terraform {
@@ -32,17 +32,6 @@ terraform {
 provider "google" {
   project = "${var.project}"
   region  = "us-central1"
-}
-
-data "terraform_remote_state" "registry_staging_1" {
-  backend = "s3"
-
-  config {
-    bucket         = "travis-terraform-state"
-    key            = "terraform-config/gce-registry-staging-1.tfstate"
-    region         = "us-east-1"
-    dynamodb_table = "travis-terraform-state"
-  }
 }
 
 module "docker_registry_cache" {

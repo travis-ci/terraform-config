@@ -63,7 +63,8 @@ data "template_file" "cloud_config" {
     here = "${path.module}"
 
     docker_registry_config = <<EOF
-${file("${path.module}/registry-config.yml")}
+proxy:
+  remoteurl: https://registry-1.docker.io
 EOF
 
     docker_config = <<EOF
