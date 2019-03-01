@@ -40,6 +40,6 @@ module "docker_registry_cache" {
   project                       = "${var.project}"
   region                        = "us-central1"
   syslog_address                = "${var.syslog_address_org}"
-  travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
+  travisci_net_external_zone_id = "${data.aws_route53_zone.travisci_net.zone_id}"
   gce_gcloud_zone               = "${var.gce_gcloud_zone}"
 }
