@@ -17,6 +17,5 @@
   "tlsverify": true,
   "tlscacert": "/etc/docker/ca.pem",
   "tlscert": "/etc/docker/server-cert.pem",
-  "tlskey": "/etc/docker/server-key.pem",
-  "registry-mirrors": ["staging-1-docker-registry.gce-us-central1.travisci.net"]
+  "tlskey": "/etc/docker/server-key.pem"
 }

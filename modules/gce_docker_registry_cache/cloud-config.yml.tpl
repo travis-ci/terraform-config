@@ -15,6 +15,3 @@ write_files:
 - content: '${base64encode(syslog_address)}'
   encoding: b64
   path: /var/tmp/travis-run.d/syslog-address
-- content: '${base64encode(file("${here}/daemon.json"))}'
-  encoding: b64
-  path: /var/tmp/daemon-direct-lvm.json
