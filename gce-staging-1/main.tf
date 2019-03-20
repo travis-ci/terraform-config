@@ -63,6 +63,17 @@ data "terraform_remote_state" "vpc" {
   }
 }
 
+data "terraform_remote_state" "staging_1" {
+  backend = "s3"
+
+  config {
+    bucket         = "travis-terraform-state"
+    key            = "terraform-config/gce-staging-1.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "travis-terraform-state"
+  }
+}
+
 module "aws_iam_user_s3_com" {
   source = "../modules/aws_iam_user_s3"
 
@@ -170,4 +181,18 @@ output "warmer_service_account_emails" {
 
 output "latest_docker_image_worker" {
   value = "${var.latest_docker_image_worker}"
+}
+
+resource "google_project_iam_member" "staging_1_workers" {
+  count   = "${length(data.terraform_remote_state.staging_1.workers_service_account_emails)}"
+  project = "${var.project}"
+  role    = "roles/compute.imageUser"
+  member  = "serviceAccount:${element(data.terraform_remote_state.staging_1.workers_service_account_emails, count.index)}"
+}
+
+resource "google_project_iam_member" "staging_1_warmer" {
+  count   = "${length(data.terraform_remote_state.staging_1.warmer_service_account_emails)}"
+  project = "${var.project}"
+  role    = "roles/compute.imageUser"
+  member  = "serviceAccount:${element(data.terraform_remote_state.staging_1.warmer_service_account_emails, count.index)}"
 }

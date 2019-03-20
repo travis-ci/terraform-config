@@ -59,17 +59,6 @@ data "terraform_remote_state" "vpc" {
   }
 }
 
-data "terraform_remote_state" "staging_1" {
-  backend = "s3"
-
-  config {
-    bucket         = "travis-terraform-state"
-    key            = "terraform-config/gce-staging-1.tfstate"
-    region         = "us-east-1"
-    dynamodb_table = "travis-terraform-state"
-  }
-}
-
 data "terraform_remote_state" "production_2" {
   backend = "s3"
 
@@ -165,20 +154,6 @@ export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_org.bucket}
 export AWS_ACCESS_KEY_ID=${module.aws_iam_user_s3_org.id}
 export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_org.secret}
 EOF
-}
-
-resource "google_project_iam_member" "staging_1_workers" {
-  count   = "${length(data.terraform_remote_state.staging_1.workers_service_account_emails)}"
-  project = "${var.project}"
-  role    = "roles/compute.imageUser"
-  member  = "serviceAccount:${element(data.terraform_remote_state.staging_1.workers_service_account_emails, count.index)}"
-}
-
-resource "google_project_iam_member" "staging_1_warmer" {
-  count   = "${length(data.terraform_remote_state.staging_1.warmer_service_account_emails)}"
-  project = "${var.project}"
-  role    = "roles/compute.imageUser"
-  member  = "serviceAccount:${element(data.terraform_remote_state.staging_1.warmer_service_account_emails, count.index)}"
 }
 
 resource "google_project_iam_member" "production_2_workers" {
