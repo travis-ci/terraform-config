@@ -259,7 +259,7 @@ resource "heroku_app" "nat_conntracker" {
   }
 
   config_vars {
-    MANAGED_VIA = "github.com/travis-ci/terraform-config"
+    MANAGED_VIA    = "github.com/travis-ci/terraform-config"
     CONN_THRESHOLD = "200"
   }
 }
