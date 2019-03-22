@@ -19,11 +19,11 @@ variable "jobs_network_label" {
 }
 
 variable "vsphere_janitor_version" {
-  default = "8af7743"
+  default = "v1.0.0"
 }
 
 variable "vsphere_monitor_version" {
-  default = "0a459b3"
+  default = "v1.0.0"
 }
 
 variable "collectd_vsphere_version" {
