@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if command -v kubeadm >/dev/null 2>&1; then
+  echo "Kubernetes is already installed. Skipping."
+  exit 0
+fi
+
 # Swap must be disable to use kubeadm
 swapoff -a
 sed -i '/ swap / s/^/#/' /etc/fstab
