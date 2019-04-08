@@ -9,21 +9,21 @@ ADMIN_TEAM="${admin_team}"
 GUARD_DATA_DIR=$(mktemp -d)
 export GUARD_DATA_DIR
 
-wget -O /usr/local/bin/guard https://github.com/appscode/guard/releases/download/0.3.0/guard-linux-amd64 \
+curl -Lo /usr/local/bin/guard https://github.com/appscode/guard/releases/download/0.3.0/guard-linux-amd64 \
   && chmod +x /usr/local/bin/guard
 
-guard init ca
-guard init server --ips="10.96.10.96"
-guard init client "$ORG" -o github
+/usr/local/bin/guard init ca
+/usr/local/bin/guard init server --ips="10.96.10.96"
+/usr/local/bin/guard init client "$ORG" -o github
 
 # Delete any existing Guard instance
 kubectl delete deployment guard -n kube-system || true
 
-guard get installer --auth-providers=github >"$GUARD_DATA_DIR/installer.yaml"
+/usr/local/bin/guard get installer --auth-providers=github >"$GUARD_DATA_DIR/installer.yaml"
 kubectl apply -f "$GUARD_DATA_DIR/installer.yaml"
 
 mkdir -p /etc/kubernetes/guard
-guard get webhook-config "$ORG" -o github --addr="10.96.10.96:443" >/etc/kubernetes/guard/webhook.yaml
+/usr/local/bin/guard get webhook-config "$ORG" -o github --addr="10.96.10.96:443" >/etc/kubernetes/guard/webhook.yaml
 
 python <<SCRIPT >"$GUARD_DATA_DIR/kube-apiserver.yaml"
 import yaml
