@@ -55,3 +55,9 @@ resource "vsphere_folder" "custom_6_vms" {
   type          = "vm"
   datacenter_id = "${data.vsphere_datacenter.dc.id}"
 }
+
+resource "vsphere_folder" "custom_7_vms" {
+  path          = "${var.custom_7_name} Build VMs"
+  type          = "vm"
+  datacenter_id = "${data.vsphere_datacenter.dc.id}"
+}
