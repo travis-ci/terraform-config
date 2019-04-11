@@ -15,6 +15,7 @@ variable "custom_2_name" {}
 variable "custom_4_name" {}
 variable "custom_5_name" {}
 variable "custom_6_name" {}
+variable "custom_7_name" {}
 
 terraform {
   backend "s3" {
@@ -45,6 +46,7 @@ module "inventory" {
   custom_4_name = "${var.custom_4_name}"
   custom_5_name = "${var.custom_5_name}"
   custom_6_name = "${var.custom_6_name}"
+  custom_7_name = "${var.custom_7_name}"
 }
 
 module "kubernetes_cluster" {
