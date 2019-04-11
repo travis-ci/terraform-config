@@ -175,7 +175,7 @@ data "template_file" "cloud_config_com" {
   template = "${file("${path.module}/cloud-config.yml.tpl")}"
 
   vars {
-    assets           = "${path.module}/../../assets"
+    assets           = "${path.module}/../../../../assets"
     gce_account_json = "${base64decode(google_service_account_key.workers_com.private_key)}"
     here             = "${path.module}"
     syslog_address   = "${var.syslog_address_com}"
@@ -276,7 +276,7 @@ data "template_file" "cloud_config_com_free" {
   template = "${file("${path.module}/cloud-config.yml.tpl")}"
 
   vars {
-    assets           = "${path.module}/../../assets"
+    assets           = "${path.module}/../../../../assets"
     gce_account_json = "${base64decode(google_service_account_key.workers_com_free.private_key)}"
     here             = "${path.module}"
     syslog_address   = "${var.syslog_address_com}"
@@ -377,7 +377,7 @@ data "template_file" "cloud_config_org" {
   template = "${file("${path.module}/cloud-config.yml.tpl")}"
 
   vars {
-    assets           = "${path.module}/../../assets"
+    assets           = "${path.module}/../../../../assets"
     gce_account_json = "${base64decode(google_service_account_key.workers_org.private_key)}"
     here             = "${path.module}"
     syslog_address   = "${var.syslog_address_org}"
