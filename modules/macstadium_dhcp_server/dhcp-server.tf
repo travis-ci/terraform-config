@@ -29,7 +29,7 @@ data "template_file" "dhcpd_conf" {
 }
 
 resource "vsphere_virtual_machine" "dhcp_server" {
-  name             = "new-dhcp-server-${var.index}"
+  name             = "dhcp-server-${var.index}"
   folder           = "Internal VMs"
   resource_pool_id = "${data.vsphere_compute_cluster.cluster.resource_pool_id}"
   datastore_id     = "${data.vsphere_datastore.datastore.id}"

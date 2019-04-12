@@ -1,5 +1,5 @@
 module "dhcp_server" {
-  source                        = "../modules/macstadium_dhcp_server_2"
+  source                        = "../modules/macstadium_dhcp_server"
   index                         = 2
   datacenter                    = "pod-2"
   cluster                       = "MacPro_Pod_2"
