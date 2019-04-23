@@ -124,8 +124,7 @@ __setup_gcloud_cleanup() {
   tfw gsub gcloud-cleanup "${VARTMP}/travis-gcloud-cleanup-cloud-init.env.tmpl" \
     "${ETCDIR}/default/travis-gcloud-cleanup-cloud-init"
 
-  #eval "$(tfw printenv gcloud-cleanup)"
-  source "${ETCDIR}/default/travis-gcloud-cleanup-cloud-init"
+  eval "$(tfw printenv travis-gcloud-cleanup)"
 
   __wait_for_docker
 
