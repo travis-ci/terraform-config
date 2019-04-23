@@ -56,7 +56,7 @@ data "template_file" "cloud_config" {
   vars {
     here = "${path.module}"
 
-    gce_account_json        = "${base64decode(google_service_account_key.gcloud_cleanup.private_key)}"
+    gce_account_json = "${base64decode(google_service_account_key.gcloud_cleanup.private_key)}"
 
     gcloud_cleanup_config = <<EOF
 export GCLOUD_CLEANUP_RATE_LIMIT_REDIS_URL=${var.google_redis_instance}
@@ -156,7 +156,7 @@ resource "google_compute_instance_group_manager" "gcloud-cleanup" {
   name = "${var.env}-${var.index}-gcloud-cleanup-${var.name}-igm"
   zone = "${var.zone}"
 
-  instance_template  = "${google_compute_instance_template.gcloud-cleanup.self_link}"
+  instance_template = "${google_compute_instance_template.gcloud-cleanup.self_link}"
 
   target_pools       = ["${google_compute_target_pool.gcloud-cleanup.self_link}"]
   base_instance_name = "${var.env}-${var.index}-gcloud-cleanup"
