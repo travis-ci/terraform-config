@@ -1,4 +1,3 @@
-
 resource "random_id" "client_secret" {
   byte_length = 32
 }
