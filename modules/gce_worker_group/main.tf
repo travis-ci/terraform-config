@@ -266,3 +266,7 @@ output "workers_service_account_names" {
 output "warmer_service_account_emails" {
   value = ["${module.warmer.service_account_emails}"]
 }
+
+output "google_redis_instance" {
+  value = "${module.gce_workers.google_redis_instance}"
+}

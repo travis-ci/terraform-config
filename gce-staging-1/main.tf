@@ -17,6 +17,14 @@ variable "project" {
   default = "travis-staging-1"
 }
 
+variable "region" {
+  default = "us-central1"
+}
+
+variable "zone" {
+  default = "us-central1-f"
+}
+
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
 
@@ -158,6 +166,29 @@ EOF
 
 module "gke_staging_cluster_1" {
   source = "../modules/gke_cluster"
+}
+
+module "gcloud_cleanup_staging_1" {
+  source = "../modules/gcloud_cleanup"
+
+  env               = "${var.env}"
+  github_users      = "${var.github_users}"
+  index             = "${var.index}"
+  name              = "build"
+  region            = "${var.region}"
+  repos             = ["travis-ci/travis-build"]
+  syslog_address    = "${var.syslog_address_com}"
+  zone              = "${var.zone}"
+  project           = "${var.project}"
+  gcloud_cleanup_job_board_url = "${var.job_board_url}"
+  machine_type      = "g1-small"
+  subnetwork        = "${data.terraform_remote_state.vpc.gce_subnetwork_workers}"
+  google_redis_instance = "${module.gce_worker_group.google_redis_instance}"
+  gcloud_zone       = "${var.gce_gcloud_zone}"
+  gcloud_cleanup_opencensus_sampling_rate   = "4"
+  gcloud_cleanup_opencensus_tracing_enabled = "true"
+  gcloud_cleanup_docker_self_image = "travisci/gcloud-cleanup:latest"
+  gcloud_cleanup_loop_sleep = "2m"
 }
 
 output "workers_service_account_emails" {
