@@ -19,6 +19,10 @@ NATBZ2 := $(TOP)/assets/nat.tar.bz2
 PROD_TF_VERSION := v0.11.10
 TERRAFORM := $(HOME)/.cache/travis-terraform-config/terraform-$(PROD_TF_VERSION)
 
+ifdef TF_TARGET
+	TF_TARGET_CMD := --target=$(TF_TARGET)
+endif
+
 export PROD_TF_VERSION
 export TERRAFORM
 
@@ -51,7 +55,7 @@ announce: .assert-ruby .assert-tf-version
 
 .PHONY: apply
 apply: announce .ensure-git .config $(TRVS_TFVARS) $(TFSTATE)
-	$(TERRAFORM) apply $(TFPLAN)
+	$(TERRAFORM) apply $(TFPLAN) $(TF_TARGET_CMD)
 	$(TOP)/bin/post-flight $(TOP)
 
 .PHONY: init
@@ -68,7 +72,7 @@ console: announce
 
 .PHONY: plan
 plan: announce .config $(TRVS_TFVARS) $(TFSTATE)
-	$(TERRAFORM) plan -module-depth=-1 -out=$(TFPLAN)
+	$(TERRAFORM) plan -module-depth=-1 -out=$(TFPLAN) $(TF_TARGET_CMD)
 
 .PHONY: planbeep
 planbeep: announce .config $(TRVS_TFVARS) $(TFSTATE)
@@ -80,7 +84,7 @@ plandiff: $(TFPLAN)
 
 .PHONY: destroy
 destroy: announce .config $(TRVS_TFVARS) $(TFSTATE)
-	$(TERRAFORM) plan -module-depth=-1 -destroy -out=$(TFPLAN)
+	$(TERRAFORM) plan -module-depth=-1 -destroy -out=$(TFPLAN) $(TF_TARGET_CMD)
 	$(TOP)/bin/post-flight $(TOP)
 
 .PHONY: tar
