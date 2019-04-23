@@ -76,6 +76,12 @@ cd ./gce-staging-1
 # generate config files via `trvs`
 make plan
 
+# run terraform plan with different TF version
+make plan PROD_TF_VERSION=v0.11.11
+
+# run terraform plan with different TF version and target module
+make plan PROD_TF_VERSION=v0.11.11 TF_TARGET=module.gcloud_cleanup_staging_1
+
 # if it looks OK, terraform apply
 make apply
 
