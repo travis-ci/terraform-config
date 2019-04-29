@@ -62,14 +62,6 @@ variable "gcloud_cleanup_opencensus_tracing_enabled" {
   default = "false"
 }
 
-variable "gcloud_cleanup_scale" {
-  default = "worker=1:Standard-1X"
-}
-
-variable "gcloud_cleanup_version" {
-  default = "master"
-}
-
 variable "gcloud_cleanup_docker_self_image" {
   default = "travisci/gcloud-cleanup:latest"
 }
