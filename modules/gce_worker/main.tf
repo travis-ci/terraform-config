@@ -258,6 +258,7 @@ resource "google_compute_instance_template" "worker_com" {
 
   lifecycle {
     create_before_destroy = true
+    ignore_changes        = ["metadata.user-data"]
   }
 }
 
@@ -359,6 +360,7 @@ resource "google_compute_instance_template" "worker_com_free" {
 
   lifecycle {
     create_before_destroy = true
+    ignore_changes        = ["metadata.user-data"]
   }
 }
 
@@ -460,6 +462,7 @@ resource "google_compute_instance_template" "worker_org" {
 
   lifecycle {
     create_before_destroy = true
+    ignore_changes        = ["metadata.user-data"]
   }
 }
 
