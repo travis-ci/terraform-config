@@ -60,7 +60,7 @@ variable "worker_docker_self_image" {
 }
 
 variable "worker_image" {
-  default = "ubuntu-os-cloud/ubuntu-1804-lts"
+  default = "projects/ubuntu-os-cloud/global/images/family/ubuntu-1804-lts"
 }
 
 variable "worker_managed_instance_count_com" {
