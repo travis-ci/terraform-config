@@ -16,8 +16,8 @@ AMQP_URL_ORG_VARNAME ?= AMQP_URL
 TOP := $(shell git rev-parse --show-toplevel)
 NATBZ2 := $(TOP)/assets/nat.tar.bz2
 
-PROD_TF_VERSION := v0.11.10
-TERRAFORM := $(HOME)/.cache/travis-terraform-config/terraform-$(PROD_TF_VERSION)
+PROD_TF_VERSION := v0.11.13
+TERRAFORM := $(TF_INSTALLATION_PREFIX)/terraform-$(PROD_TF_VERSION)
 
 export PROD_TF_VERSION
 export TERRAFORM

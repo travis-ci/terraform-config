@@ -19,3 +19,7 @@ graph.png
 local-development-0/local-development-0.tfstate
 macstadium-*/config/
 tfstate
+.cache/
+config/
+.bundle/
+vendor/
