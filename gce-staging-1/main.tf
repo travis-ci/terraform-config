@@ -158,6 +158,7 @@ EOF
 
 module "gke_staging_cluster_1" {
   source = "../modules/gke_cluster"
+  name   = "gce-staging-1"
 }
 
 output "workers_service_account_emails" {
