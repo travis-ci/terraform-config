@@ -39,3 +39,8 @@ import-net:
 .PHONY: export-net
 export-net:
 	$(TOP)/bin/gce-export-net --terraform $(TERRAFORM)
+
+.PHONY: context
+context:
+	gcloud container clusters get-credentials ${GKE_CLUSTER_NAME} --zone ${GKE_CLUSTER_ZONE} --project ${GCE_PROJECT}
+	kubectl config set-context gke_${GCE_PROJECT}_${GKE_CLUSTER_ZONE}_${GKE_CLUSTER_NAME} --namespace=${GKE_CLUSTER_NAME}
