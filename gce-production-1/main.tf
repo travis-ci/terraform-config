@@ -167,6 +167,11 @@ export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_org.secret}
 EOF
 }
 
+module "gke_cluster_1" {
+  source = "../modules/gke_cluster"
+  name   = "gce-production-1"
+}
+
 resource "google_project_iam_member" "staging_1_workers" {
   count   = "${length(data.terraform_remote_state.staging_1.workers_service_account_emails)}"
   project = "${var.project}"
