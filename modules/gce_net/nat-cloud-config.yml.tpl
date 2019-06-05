@@ -22,7 +22,7 @@ write_files:
   encoding: b64
   path: /var/lib/cloud/scripts/per-boot/99-nat-cloud-init
   permissions: '0750'
-- content: '${base64encode(file("${assets}/nat.tar.bz2"))}'
+- content: '${filebase64("${assets}/nat.tar.bz2")}'
   encoding: b64
   path: /var/tmp/nat.tar.bz2
 - content: '${base64encode(syslog_address)}'
