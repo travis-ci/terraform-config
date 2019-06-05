@@ -139,6 +139,14 @@ resource "google_compute_firewall" "allow_winrm_to_packer_templates_builds" {
   target_tags   = ["travis-ci-packer-templates"]
 }
 
+output "gce_network_main" {
+  value = "${module.gce_net.gce_network_main}"
+}
+
 output "gce_subnetwork_workers" {
   value = "${module.gce_net.gce_subnetwork_workers}"
+}
+
+output "gce_subnetwork_gke_cluster" {
+  value = "${module.gce_net.gce_subnetwork_gke_cluster}"
 }

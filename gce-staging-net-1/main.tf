@@ -88,6 +88,14 @@ module "gce_net" {
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
 }
 
+output "gce_network_main" {
+  value = "${module.gce_net.gce_network_main}"
+}
+
 output "gce_subnetwork_workers" {
   value = "${module.gce_net.gce_subnetwork_workers}"
+}
+
+output "gce_subnetwork_gke_cluster" {
+  value = "${module.gce_net.gce_subnetwork_gke_cluster}"
 }

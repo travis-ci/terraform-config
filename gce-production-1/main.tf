@@ -168,8 +168,10 @@ EOF
 }
 
 module "gke_cluster_1" {
-  source = "../modules/gke_cluster"
-  name   = "gce-production-1"
+  source         = "../modules/gke_cluster"
+  name           = "gce-production-1"
+  gke_network    = "${data.terraform_remote_state.vpc.gce_network_main}"
+  gke_subnetwork = "${data.terraform_remote_state.vpc.gce_subnetwork_gke_cluster}"
 }
 
 resource "google_project_iam_member" "staging_1_workers" {
