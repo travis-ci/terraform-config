@@ -506,3 +506,7 @@ output "workers_service_account_names" {
     "${google_service_account.workers_com_free.name}",
   ]
 }
+
+output "redis_worker_rate_limit" {
+  value = "redis://${google_redis_instance.worker_rate_limit.host}:${google_redis_instance.worker_rate_limit.port}"
+}

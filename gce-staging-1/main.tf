@@ -174,3 +174,7 @@ output "warmer_service_account_emails" {
 output "latest_docker_image_worker" {
   value = "${var.latest_docker_image_worker}"
 }
+
+output "redis_worker_rate_limit" {
+  value = "${module.gce_worker_group.redis_worker_rate_limit}"
+}
