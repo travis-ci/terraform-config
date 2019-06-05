@@ -87,6 +87,10 @@ variable "jobs_com_subnet_cidr_range" {
   default = "10.30.0.0/16"
 }
 
+variable "gke_cluster_subnet_cidr_range" {
+  default = "10.40.0.0/16"
+}
+
 variable "build_com_subnet_cidr_range" {
   default = "10.10.12.0/22"
 }
@@ -131,6 +135,15 @@ resource "google_compute_subnetwork" "jobs_org" {
 resource "google_compute_subnetwork" "jobs_com" {
   name             = "jobs-com"
   ip_cidr_range    = "${var.jobs_com_subnet_cidr_range}"
+  network          = "${google_compute_network.main.self_link}"
+  region           = "${var.region}"
+  project          = "${var.project}"
+  enable_flow_logs = "true"
+}
+
+resource "google_compute_subnetwork" "gke_cluster" {
+  name             = "gke-cluster"
+  ip_cidr_range    = "${var.gke_cluster_subnet_cidr_range}"
   network          = "${google_compute_network.main.self_link}"
   region           = "${var.region}"
   project          = "${var.project}"
@@ -184,6 +197,7 @@ resource "google_compute_firewall" "allow_internal" {
   source_ranges = [
     "${google_compute_subnetwork.public.ip_cidr_range}",
     "${google_compute_subnetwork.workers.ip_cidr_range}",
+    "${google_compute_subnetwork.gke_cluster.ip_cidr_range}",
   ]
 
   allow {
@@ -524,10 +538,18 @@ resource "google_compute_instance" "bastion" {
   }
 }
 
+output "gce_network_main" {
+  value = "${google_compute_network.main.self_link}"
+}
+
 output "gce_subnetwork_public" {
   value = "${google_compute_subnetwork.public.self_link}"
 }
 
 output "gce_subnetwork_workers" {
   value = "${google_compute_subnetwork.workers.self_link}"
+}
+
+output "gce_subnetwork_gke_cluster" {
+  value = "${google_compute_subnetwork.gke_cluster.self_link}"
 }
