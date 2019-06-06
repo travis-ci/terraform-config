@@ -167,9 +167,9 @@ export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_org.secret}
 EOF
 }
 
-module "gke_cluster_1" {
+module "gke_cluster_2" {
   source         = "../modules/gke_cluster"
-  name           = "gce-production-1"
+  name           = "gce-production-1-vpc-enabled"
   gke_network    = "${data.terraform_remote_state.vpc.gce_network_main}"
   gke_subnetwork = "${data.terraform_remote_state.vpc.gce_subnetwork_gke_cluster}"
 }
