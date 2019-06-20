@@ -65,10 +65,11 @@ provider "heroku" {}
 module "gce_net" {
   source = "../modules/gce_net"
 
-  bastion_config                = "${file("config/bastion.env")}"
-  bastion_image                 = "${var.gce_bastion_image}"
-  deny_target_ip_ranges         = ["${split(",", var.deny_target_ip_ranges)}"]
-  env                           = "${var.env}"
+  bastion_config        = "${file("config/bastion.env")}"
+  bastion_image         = "${var.gce_bastion_image}"
+  deny_target_ip_ranges = ["${split(",", var.deny_target_ip_ranges)}"]
+  env                   = "${var.env}"
+
   github_users                  = "${var.github_users}"
   heroku_org                    = "${var.gce_heroku_org}"
   index                         = "${var.index}"
@@ -86,11 +87,13 @@ module "gce_net" {
 }
 
 data "google_compute_network" "main" {
-  name = "main"
+  project = "${var.project}"
+  name    = "main"
 }
 
 data "google_compute_network" "default" {
-  name = "default"
+  project = "${var.project}"
+  name    = "default"
 }
 
 resource "google_compute_firewall" "allow_docker_tls" {

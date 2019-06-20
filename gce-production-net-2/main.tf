@@ -54,7 +54,7 @@ terraform {
   }
 }
 
-provider "google" {
+provider "google-beta" {
   project = "${var.project}"
   region  = "${var.region}"
 }
@@ -65,10 +65,11 @@ provider "heroku" {}
 module "gce_net" {
   source = "../modules/gce_net"
 
-  bastion_config                = "${file("config/bastion.env")}"
-  bastion_image                 = "${var.gce_bastion_image}"
-  deny_target_ip_ranges         = ["${split(",", var.deny_target_ip_ranges)}"]
-  env                           = "${var.env}"
+  bastion_config        = "${file("config/bastion.env")}"
+  bastion_image         = "${var.gce_bastion_image}"
+  deny_target_ip_ranges = ["${split(",", var.deny_target_ip_ranges)}"]
+  env                   = "${var.env}"
+
   github_users                  = "${var.github_users}"
   heroku_org                    = "${var.gce_heroku_org}"
   index                         = "${var.index}"
