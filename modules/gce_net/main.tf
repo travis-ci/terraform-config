@@ -160,6 +160,10 @@ resource "google_compute_firewall" "allow_main_ssh" {
     protocol = "tcp"
     ports    = [22]
   }
+
+  lifecycle {
+    ignore_changes = ["source_ranges"]
+  }
 }
 
 resource "google_compute_firewall" "allow_public_ssh" {
@@ -428,6 +432,7 @@ resource "google_compute_route" "nat" {
   next_hop_instance_zone = "${var.region}-${element(var.nat_zones, count.index / var.nat_count_per_zone)}"
   priority               = 800
   tags                   = ["no-ip"]
+  project                = "${var.project}"
 
   lifecycle {
     # NOTE: the `next_hop_instance` is provided by `data.external.nats_by_zone`,
