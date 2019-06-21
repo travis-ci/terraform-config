@@ -61,6 +61,27 @@ variable "nat_zones" {
   default = ["a", "b", "c", "f"]
 }
 
+variable "nat_names" {
+  default = [
+    "nat-a-1",
+    "nat-b-1",
+    "nat-c-1",
+    "nat-f-1",
+    "nat-a-2",
+    "nat-b-2",
+    "nat-c-2",
+    "nat-f-2",
+    "nat-a-3",
+    "nat-b-3",
+    "nat-c-3",
+    "nat-f-3",
+    "nat-a-4",
+    "nat-b-4",
+    "nat-c-4",
+    "nat-f-4",
+  ]
+}
+
 variable "project" {}
 
 variable "region" {
@@ -244,7 +265,7 @@ resource "google_compute_firewall" "deny_target_ip" {
 
 resource "google_compute_address" "nat" {
   count   = "${length(var.nat_zones) * var.nat_count_per_zone}"
-  name    = "nat-${element(var.nat_zones, count.index / var.nat_count_per_zone)}-${(count.index % var.nat_count_per_zone) + 1}"
+  name    = "${element(var.nat_names, count.index)}"
   region  = "${var.region}"
   project = "${var.project}"
 }
@@ -252,11 +273,11 @@ resource "google_compute_address" "nat" {
 resource "aws_route53_record" "nat" {
   count   = "${length(var.nat_zones) * var.nat_count_per_zone}"
   zone_id = "${var.travisci_net_external_zone_id}"
-  name    = "nat-${var.env}-${var.index}.gce-${var.region}-${element(var.nat_zones, count.index / var.nat_count_per_zone)}.travisci.net"
+  name    = "${element(var.nat_names, count.index)}.gce-${var.env}-${var.region}-${element(var.nat_zones, count.index / var.nat_count_per_zone)}.travisci.net"
   type    = "A"
   ttl     = 5
 
-  records = ["${element(google_compute_address.nat.*.address, count.index)}"]
+  records = ["${google_compute_address.nat.*.address[count.index]}"]
 }
 
 resource "aws_route53_record" "nat_regional" {
@@ -323,7 +344,7 @@ EOF
 
 resource "google_compute_instance_template" "nat" {
   count          = "${length(var.nat_zones) * var.nat_count_per_zone}"
-  name           = "${var.env}-${var.index}-nat-${element(var.nat_zones, count.index / var.nat_count_per_zone)}-${(count.index % var.nat_count_per_zone) + 1}-template-${substr(sha256("${var.nat_image}${data.template_file.nat_cloud_config.rendered}"), 0, 7)}"
+  name           = "${var.env}-${var.index}-${element(var.nat_names, count.index)}-template-${substr(sha256("${var.nat_image}${data.template_file.nat_cloud_config.rendered}"), 0, 7)}"
   machine_type   = "${var.nat_machine_type}"
   can_ip_forward = true
   region         = "${var.region}"
@@ -349,7 +370,7 @@ resource "google_compute_instance_template" "nat" {
     subnetwork = "${google_compute_subnetwork.public.self_link}"
 
     access_config {
-      nat_ip = "${element(google_compute_address.nat.*.address, count.index)}"
+      nat_ip = "${google_compute_address.nat.*.address[count.index]}"
     }
   }
 
@@ -389,14 +410,14 @@ resource "google_compute_instance_group_manager" "nat" {
   provider = "google-beta"
   count    = "${length(var.nat_zones) * var.nat_count_per_zone}"
 
-  base_instance_name = "${var.env}-${var.index}-nat-${element(var.nat_zones, count.index / var.nat_count_per_zone)}-${(count.index % var.nat_count_per_zone) + 1}"
-  name               = "nat-${element(var.nat_zones, count.index / var.nat_count_per_zone)}-${(count.index % var.nat_count_per_zone) + 1}"
+  base_instance_name = "${var.env}-${var.index}-${element(var.nat_names, count.index)}"
+  name               = "${element(var.nat_names, count.index)}"
   target_size        = 1
-  zone               = "${var.region}-${element(var.nat_zones, count.index / var.nat_count_per_zone)}"
+  zone               = "${var.region}-${element(var.nat_zones, count.index)}"
 
   version {
     name              = "${var.env}-${var.index}-nat-default"
-    instance_template = "${element(google_compute_instance_template.nat.*.self_link, count.index)}"
+    instance_template = "${google_compute_instance_template.nat.*.self_link[count.index]}"
   }
 
   named_port {
@@ -426,7 +447,7 @@ data "external" "nats_by_zone" {
 resource "google_compute_route" "nat" {
   count                  = "${length(var.nat_zones) * var.nat_count_per_zone}"
   dest_range             = "0.0.0.0/0"
-  name                   = "nat-${element(var.nat_zones, count.index / var.nat_count_per_zone)}-${(count.index % var.nat_count_per_zone) + 1}"
+  name                   = "${element(var.nat_names, count.index)}"
   network                = "${google_compute_network.main.self_link}"
   next_hop_instance      = "${data.external.nats_by_zone.result["${element(var.nat_zones, count.index / var.nat_count_per_zone)}-${(count.index % var.nat_count_per_zone) + 1}"]}"
   next_hop_instance_zone = "${var.region}-${element(var.nat_zones, count.index / var.nat_count_per_zone)}"
