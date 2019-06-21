@@ -101,23 +101,9 @@ module "warmer" {
 module "gce_workers" {
   source = "../gce_worker"
 
-  config_com = <<EOF
-${var.worker_config_com}
-
-export TRAVIS_WORKER_WARMER_URL=https://travis-worker-${var.env}-${var.index}-com:${module.warmer.auth_token}@${module.warmer.app_hostname}
-EOF
-
-  config_com_free = <<EOF
-${var.worker_config_com_free}
-
-export TRAVIS_WORKER_WARMER_URL=https://travis-worker-${var.env}-${var.index}-com-free:${module.warmer.auth_token}@${module.warmer.app_hostname}
-EOF
-
-  config_org = <<EOF
-${var.worker_config_org}
-
-export TRAVIS_WORKER_WARMER_URL=https://travis-worker-${var.env}-${var.index}-org:${module.warmer.auth_token}@${module.warmer.app_hostname}
-EOF
+  config_com      = "${var.worker_config_com}"
+  config_com_free = "${var.worker_config_com_free}"
+  config_org      = "${var.worker_config_org}"
 
   env          = "${var.env}"
   github_users = "${var.github_users}"
