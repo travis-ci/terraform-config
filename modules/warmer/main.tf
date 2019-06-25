@@ -142,14 +142,16 @@ resource "heroku_app" "warmer" {
     HONEYCOMB_DATASET  = "warmer"
     MANAGED_VIA        = "github.com/travis-ci/terraform-config"
     RACK_ENV           = "${var.env}"
+    LANG               = "en_US.UTF-8"
 
-    WARMER_AUTH_TOKENS               = "${random_string.auth_token.result}"
-    WARMER_GOOGLE_CLOUD_KEYFILE_JSON = "${base64decode(google_service_account_key.warmer.private_key)}"
-    WARMER_GOOGLE_CLOUD_PROJECT      = "${var.project}"
-    WARMER_GOOGLE_CLOUD_REGION       = "${var.region}"
-    WARMER_ORPHAN_THRESHOLD          = 20
-    WARMER_POOL_CHECK_INTERVAL       = 30
-    WARMER_VM_CREATION_TIMEOUT       = 120
+    WARMER_AUTH_TOKENS                 = "${random_string.auth_token.result}"
+    WARMER_GOOGLE_CLOUD_KEYFILE_JSON   = "${base64decode(google_service_account_key.warmer.private_key)}"
+    WARMER_GOOGLE_CLOUD_PROJECT        = "${var.project}"
+    WARMER_GOOGLE_CLOUD_REGION         = "${var.region}"
+    WARMER_ORPHAN_THRESHOLD            = 20
+    WARMER_POOL_CHECK_INTERVAL         = 30
+    WARMER_CHECKER_POOL_CHECK_INTERVAL = 30
+    WARMER_VM_CREATION_TIMEOUT         = 120
   }
 }
 
