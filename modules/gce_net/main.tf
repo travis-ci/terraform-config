@@ -449,7 +449,7 @@ resource "google_compute_route" "nat" {
   dest_range             = "0.0.0.0/0"
   name                   = "${element(var.nat_names, count.index)}"
   network                = "${google_compute_network.main.self_link}"
-  next_hop_instance      = "${data.external.nats_by_zone.result["${element(var.nat_zones, count.index / var.nat_count_per_zone)}-${(count.index % var.nat_count_per_zone) + 1}"]}"
+  next_hop_instance      = "${data.external.nats_by_zone.result[var.nat_names[count.index]]}"
   next_hop_instance_zone = "${var.region}-${element(var.nat_zones, count.index / var.nat_count_per_zone)}"
   priority               = 800
   tags                   = ["no-ip"]

@@ -58,7 +58,7 @@ def fetch_nats_by_zone(zones, count, project, region)
       instance_name = `#{full_command.join(' ')}`.strip
       next if instance_name.empty?
 
-      instances["#{zone}-#{count_index + 1}"] = %W[
+      instances["nat-#{zone}-#{count_index + 1}"] = %W[
         projects
         #{project}
         zones
