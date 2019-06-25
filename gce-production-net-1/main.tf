@@ -84,6 +84,19 @@ module "gce_net" {
   rigaer_strasse_8_ipv4         = "${var.rigaer_strasse_8_ipv4}"
   syslog_address                = "${var.syslog_address_com}"
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
+
+  # Legacy: nat_name order of prod-1 is different, see commit f279f65597
+  # Removing this would create new NAT IP addresses and should be done with care.
+  nat_names = [
+    "nat-a-1",
+    "nat-a-2",
+    "nat-b-1",
+    "nat-b-2",
+    "nat-c-1",
+    "nat-c-2",
+    "nat-f-1",
+    "nat-f-2",
+  ]
 }
 
 data "google_compute_network" "main" {
