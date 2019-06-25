@@ -6,21 +6,12 @@ variable "gcloud_cleanup_archive_retention_days" {
 
 variable "github_users" {}
 variable "heroku_org" {}
-variable "honeycomb_key" {}
 variable "index" {}
 variable "project" {}
 variable "region" {}
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
 variable "travisci_net_external_zone_id" {}
-
-variable "warmer_scale" {
-  default = "web=1:Standard-1X checker=1:Standard-1X"
-}
-
-variable "warmer_version" {
-  default = "master"
-}
 
 variable "worker_config_com" {}
 variable "worker_config_com_free" {}
@@ -54,19 +45,6 @@ variable "worker_subnetwork" {}
 
 variable "worker_zones" {
   default = ["a", "b", "c", "f"]
-}
-
-module "warmer" {
-  source = "../warmer"
-
-  env           = "${var.env}"
-  heroku_org    = "${var.heroku_org}"
-  honeycomb_key = "${var.honeycomb_key}"
-  index         = "${var.index}"
-  project       = "${var.project}"
-  region        = "${var.region}"
-  app_scale     = "${var.warmer_scale}"
-  app_version   = "${var.warmer_version}"
 }
 
 module "gce_workers" {
@@ -176,10 +154,6 @@ output "workers_service_account_emails" {
 
 output "workers_service_account_names" {
   value = ["${module.gce_workers.workers_service_account_names}"]
-}
-
-output "warmer_service_account_emails" {
-  value = ["${module.warmer.service_account_emails}"]
 }
 
 output "redis_worker_rate_limit" {
