@@ -4,35 +4,6 @@ variable "gcloud_cleanup_archive_retention_days" {
   default = 8
 }
 
-variable "gcloud_cleanup_instance_filters" {
-  default = "name eq ^(testing-gce|travis-job|packer-).*"
-}
-
-variable "gcloud_cleanup_instance_max_age" {
-  default = "3h"
-}
-
-variable "gcloud_cleanup_job_board_url" {}
-
-variable "gcloud_cleanup_loop_sleep" {
-  default = "1m"
-}
-
-variable "gcloud_cleanup_opencensus_sampling_rate" {}
-
-variable "gcloud_cleanup_opencensus_tracing_enabled" {
-  default = "false"
-}
-
-variable "gcloud_cleanup_scale" {
-  default = "worker=1:Standard-1X"
-}
-
-variable "gcloud_cleanup_version" {
-  default = "master"
-}
-
-variable "gcloud_zone" {}
 variable "github_users" {}
 variable "heroku_org" {}
 variable "honeycomb_key" {}
@@ -193,52 +164,10 @@ resource "google_service_account_key" "gcloud_cleanup" {
   service_account_id = "${google_service_account.gcloud_cleanup.email}"
 }
 
-resource "heroku_app" "gcloud_cleanup" {
-  name   = "gcloud-cleanup-${var.env}-${var.index}"
-  region = "us"
-
-  organization {
-    name = "${var.heroku_org}"
-  }
-
-  config_vars {
-    BUILDPACK_URL                             = "https://github.com/travis-ci/heroku-buildpack-makey-go"
-    GCLOUD_CLEANUP_ACCOUNT_JSON               = "${base64decode(google_service_account_key.gcloud_cleanup.private_key)}"
-    GCLOUD_CLEANUP_ARCHIVE_BUCKET             = "${google_storage_bucket.gcloud_cleanup_archive.name}"
-    GCLOUD_CLEANUP_ARCHIVE_SERIAL             = "true"
-    GCLOUD_CLEANUP_ARCHIVE_SAMPLE_RATE        = "10"
-    GCLOUD_CLEANUP_ENTITIES                   = "instances"
-    GCLOUD_CLEANUP_INSTANCE_FILTERS           = "${var.gcloud_cleanup_instance_filters}"
-    GCLOUD_CLEANUP_INSTANCE_MAX_AGE           = "${var.gcloud_cleanup_instance_max_age}"
-    GCLOUD_CLEANUP_JOB_BOARD_URL              = "${var.gcloud_cleanup_job_board_url}"
-    GCLOUD_CLEANUP_LOOP_SLEEP                 = "${var.gcloud_cleanup_loop_sleep}"
-    GCLOUD_CLEANUP_OPENCENSUS_SAMPLING_RATE   = "${var.gcloud_cleanup_opencensus_sampling_rate}"
-    GCLOUD_CLEANUP_OPENCENSUS_TRACING_ENABLED = "${var.gcloud_cleanup_opencensus_tracing_enabled}"
-    GCLOUD_LOG_HTTP                           = "no-log-http"
-    GCLOUD_PROJECT                            = "${var.project}"
-    GCLOUD_ZONE                               = "${var.gcloud_zone}"
-    GO_IMPORT_PATH                            = "github.com/travis-ci/gcloud-cleanup"
-    MANAGED_VIA                               = "github.com/travis-ci/terraform-config"
-  }
-}
-
-resource "null_resource" "gcloud_cleanup" {
-  triggers {
-    config_signature = "${sha256(jsonencode(heroku_app.gcloud_cleanup.config_vars))}"
-    heroku_id        = "${heroku_app.gcloud_cleanup.id}"
-    ps_scale         = "${var.gcloud_cleanup_scale}"
-    version          = "${var.gcloud_cleanup_version}"
-  }
-
-  provisioner "local-exec" {
-    command = <<EOF
-exec ${path.module}/../../bin/heroku-wait-deploy-scale \
-  --repo=travis-ci/gcloud-cleanup \
-  --app=${heroku_app.gcloud_cleanup.id} \
-  --ps-scale=${var.gcloud_cleanup_scale} \
-  --deploy-version=${var.gcloud_cleanup_version}
-EOF
-  }
+# This key needs to be copied to travis-keychain.
+# Ideally, this key is created as a Secret in k8s directly.
+output "gcloud_cleanup_account_json" {
+  value = "${base64decode(google_service_account_key.gcloud_cleanup.private_key)}"
 }
 
 output "workers_service_account_emails" {

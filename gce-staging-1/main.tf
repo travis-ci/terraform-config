@@ -2,7 +2,6 @@ variable "env" {
   default = "staging"
 }
 
-variable "gce_gcloud_zone" {}
 variable "gce_heroku_org" {}
 variable "github_users" {}
 
@@ -80,22 +79,16 @@ module "aws_iam_user_s3_org" {
 module "gce_worker_group" {
   source = "../modules/gce_worker_group"
 
-  env                                       = "${var.env}"
-  gcloud_cleanup_job_board_url              = "${var.job_board_url}"
-  gcloud_cleanup_loop_sleep                 = "2m"
-  gcloud_cleanup_scale                      = "worker=1:standard-1X"
-  gcloud_cleanup_opencensus_sampling_rate   = "4"
-  gcloud_cleanup_opencensus_tracing_enabled = "true"
-  gcloud_zone                               = "${var.gce_gcloud_zone}"
-  github_users                              = "${var.github_users}"
-  heroku_org                                = "${var.gce_heroku_org}"
-  honeycomb_key                             = "${var.warmer_honeycomb_write_key}"
-  index                                     = "${var.index}"
-  project                                   = "${var.project}"
-  region                                    = "us-central1"
-  syslog_address_com                        = "${var.syslog_address_com}"
-  syslog_address_org                        = "${var.syslog_address_org}"
-  travisci_net_external_zone_id             = "${var.travisci_net_external_zone_id}"
+  env                           = "${var.env}"
+  github_users                  = "${var.github_users}"
+  heroku_org                    = "${var.gce_heroku_org}"
+  honeycomb_key                 = "${var.warmer_honeycomb_write_key}"
+  index                         = "${var.index}"
+  project                       = "${var.project}"
+  region                        = "us-central1"
+  syslog_address_com            = "${var.syslog_address_com}"
+  syslog_address_org            = "${var.syslog_address_org}"
+  travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
 
   warmer_version = "${var.warmer_version}"
 

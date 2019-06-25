@@ -48,7 +48,6 @@ def main
   zones = options.fetch(:zones)
 
   command = %W[#{terraform} state rm]
-  command << "module.#{module_name}.heroku_app.gcloud_cleanup"
 
   %i[com org].each do |site|
     zones.each do |zone|

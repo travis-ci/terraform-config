@@ -71,9 +71,7 @@ def main
   terraform = options.fetch(:terraform)
   zones = options.fetch(:zones)
 
-  to_import = {
-    'heroku_app.gcloud_cleanup' => "gcloud-cleanup-#{env}-#{index}"
-  }
+  to_import = {}
 
   %i[com org].each do |site|
     counts.fetch(site).times do |n|
