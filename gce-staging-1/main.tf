@@ -158,6 +158,6 @@ output "latest_docker_image_worker" {
   value = "${var.latest_docker_image_worker}"
 }
 
-output "redis_worker_rate_limit" {
-  value = "${module.gce_worker_group.redis_worker_rate_limit}"
+output "gcloud_cleanup_account_json" {
+  value = "${module.gce_worker_group.gcloud_cleanup_account_json}"
 }

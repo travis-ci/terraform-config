@@ -3,7 +3,6 @@ variable "env" {
 }
 
 variable "gce_heroku_org" {}
-
 variable "github_users" {}
 
 variable "index" {
@@ -146,4 +145,8 @@ module "gke_cluster_1" {
 
 output "workers_service_account_emails" {
   value = ["${module.gce_worker_group.workers_service_account_emails}"]
+}
+
+output "gcloud_cleanup_account_json" {
+  value = "${module.gce_worker_group.gcloud_cleanup_account_json}"
 }
