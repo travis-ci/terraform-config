@@ -161,6 +161,9 @@ module "gke_cluster_1" {
   name           = "gce-staging-1"
   gke_network    = "${data.terraform_remote_state.vpc.gce_network_main}"
   gke_subnetwork = "${data.terraform_remote_state.vpc.gce_subnetwork_gke_cluster}"
+
+  # Legacy: should become us-central1 instead.
+  region = "us-central1-a"
 }
 
 output "workers_service_account_emails" {

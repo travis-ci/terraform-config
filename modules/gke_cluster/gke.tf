@@ -2,8 +2,8 @@ variable "name" {
   default = "cluster"
 }
 
-variable "zone" {
-  default = "us-central1-a"
+variable "region" {
+  default = "us-central1"
 }
 
 variable "gke_network" {
@@ -16,8 +16,8 @@ variable "gke_subnetwork" {
 
 resource "google_container_cluster" "gke_cluster" {
   name                     = "${var.name}"
-  zone                     = "${var.zone}"
-  min_master_version       = "1.11"
+  location                 = "${var.region}"
+  min_master_version       = "1.13"
   initial_node_count       = 1
   remove_default_node_pool = true
   network                  = "${var.gke_network}"
@@ -37,7 +37,7 @@ resource "google_container_cluster" "gke_cluster" {
 
 resource "google_container_node_pool" "node_pool" {
   name               = "${var.name}"
-  zone               = "${var.zone}"
+  location           = "${var.region}"
   initial_node_count = 1
   cluster            = "${google_container_cluster.gke_cluster.name}"
 
@@ -51,7 +51,7 @@ resource "google_container_node_pool" "node_pool" {
   }
 
   management {
-    auto_upgrade = true
+    auto_upgrade = false
     auto_repair  = true
   }
 

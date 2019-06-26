@@ -172,6 +172,9 @@ module "gke_cluster_2" {
   name           = "gce-production-1-vpc-enabled"
   gke_network    = "${data.terraform_remote_state.vpc.gce_network_main}"
   gke_subnetwork = "${data.terraform_remote_state.vpc.gce_subnetwork_gke_cluster}"
+
+  # Legacy: should become us-central1 instead.
+  region = "us-central1-a"
 }
 
 resource "google_project_iam_member" "staging_1_workers" {
