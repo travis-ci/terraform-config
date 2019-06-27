@@ -46,14 +46,6 @@ data "aws_route53_zone" "travisci_net" {
   name = "travisci.net."
 }
 
-data "dns_a_record_set" "aws_production_2_nat_com" {
-  host = "workers-nat-com-shared-2.aws-us-east-1.travisci.net"
-}
-
-data "dns_a_record_set" "aws_production_2_nat_org" {
-  host = "workers-nat-org-shared-2.aws-us-east-1.travisci.net"
-}
-
 data "dns_a_record_set" "gce_production_1_nat" {
   host = "nat-production-1.gce-us-central1.travisci.net"
 }
@@ -68,18 +60,6 @@ data "dns_a_record_set" "gce_production_1_build_cache" {
 
 data "dns_a_record_set" "gce_production_2_build_cache" {
   host = "production-2-build-cache.gce-us-central1.travisci.net"
-}
-
-resource "aws_route53_record" "aws_nat" {
-  zone_id = "${data.aws_route53_zone.travisci_net.zone_id}"
-  name    = "nat.aws-us-east-1.travisci.net"
-  type    = "A"
-  ttl     = 300
-
-  records = [
-    "${data.dns_a_record_set.aws_production_2_nat_com.addrs}",
-    "${data.dns_a_record_set.aws_production_2_nat_org.addrs}",
-  ]
 }
 
 resource "aws_route53_record" "gce_nat" {
@@ -101,8 +81,8 @@ resource "aws_route53_record" "linux_containers_nat" {
   ttl     = 300
 
   records = [
-    "${data.dns_a_record_set.aws_production_2_nat_com.addrs}",
-    "${data.dns_a_record_set.aws_production_2_nat_org.addrs}",
+    "${data.dns_a_record_set.gce_production_1_nat.addrs}",
+    "${data.dns_a_record_set.gce_production_2_nat.addrs}",
   ]
 }
 
@@ -122,8 +102,6 @@ resource "aws_route53_record" "nat" {
   ttl     = 300
 
   records = [
-    "${data.dns_a_record_set.aws_production_2_nat_com.addrs}",
-    "${data.dns_a_record_set.aws_production_2_nat_org.addrs}",
     "${data.dns_a_record_set.gce_production_1_nat.addrs}",
     "${data.dns_a_record_set.gce_production_2_nat.addrs}",
     "${var.macstadium_production_nat_addrs}",
@@ -156,12 +134,6 @@ resource "heroku_app" "whereami" {
 
   config_vars {
     MANAGED_VIA = "github.com/travis-ci/terraform-config"
-
-    WHEREAMI_INFRA_EC2_IPS = "${
-      join(",", data.dns_a_record_set.aws_production_2_nat_com.addrs)
-    },${
-      join(",", data.dns_a_record_set.aws_production_2_nat_org.addrs)
-    }"
 
     WHEREAMI_INFRA_GCE_IPS = "${
       join(",", data.dns_a_record_set.gce_production_1_nat.addrs)
