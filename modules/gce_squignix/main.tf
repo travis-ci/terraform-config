@@ -64,7 +64,7 @@ data "template_file" "cloud_config" {
   template = "${file("${path.module}/cloud-config.yml.tpl")}"
 
   vars {
-    assets               = "${path.module}/../../assets"
+    assets               = "${path.module}/../../../../assets"
     here                 = "${path.module}"
     nginx_conf_d_default = "${data.template_file.nginx_conf_d_default.rendered}"
     syslog_address       = "${var.syslog_address}"
