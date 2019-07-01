@@ -3,7 +3,7 @@ variable "allowed_internal_ranges" {
 }
 
 variable "cache_size_mb" {
-  default = 102400
+  default = 204800
 }
 
 variable "dns_domain" {
@@ -27,7 +27,7 @@ variable "librato_email" {}
 variable "librato_token" {}
 
 variable "machine_type" {
-  default = "g1-small"
+  default = "n1-standard-2" # 2vCPU, 7.5GB RAM
 }
 
 variable "network" {

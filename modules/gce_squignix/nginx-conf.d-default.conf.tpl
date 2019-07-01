@@ -2,7 +2,7 @@
 # https://www.nginx.com/blog/nginx-caching-guide/
 # https://nginx.org/en/docs/http/ngx_http_proxy_module.html
 
-proxy_cache_path /var/cache/nginx levels=1:2 keys_zone=my_cache:10m inactive=180m max_size=${max_size} use_temp_path=off;
+proxy_cache_path /var/cache/nginx levels=1:2 keys_zone=my_cache:10m inactive=360m max_size=${max_size} use_temp_path=off;
 
 proxy_cache my_cache;
 proxy_cache_background_update on;
@@ -11,7 +11,7 @@ proxy_cache_lock on;
 proxy_cache_methods GET HEAD;
 proxy_cache_revalidate on;
 proxy_cache_use_stale error timeout updating http_500 http_502 http_503 http_504;
-proxy_cache_valid 180m;
+proxy_cache_valid 360m;
 
 proxy_ignore_headers
         Cache-Control
