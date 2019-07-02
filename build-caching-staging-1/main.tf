@@ -50,6 +50,7 @@ module "gce_squignix" {
   syslog_address = "${var.syslog_address_com}"
 
   cache_size_mb = 51200
+  machine_type  = "g1-small"
 }
 
 resource "null_resource" "build_cache_config" {
