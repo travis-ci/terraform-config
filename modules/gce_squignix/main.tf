@@ -1,3 +1,5 @@
+variable "project" {}
+
 variable "allowed_internal_ranges" {
   default = ["10.0.0.0/8"]
 }
@@ -44,8 +46,9 @@ variable "target_size" {
   default = 2
 }
 
-variable "zones" {
-  default = ["a", "b", "c", "f"]
+data "google_compute_zones" "zones" {
+  project = "${var.project}"
+  region  = "${var.region}"
 }
 
 data "aws_route53_zone" "travisci_net" {
@@ -136,6 +139,7 @@ resource "google_compute_health_check" "build_cache" {
 }
 
 resource "google_compute_instance_template" "build_cache" {
+  project      = "${var.project}"
   name_prefix  = "build-cache-"
   machine_type = "${var.machine_type}"
   tags         = ["build-cache", "${var.env}"]
@@ -176,7 +180,7 @@ resource "google_compute_region_instance_group_manager" "build_cache" {
   provider = "google-beta"
 
   base_instance_name        = "${var.env}-${var.index}-build-cache"
-  distribution_policy_zones = "${formatlist("${var.region}-%s", var.zones)}"
+  distribution_policy_zones = ["${data.google_compute_zones.zones.names}"]
   name                      = "build-cache"
   region                    = "${var.region}"
   target_pools              = ["${google_compute_target_pool.build_cache.self_link}"]
@@ -190,8 +194,8 @@ resource "google_compute_region_instance_group_manager" "build_cache" {
   update_policy {
     type                  = "PROACTIVE"
     minimal_action        = "REPLACE"
-    max_unavailable_fixed = "${length(var.zones)}"
-    max_surge_fixed       = "${length(var.zones)}"
+    max_unavailable_fixed = "${length(data.google_compute_zones.zones.names)}"
+    max_surge_fixed       = "${length(data.google_compute_zones.zones.names)}"
     min_ready_sec         = 900
   }
 
