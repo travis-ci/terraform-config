@@ -1,4 +1,12 @@
 variable "project" {}
+variable "region" {}
+variable "env" {}
+variable "index" {}
+
+variable "github_users" {}
+variable "librato_email" {}
+variable "librato_token" {}
+variable "syslog_address" {}
 
 variable "allowed_internal_ranges" {
   default = ["10.0.0.0/8"]
@@ -12,21 +20,12 @@ variable "dns_domain" {
   default = "travisci.net"
 }
 
-variable "env" {}
-
-variable "github_users" {}
-
 variable "gce_health_check_source_ranges" {
   default = [
     "130.211.0.0/22",
     "35.191.0.0/16",
   ]
 }
-
-variable "index" {}
-
-variable "librato_email" {}
-variable "librato_token" {}
 
 variable "machine_type" {
   default = "n1-standard-2" # 2vCPU, 7.5GB RAM
@@ -35,12 +34,6 @@ variable "machine_type" {
 variable "network" {
   default = "main"
 }
-
-variable "region" {
-  default = "us-central1"
-}
-
-variable "syslog_address" {}
 
 variable "target_size" {
   default = 2
