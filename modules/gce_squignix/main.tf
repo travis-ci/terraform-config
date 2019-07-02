@@ -1,5 +1,3 @@
-variable "project" {}
-variable "region" {}
 variable "env" {}
 variable "index" {}
 
@@ -39,10 +37,8 @@ variable "target_size" {
   default = 2
 }
 
-data "google_compute_zones" "zones" {
-  project = "${var.project}"
-  region  = "${var.region}"
-}
+data "google_client_config" "current" {}
+data "google_compute_zones" "zones" {}
 
 data "aws_route53_zone" "travisci_net" {
   name = "${var.dns_domain}."
@@ -81,11 +77,10 @@ EOF
 }
 
 resource "google_compute_subnetwork" "build_cache" {
+  name             = "build-cache"
   enable_flow_logs = "true"
   ip_cidr_range    = "10.80.1.0/24"
-  name             = "build-cache"
   network          = "${var.network}"
-  region           = "${var.region}"
 }
 
 resource "google_compute_firewall" "allow_build_cache_internal" {
@@ -132,7 +127,6 @@ resource "google_compute_health_check" "build_cache" {
 }
 
 resource "google_compute_instance_template" "build_cache" {
-  project      = "${var.project}"
   name_prefix  = "build-cache-"
   machine_type = "${var.machine_type}"
   tags         = ["build-cache", "${var.env}"]
@@ -172,10 +166,10 @@ resource "google_compute_target_pool" "build_cache" {
 resource "google_compute_region_instance_group_manager" "build_cache" {
   provider = "google-beta"
 
+  name                      = "build-cache"
   base_instance_name        = "${var.env}-${var.index}-build-cache"
   distribution_policy_zones = ["${data.google_compute_zones.zones.names}"]
-  name                      = "build-cache"
-  region                    = "${var.region}"
+  region                    = "${data.google_client_config.current.region}"
   target_pools              = ["${google_compute_target_pool.build_cache.self_link}"]
   target_size               = "${var.target_size}"
 
@@ -225,7 +219,7 @@ resource "google_compute_forwarding_rule" "build_cache" {
 
 resource "aws_route53_record" "build_cache_frontend" {
   zone_id = "${data.aws_route53_zone.travisci_net.zone_id}"
-  name    = "${var.env}-${var.index}-build-cache.gce-${var.region}.${var.dns_domain}"
+  name    = "${var.env}-${var.index}-build-cache.gce-${data.google_client_config.current.region}.${var.dns_domain}"
   type    = "A"
   ttl     = 5
 

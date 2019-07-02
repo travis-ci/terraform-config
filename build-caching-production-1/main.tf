@@ -29,6 +29,11 @@ terraform {
   }
 }
 
+provider "google" {
+  project = "${var.project}"
+  region  = "${var.region}"
+}
+
 provider "google-beta" {
   project = "${var.project}"
   region  = "${var.region}"
@@ -39,10 +44,8 @@ provider "aws" {}
 module "gce_squignix" {
   source = "../modules/gce_squignix"
 
-  project = "${var.project}"
-  region  = "${var.region}"
-  env     = "${var.env}"
-  index   = "${var.index}"
+  env   = "${var.env}"
+  index = "${var.index}"
 
   github_users   = "${var.github_users}"
   librato_email  = "${var.librato_email}"

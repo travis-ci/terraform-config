@@ -29,6 +29,11 @@ terraform {
   }
 }
 
+provider "google" {
+  project = "${var.project}"
+  region  = "${var.region}"
+}
+
 provider "google-beta" {
   project = "${var.project}"
   region  = "${var.region}"
@@ -39,13 +44,18 @@ provider "aws" {}
 module "gce_squignix" {
   source = "../modules/gce_squignix"
 
-  project = "${var.project}"
-  region  = "${var.region}"
-  env     = "${var.env}"
-  index   = "${var.index}"
+  env   = "${var.env}"
+  index = "${var.index}"
 
   github_users   = "${var.github_users}"
   librato_email  = "${var.librato_email}"
   librato_token  = "${var.librato_token}"
   syslog_address = "${var.syslog_address_com}"
+
+  network = "${google_compute_network.main.self_link}"
+}
+
+resource "google_compute_network" "main" {
+  name                    = "main"
+  auto_create_subnetworks = "false"
 }
