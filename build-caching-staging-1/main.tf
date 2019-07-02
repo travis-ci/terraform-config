@@ -1,16 +1,3 @@
-variable "env" {
-  default = "staging"
-}
-
-variable "github_users" {}
-
-variable "index" {
-  default = 1
-}
-
-variable "librato_email" {}
-variable "librato_token" {}
-
 variable "project" {
   default = "travis-staging-1"
 }
@@ -19,6 +6,17 @@ variable "region" {
   default = "us-central1"
 }
 
+variable "env" {
+  default = "staging"
+}
+
+variable "index" {
+  default = 1
+}
+
+variable "github_users" {}
+variable "librato_email" {}
+variable "librato_token" {}
 variable "syslog_address_com" {}
 
 terraform {
@@ -31,11 +29,6 @@ terraform {
   }
 }
 
-provider "google" {
-  project = "${var.project}"
-  region  = "${var.region}"
-}
-
 provider "google-beta" {
   project = "${var.project}"
   region  = "${var.region}"
@@ -46,14 +39,17 @@ provider "aws" {}
 module "gce_squignix" {
   source = "../modules/gce_squignix"
 
-  cache_size_mb  = 51200
-  env            = "${var.env}"
+  project = "${var.project}"
+  region  = "${var.region}"
+  env     = "${var.env}"
+  index   = "${var.index}"
+
   github_users   = "${var.github_users}"
-  index          = "${var.index}"
   librato_email  = "${var.librato_email}"
   librato_token  = "${var.librato_token}"
-  region         = "${var.region}"
   syslog_address = "${var.syslog_address_com}"
+
+  cache_size_mb = 51200
 }
 
 resource "null_resource" "build_cache_config" {

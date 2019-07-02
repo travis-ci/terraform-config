@@ -1,24 +1,22 @@
-variable "env" {
-  default = "production"
-}
-
-variable "github_users" {}
-
-variable "index" {
-  default = 3
-}
-
-variable "librato_email" {}
-variable "librato_token" {}
-
 variable "project" {
   default = "travis-ci-prod-3"
 }
 
 variable "region" {
-  default = "us-central1"
+  default = "us-east1"
 }
 
+variable "env" {
+  default = "production"
+}
+
+variable "index" {
+  default = 3
+}
+
+variable "github_users" {}
+variable "librato_email" {}
+variable "librato_token" {}
 variable "syslog_address_com" {}
 
 terraform {
@@ -31,11 +29,6 @@ terraform {
   }
 }
 
-provider "google" {
-  project = "${var.project}"
-  region  = "${var.region}"
-}
-
 provider "google-beta" {
   project = "${var.project}"
   region  = "${var.region}"
@@ -46,11 +39,13 @@ provider "aws" {}
 module "gce_squignix" {
   source = "../modules/gce_squignix"
 
-  env            = "${var.env}"
+  project = "${var.project}"
+  region  = "${var.region}"
+  env     = "${var.env}"
+  index   = "${var.index}"
+
   github_users   = "${var.github_users}"
-  index          = "${var.index}"
   librato_email  = "${var.librato_email}"
   librato_token  = "${var.librato_token}"
-  region         = "${var.region}"
   syslog_address = "${var.syslog_address_com}"
 }
