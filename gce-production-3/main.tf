@@ -3,7 +3,6 @@ variable "env" {
 }
 
 variable "gce_heroku_org" {}
-
 variable "github_users" {}
 
 variable "index" {
@@ -82,15 +81,12 @@ module "gce_worker_group" {
   syslog_address_com            = "${var.syslog_address_com}"
   syslog_address_org            = "${var.syslog_address_org}"
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
-  worker_subnetwork             = "${data.terraform_remote_state.vpc.gce_subnetwork_workers}"
+
+  worker_subnetwork = "${data.terraform_remote_state.vpc.gce_subnetwork_workers}"
 
   worker_managed_instance_count_com      = "${var.worker_managed_instance_count_com}"
   worker_managed_instance_count_com_free = "${var.worker_managed_instance_count_com_free}"
   worker_managed_instance_count_org      = "${var.worker_managed_instance_count_org}"
-
-  worker_service_accounts_count_com      = "${var.worker_managed_instance_count_com / 4}"
-  worker_service_accounts_count_com_free = "${var.worker_managed_instance_count_com_free / 4}"
-  worker_service_accounts_count_org      = "${var.worker_managed_instance_count_org / 4}"
 
   worker_config_com = <<EOF
 ### worker.env
@@ -140,6 +136,17 @@ export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_org.secret}
 EOF
 }
 
+module "gke_cluster_1" {
+  source         = "../modules/gke_cluster"
+  name           = "gce-production-3"
+  gke_network    = "${data.terraform_remote_state.vpc.gce_network_main}"
+  gke_subnetwork = "${data.terraform_remote_state.vpc.gce_subnetwork_gke_cluster}"
+}
+
 output "workers_service_account_emails" {
   value = ["${module.gce_worker_group.workers_service_account_emails}"]
+}
+
+output "gcloud_cleanup_account_json" {
+  value = "${module.gce_worker_group.gcloud_cleanup_account_json}"
 }

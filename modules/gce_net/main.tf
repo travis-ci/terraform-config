@@ -176,6 +176,7 @@ resource "google_compute_firewall" "allow_main_ssh" {
   network       = "${google_compute_network.main.name}"
   source_ranges = ["${var.rigaer_strasse_8_ipv4}"]
   priority      = 1000
+  project       = "${var.project}"
 
   allow {
     protocol = "tcp"
@@ -273,7 +274,7 @@ resource "google_compute_address" "nat" {
 resource "aws_route53_record" "nat" {
   count   = "${length(var.nat_zones) * var.nat_count_per_zone}"
   zone_id = "${var.travisci_net_external_zone_id}"
-  name    = "${element(var.nat_names, count.index)}.gce-${var.env}-${var.region}-${element(var.nat_zones, count.index / var.nat_count_per_zone)}.travisci.net"
+  name    = "${element(var.nat_names, count.index)}.gce-${var.env}-${var.index}-${var.region}-${element(var.nat_zones, count.index / var.nat_count_per_zone)}.travisci.net"
   type    = "A"
   ttl     = 5
 
@@ -390,6 +391,7 @@ resource "google_compute_http_health_check" "nat" {
   check_interval_sec  = 30
   healthy_threshold   = 1
   unhealthy_threshold = 5
+  project             = "${var.project}"
 }
 
 resource "google_compute_firewall" "allow_nat_health_check" {
