@@ -1,7 +1,6 @@
 language: ruby
 dist: xenial
 group: edge
-sudo: required
 cache:
   directories:
   - "${HOME}/bin"
