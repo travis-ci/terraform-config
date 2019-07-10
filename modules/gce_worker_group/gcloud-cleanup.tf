@@ -67,13 +67,14 @@ resource "google_service_account_key" "gcloud_cleanup" {
   service_account_id = "${google_service_account.gcloud_cleanup.email}"
 }
 
-resource "kubernetes_secret" "gcloud_cleanup_service_account" {
+resource "kubernetes_secret" "gcloud_cleanup_config" {
   metadata {
-    name      = "gcloud-cleanup-service-account"
+    name      = "gcloud-cleanup-terraform"
     namespace = "${kubernetes_namespace.default.metadata.0.name}"
   }
 
   data = {
-    GCLOUD_CLEANUP_ACCOUNT_JSON = "${base64decode(google_service_account_key.gcloud_cleanup.private_key)}"
+    GCLOUD_CLEANUP_ARCHIVE_BUCKET = "${google_storage_bucket.gcloud_cleanup_archive.name}"
+    GCLOUD_CLEANUP_ACCOUNT_JSON   = "${base64decode(google_service_account_key.gcloud_cleanup.private_key)}"
   }
 }
