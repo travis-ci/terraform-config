@@ -16,6 +16,10 @@ variable "project" {
   default = "travis-staging-1"
 }
 
+variable "k8s_default_namespace" {
+  default = "gce-staging-1"
+}
+
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
 
@@ -44,6 +48,17 @@ provider "google" {
 
 provider "aws" {}
 provider "heroku" {}
+
+provider "kubernetes" {
+  # NOTE: For imports, config_context needs to be hardcoded and host/client/cluster needs to be commented out.
+
+  #config_context = "gke_travis-staging-1_us-central1-a_gce-staging-1"
+
+  host                   = "${module.gke_cluster_1.host}"
+  client_certificate     = "${module.gke_cluster_1.client_certificate}"
+  client_key             = "${module.gke_cluster_1.client_key}"
+  cluster_ca_certificate = "${module.gke_cluster_1.cluster_ca_certificate}"
+}
 
 data "terraform_remote_state" "vpc" {
   backend = "s3"
@@ -82,6 +97,7 @@ module "gce_worker_group" {
   syslog_address_com            = "${var.syslog_address_com}"
   syslog_address_org            = "${var.syslog_address_org}"
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
+  k8s_default_namespace         = "${var.k8s_default_namespace}"
 
   worker_docker_self_image = "${var.latest_docker_image_worker}"
   worker_subnetwork        = "${data.terraform_remote_state.vpc.gce_subnetwork_workers}"
@@ -141,10 +157,11 @@ EOF
 }
 
 module "gke_cluster_1" {
-  source         = "../modules/gke_cluster"
-  name           = "gce-staging-1"
-  gke_network    = "${data.terraform_remote_state.vpc.gce_network_main}"
-  gke_subnetwork = "${data.terraform_remote_state.vpc.gce_subnetwork_gke_cluster}"
+  source                = "../modules/gke_cluster"
+  name                  = "gce-staging-1"
+  gke_network           = "${data.terraform_remote_state.vpc.gce_network_main}"
+  gke_subnetwork        = "${data.terraform_remote_state.vpc.gce_subnetwork_gke_cluster}"
+  k8s_default_namespace = "${var.k8s_default_namespace}"
 
   # Legacy: should become us-central1 instead.
   region = "us-central1-a"

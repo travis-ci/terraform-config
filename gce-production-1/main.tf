@@ -15,6 +15,10 @@ variable "project" {
   default = "eco-emissary-99515"
 }
 
+variable "k8s_default_namespace" {
+  default = "gce-production-1-vpc-enabled"
+}
+
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
 
@@ -43,6 +47,17 @@ provider "google" {
 
 provider "aws" {}
 provider "heroku" {}
+
+provider "kubernetes" {
+  # NOTE: For imports, config_context needs to be hardcoded and host/client/cluster needs to be commented out.
+
+  #config_context = ""
+
+  host                   = "${module.gke_cluster_2.host}"
+  client_certificate     = "${module.gke_cluster_2.client_certificate}"
+  client_key             = "${module.gke_cluster_2.client_key}"
+  cluster_ca_certificate = "${module.gke_cluster_2.cluster_ca_certificate}"
+}
 
 data "terraform_remote_state" "vpc" {
   backend = "s3"
@@ -81,6 +96,7 @@ module "gce_worker_group" {
   syslog_address_com            = "${var.syslog_address_com}"
   syslog_address_org            = "${var.syslog_address_org}"
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
+  k8s_default_namespace         = "${var.k8s_default_namespace}"
 
   worker_subnetwork = "${data.terraform_remote_state.vpc.gce_subnetwork_workers}"
 
@@ -137,10 +153,11 @@ EOF
 }
 
 module "gke_cluster_2" {
-  source         = "../modules/gke_cluster"
-  name           = "gce-production-1-vpc-enabled"
-  gke_network    = "${data.terraform_remote_state.vpc.gce_network_main}"
-  gke_subnetwork = "${data.terraform_remote_state.vpc.gce_subnetwork_gke_cluster}"
+  source                = "../modules/gke_cluster"
+  name                  = "gce-production-1-vpc-enabled"
+  gke_network           = "${data.terraform_remote_state.vpc.gce_network_main}"
+  gke_subnetwork        = "${data.terraform_remote_state.vpc.gce_subnetwork_gke_cluster}"
+  k8s_default_namespace = "${var.k8s_default_namespace}"
 
   # Legacy: should become us-central1 instead.
   region = "us-central1-a"

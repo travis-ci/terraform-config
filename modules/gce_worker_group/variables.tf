@@ -1,5 +1,7 @@
 variable "env" {}
 
+variable "k8s_default_namespace" {}
+
 variable "gcloud_cleanup_archive_retention_days" {
   default = 8
 }

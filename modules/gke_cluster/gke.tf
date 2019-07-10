@@ -14,6 +14,8 @@ variable "gke_subnetwork" {
   default = "default"
 }
 
+variable "k8s_default_namespace" {}
+
 resource "google_container_cluster" "gke_cluster" {
   name                     = "${var.name}"
   location                 = "${var.region}"
@@ -69,7 +71,32 @@ resource "random_id" "password" {
   byte_length = 8
 }
 
-# The following outputs allow authentication and connectivity to the GKE Cluster.
-output "endpoint" {
-  value = "https://${google_container_cluster.gke_cluster.endpoint}/"
+resource "null_resource" "kubectl_context" {
+  provisioner "local-exec" {
+    command = "gcloud container clusters get-credentials ${google_container_cluster.gke_cluster.name} --zone ${google_container_cluster.gke_cluster.location} --project ${google_container_cluster.gke_cluster.project}"
+  }
+
+  provisioner "local-exec" {
+    command = "kubectl config set-context gke_${google_container_cluster.gke_cluster.project}_${google_container_cluster.gke_cluster.location}_${google_container_cluster.gke_cluster.name} --namespace=${var.k8s_default_namespace}"
+  }
+}
+
+output "context" {
+  value = "gke_${google_container_cluster.gke_cluster.project}_${google_container_cluster.gke_cluster.location}_${google_container_cluster.gke_cluster.name}"
+}
+
+output "host" {
+  value = "${google_container_cluster.gke_cluster.endpoint}"
+}
+
+output "client_certificate" {
+  value = "${base64decode(google_container_cluster.gke_cluster.master_auth.0.client_certificate)}"
+}
+
+output "client_key" {
+  value = "${base64decode(google_container_cluster.gke_cluster.master_auth.0.client_key)}"
+}
+
+output "cluster_ca_certificate" {
+  value = "${base64decode(google_container_cluster.gke_cluster.master_auth.0.cluster_ca_certificate)}"
 }
