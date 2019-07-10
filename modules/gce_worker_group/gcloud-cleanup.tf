@@ -67,8 +67,13 @@ resource "google_service_account_key" "gcloud_cleanup" {
   service_account_id = "${google_service_account.gcloud_cleanup.email}"
 }
 
-# This key needs to be copied to travis-keychain.
-# Ideally, this key is created as a Secret in k8s directly.
-output "gcloud_cleanup_account_json" {
-  value = "${base64decode(google_service_account_key.gcloud_cleanup.private_key)}"
+resource "kubernetes_secret" "gcloud_cleanup_service_account" {
+  metadata {
+    name      = "gcloud-cleanup-service-account"
+    namespace = "${kubernetes_namespace.default.metadata.0.name}"
+  }
+
+  data = {
+    GCLOUD_CLEANUP_ACCOUNT_JSON = "${base64decode(google_service_account_key.gcloud_cleanup.private_key)}"
+  }
 }

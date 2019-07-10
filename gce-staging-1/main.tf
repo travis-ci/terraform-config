@@ -174,7 +174,3 @@ output "workers_service_account_emails" {
 output "latest_docker_image_worker" {
   value = "${var.latest_docker_image_worker}"
 }
-
-output "gcloud_cleanup_account_json" {
-  value = "${module.gce_worker_group.gcloud_cleanup_account_json}"
-}
