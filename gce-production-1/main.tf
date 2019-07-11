@@ -51,7 +51,7 @@ provider "heroku" {}
 provider "kubernetes" {
   # NOTE: For imports, config_context needs to be hardcoded and host/client/cluster needs to be commented out.
 
-  #config_context = ""
+  #config_context = "gke_eco-emissary-99515_us-central1-a_gce-production-1-vpc-enabled"
 
   host                   = "${module.gke_cluster_2.host}"
   client_certificate     = "${module.gke_cluster_2.client_certificate}"
