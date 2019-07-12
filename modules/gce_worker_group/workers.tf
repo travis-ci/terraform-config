@@ -5,9 +5,10 @@ module "gce_workers" {
   config_com_free = "${var.worker_config_com_free}"
   config_org      = "${var.worker_config_org}"
 
-  env          = "${var.env}"
-  github_users = "${var.github_users}"
-  index        = "${var.index}"
+  k8s_namespace = "${kubernetes_namespace.default.metadata.0.name}"
+  env           = "${var.env}"
+  github_users  = "${var.github_users}"
+  index         = "${var.index}"
 
   managed_instance_count_com      = "${var.worker_managed_instance_count_com}"
   managed_instance_count_com_free = "${var.worker_managed_instance_count_com_free}"

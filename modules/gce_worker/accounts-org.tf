@@ -15,11 +15,11 @@ resource "google_service_account_key" "workers_org" {
 resource "kubernetes_secret" "worker_org_config" {
   metadata {
     name      = "worker-org-terraform"
-    namespace = "${kubernetes_namespace.default.metadata.0.name}"
+    namespace = "${var.k8s_namespace}"
   }
 
   data = {
-    TRAVIS_WORKER_GCE_ACCOUNT_JSON               = "${base64decode(google_service_account_key.worker_org.private_key)}"
+    TRAVIS_WORKER_GCE_ACCOUNT_JSON               = "${base64decode(google_service_account_key.workers_org.private_key)}"
     TRAVIS_WORKER_STACKDRIVER_TRACE_ACCOUNT_JSON = "${base64decode(google_service_account_key.workers_org.private_key)}"
   }
 }

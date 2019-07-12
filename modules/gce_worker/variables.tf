@@ -1,6 +1,7 @@
 variable "config_com" {}
 variable "config_com_free" {}
 variable "config_org" {}
+variable "k8s_namespace" {}
 variable "env" {}
 variable "github_users" {}
 variable "index" {}
