@@ -43,6 +43,7 @@ variable "worker_machine_type" {
   default = "g1-small"
 }
 
+variable "worker_network" {}
 variable "worker_subnetwork" {}
 
 variable "worker_zones" {

@@ -100,6 +100,7 @@ module "gce_worker_group" {
   k8s_default_namespace         = "${var.k8s_default_namespace}"
 
   worker_docker_self_image = "${var.latest_docker_image_worker}"
+  worker_network           = "${data.terraform_remote_state.vpc.gce_network_main}"
   worker_subnetwork        = "${data.terraform_remote_state.vpc.gce_subnetwork_workers}"
 
   worker_zones = "${var.worker_zones}"

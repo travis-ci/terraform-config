@@ -17,6 +17,7 @@ module "gce_workers" {
   machine_type             = "${var.worker_machine_type}"
   project                  = "${var.project}"
   region                   = "${var.region}"
+  network_workers          = "${var.worker_network}"
   subnetwork_workers       = "${var.worker_subnetwork}"
   syslog_address_com       = "${var.syslog_address_com}"
   syslog_address_org       = "${var.syslog_address_org}"

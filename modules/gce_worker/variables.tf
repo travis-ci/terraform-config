@@ -23,6 +23,7 @@ variable "regions_abbrev" {
   }
 }
 
+variable "network_workers" {}
 variable "subnetwork_workers" {}
 variable "syslog_address_com" {}
 variable "syslog_address_org" {}
