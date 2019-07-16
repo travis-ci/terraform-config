@@ -16,6 +16,14 @@ variable "gke_subnetwork" {
 
 variable "k8s_default_namespace" {}
 
+variable "k8s_max_node_count" {
+  default = 3
+}
+
+variable "k8s_machine_type" {
+  default = "n1-standard-1"
+}
+
 resource "google_container_cluster" "gke_cluster" {
   name                     = "${var.name}"
   location                 = "${var.region}"
@@ -44,6 +52,8 @@ resource "google_container_node_pool" "node_pool" {
   cluster            = "${google_container_cluster.gke_cluster.name}"
 
   node_config {
+    machine_type = "${var.k8s_machine_type}"
+
     oauth_scopes = [
       "https://www.googleapis.com/auth/compute",
       "https://www.googleapis.com/auth/devstorage.read_only",
@@ -59,7 +69,7 @@ resource "google_container_node_pool" "node_pool" {
 
   autoscaling {
     min_node_count = 1
-    max_node_count = 3
+    max_node_count = "${var.k8s_max_node_count}"
   }
 }
 

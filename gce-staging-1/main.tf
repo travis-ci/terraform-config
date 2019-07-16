@@ -163,6 +163,7 @@ module "gke_cluster_1" {
   gke_network           = "${data.terraform_remote_state.vpc.gce_network_main}"
   gke_subnetwork        = "${data.terraform_remote_state.vpc.gce_subnetwork_gke_cluster}"
   k8s_default_namespace = "${var.k8s_default_namespace}"
+  k8s_max_node_count    = 10
 
   # Legacy: should become us-central1 instead.
   region = "us-central1-a"
