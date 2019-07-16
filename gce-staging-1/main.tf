@@ -107,7 +107,7 @@ module "gce_worker_group" {
 
   worker_managed_instance_count_com      = "${length(var.worker_zones)}"
   worker_managed_instance_count_com_free = 0
-  worker_managed_instance_count_org      = "${length(var.worker_zones)}"
+  worker_managed_instance_count_org      = 0                             #"${length(var.worker_zones)}"
 
   worker_config_com = <<EOF
 ### worker.env
