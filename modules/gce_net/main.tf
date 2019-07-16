@@ -188,6 +188,30 @@ resource "google_compute_firewall" "allow_main_ssh" {
   }
 }
 
+resource "google_compute_firewall" "allow_gke_ssh_to_jobs" {
+  name    = "allow-gke-ssh-to-jobs"
+  network = "${google_compute_network.main.name}"
+
+  source_ranges = [
+    "${google_compute_subnetwork.gke_cluster.ip_cidr_range}",
+    "${google_compute_subnetwork.gke_cluster.secondary_ip_range.0.ip_cidr_range}",
+  ]
+
+  target_tags = ["testing"]
+
+  priority = 1000
+  project  = "${var.project}"
+
+  allow {
+    protocol = "tcp"
+    ports    = [22]
+  }
+
+  lifecycle {
+    ignore_changes = ["source_ranges"]
+  }
+}
+
 resource "google_compute_firewall" "allow_public_ssh" {
   name          = "allow-public-ssh"
   network       = "${google_compute_network.main.name}"
