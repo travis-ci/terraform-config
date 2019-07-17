@@ -1,38 +1,18 @@
-variable "config_com" {}
-variable "config_com_free" {}
-variable "config_org" {}
+variable "aws_com_id" {}
+variable "aws_com_secret" {}
+variable "aws_com_trace_bucket" {}
+variable "aws_org_id" {}
+variable "aws_org_secret" {}
+variable "aws_org_trace_bucket" {}
 variable "k8s_namespace" {}
-variable "env" {}
-variable "github_users" {}
-variable "index" {}
-variable "managed_instance_count_com" {}
-variable "managed_instance_count_com_free" {}
-variable "managed_instance_count_org" {}
-
-variable "machine_type" {
-  default = "n1-standard-1"
-}
-
+variable "network_workers" {}
 variable "project" {}
 variable "region" {}
+variable "subnetwork_workers" {}
 
 variable "regions_abbrev" {
   default = {
     "us-central1" = "uc1"
     "us-east1"    = "ue1"
   }
-}
-
-variable "network_workers" {}
-variable "subnetwork_workers" {}
-variable "syslog_address_com" {}
-variable "syslog_address_org" {}
-variable "worker_docker_self_image" {}
-
-variable "worker_image" {
-  default = "projects/ubuntu-os-cloud/global/images/family/ubuntu-1804-lts"
-}
-
-variable "zones" {
-  default = ["a", "b", "c", "f"]
 }

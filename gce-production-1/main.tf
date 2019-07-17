@@ -2,33 +2,17 @@ variable "env" {
   default = "production"
 }
 
-variable "gce_heroku_org" {}
-variable "github_users" {}
-
 variable "index" {
   default = 1
-}
-
-variable "job_board_url" {}
-
-variable "project" {
-  default = "eco-emissary-99515"
 }
 
 variable "k8s_default_namespace" {
   default = "gce-production-1"
 }
 
-variable "syslog_address_com" {}
-variable "syslog_address_org" {}
-
-variable "travisci_net_external_zone_id" {
-  default = "Z2RI61YP4UWSIO"
+variable "project" {
+  default = "eco-emissary-99515"
 }
-
-variable "worker_managed_instance_count_com" {}
-variable "worker_managed_instance_count_org" {}
-variable "worker_managed_instance_count_com_free" {}
 
 terraform {
   backend "s3" {
@@ -46,7 +30,6 @@ provider "google" {
 }
 
 provider "aws" {}
-provider "heroku" {}
 
 provider "kubernetes" {
   # NOTE: For imports, config_context needs to be hardcoded and host/client/cluster needs to be commented out.
@@ -87,71 +70,19 @@ module "aws_iam_user_s3_org" {
 module "gce_worker_group" {
   source = "../modules/gce_worker_group"
 
-  env                           = "${var.env}"
-  github_users                  = "${var.github_users}"
-  heroku_org                    = "${var.gce_heroku_org}"
-  index                         = "${var.index}"
-  project                       = "${var.project}"
-  region                        = "us-central1"
-  syslog_address_com            = "${var.syslog_address_com}"
-  syslog_address_org            = "${var.syslog_address_org}"
-  travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
-  k8s_default_namespace         = "${var.k8s_default_namespace}"
-
-  worker_docker_self_image = "travisci/worker:v6.2.0"
-  worker_network           = "${data.terraform_remote_state.vpc.gce_network_main}"
-  worker_subnetwork        = "${data.terraform_remote_state.vpc.gce_subnetwork_workers}"
-
-  worker_managed_instance_count_com      = "${var.worker_managed_instance_count_com}"
-  worker_managed_instance_count_com_free = "${var.worker_managed_instance_count_com_free}"
-  worker_managed_instance_count_org      = "${var.worker_managed_instance_count_org}"
-
-  worker_config_com = <<EOF
-### worker.env
-${file("${path.module}/worker.env")}
-### config/worker-com.env
-${file("${path.module}/config/worker-com.env")}
-
-export TRAVIS_WORKER_GCE_SUBNETWORK=jobs-com
-export TRAVIS_WORKER_HARD_TIMEOUT=120m
-export TRAVIS_WORKER_QUEUE_NAME=builds.gce
-export TRAVIS_WORKER_TRAVIS_SITE=com
-
-export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_com.bucket}
-export AWS_ACCESS_KEY_ID=${module.aws_iam_user_s3_com.id}
-export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_com.secret}
-EOF
-
-  worker_config_com_free = <<EOF
-### worker.env
-${file("${path.module}/worker.env")}
-### config/worker-com.env
-${file("${path.module}/config/worker-com.env")}
-
-export TRAVIS_WORKER_QUEUE_NAME=builds.gce-free
-export TRAVIS_WORKER_GCE_SUBNETWORK=jobs-com
-export TRAVIS_WORKER_HARD_TIMEOUT=120m
-export TRAVIS_WORKER_TRAVIS_SITE=com
-
-export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_com.bucket}
-export AWS_ACCESS_KEY_ID=${module.aws_iam_user_s3_com.id}
-export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_com.secret}
-EOF
-
-  worker_config_org = <<EOF
-### worker.env
-${file("${path.module}/worker.env")}
-### config/worker-org.env
-${file("${path.module}/config/worker-org.env")}
-
-export TRAVIS_WORKER_QUEUE_NAME=builds.gce
-export TRAVIS_WORKER_GCE_SUBNETWORK=jobs-org
-export TRAVIS_WORKER_TRAVIS_SITE=org
-
-export TRAVIS_WORKER_BUILD_TRACE_S3_BUCKET=${module.aws_iam_user_s3_org.bucket}
-export AWS_ACCESS_KEY_ID=${module.aws_iam_user_s3_org.id}
-export AWS_SECRET_ACCESS_KEY=${module.aws_iam_user_s3_org.secret}
-EOF
+  aws_com_id            = "${module.aws_iam_user_s3_com.id}"
+  aws_com_secret        = "${module.aws_iam_user_s3_com.secret}"
+  aws_com_trace_bucket  = "${module.aws_iam_user_s3_com.bucket}"
+  aws_org_id            = "${module.aws_iam_user_s3_org.id}"
+  aws_org_secret        = "${module.aws_iam_user_s3_org.secret}"
+  aws_org_trace_bucket  = "${module.aws_iam_user_s3_org.bucket}"
+  env                   = "${var.env}"
+  index                 = "${var.index}"
+  k8s_default_namespace = "${var.k8s_default_namespace}"
+  project               = "${var.project}"
+  region                = "us-central1"
+  worker_network        = "${data.terraform_remote_state.vpc.gce_network_main}"
+  worker_subnetwork     = "${data.terraform_remote_state.vpc.gce_subnetwork_workers}"
 }
 
 module "gke_cluster_1" {
