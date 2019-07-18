@@ -98,6 +98,7 @@ module "gce_worker_group" {
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
   k8s_default_namespace         = "${var.k8s_default_namespace}"
 
+  worker_network    = "${data.terraform_remote_state.vpc.gce_network_main}"
   worker_subnetwork = "${data.terraform_remote_state.vpc.gce_subnetwork_workers}"
 
   worker_managed_instance_count_com      = "${var.worker_managed_instance_count_com}"
@@ -158,6 +159,7 @@ module "gke_cluster_1" {
   gke_network           = "${data.terraform_remote_state.vpc.gce_network_main}"
   gke_subnetwork        = "${data.terraform_remote_state.vpc.gce_subnetwork_gke_cluster}"
   k8s_default_namespace = "${var.k8s_default_namespace}"
+  k8s_max_node_count    = 50
 }
 
 output "workers_service_account_emails" {
