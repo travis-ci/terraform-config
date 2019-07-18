@@ -98,8 +98,9 @@ module "gce_worker_group" {
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
   k8s_default_namespace         = "${var.k8s_default_namespace}"
 
-  worker_network    = "${data.terraform_remote_state.vpc.gce_network_main}"
-  worker_subnetwork = "${data.terraform_remote_state.vpc.gce_subnetwork_workers}"
+  worker_docker_self_image = "travisci/worker:v6.2.0"
+  worker_network           = "${data.terraform_remote_state.vpc.gce_network_main}"
+  worker_subnetwork        = "${data.terraform_remote_state.vpc.gce_subnetwork_workers}"
 
   worker_managed_instance_count_com      = "${var.worker_managed_instance_count_com}"
   worker_managed_instance_count_com_free = "${var.worker_managed_instance_count_com_free}"
