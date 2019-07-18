@@ -188,8 +188,8 @@ resource "google_compute_firewall" "allow_main_ssh" {
   }
 }
 
-resource "google_compute_firewall" "allow_gke_ssh_to_jobs" {
-  name    = "allow-gke-ssh-to-jobs"
+resource "google_compute_firewall" "allow_gke_worker_to_jobs" {
+  name    = "allow-gke-workers-to-jobs"
   network = "${google_compute_network.main.name}"
 
   source_ranges = [
@@ -202,9 +202,10 @@ resource "google_compute_firewall" "allow_gke_ssh_to_jobs" {
   priority = 1000
   project  = "${var.project}"
 
+  # 5986/wsman for Windows machines
   allow {
     protocol = "tcp"
-    ports    = [22]
+    ports    = [22, 5986]
   }
 
   lifecycle {
