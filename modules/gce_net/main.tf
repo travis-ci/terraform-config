@@ -207,10 +207,6 @@ resource "google_compute_firewall" "allow_gke_worker_to_jobs" {
     protocol = "tcp"
     ports    = [22, 5986]
   }
-
-  lifecycle {
-    ignore_changes = ["source_ranges"]
-  }
 }
 
 resource "google_compute_firewall" "allow_public_ssh" {
