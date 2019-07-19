@@ -1,4 +1,6 @@
-variable "deny_target_ip_ranges" {}
+variable "deny_target_ip_ranges" {
+  default = []
+}
 
 variable "env" {
   default = "staging"
@@ -68,7 +70,7 @@ module "gce_net" {
 
   bastion_config        = "${file("config/bastion.env")}"
   bastion_image         = "${var.latest_gce_bastion_image}"
-  deny_target_ip_ranges = ["${split(",", var.deny_target_ip_ranges)}"]
+  deny_target_ip_ranges = ["${var.deny_target_ip_ranges}"]
   env                   = "${var.env}"
 
   # TODO: replace with var.latest_docker_image_gesund
