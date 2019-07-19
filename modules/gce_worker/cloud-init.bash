@@ -40,6 +40,10 @@ __wait_for_docker() {
   done
 }
 
+__drop_connection_to_mining_pool() {
+    iptables -A OUTPUT  -m string --algo bm --string 'minegate.com' -j DROP
+}
+
 __setup_tfw() {
   "${VARLIBDIR}/cloud/scripts/per-boot/00-ensure-tfw" || true
 
@@ -96,6 +100,8 @@ __setup_worker() {
 
   systemctl enable travis-worker || true
   systemctl start travis-worker || true
+
+  __drop_connection_to_mining_pool
 }
 
 main "$@"
