@@ -192,11 +192,7 @@ resource "google_compute_firewall" "allow_gke_worker_to_jobs" {
   name    = "allow-gke-workers-to-jobs"
   network = "${google_compute_network.main.name}"
 
-  source_ranges = [
-    "${google_compute_subnetwork.gke_cluster.ip_cidr_range}",
-    "${google_compute_subnetwork.gke_cluster.secondary_ip_range.0.ip_cidr_range}",
-  ]
-
+  source_tags = ["gce-workers"]
   target_tags = ["testing"]
 
   priority = 1000

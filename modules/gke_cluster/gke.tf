@@ -57,6 +57,7 @@ resource "google_container_node_pool" "node_pool" {
 
   node_config {
     machine_type = "${var.k8s_machine_type}"
+    tags         = ["gce-workers"]
 
     oauth_scopes = [
       "https://www.googleapis.com/auth/compute",
