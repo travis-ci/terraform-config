@@ -1,5 +1,9 @@
-variable "name" {
+variable "cluster_name" {
   default = "cluster"
+}
+
+variable "pool_name" {
+  default = "pool"
 }
 
 variable "region" {
@@ -25,7 +29,7 @@ variable "k8s_machine_type" {
 }
 
 resource "google_container_cluster" "gke_cluster" {
-  name                     = "${var.name}"
+  name                     = "${var.cluster_name}"
   location                 = "${var.region}"
   min_master_version       = "1.13"
   initial_node_count       = 1
@@ -46,7 +50,7 @@ resource "google_container_cluster" "gke_cluster" {
 }
 
 resource "google_container_node_pool" "node_pool" {
-  name               = "${var.name}"
+  name               = "${var.pool_name}"
   location           = "${var.region}"
   initial_node_count = 1
   cluster            = "${google_container_cluster.gke_cluster.name}"

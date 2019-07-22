@@ -159,7 +159,8 @@ EOF
 
 module "gke_cluster_1" {
   source                = "../modules/gke_cluster"
-  name                  = "gce-staging-1"
+  cluster_name          = "gce-staging-1"
+  pool_name             = "gce-staging-1"
   gke_network           = "${data.terraform_remote_state.vpc.gce_network_main}"
   gke_subnetwork        = "${data.terraform_remote_state.vpc.gce_subnetwork_gke_cluster}"
   k8s_default_namespace = "${var.k8s_default_namespace}"
