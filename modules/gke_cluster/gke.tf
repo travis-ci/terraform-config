@@ -20,6 +20,10 @@ variable "gke_subnetwork" {
 
 variable "k8s_default_namespace" {}
 
+variable "k8s_min_node_count" {
+  default = 1
+}
+
 variable "k8s_max_node_count" {
   default = 3
 }
@@ -73,7 +77,7 @@ resource "google_container_node_pool" "node_pool" {
   }
 
   autoscaling {
-    min_node_count = 1
+    min_node_count = "${var.k8s_min_node_count}"
     max_node_count = "${var.k8s_max_node_count}"
   }
 }
