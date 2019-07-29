@@ -99,3 +99,12 @@ module "gke_cluster_1" {
 output "workers_service_account_emails" {
   value = ["${module.gce_worker_group.workers_service_account_emails}"]
 }
+
+module "fair_use_ip_query_report" {
+  source        = "../modules/fair_use_reporting"
+  k8s_namespace = "${var.k8s_default_namespace}"
+}
+
+output "fair_use_ip_query_report_account_json" {
+  value = "${module.fair_use_ip_query_report.fair_use_ip_query_report_account_json}"
+}
