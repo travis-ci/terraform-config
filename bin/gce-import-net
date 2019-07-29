@@ -49,7 +49,6 @@ def main
   {
     'google_compute_address.bastion[0]' => 'bastion-b',
     'google_compute_firewall.allow_internal' => 'allow-internal',
-    'google_compute_firewall.allow_jobs_nat' => 'allow-jobs-nat',
     'google_compute_firewall.allow_public_icmp' => 'allow-public-icmp',
     'google_compute_firewall.allow_public_ssh' => 'allow-public-ssh',
     'google_compute_firewall.deny_target_ip' => 'deny-target-ip',

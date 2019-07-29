@@ -14,7 +14,6 @@ JOB_BOARD_HOST ?= job-board.travis-ci.com
 AMQP_URL_COM_VARNAME ?= AMQP_URL
 AMQP_URL_ORG_VARNAME ?= AMQP_URL
 TOP := $(shell git rev-parse --show-toplevel)
-NATBZ2 := $(TOP)/assets/nat.tar.bz2
 
 PROD_TF_VERSION := v0.11.13
 TERRAFORM := $(TF_INSTALLATION_PREFIX)/terraform-$(PROD_TF_VERSION)
@@ -107,9 +106,6 @@ TAR := LC_ALL=C $(TAR) \
       --numeric-owner \
       --sort=name \
       -cj
-
-$(NATBZ2): tar $(wildcard $(TOP)/assets/nat/**/*)
-	$(TAR) -C $(TOP)/assets -f $(NATBZ2) nat
 
 $(TFSTATE):
 	$(TERRAFORM) init

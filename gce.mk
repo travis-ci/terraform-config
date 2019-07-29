@@ -3,7 +3,7 @@ TOP := $(shell git rev-parse --show-toplevel)
 include $(TOP)/terraform-common.mk
 include $(TOP)/trvs.mk
 
-WRITE_CONFIG_OPTS := --write-bastion --write-nat --env-tail $(ENV_TAIL)
+WRITE_CONFIG_OPTS := --write-bastion --env-tail $(ENV_TAIL)
 
 .PHONY: default
 default: hello
@@ -12,8 +12,7 @@ CONFIG_FILES := \
 	config/bastion.env \
 	config/gce-workers-$(ENV_SHORT).json \
 	config/worker-com.env \
-	config/worker-org.env \
-	$(NATBZ2)
+	config/worker-org.env
 
 .PHONY: .config
 .config: $(CONFIG_FILES) $(ENV_NAME).auto.tfvars

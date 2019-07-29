@@ -35,7 +35,6 @@ Metrics/MethodLength:
 # Blacklist: (?-mix:(^|\s)(EO[A-Z]{1}|END)(\s|$))
 Naming/HeredocDelimiterNaming:
   Exclude:
-    - 'bin/gcloud-nats-by-zone'
     - 'bin/generate-latest-gce-images'
     - 'bin/write-config-files'
 
