@@ -40,6 +40,8 @@ resource "google_container_cluster" "gke_cluster" {
   remove_default_node_pool = true
   network                  = "${var.gke_network}"
   subnetwork               = "${var.gke_subnetwork}"
+  monitoring_service       = "monitoring.googleapis.com/kubernetes"
+  logging_service          = "logging.googleapis.com/kubernetes"
 
   ip_allocation_policy {}
 
