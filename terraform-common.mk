@@ -8,11 +8,6 @@ TRVS_ENV_NAME_TFVARS := $(PWD)/trvs-$(ENV_NAME).auto.tfvars
 TRVS_TFVARS := $(TRVS_INFRA_ENV_TFVARS) $(TRVS_ENV_NAME_TFVARS)
 TFSTATE := $(PWD)/.terraform/terraform.tfstate
 TFPLAN := $(PWD)/$(ENV_NAME).tfplan
-TRAVIS_BUILD_COM_HOST ?= build.travis-ci.com
-TRAVIS_BUILD_ORG_HOST ?= build.travis-ci.org
-JOB_BOARD_HOST ?= job-board.travis-ci.com
-AMQP_URL_COM_VARNAME ?= AMQP_URL
-AMQP_URL_ORG_VARNAME ?= AMQP_URL
 TOP := $(shell git rev-parse --show-toplevel)
 
 PROD_TF_VERSION := v0.11.13
@@ -146,17 +141,3 @@ check:
 			exit 1; \
 		fi; \
 	fi
-
-config/.written:
-	$(TOP)/bin/write-config-files \
-		--infra "$(INFRA)" \
-		--env "$(ENV_SHORT)" \
-		--build-com-host "$(TRAVIS_BUILD_COM_HOST)" \
-		--build-org-host "$(TRAVIS_BUILD_ORG_HOST)" \
-		--job-board-host "$(JOB_BOARD_HOST)" \
-		--amqp-url-org-varname "$(AMQP_URL_ORG_VARNAME)" $(WRITE_CONFIG_OPTS) \
-		--amqp-url-com-varname "$(AMQP_URL_COM_VARNAME)" $(WRITE_CONFIG_OPTS)
-
-config/.gce-keys-written:
-	cp -v $$TRAVIS_KEYCHAIN_DIR/travis-keychain/gce/*.json config/
-	date -u >$@
