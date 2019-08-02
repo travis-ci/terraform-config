@@ -6,10 +6,6 @@ variable "env" {
   default = "staging"
 }
 
-variable "latest_gce_bastion_image" {}
-
-variable "github_users" {}
-
 variable "index" {
   default = 1
 }
@@ -51,11 +47,8 @@ provider "heroku" {}
 module "gce_net" {
   source = "../modules/gce_net"
 
-  bastion_config                = "${file("config/bastion.env")}"
-  bastion_image                 = "${var.latest_gce_bastion_image}"
   deny_target_ip_ranges         = ["${var.deny_target_ip_ranges}"]
   env                           = "${var.env}"
-  github_users                  = "${var.github_users}"
   index                         = "${var.index}"
   nat_count_per_zone            = 2
   project                       = "${var.project}"

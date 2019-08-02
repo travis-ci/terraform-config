@@ -1,10 +1,3 @@
-variable "bastion_config" {}
-variable "bastion_image" {}
-
-variable "bastion_zones" {
-  default = ["b", "f"]
-}
-
 variable "deny_target_ip_ranges" {
   type    = "list"
   default = []
@@ -12,7 +5,6 @@ variable "deny_target_ip_ranges" {
 
 variable "env" {}
 
-variable "github_users" {}
 variable "index" {}
 
 variable "nat_count_per_zone" {

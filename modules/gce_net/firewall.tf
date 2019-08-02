@@ -32,33 +32,6 @@ resource "google_compute_firewall" "allow_gke_worker_to_jobs" {
   }
 }
 
-resource "google_compute_firewall" "allow_public_ssh" {
-  name          = "allow-public-ssh"
-  network       = "${google_compute_network.main.name}"
-  source_ranges = ["0.0.0.0/0"]
-  target_tags   = ["bastion"]
-
-  project = "${var.project}"
-
-  allow {
-    protocol = "tcp"
-    ports    = [22]
-  }
-}
-
-resource "google_compute_firewall" "allow_public_icmp" {
-  name          = "allow-public-icmp"
-  network       = "${google_compute_network.main.name}"
-  source_ranges = ["0.0.0.0/0"]
-  target_tags   = ["bastion"]
-
-  project = "${var.project}"
-
-  allow {
-    protocol = "icmp"
-  }
-}
-
 resource "google_compute_firewall" "allow_internal" {
   name    = "allow-internal"
   network = "${google_compute_network.main.name}"
