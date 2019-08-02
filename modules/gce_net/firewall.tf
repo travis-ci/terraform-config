@@ -66,7 +66,6 @@ resource "google_compute_firewall" "allow_internal" {
 
   source_ranges = [
     "${google_compute_subnetwork.public.ip_cidr_range}",
-    "${google_compute_subnetwork.workers.ip_cidr_range}",
     "${google_compute_subnetwork.gke_cluster.ip_cidr_range}",
   ]
 

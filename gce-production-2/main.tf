@@ -81,8 +81,6 @@ module "gce_worker_group" {
   k8s_default_namespace = "${var.k8s_default_namespace}"
   project               = "${var.project}"
   region                = "us-central1"
-  worker_network        = "${data.terraform_remote_state.vpc.gce_network_main}"
-  worker_subnetwork     = "${data.terraform_remote_state.vpc.gce_subnetwork_workers}"
 }
 
 module "gke_cluster_1" {

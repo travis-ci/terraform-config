@@ -58,10 +58,6 @@ variable "public_subnet_cidr_range" {
   default = "10.10.0.0/22"
 }
 
-variable "workers_subnet_cidr_range" {
-  default = "10.10.4.0/22"
-}
-
 variable "jobs_org_subnet_cidr_range" {
   default = "10.20.0.0/16"
 }

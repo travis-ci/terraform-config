@@ -5,10 +5,8 @@ variable "aws_org_id" {}
 variable "aws_org_secret" {}
 variable "aws_org_trace_bucket" {}
 variable "k8s_namespace" {}
-variable "network_workers" {}
 variable "project" {}
 variable "region" {}
-variable "subnetwork_workers" {}
 
 variable "regions_abbrev" {
   default = {

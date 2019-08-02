@@ -13,15 +13,6 @@ resource "google_compute_subnetwork" "public" {
   enable_flow_logs = "true"
 }
 
-resource "google_compute_subnetwork" "workers" {
-  name             = "workers"
-  ip_cidr_range    = "${var.workers_subnet_cidr_range}"
-  network          = "${google_compute_network.main.self_link}"
-  region           = "${var.region}"
-  project          = "${var.project}"
-  enable_flow_logs = "true"
-}
-
 resource "google_compute_subnetwork" "jobs_org" {
   name             = "jobs-org"
   ip_cidr_range    = "${var.jobs_org_subnet_cidr_range}"

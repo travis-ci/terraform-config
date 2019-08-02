@@ -9,8 +9,6 @@ variable "index" {}
 variable "k8s_default_namespace" {}
 variable "project" {}
 variable "region" {}
-variable "worker_network" {}
-variable "worker_subnetwork" {}
 
 variable "gcloud_cleanup_archive_retention_days" {
   default = 8

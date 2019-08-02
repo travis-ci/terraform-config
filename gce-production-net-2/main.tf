@@ -65,15 +65,10 @@ module "gce_net" {
   rigaer_strasse_8_ipv4         = "${var.rigaer_strasse_8_ipv4}"
   syslog_address                = "${var.syslog_address_com}"
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
-  workers_subnet_cidr_range     = "10.10.16.0/22"
 }
 
 output "gce_network_main" {
   value = "${module.gce_net.gce_network_main}"
-}
-
-output "gce_subnetwork_workers" {
-  value = "${module.gce_net.gce_subnetwork_workers}"
 }
 
 output "gce_subnetwork_gke_cluster" {
