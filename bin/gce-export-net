@@ -31,9 +31,12 @@ def main
   command = %W[#{terraform} state rm] + (
     %w[
       aws_route53_record.bastion-b
+      aws_route53_record.nat-b
       google_compute_address.bastion-b
       google_compute_address.bastion[0]
+      google_compute_address.nat-b
       google_compute_firewall.allow_internal
+      google_compute_firewall.allow_jobs_nat
       google_compute_firewall.allow_public_icmp
       google_compute_firewall.allow_public_ssh
       google_compute_firewall.deny_target_ip
