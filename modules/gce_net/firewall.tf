@@ -1,4 +1,3 @@
-
 resource "google_compute_firewall" "allow_main_ssh" {
   name          = "allow-main-ssh"
   network       = "${google_compute_network.main.name}"
@@ -107,4 +106,3 @@ resource "google_compute_firewall" "deny_target_ip" {
     protocol = "all"
   }
 }
-

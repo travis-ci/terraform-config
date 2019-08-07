@@ -115,4 +115,3 @@ variable "build_com_subnet_cidr_range" {
 variable "build_org_subnet_cidr_range" {
   default = "10.10.8.0/22"
 }
-
