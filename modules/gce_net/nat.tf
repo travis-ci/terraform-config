@@ -28,7 +28,6 @@ resource "google_compute_router" "nat" {
   name    = "router"
   region  = "${google_compute_subnetwork.public.region}"
   network = "${google_compute_network.main.self_link}"
-  project = "${var.project}"
 
   bgp {
     asn = 64514
@@ -42,7 +41,6 @@ resource "google_compute_router_nat" "nat" {
   nat_ip_allocate_option             = "MANUAL_ONLY"
   nat_ips                            = ["${google_compute_address.nat.*.self_link}"]
   source_subnetwork_ip_ranges_to_nat = "LIST_OF_SUBNETWORKS"
-  project                            = "${var.project}"
 
   subnetwork {
     name                    = "${google_compute_subnetwork.jobs_org.self_link}"
