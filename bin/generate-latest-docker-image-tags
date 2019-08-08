@@ -33,6 +33,7 @@ def main
 
   %w[
     gesund
+    nat-conntracker
     worker
   ].each do |image|
     tag = latest_docker_image_tag("travisci/#{image}")

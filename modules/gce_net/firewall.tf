@@ -50,7 +50,7 @@ resource "google_compute_firewall" "allow_public_icmp" {
   name          = "allow-public-icmp"
   network       = "${google_compute_network.main.name}"
   source_ranges = ["0.0.0.0/0"]
-  target_tags   = ["bastion"]
+  target_tags   = ["nat", "bastion"]
 
   project = "${var.project}"
 
@@ -68,6 +68,23 @@ resource "google_compute_firewall" "allow_internal" {
     "${google_compute_subnetwork.public.ip_cidr_range}",
     "${google_compute_subnetwork.gke_cluster.ip_cidr_range}",
   ]
+
+  allow {
+    protocol = "all"
+  }
+}
+
+resource "google_compute_firewall" "allow_jobs_nat" {
+  name    = "allow-jobs-nat"
+  network = "${google_compute_network.main.name}"
+  project = "${var.project}"
+
+  source_ranges = [
+    "${google_compute_subnetwork.jobs_org.ip_cidr_range}",
+    "${google_compute_subnetwork.jobs_com.ip_cidr_range}",
+  ]
+
+  target_tags = ["nat"]
 
   allow {
     protocol = "all"
