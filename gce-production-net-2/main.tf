@@ -65,7 +65,7 @@ provider "aws" {}
 provider "heroku" {}
 
 module "gce_net" {
-  source = "../modules/gce_net"
+  source = "../modules/gce_net_workers"
 
   bastion_config        = "${file("config/bastion.env")}"
   bastion_image         = "${var.gce_bastion_image}"

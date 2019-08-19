@@ -5,6 +5,11 @@ module "project" {
   project_id   = "${var.project_id}"
 }
 
-# module "networking" {}
+module "networking" {
+  source = "../modules/gce_net_services"
+
+  project = "${module.project.project_id}"
+}
+
 # module "kubernetes_cluster" {}
 
