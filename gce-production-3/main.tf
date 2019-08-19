@@ -84,13 +84,15 @@ module "gce_worker_group" {
 }
 
 module "gke_cluster_1" {
-  source                = "../modules/gke_cluster"
-  cluster_name          = "gce-production-3"
-  pool_name             = "gce-production-3"
-  gke_network           = "${data.terraform_remote_state.vpc.gce_network_main}"
-  gke_subnetwork        = "${data.terraform_remote_state.vpc.gce_subnetwork_gke_cluster}"
-  k8s_default_namespace = "${var.k8s_default_namespace}"
-  k8s_max_node_count    = 20
+  source            = "../modules/gce_kubernetes"
+  project           = "${var.project}"
+  cluster_name      = "gce-production-3"
+  pool_name         = "gce-production-3"
+  network           = "${data.terraform_remote_state.vpc.gce_network_main}"
+  subnetwork        = "${data.terraform_remote_state.vpc.gce_subnetwork_gke_cluster}"
+  default_namespace = "${var.k8s_default_namespace}"
+  max_node_count    = 20
+  node_pool_tags    = ["gce-workers"]
 }
 
 output "workers_service_account_emails" {
