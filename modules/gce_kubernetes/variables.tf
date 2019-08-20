@@ -24,3 +24,11 @@ variable "max_node_count" {
 variable "machine_type" {
   default = "n1-standard-1"
 }
+
+variable "enable_private_endpoint" {
+  default = false
+}
+
+variable "enable_private_nodes" {
+  default = false
+}
