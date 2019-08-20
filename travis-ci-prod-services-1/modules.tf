@@ -21,7 +21,8 @@ module "kubernetes_cluster" {
   project           = "${module.project.project_id}"
   subnetwork        = "${module.networking.services_network_name}"
 
-  node_pool_tags = ["services"]
-  max_node_count = 10
-  machine_type   = "c2-standard-4"
+  node_pool_tags       = ["services"]
+  max_node_count       = 10
+  machine_type         = "c2-standard-4"
+  enable_private_nodes = true
 }
