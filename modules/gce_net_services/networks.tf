@@ -5,11 +5,12 @@ resource "google_compute_network" "main" {
 }
 
 resource "google_compute_subnetwork" "services" {
-  name             = "services"
-  project          = "${var.project}"
-  ip_cidr_range    = "${var.services_subnet_cidr_range}"
-  network          = "${google_compute_network.main.self_link}"
-  enable_flow_logs = "true"
+  name                     = "services"
+  project                  = "${var.project}"
+  ip_cidr_range            = "${var.services_subnet_cidr_range}"
+  network                  = "${google_compute_network.main.self_link}"
+  enable_flow_logs         = "true"
+  private_ip_google_access = "true"
 }
 
 output "main_network_name" {
