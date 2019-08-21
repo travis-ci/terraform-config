@@ -19,8 +19,10 @@ module "kubernetes_cluster" {
   network           = "${module.networking.main_network_name}"
   pool_name         = "pool1"
   project           = "${module.project.project_id}"
+  region            = "${var.region}"
   subnetwork        = "${module.networking.services_network_name}"
 
+  node_locations       = ["us-central1-b", "us-central1-c"]
   node_pool_tags       = ["services"]
   max_node_count       = 10
   machine_type         = "c2-standard-4"

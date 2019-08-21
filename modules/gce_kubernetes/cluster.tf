@@ -1,9 +1,11 @@
 resource "google_container_cluster" "gke_cluster" {
   name               = "${var.cluster_name}"
   project            = "${var.project}"
+  location           = "${var.region}"
   network            = "${var.network}"
   subnetwork         = "${var.subnetwork}"
   min_master_version = "${var.min_master_version}"
+  node_locations     = "${var.node_locations}"
 
   initial_node_count       = 1
   remove_default_node_pool = true
@@ -27,9 +29,12 @@ resource "google_container_cluster" "gke_cluster" {
 }
 
 resource "google_container_node_pool" "node_pool" {
-  name    = "${var.pool_name}"
-  project = "${var.project}"
-  cluster = "${google_container_cluster.gke_cluster.name}"
+  name     = "${var.pool_name}"
+  project  = "${var.project}"
+  location = "${var.region}"
+  cluster  = "${google_container_cluster.gke_cluster.name}"
+
+  initial_node_count = 1
 
   node_config {
     machine_type = "${var.machine_type}"
