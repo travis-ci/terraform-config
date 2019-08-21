@@ -3,10 +3,15 @@ variable "default_namespace" {}
 variable "network" {}
 variable "pool_name" {}
 variable "project" {}
+variable "region" {}
 variable "subnetwork" {}
 
 variable "min_master_version" {
   default = "1.13"
+}
+
+variable "node_locations" {
+  default = []
 }
 
 variable "node_pool_tags" {
