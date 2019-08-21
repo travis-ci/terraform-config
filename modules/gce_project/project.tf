@@ -1,15 +1,20 @@
-variable "project_name" {}
 variable "project_id" {}
 
-resource "google_project" "project" {
-  name       = "${var.project_name}"
+data "google_project" "project" {
   project_id = "${var.project_id}"
 }
 
 resource "google_project_services" "project" {
-  project = "${google_project.project.project_id}"
+  project = "${data.google_project.project.project_id}"
 
   services = [
+    "bigquery-json.googleapis.com",
+    "bigquerystorage.googleapis.com",
+    "iam.googleapis.com",
+    "iamcredentials.googleapis.com",
+    "oslogin.googleapis.com",
+    "pubsub.googleapis.com",
+    "storage-api.googleapis.com",
     "compute.googleapis.com",
     "container.googleapis.com",
     "containerregistry.googleapis.com",
@@ -18,5 +23,5 @@ resource "google_project_services" "project" {
 }
 
 output "project_id" {
-  value = "${google_project.project.project_id}"
+  value = "${data.google_project.project.project_id}"
 }
