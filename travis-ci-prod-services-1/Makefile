@@ -9,3 +9,8 @@ include $(shell git rev-parse --show-toplevel)/trvs.mk
 
 .PHONY: .config
 .config: $(ENV_NAME).auto.tfvars
+
+.PHONY: context
+context:
+	terraform taint -module=kubernetes_cluster null_resource.kubectl_context
+	terraform apply -target module.kubernetes_cluster.null_resource.kubectl_context
