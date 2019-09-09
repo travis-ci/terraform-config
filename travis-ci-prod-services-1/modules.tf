@@ -21,9 +21,10 @@ module "kubernetes_cluster" {
   region            = "${var.region}"
   subnetwork        = "${module.networking.services_network_name}"
 
-  node_locations       = ["us-central1-b", "us-central1-c"]
-  node_pool_tags       = ["services"]
-  max_node_count       = 10
-  machine_type         = "c2-standard-4"
-  enable_private_nodes = true
+  node_locations                 = ["us-central1-b", "us-central1-c"]
+  node_pool_tags                 = ["services"]
+  max_node_count                 = 10
+  machine_type                   = "c2-standard-4"
+  enable_private_nodes           = true
+  private_master_ipv4_cidr_block = "172.16.0.0/28"
 }

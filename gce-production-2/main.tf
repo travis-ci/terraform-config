@@ -88,11 +88,13 @@ module "gke_cluster_1" {
   project           = "${var.project}"
   cluster_name      = "gce-production-2"
   pool_name         = "gce-production-2"
+  region            = "us-central1"
   network           = "${data.terraform_remote_state.vpc.gce_network_main}"
   subnetwork        = "${data.terraform_remote_state.vpc.gce_subnetwork_gke_cluster}"
   default_namespace = "${var.k8s_default_namespace}"
   min_node_count    = 4
   max_node_count    = 50
+  node_locations    = ["us-central1-a", "us-central1-c", "us-central1-b"]
   node_pool_tags    = ["gce-workers"]
 }
 
