@@ -88,6 +88,7 @@ module "gke_cluster_1" {
   project           = "${var.project}"
   cluster_name      = "gce-staging-1"
   pool_name         = "gce-staging-1"
+  region            = "us-central1-a"
   network           = "${data.terraform_remote_state.vpc.gce_network_main}"
   subnetwork        = "${data.terraform_remote_state.vpc.gce_subnetwork_gke_cluster}"
   default_namespace = "${var.k8s_default_namespace}"
