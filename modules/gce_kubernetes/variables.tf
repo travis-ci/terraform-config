@@ -31,9 +31,13 @@ variable "machine_type" {
 }
 
 variable "enable_private_endpoint" {
-  default = false
+  default = ""
 }
 
 variable "enable_private_nodes" {
-  default = false
+  default = ""
+}
+
+variable "private_master_ipv4_cidr_block" {
+  default = ""
 }
