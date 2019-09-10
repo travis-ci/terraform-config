@@ -13,6 +13,6 @@ variable "cert_manager_enabled" {
 }
 
 variable "cert_manager_source_tags" {
-  type = "list"
+  type    = "list"
   default = []
 }

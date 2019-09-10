@@ -11,6 +11,6 @@ variable "region" {
 }
 
 variable "node_pool_tags" {
-  type = "list"
+  type    = "list"
   default = ["services"]
 }
