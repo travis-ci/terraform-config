@@ -7,7 +7,9 @@ module "project" {
 module "networking" {
   source = "../modules/gce_net_services"
 
-  project = "${module.project.project_id}"
+  project                  = "${module.project.project_id}"
+  cert_manager_enabled     = 1
+  cert_manager_source_tags = "${var.node_pool_tags}"
 }
 
 module "kubernetes_cluster" {
@@ -22,7 +24,7 @@ module "kubernetes_cluster" {
   subnetwork        = "${module.networking.services_network_name}"
 
   node_locations       = ["us-central1-b", "us-central1-c"]
-  node_pool_tags       = ["services"]
+  node_pool_tags       = "${var.node_pool_tags}"
   max_node_count       = 10
   machine_type         = "c2-standard-4"
   enable_private_nodes = true

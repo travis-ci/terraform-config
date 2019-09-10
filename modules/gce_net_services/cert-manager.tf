@@ -1,7 +1,8 @@
 resource "google_compute_firewall" "cert-manager-webhook-allow" {
+  count   = "${var.cert_manager_enabled}"
   name    = "cert-manager-webhook-allow"
-  network = "${module.networking.main_network_name}"
-  project = "${module.project.project_id}"
+  network = "${google_compute_network.main.name}"
+  project = "${var.project}"
 
   source_ranges = ["172.16.0.0/28"]
 
@@ -10,5 +11,5 @@ resource "google_compute_firewall" "cert-manager-webhook-allow" {
     ports    = ["6443"]
   }
 
-  source_tags = ["services"]
+  source_tags = "${var.cert_manager_source_tags}"
 }
