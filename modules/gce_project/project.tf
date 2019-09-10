@@ -19,6 +19,9 @@ resource "google_project_services" "project" {
     "container.googleapis.com",
     "containerregistry.googleapis.com",
     "storage-component.googleapis.com",
+    "monitoring.googleapis.com",
+    "stackdriver.googleapis.com",
+    "logging.googleapis.com",
   ]
 }
 
