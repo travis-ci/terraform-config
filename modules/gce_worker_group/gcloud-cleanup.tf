@@ -70,7 +70,7 @@ resource "google_service_account_key" "gcloud_cleanup" {
 resource "kubernetes_secret" "gcloud_cleanup_config" {
   metadata {
     name      = "gcloud-cleanup-terraform"
-    namespace = "${kubernetes_namespace.default.metadata.0.name}"
+    namespace = "${var.k8s_default_namespace}"
   }
 
   data = {

@@ -7,7 +7,7 @@ variable "index" {
 }
 
 variable "k8s_default_namespace" {
-  default = "gce-staging-1"
+  default = "default"
 }
 
 variable "project" {
@@ -34,12 +34,12 @@ provider "aws" {}
 provider "kubernetes" {
   # NOTE: For imports, config_context needs to be hardcoded and host/client/cluster needs to be commented out.
 
-  #config_context = "gke_travis-staging-1_us-central1-a_gce-staging-1"
+  #config_context = "gke_travis-staging-1_us-central1-a_workers-1"
 
-  host                   = "${module.gke_cluster_1.host}"
-  client_certificate     = "${module.gke_cluster_1.client_certificate}"
-  client_key             = "${module.gke_cluster_1.client_key}"
-  cluster_ca_certificate = "${module.gke_cluster_1.cluster_ca_certificate}"
+  host                   = "${module.workers_1.host}"
+  client_certificate     = "${module.workers_1.client_certificate}"
+  client_key             = "${module.workers_1.client_key}"
+  cluster_ca_certificate = "${module.workers_1.cluster_ca_certificate}"
 }
 
 data "terraform_remote_state" "vpc" {
@@ -83,18 +83,21 @@ module "gce_worker_group" {
   region                = "us-central1"
 }
 
-module "gke_cluster_1" {
+module "workers_1" {
   source            = "../modules/gce_kubernetes"
   project           = "${var.project}"
-  cluster_name      = "gce-staging-1"
-  pool_name         = "gce-staging-1"
-  region            = "us-central1-a"
+  cluster_name      = "workers-1"
+  pool_name         = "default"
+  region            = "us-central1"
   network           = "${data.terraform_remote_state.vpc.gce_network_main}"
   subnetwork        = "${data.terraform_remote_state.vpc.gce_subnetwork_gke_cluster}"
   default_namespace = "${var.k8s_default_namespace}"
 
-  max_node_count = 10
-  node_pool_tags = ["gce-workers"]
+  machine_type       = "c2-standard-4"
+  max_node_count     = 10
+  min_master_version = "1.14"
+  node_locations     = ["us-central1-b", "us-central1-c"]
+  node_pool_tags     = ["gce-workers"]
 }
 
 output "workers_service_account_emails" {
