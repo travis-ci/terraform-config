@@ -19,8 +19,9 @@ resource "google_compute_firewall" "allow_gke_worker_to_jobs" {
   name    = "allow-gke-workers-to-jobs"
   network = "${google_compute_network.main.name}"
 
-  source_tags = ["gce-workers"]
-  target_tags = ["testing"]
+  source_ranges = ["0.0.0.0/0"]
+  source_tags   = ["gce-workers"]
+  target_tags   = ["testing"]
 
   priority = 1000
   project  = "${var.project}"
