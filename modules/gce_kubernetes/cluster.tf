@@ -44,8 +44,9 @@ resource "google_container_node_pool" "node_pool" {
   initial_node_count = 1
 
   node_config {
-    machine_type = "${var.machine_type}"
-    tags         = "${var.node_pool_tags}"
+    machine_type    = "${var.machine_type}"
+    tags            = "${var.node_pool_tags}"
+    service_account = "${google_service_account.cluster_service_account.email}"
 
     oauth_scopes = [
       "https://www.googleapis.com/auth/compute",
@@ -53,6 +54,10 @@ resource "google_container_node_pool" "node_pool" {
       "https://www.googleapis.com/auth/logging.write",
       "https://www.googleapis.com/auth/monitoring",
     ]
+
+    metadata = {
+      disable-legacy-endpoints = "true"
+    }
   }
 
   management {
