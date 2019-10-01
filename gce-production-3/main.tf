@@ -32,14 +32,7 @@ provider "google" {
 provider "aws" {}
 
 provider "kubernetes" {
-  # NOTE: For imports, config_context needs to be hardcoded and host/client/cluster needs to be commented out.
-
-  #config_context = "gke_travis-ci-prod-3_us-central1_gce-production-3"
-
-  host                   = "${module.gke_cluster_1.host}"
-  client_certificate     = "${module.gke_cluster_1.client_certificate}"
-  client_key             = "${module.gke_cluster_1.client_key}"
-  cluster_ca_certificate = "${module.gke_cluster_1.cluster_ca_certificate}"
+  config_context = "${module.gke_cluster_1.context}"
 }
 
 data "terraform_remote_state" "vpc" {
@@ -99,6 +92,30 @@ module "gke_cluster_1" {
   min_node_count = 4
   max_node_count = 50
   machine_type   = "c2-standard-4"
+}
+
+// Use these outputs to be able to easily set up a context in kubectl on the local machine.
+output "cluster_host" {
+  value = "${module.gke_cluster_1.host}"
+}
+
+output "cluster_ca_certificate" {
+  value     = "${module.gke_cluster_1.cluster_ca_certificate}"
+  sensitive = true
+}
+
+output "client_certificate" {
+  value     = "${module.gke_cluster_1.client_certificate}"
+  sensitive = true
+}
+
+output "client_key" {
+  value     = "${module.gke_cluster_1.client_key}"
+  sensitive = true
+}
+
+output "context" {
+  value = "${module.gke_cluster_1.context}"
 }
 
 output "workers_service_account_emails" {

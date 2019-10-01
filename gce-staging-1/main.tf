@@ -101,6 +101,30 @@ module "workers_1" {
   min_master_version = "1.14"
 }
 
+// Use these outputs to be able to easily set up a context in kubectl on the local machine.
+output "cluster_host" {
+  value = "${module.workers_1.host}"
+}
+
+output "cluster_ca_certificate" {
+  value     = "${module.workers_1.cluster_ca_certificate}"
+  sensitive = true
+}
+
+output "client_certificate" {
+  value     = "${module.workers_1.client_certificate}"
+  sensitive = true
+}
+
+output "client_key" {
+  value     = "${module.workers_1.client_key}"
+  sensitive = true
+}
+
+output "context" {
+  value = "${module.workers_1.context}"
+}
+
 output "workers_service_account_emails" {
   value = ["${module.gce_worker_group.workers_service_account_emails}"]
 }
