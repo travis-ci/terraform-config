@@ -9,3 +9,8 @@ variable "project_id" {
 variable "region" {
   default = "us-central1"
 }
+
+variable "node_pool_tags" {
+  type    = "list"
+  default = ["services"]
+}

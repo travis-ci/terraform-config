@@ -7,7 +7,9 @@ module "project" {
 module "networking" {
   source = "../modules/gce_net_services"
 
-  project = "${module.project.project_id}"
+  project                  = "${module.project.project_id}"
+  cert_manager_enabled     = 1
+  cert_manager_source_tags = "${var.node_pool_tags}"
 }
 
 module "kubernetes_cluster" {
