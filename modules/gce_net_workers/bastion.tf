@@ -33,7 +33,7 @@ EOF
 
 resource "google_compute_instance" "bastion" {
   count        = "${length(var.bastion_zones)}"
-  name         = "${var.env}-${var.index}-bastion-${element(var.bastion_zones, count.index)}"
+  name         = "${var.env}-${var.index}-bastion-${element(var.bastion_zones, count.index)}${var.bastion_prefix}"
   machine_type = "g1-small"
   zone         = "${var.region}-${element(var.bastion_zones, count.index)}"
   tags         = ["bastion", "${var.env}"]

@@ -13,6 +13,7 @@ def main(argv: ARGV)
   count = Integer(in_args.fetch('count', zones.length))
   project = in_args.fetch('project')
   region = in_args.fetch('region')
+  prefix = in_args.fetch('prefix')
   retries = Integer(in_args.fetch('retries', '4'))
   retry_sleep = Integer(in_args.fetch('retry_sleep', '120'))
   accounting = %w[1 yes on true].include?(
@@ -24,7 +25,7 @@ def main(argv: ARGV)
 
   instances = {}
   while retried <= retries
-    instances = fetch_nats_by_zone(zones, count, project, region)
+    instances = fetch_nats_by_zone(zones, count, project, region, prefix)
     break unless accounting
     break if instances.length == count
 
@@ -41,7 +42,7 @@ def main(argv: ARGV)
   0
 end
 
-def fetch_nats_by_zone(zones, count, project, region)
+def fetch_nats_by_zone(zones, count, project, region, prefix)
   instances = {}
   instances_command = %w[
     gcloud compute instance-groups list-instances
@@ -50,7 +51,7 @@ def fetch_nats_by_zone(zones, count, project, region)
   zones.each do |zone|
     (count / zones.length).times do |count_index|
       full_command = instances_command + %W[
-        nat-#{zone}-#{count_index + 1}
+        #{prefix}nat-#{zone}-#{count_index + 1}
         --project=#{project}
         --zone=#{region}-#{zone}
         --format="value(instance)"

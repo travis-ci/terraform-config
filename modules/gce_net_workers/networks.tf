@@ -1,5 +1,5 @@
 resource "google_compute_network" "main" {
-  name                    = "main"
+  name                    = "main${var.google_compute_network_prefix}"
   project                 = "${var.project}"
   auto_create_subnetworks = "false"
 }

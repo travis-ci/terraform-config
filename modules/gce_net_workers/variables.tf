@@ -5,6 +5,10 @@ variable "bastion_zones" {
   default = ["b", "f"]
 }
 
+variable "bastion_prefix" {
+  default = ""
+}
+
 variable "deny_target_ip_ranges" {
   type    = "list"
   default = []
@@ -17,6 +21,14 @@ variable "gce_health_check_source_ranges" {
     "130.211.0.0/22",
     "35.191.0.0/16",
   ]
+}
+
+variable "nat_health_check_prefix" {
+  default = ""
+}
+
+variable "nat_rolling_updater_config_prefix" {
+  default = ""
 }
 
 variable "gesund_self_image" {
@@ -45,6 +57,10 @@ variable "nat_conntracker_self_image" {
 
 variable "nat_conntracker_redis_plan" {
   default = "premium-0"
+}
+
+variable "nat_conntracker_name" {
+  default = "nat-conntracker-gce"
 }
 
 variable "nat_count_per_zone" {
@@ -82,10 +98,22 @@ variable "nat_names" {
   ]
 }
 
+variable "nats_by_zone_prefix" {
+  default = ""
+}
+
 variable "project" {}
 
 variable "region" {
   default = "us-central1"
+}
+
+variable "google_compute_network_prefix" {
+  default = ""
+}
+
+variable "google_compute_firewall_prefix" {
+  default = ""
 }
 
 variable "rigaer_strasse_8_ipv4" {}

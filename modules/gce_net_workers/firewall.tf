@@ -1,5 +1,5 @@
 resource "google_compute_firewall" "allow_main_ssh" {
-  name          = "allow-main-ssh"
+  name          = "allow-main-ssh${var.google_compute_firewall_prefix}"
   network       = "${google_compute_network.main.name}"
   source_ranges = ["${var.rigaer_strasse_8_ipv4}"]
   priority      = 1000
@@ -16,7 +16,7 @@ resource "google_compute_firewall" "allow_main_ssh" {
 }
 
 resource "google_compute_firewall" "allow_gke_worker_to_jobs" {
-  name    = "allow-gke-workers-to-jobs"
+  name    = "allow-gke-workers-to-jobs${var.google_compute_firewall_prefix}"
   network = "${google_compute_network.main.name}"
 
   source_ranges = ["0.0.0.0/0"]
@@ -34,7 +34,7 @@ resource "google_compute_firewall" "allow_gke_worker_to_jobs" {
 }
 
 resource "google_compute_firewall" "allow_public_ssh" {
-  name          = "allow-public-ssh"
+  name          = "allow-public-ssh${var.google_compute_firewall_prefix}"
   network       = "${google_compute_network.main.name}"
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["bastion"]
@@ -48,7 +48,7 @@ resource "google_compute_firewall" "allow_public_ssh" {
 }
 
 resource "google_compute_firewall" "allow_public_icmp" {
-  name          = "allow-public-icmp"
+  name          = "allow-public-icmp${var.google_compute_firewall_prefix}"
   network       = "${google_compute_network.main.name}"
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["nat", "bastion"]
@@ -61,7 +61,7 @@ resource "google_compute_firewall" "allow_public_icmp" {
 }
 
 resource "google_compute_firewall" "allow_internal" {
-  name    = "allow-internal"
+  name    = "allow-internal${var.google_compute_firewall_prefix}"
   network = "${google_compute_network.main.name}"
   project = "${var.project}"
 
@@ -76,7 +76,7 @@ resource "google_compute_firewall" "allow_internal" {
 }
 
 resource "google_compute_firewall" "allow_jobs_nat" {
-  name    = "allow-jobs-nat"
+  name    = "allow-jobs-nat${var.google_compute_firewall_prefix}"
   network = "${google_compute_network.main.name}"
   project = "${var.project}"
 
@@ -93,7 +93,7 @@ resource "google_compute_firewall" "allow_jobs_nat" {
 }
 
 resource "google_compute_firewall" "deny_target_ip" {
-  name    = "deny-target-ip"
+  name    = "deny-target-ip${var.google_compute_firewall_prefix}"
   network = "${google_compute_network.main.name}"
 
   direction          = "EGRESS"

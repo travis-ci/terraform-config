@@ -7,7 +7,7 @@ resource "google_container_cluster" "gke_cluster" {
   min_master_version = "${var.min_master_version}"
   node_locations     = "${var.node_locations}"
 
-  initial_node_count       = 1
+  initial_node_count       = "${var.initial_node_count}"
   remove_default_node_pool = true
   ip_allocation_policy     = {}
   monitoring_service       = "monitoring.googleapis.com/kubernetes"

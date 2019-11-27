@@ -1,6 +1,6 @@
 resource "google_compute_address" "nat" {
   count   = "${length(var.nat_zones) * var.nat_count_per_zone}"
-  name    = "${element(var.nat_names, count.index)}"
+  name    = "${var.nats_by_zone_prefix}${element(var.nat_names, count.index)}"
   region  = "${var.region}"
   project = "${var.project}"
 }
@@ -8,7 +8,7 @@ resource "google_compute_address" "nat" {
 resource "aws_route53_record" "nat" {
   count   = "${length(var.nat_zones) * var.nat_count_per_zone}"
   zone_id = "${var.travisci_net_external_zone_id}"
-  name    = "${element(var.nat_names, count.index)}.gce-${var.env}-${var.index}-${var.region}-${element(var.nat_zones, count.index / var.nat_count_per_zone)}.travisci.net"
+  name    = "${var.nats_by_zone_prefix}${element(var.nat_names, count.index)}.gce-${var.env}-${var.index}-${var.region}-${element(var.nat_zones, count.index / var.nat_count_per_zone)}.travisci.net"
   type    = "A"
   ttl     = 5
 
@@ -25,7 +25,7 @@ resource "aws_route53_record" "nat_regional" {
 }
 
 resource "heroku_app" "nat_conntracker" {
-  name   = "nat-conntracker-gce-${var.env == "production" ? "prod" : var.env}-${var.index}"
+  name   = "${var.nat_conntracker_name}-${var.env == "production" ? "prod" : var.env}-${var.index}"
   region = "us"
 
   organization {
@@ -79,7 +79,7 @@ EOF
 
 resource "google_compute_instance_template" "nat" {
   count          = "${length(var.nat_zones) * var.nat_count_per_zone}"
-  name           = "${var.env}-${var.index}-${element(var.nat_names, count.index)}-template-${substr(sha256("${var.nat_image}${data.template_file.nat_cloud_config.rendered}"), 0, 7)}"
+  name           = "${var.env}-${var.index}-${var.nats_by_zone_prefix}${element(var.nat_names, count.index)}-template-${substr(sha256("${var.nat_image}${data.template_file.nat_cloud_config.rendered}"), 0, 7)}"
   machine_type   = "${var.nat_machine_type}"
   can_ip_forward = true
   region         = "${var.region}"
@@ -120,7 +120,7 @@ resource "google_compute_instance_template" "nat" {
 }
 
 resource "google_compute_http_health_check" "nat" {
-  name                = "nat-health-check"
+  name                = "nat-health-check${var.nat_health_check_prefix}"
   request_path        = "/health-check"
   check_interval_sec  = 30
   healthy_threshold   = 1
@@ -129,7 +129,7 @@ resource "google_compute_http_health_check" "nat" {
 }
 
 resource "google_compute_firewall" "allow_nat_health_check" {
-  name        = "allow-nat-health-check"
+  name        = "allow-nat-health-check${var.nat_health_check_prefix}"
   network     = "${google_compute_network.main.name}"
   project     = "${var.project}"
   target_tags = ["nat"]
@@ -146,8 +146,8 @@ resource "google_compute_instance_group_manager" "nat" {
   provider = "google-beta"
   count    = "${length(var.nat_zones) * var.nat_count_per_zone}"
 
-  base_instance_name = "${var.env}-${var.index}-${element(var.nat_names, count.index)}"
-  name               = "${element(var.nat_names, count.index)}"
+  base_instance_name = "${var.env}-${var.index}-${var.nats_by_zone_prefix}${element(var.nat_names, count.index)}"
+  name               = "${var.nats_by_zone_prefix}${element(var.nat_names, count.index)}"
   target_size        = 1
   zone               = "${var.region}-${element(var.nat_zones, count.index)}"
 
@@ -175,6 +175,7 @@ data "external" "nats_by_zone" {
     region  = "${var.region}"
     project = "${var.project}"
     count   = "${length(var.nat_zones) * var.nat_count_per_zone}"
+    prefix  = "${var.nats_by_zone_prefix}"
   }
 
   depends_on = ["google_compute_instance_group_manager.nat"]
@@ -183,7 +184,7 @@ data "external" "nats_by_zone" {
 resource "google_compute_route" "nat" {
   count                  = "${length(var.nat_zones) * var.nat_count_per_zone}"
   dest_range             = "0.0.0.0/0"
-  name                   = "${element(var.nat_names, count.index)}"
+  name                   = "${var.nats_by_zone_prefix}${element(var.nat_names, count.index)}"
   network                = "${google_compute_network.main.self_link}"
   next_hop_instance      = "${data.external.nats_by_zone.result[var.nat_names[count.index]]}"
   next_hop_instance_zone = "${var.region}-${element(var.nat_zones, count.index / var.nat_count_per_zone)}"
@@ -213,7 +214,7 @@ EOF
 
 resource "local_file" "nat_rolling_updater_config" {
   content  = "${data.template_file.nat_rolling_updater_config.rendered}"
-  filename = "${path.cwd}/config/nat-rolling-updater-${var.env}-${var.index}.env"
+  filename = "${path.cwd}/config/nat-rolling-updater-${var.env}-${var.index}${var.nat_rolling_updater_config_prefix}.env"
 
   provisioner "local-exec" {
     command = "chmod 0644 ${local_file.nat_rolling_updater_config.filename}"

@@ -41,3 +41,7 @@ variable "enable_private_nodes" {
 variable "private_master_ipv4_cidr_block" {
   default = ""
 }
+
+variable "initial_node_count" {
+  default = "1"
+}
