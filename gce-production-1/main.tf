@@ -109,7 +109,7 @@ module "gce_worker_group_us_east1" {
   aws_org_trace_bucket  = "${module.aws_iam_user_s3_org.bucket}"
   env                   = "${var.env}"
   index                 = "${var.index}"
-  k8s_default_namespace = "${var.k8s_us_east1_namespace}"
+  k8s_default_namespace = "${var.k8s_default_namespace}"
   project               = "${var.project}"
   region                = "us-east1"
 }
@@ -118,7 +118,7 @@ module "gke_cluster_2" {
   source = "../modules/gce_kubernetes"
 
   cluster_name      = "gce-production-1-ue1"
-  default_namespace = "${var.k8s_us_east1_namespace}"
+  default_namespace = "${var.k8s_default_namespace}"
   network           = "${data.terraform_remote_state.vpc.gce_network_main_us_east1}"
   pool_name         = "default"
   project           = "${var.project}"
