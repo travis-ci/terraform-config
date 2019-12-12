@@ -95,7 +95,7 @@ variable "nat_names_us_east1" {
     "nat-d-1",
     "nat-b-2",
     "nat-c-2",
-    "nat-d-3"
+    "nat-d-2"
   ]
 }
 
@@ -117,7 +117,7 @@ module "gce_net_us_east1" {
   nat_conntracker_dst_ignore     = ["${var.nat_conntracker_dst_ignore}"]
   nat_conntracker_src_ignore     = ["${var.nat_conntracker_src_ignore}"]
   nat_conntracker_name           = "nat-conn-gce-ue1"
-  nat_count_per_zone             = 1
+  nat_count_per_zone             = 2
   nat_image                      = "${var.gce_nat_image}"
   nat_machine_type               = "n1-standard-4"
   project                        = "${var.project}"

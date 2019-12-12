@@ -50,6 +50,10 @@ data "dns_a_record_set" "gce_production_1_nat" {
   host = "nat-production-1.gce-us-central1.travisci.net"
 }
 
+data "dns_a_record_set" "gce_production_1_nat_us_east1" {
+  host = "nat-production-1.gce-us-east1.travisci.net"
+}
+
 data "dns_a_record_set" "gce_production_2_nat" {
   host = "nat-production-2.gce-us-central1.travisci.net"
 }
@@ -79,6 +83,17 @@ resource "aws_route53_record" "gce_nat" {
   ]
 }
 
+resource "aws_route53_record" "gce_nat_us_east1" {
+  zone_id = "${data.aws_route53_zone.travisci_net.zone_id}"
+  name    = "nat.gce-us-east1.travisci.net"
+  type    = "A"
+  ttl     = 300
+
+  records = [
+    "${data.dns_a_record_set.gce_production_1_nat_us_east1.addrs}",
+  ]
+}
+
 resource "aws_route53_record" "linux_containers_nat" {
   zone_id = "${data.aws_route53_zone.travisci_net.zone_id}"
   name    = "nat.linux-containers.travisci.net"
@@ -87,6 +102,7 @@ resource "aws_route53_record" "linux_containers_nat" {
 
   records = [
     "${data.dns_a_record_set.gce_production_1_nat.addrs}",
+    "${data.dns_a_record_set.gce_production_1_nat_us_east1.addrs}",
     "${data.dns_a_record_set.gce_production_2_nat.addrs}",
     "${data.dns_a_record_set.gce_production_3_nat.addrs}",
   ]
@@ -109,6 +125,7 @@ resource "aws_route53_record" "nat" {
 
   records = [
     "${data.dns_a_record_set.gce_production_1_nat.addrs}",
+    "${data.dns_a_record_set.gce_production_1_nat_us_east1.addrs}",
     "${data.dns_a_record_set.gce_production_2_nat.addrs}",
     "${data.dns_a_record_set.gce_production_3_nat.addrs}",
     "${var.macstadium_production_nat_addrs}",
@@ -144,6 +161,8 @@ resource "heroku_app" "whereami" {
 
     WHEREAMI_INFRA_GCE_IPS = "${
       join(",", data.dns_a_record_set.gce_production_1_nat.addrs)
+    },${
+      join(",", data.dns_a_record_set.gce_production_1_nat_us_east1.addrs)
     },${
       join(",", data.dns_a_record_set.gce_production_2_nat.addrs)
     },${
