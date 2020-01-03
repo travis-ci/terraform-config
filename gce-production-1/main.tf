@@ -123,8 +123,8 @@ module "gke_cluster_2" {
 
   node_locations = ["us-east1-c", "us-east1-d"]
   node_pool_tags = ["gce-workers"]
-  min_node_count = 1
-  max_node_count = 4
+  min_node_count = 4
+  max_node_count = 50
   machine_type   = "c2-standard-4"
 
   min_master_version = "1.14"

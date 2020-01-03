@@ -89,10 +89,67 @@ module "gce_net" {
   travisci_net_external_zone_id = "${var.travisci_net_external_zone_id}"
 }
 
+variable "nat_names_us_east1" {
+  default = [
+    "nat-b-1",
+    "nat-c-1",
+    "nat-d-1",
+    "nat-b-2",
+    "nat-c-2",
+    "nat-d-2"
+  ]
+}
+
+module "gce_net_us_east1" {
+  source = "../modules/gce_net_workers"
+
+  region = "us-east1"
+
+  bastion_config        = "${file("config/bastion.env")}"
+  bastion_image         = "${var.gce_bastion_image}"
+  deny_target_ip_ranges = ["${var.deny_target_ip_ranges}"]
+  env                   = "${var.env}"
+
+  github_users                   = "${var.github_users}"
+  heroku_org                     = "${var.gce_heroku_org}"
+  index                          = "${var.index}"
+  nat_config                     = "${file("config/nat.env")}"
+  nat_conntracker_config         = "${file("nat-conntracker.env")}"
+  nat_conntracker_dst_ignore     = ["${var.nat_conntracker_dst_ignore}"]
+  nat_conntracker_src_ignore     = ["${var.nat_conntracker_src_ignore}"]
+  nat_conntracker_name           = "nat-conn-gce-ue1"
+  nat_count_per_zone             = 2
+  nat_image                      = "${var.gce_nat_image}"
+  nat_machine_type               = "n1-standard-4"
+  project                        = "${var.project}"
+  rigaer_strasse_8_ipv4          = "${var.rigaer_strasse_8_ipv4}"
+  syslog_address                 = "${var.syslog_address_com}"
+  travisci_net_external_zone_id  = "${var.travisci_net_external_zone_id}"
+  google_compute_network_prefix  = "-us-east1"
+  google_compute_firewall_prefix = "-us-east1"
+  bastion_zones                  = ["b"]
+  bastion_prefix                 = "-us-east1"
+  nat_health_check_prefix        = "-us-east1"
+  nat_zones                      = ["b", "c", "d"]
+  nats_by_zone_prefix            = "us-east1-"
+  nat_names                      = "${var.nat_names_us_east1}"
+
+  nat_rolling_updater_config_prefix = "-us-east1"
+}
+
+
 output "gce_network_main" {
   value = "${module.gce_net.gce_network_main}"
 }
 
 output "gce_subnetwork_gke_cluster" {
   value = "${module.gce_net.gce_subnetwork_gke_cluster}"
+}
+
+output "gce_network_main_us_east1" {
+  value = "${module.gce_net_us_east1.gce_network_main}"
+}
+
+output "gce_subnetwork_gke_cluster_us_east1" {
+  value = "${module.gce_net_us_east1.gce_subnetwork_gke_cluster}"
 }

@@ -163,3 +163,7 @@ output "context_us_east1" {
 output "workers_service_account_emails" {
   value = ["${module.gce_worker_group.workers_service_account_emails}"]
 }
+
+output "workers_ue1_service_account_emails" {
+  value = ["${module.gce_worker_group_us_east1.workers_service_account_emails}"]
+}
