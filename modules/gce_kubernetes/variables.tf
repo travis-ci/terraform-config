@@ -10,6 +10,10 @@ variable "min_master_version" {
   default = "1.13"
 }
 
+variable "initial_node_count" {
+  default = "1"
+}
+
 variable "node_locations" {
   default = []
 }
