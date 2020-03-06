@@ -69,7 +69,7 @@ module "kubernetes_cluster_us_east4" {
 
   node_locations                 = ["us-east4-b", "us-east4-a", "us-east4-c"]
   node_pool_tags                 = ["services"]
-  min_node_count                 = 4
+  min_node_count                 = 1
   max_node_count                 = 50
   machine_type                   = "n1-standard-4"
   enable_private_nodes           = true
