@@ -1,13 +1,7 @@
 variable "project_id" {}
 
-data "google_project" "project" {
-  project_id = "${var.project_id}"
-}
-
-resource "google_project_services" "project" {
-  project = "${data.google_project.project.project_id}"
-
-  services = [
+variable "default_services" {
+  default = [
     "bigquery-json.googleapis.com",
     "bigquerystorage.googleapis.com",
     "iam.googleapis.com",
@@ -20,6 +14,16 @@ resource "google_project_services" "project" {
     "containerregistry.googleapis.com",
     "storage-component.googleapis.com",
   ]
+}
+
+data "google_project" "project" {
+  project_id = "${var.project_id}"
+}
+
+resource "google_project_services" "project" {
+  project = "${data.google_project.project.project_id}"
+
+  services = "${var.default_services}"
 }
 
 output "project_id" {
