@@ -1,5 +1,6 @@
 module "project" {
-  source = "../modules/gce_project"
+  source           = "../modules/gce_project"
+  default_services = "${var.default_services}"
 
   project_id = "${var.project_id}"
 }
