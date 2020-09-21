@@ -19,7 +19,7 @@ variable "gce_nat_image" {
 variable "github_users" {}
 
 variable "index" {
-  default = 3
+  default = 4
 }
 
 variable "nat_conntracker_src_ignore" {
