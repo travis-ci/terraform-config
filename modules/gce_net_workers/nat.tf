@@ -115,6 +115,7 @@ resource "google_compute_instance_template" "nat" {
   }
 
   lifecycle {
+    ignore_changes = ["*"]
     create_before_destroy = true
   }
 }

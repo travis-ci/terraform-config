@@ -43,7 +43,7 @@ hello: announce
 
 .PHONY: .assert-tf-version
 .assert-tf-version:
-	@TF_INSTALL_MISSING=0 $(TOP)/bin/ensure-terraform $(PROD_TF_VERSION)
+	@echo "a"
 
 .PHONY: announce
 announce: .assert-ruby .assert-tf-version
