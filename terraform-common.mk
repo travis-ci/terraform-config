@@ -68,7 +68,7 @@ console: announce
 
 .PHONY: plan
 plan: announce .config $(TRVS_TFVARS) $(TFSTATE)
-	$(TERRAFORM) plan -module-depth=-1 -out=$(TFPLAN)
+	$(TERRAFORM) plan -out=$(TFPLAN)
 
 .PHONY: planbeep
 planbeep: announce .config $(TRVS_TFVARS) $(TFSTATE)
