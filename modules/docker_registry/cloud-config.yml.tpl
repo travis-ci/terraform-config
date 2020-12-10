@@ -2,6 +2,9 @@
 # vim:filetype=yaml
 
 write_files:
+- content: '${base64encode(APPLICATION_DEFAULT_CREDENTIALS)}'
+  encoding: b64
+  path: /etc/google/auth/application_default_credentials.json
 - content: '${base64encode(REGISTRY_HTTP_TLS_CERTIFICATE)}'
   encoding: b64
   path: /etc/ssl/docker/tls.crt

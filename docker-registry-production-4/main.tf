@@ -25,6 +25,8 @@ variable "target_size" {
 variable "REGISTRY_HTTP_TLS_CERTIFICATE" {}
 variable "REGISTRY_HTTP_TLS_KEY" {}
 
+variable "APPLICATION_DEFAULT_CREDENTIALS" {}
+
 terraform {
   backend "s3" {
     bucket         = "travis-terraform-state"
@@ -56,4 +58,6 @@ module "docker_registry" {
 
   REGISTRY_HTTP_TLS_CERTIFICATE = var.REGISTRY_HTTP_TLS_CERTIFICATE
   REGISTRY_HTTP_TLS_KEY = var.REGISTRY_HTTP_TLS_KEY
+
+  APPLICATION_DEFAULT_CREDENTIALS = var.APPLICATION_DEFAULT_CREDENTIALS
 }

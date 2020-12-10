@@ -2,6 +2,7 @@ ENV_SHORT := staging
 INFRA := docker-registry
 VAULT_SOURCE_PATH := docker-registry
 VAULT_SECRET_KEY := docker-registry
+VAULT_GCP_SECRET_KEY := docker-gcp-registry
 TOP := $(shell git rev-parse --show-toplevel)
 
 ifeq ($(VAULT_ADDR),)
@@ -29,6 +30,7 @@ $(ENV_NAME).auto.tfvars:
 
 $(TRVS_INFRA_ENV_TFVARS):
 	vault kv get -format=json -field=data ${VAULT_SOURCE_PATH}/${VAULT_SECRET_KEY} > ${VAULT_SECRET_KEY}.auto.tfvars.json
+	vault kv get -format=json -field=data ${VAULT_SOURCE_PATH}/${VAULT_GCP_SECRET_KEY} > ${VAULT_GCP_SECRET_KEY}.auto.tfvars.json
 
 $(TRVS_ENV_NAME_TFVARS):
 	@echo "" >$@

@@ -44,6 +44,8 @@ variable "zones" {
 variable "REGISTRY_HTTP_TLS_CERTIFICATE" {}
 variable "REGISTRY_HTTP_TLS_KEY" {}
 
+variable "APPLICATION_DEFAULT_CREDENTIALS" {}
+
 data "template_file" "docker_registry_config" {
   template = "${file("${path.module}/config.yml.tpl")}"
 }
@@ -63,6 +65,8 @@ EOF
 
     REGISTRY_HTTP_TLS_CERTIFICATE = "${var.REGISTRY_HTTP_TLS_CERTIFICATE}"
     REGISTRY_HTTP_TLS_KEY         = "${var.REGISTRY_HTTP_TLS_KEY}"
+
+    APPLICATION_DEFAULT_CREDENTIALS = var.APPLICATION_DEFAULT_CREDENTIALS
   }
 }
 
@@ -150,6 +154,15 @@ resource "google_compute_instance_template" "docker_registry" {
 
   lifecycle {
     create_before_destroy = true
+  }
+
+  service_account {
+    scopes = [
+      "monitoring-write",
+      "monitoring-read",
+      "monitoring",
+      "cloud-platform"
+    ]
   }
 }
 
